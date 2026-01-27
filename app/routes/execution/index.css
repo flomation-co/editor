@@ -1,0 +1,44 @@
+.small-label {
+    max-width: 100px;
+    display: inline-block;
+}
+
+.code-block-label {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    color: #d1d5db;
+}
+
+.property-label {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    color: #d1d5db;
+    /*width: 500px;*/
+}
+
+.property {
+    color: #fff;
+    margin-left: 20px;
+}
+
+.code-block {
+    display: block;
+    margin-bottom: 10px;
+    font-family: monospace;
+    background-color: #1f2937;
+    padding: 5px;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+
+pre {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}

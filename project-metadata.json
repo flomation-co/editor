@@ -1,0 +1,15 @@
+{
+  "package": {
+    "component_name": "editor",
+    "name": "flomation-editor",
+    "nicename": "Flomation Editor",
+    "summary": "Flomation Automate Web Editor",
+    "description": "Flomation Automate Web Editor - Visual workflow editor for automation",
+    "license": "MIT",
+    "url": "https://flomation.co"
+  },
+  "maintainer": {
+    "name": "Build System",
+    "email": "build@flomation.co"
+  }
+}

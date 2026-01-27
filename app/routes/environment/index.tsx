@@ -1,0 +1,373 @@
+import type {Route} from "../+types/home";
+import Container from "~/components/container";
+import type {Environment, Property, Secret} from "~/types";
+import {useEffect, useState} from "react";
+import {Link, useParams, useSearchParams} from "react-router";
+import axios from "axios";
+import useConfig from "~/components/config";
+import useCookieToken from "~/components/cookie";
+import {Tooltip} from "react-tooltip";
+import ReactCountryFlag from "react-country-flag";
+import {ExecuteState} from "~/components/executionState";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleStop, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faCancel, faCheck, faGlobe, faPlus} from "@fortawesome/pro-solid-svg-icons";
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "Flomation - Environment" },
+        { name: "description", content: "Get in the Flo" },
+    ];
+}
+
+export default function Environment() {
+    const [ searchParams, setSearchParams ] = useSearchParams();
+
+    const [ environmentID, setEnvironmentID ] = useState<string>(useParams().id)
+    const [ environment, setEnvironment ] = useState<Environment>();
+    const [ properties, setProperties ] = useState<Property[]>();
+    const [ secrets, setSecrets ] = useState<Secret[]>();
+    const [ search, setSearch ] = useState<string>(searchParams.get("search"))
+
+    const [ hasInputRow, setHasInputRow ] = useState<boolean>(false);
+    const [ inputEnvironmentPropertyName, setInputEnvironmentPropertyName ] = useState<string>("");
+    const [ inputEnvironmentPropertyValue, setInputEnvironmentPropertyValue ] = useState<string>("");
+
+    const [ hasSecretInputRow, setHasSecretInputRow ] = useState<boolean>(false);
+    const [ inputEnvironmentSecretName, setInputEnvironmentSecretName ] = useState<string>("");
+    const [ inputEnvironmentSecretValue, setInputEnvironmentSecretValue ] = useState<string>("");
+
+    const [ confirmDeletionID, setConfirmDeletionID ] = useState<string>(null);
+
+    const controller = new AbortController();
+    const token = useCookieToken();
+
+    function handleUpdateSearch(term) {
+        setSearch(term);
+    }
+
+    const showInputRow = (value: boolean) => {
+        if (value) {
+            setInputEnvironmentPropertyName("");
+            setInputEnvironmentPropertyValue("");
+        }
+
+        setHasInputRow(value);
+    }
+
+    const changeEnvironmentPropertyName = (e) => {
+        setInputEnvironmentPropertyName(e.target.value);
+    }
+
+    const changeEnvironmentPropertyValue = (e) => {
+        setInputEnvironmentPropertyValue(e.target.value);
+    }
+
+    const showSecretInputRow = (value: boolean) => {
+        if (value) {
+            setInputEnvironmentSecretName("");
+            setInputEnvironmentSecretValue("");
+        }
+
+        setHasSecretInputRow(value);
+    }
+
+    const changeEnvironmentSecretName = (e) => {
+        setInputEnvironmentSecretName(e.target.value);
+    }
+
+    const changeEnvironmentSecretValue = (e) => {
+        setInputEnvironmentSecretValue(e.target.value);
+    }
+
+    useEffect(() => {
+        const config = useConfig();
+        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID;
+
+        axios.get(url, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    setEnvironment(response.data);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }, []);
+
+    const updateProperties = () => {
+        const config = useConfig();
+        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property';
+
+        axios.get(url, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    setProperties(response.data);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
+    const updateSecrets = () => {
+        const config = useConfig();
+        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret';
+
+        axios.get(url, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    setSecrets(response.data);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
+    useEffect(() => {
+        updateProperties();
+    }, []);
+
+    useEffect(() => {
+        updateSecrets();
+    }, []);
+
+    const saveProperty = () => {
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property';
+        const property = {
+            name: inputEnvironmentPropertyName,
+            value: inputEnvironmentPropertyValue,
+        }
+
+        axios.post(url, property, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    showInputRow(false);
+                    updateProperties();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+    const saveSecret = () => {
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret';
+        const property = {
+            name: inputEnvironmentSecretName,
+            value: inputEnvironmentSecretValue,
+        }
+
+        axios.post(url, property, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    showSecretInputRow(false);
+                    updateSecrets();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
+    const deleteProperty = (id) => {
+        showInputRow(false);
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + id;
+
+        axios.delete(url, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    updateProperties();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
+    const deleteSecret = (id) => {
+        showSecretInputRow(false);
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret/' + id;
+
+        axios.delete(url, {
+            signal: controller.signal,
+            headers: {
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    updateSecrets();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            })
+    }
+
+    return (
+        <Container>
+            <div className={"header"}>Environment</div>
+
+            <div className={"search-section"}>
+                <input disabled={true} type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Environment Property by Name or ID"} data-tooltip-place={"bottom-start"}/>
+                <Tooltip id={"search"} />
+            </div>
+
+            <div className={"table-spacer"}></div>
+            <div className={"header"}>Properties</div>
+
+            <div className={"table-spacer"}></div>
+            <table className={"flo-table"}>
+                <thead className={"flo-table-head"}>
+                <tr>
+                    <th>Name</th>
+                    <th className={"table-column-hide-sm"}>Value</th>
+                    <th>
+                        <span className={"table-column-hide-sm"}>Actions</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <>
+                    {properties && properties?.map((prop, index) => {
+                        return (
+                            <tr className={"flo-table-row"} key={prop.id}>
+                                <td>{prop.name}<span className={"table-column-hide-sm flo-table-subtext"}>{prop.id}</span></td>
+                                <td className={"table-column-hide-sm"}>{prop.value}</td>
+                                <td>
+                                    <button className={"table-button"} onClick={() => deleteProperty(prop.id)}>
+                                        <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        )
+                    })}
+                    {!hasInputRow && (
+                        <tr className={"flo-table-row"} >
+                            <td colSpan={3} className={"table-row-center"}>
+                                <button className={"table-button"} onClick={() => showInputRow(true)}>
+                                    <FontAwesomeIcon icon={faPlus} /> Create new Property
+
+                                </button>
+                            </td>
+                        </tr>
+                    )}
+                    {hasInputRow && (
+                        <tr className={"flo-table-row"} >
+                            <td>
+                                <input type={"text"} placeholder={"Property name..."} autoFocus={true} value={inputEnvironmentPropertyName} onChange={changeEnvironmentPropertyName} />
+                            </td>
+                            <td>
+                                <input type={"text"} placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} />
+                            </td>
+                            <td className={"table-column-small-col"}>
+                                <button className={"table-button"} onClick={() => saveProperty()}>
+                                    <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                </button>
+                                <button className={"table-button"} onClick={() => showInputRow(false)}>
+                                    <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
+                                </button>
+                            </td>
+                        </tr>
+                    )}
+                </>
+                </tbody>
+            </table>
+
+            <div className={"table-spacer"}></div>
+            <div className={"header"}>Secrets</div>
+
+            <div className={"table-spacer"}></div>
+            <table className={"flo-table"}>
+                <thead className={"flo-table-head"}>
+                <tr>
+                    <th>Name</th>
+                    <th className={"table-column-hide-sm"}>Value</th>
+                    <th>
+                        <span className={"table-column-hide-sm"}>Actions</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <>
+                    {secrets && secrets?.map((secret, index) => {
+                        return (
+                            <tr className={"flo-table-row"} key={secret.id}>
+                                <td>{secret.name}<span className={"table-column-hide-sm flo-table-subtext"}>{secret.id}</span></td>
+                                <td className={"table-column-hide-sm"}><small>Hidden</small> </td>
+                                <td>
+                                    <button className={"table-button"} onClick={() => deleteSecret(secret.id)}>
+                                        <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        )
+                    })}
+                    {!hasSecretInputRow && (
+                        <tr className={"flo-table-row"} >
+                            <td colSpan={3} className={"table-row-center"}>
+                                <button className={"table-button"} onClick={() => showSecretInputRow(true)}>
+                                    <FontAwesomeIcon icon={faPlus} /> Create new Secret
+                                </button>
+                            </td>
+                        </tr>
+                    )}
+                    {hasSecretInputRow && (
+                        <tr className={"flo-table-row"} >
+                            <td>
+                                <input type={"text"} placeholder={"Secret name..."} autoFocus={true} value={inputEnvironmentSecretName} onChange={changeEnvironmentSecretName} />
+                            </td>
+                            <td>
+                                <input type={"text"} placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} />
+                            </td>
+                            <td className={"table-column-small-col"}>
+                                <button className={"table-button"} onClick={() => saveSecret()}>
+                                    <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                </button>
+                                <button className={"table-button"} onClick={() => showSecretInputRow(false)}>
+                                    <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
+                                </button>
+                            </td>
+                        </tr>
+                    )}
+                </>
+                </tbody>
+            </table>
+        </Container>
+    )
+}

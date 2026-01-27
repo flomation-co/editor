@@ -1,0 +1,18 @@
+[data-flume-component="stage"]{
+    /*background-color: #000;*/
+    /*background: radial-gradient(at top left, var(--background-colour), var(--primary-background));*/
+}
+
+/*[data-flume-component="node"]{*/
+/*    !*background: #000;*!*/
+/*    color: var(--primary-font-colour);*/
+/*    background: radial-gradient(at bottom right, var(--background-colour), var(--primary-background));*/
+/*}*/
+
+/*[data-flume-component="control"]{*/
+/*    background: #fff;*/
+/*}*/
+
+/*[data-flume-component="text-input"]{*/
+/*    background: var(--primary-background);*/
+/*}*/

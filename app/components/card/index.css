@@ -1,0 +1,31 @@
+.card {
+    border: 1px solid var(--primary-background);
+    min-height: 100px;
+    padding: 10px;
+    align-items: center;
+    justify-content: center;
+    display: block;
+    flex-grow: 1;
+}
+
+.card-xs {
+    flex: 1 1 0;
+}
+
+.card-sm {
+    flex: 2 1 0;
+}
+
+.card-md {
+    flex: 3 1 0;
+}
+
+.card-lg {
+    flex: 4 1 0;
+}
+
+/*@media (min-width: 1024px) {*/
+/*    .card {*/
+/*        display: flex;*/
+/*    }*/
+/*}*/

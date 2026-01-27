@@ -1,0 +1,22 @@
+.profile-ball {
+    width: 50px;
+    align-content: center;
+    justify-content: center;
+    display: flex;
+    cursor: pointer;
+}
+
+.profile-pic {
+    width: 30px;
+    height: 30px;
+    background-color: var(--primary-background);
+    border-radius: 15px;
+    color: #fff;
+    text-align: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.profile-pic-name {
+
+}
