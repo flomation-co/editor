@@ -23,7 +23,6 @@ export function meta({}: Route.MetaArgs) {
 export default function Profile() {
     const config = useConfig();
 
-
     const auth = useAuth();
     const token = useCookieToken();
 

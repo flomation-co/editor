@@ -17,7 +17,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // RG: PERFORMANCE IMPROVEMENT: cache the icon so not to re-parse on every use
     const icon = useMemo(() => {
         try {
-            return data?.config?.icon ? JSON.parse(data.config.icon) : undefined;
+            return data?.config?.icon ? data.config.icon : undefined;
         } catch {
             return undefined;
         }
@@ -49,7 +49,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 <div className={"react-flow__node-input"}>
                     {data && data.config && data.config.icon && (
                         <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={icon} size={"3x"} />
+                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
                         </div>
                     )}
 
@@ -67,7 +67,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                     {data && data.config && data.config.icon && (
                         <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={icon} size={"3x"} />
+                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
                         </div>
                     )}
 
@@ -85,7 +85,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                     {data && data.config && data.config.icon && (
                         <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={icon} size={"3x"} />
+                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
                         </div>
                     )}
 
@@ -103,7 +103,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                     {data && data.config && data.config.icon && (
                         <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={icon} size={"3x"} />
+                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
                         </div>
                     )}
 
@@ -124,7 +124,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                     {data && data.config && data.config.icon && (
                         <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={icon} size={"3x"} />
+                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
                         </div>
                     )}
 

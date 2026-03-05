@@ -81,6 +81,8 @@ export type Runner = {
     ip_address?: string,
     state?: string,
     version? : string
+    executor_version? : string
+    verified? : boolean
 }
 
 export type NodeDefinition = {

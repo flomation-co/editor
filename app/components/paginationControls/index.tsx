@@ -29,7 +29,6 @@ export function PaginationControls(props : PaginationControlsProps) {
     }
 
     useEffect(() => {
-        console.log("Current Page", currentPage);
         if (props.onPageChange) {
             props.onPageChange(currentPage-1, pageSize)
         }
