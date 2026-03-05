@@ -5,7 +5,7 @@ import axios from "axios";
 import {useEffect, useState} from "react";
 import type {Runner} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPencil, faSpinner} from "@fortawesome/free-solid-svg-icons";
+import {faPencil, faSpinner, faShield} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
 import {useSearchParams} from "react-router";
 import dayjs from "dayjs";
@@ -108,6 +108,8 @@ export default function Runners() {
                             <th className={"table-column-hide-sm"}>Registration Code</th>
                             <th className={"table-column-hide-sm"}>IP Address</th>
                             <th className={"table-column-hide-sm"}>Version</th>
+                            <th className={"table-column-hide-sm"}>Executor</th>
+                            <th className={"table-column-hide-sm"}>Verified</th>
                             <th className={"table-column-hide-sm"}>Enrolled</th>
                             <th className={"table-column-hide-sm"}>Last Contact</th>
                             <th>Actions</th>
@@ -121,6 +123,10 @@ export default function Runners() {
                                     <td className={"table-column-hide-sm"}>{r.registration_code} <FontAwesomeIcon icon={faCopy}/></td>
                                     <td className={"table-column-hide-sm"}>{r.ip_address}</td>
                                     <td className={"table-column-hide-sm"}>{r.version}</td>
+                                    <td className={"table-column-hide-sm"}>{r.executor_version}</td>
+                                    <td className={"table-column-hide-sm"}>{r.verified && (
+                                        <FontAwesomeIcon icon={faShield}/>
+                                    )}</td>
                                     <td className={"table-column-hide-sm"}>
                                         <span data-tooltip-id={"tooltip-enrolled-" + r.id} data-tooltip-content={formatDateString(r.enrolled_at)} data-tooltip-place={"bottom"}>
                                             {formatDate(r.enrolled_at)}

@@ -150,7 +150,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                         return (
                                             <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
                                                 <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={JSON.parse(nt.icon)} size={"2xl"}/>
+                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
                                                 </div>
                                                 <div className={"node-type-text-column"}>
                                                     <div className={"node-type-title"}>
@@ -178,7 +178,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                         return (
                                             <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
                                                 <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={JSON.parse(nt.icon)} size={"2xl"}/>
+                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
                                                 </div>
                                                 <div className={"node-type-text-column"}>
                                                     <div className={"node-type-title"}>
@@ -206,7 +206,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                         return (
                                             <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
                                                 <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={JSON.parse(nt.icon)} size={"2xl"}/>
+                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
                                                 </div>
                                                 <div className={"node-type-text-column"}>
                                                     <div className={"node-type-title"}>
@@ -234,7 +234,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                         return (
                                             <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
                                                 <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={JSON.parse(nt.icon)} size={"2xl"}/>
+                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
                                                 </div>
                                                 <div className={"node-type-text-column"}>
                                                     <div className={"node-type-title"}>
@@ -262,7 +262,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                         return (
                                             <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
                                                 <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={JSON.parse(nt.icon)} size={"2xl"}/>
+                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
                                                 </div>
                                                 <div className={"node-type-text-column"}>
                                                     <div className={"node-type-title"}>
