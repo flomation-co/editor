@@ -1,0 +1,15 @@
+.log-info {
+    color: #fff;
+}
+
+.log-error {
+    color: #ef6767;
+}
+
+.log-warning {
+    color: #efd467;
+}
+
+.log-debug {
+    color: #b967ef;
+}

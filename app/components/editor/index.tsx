@@ -400,7 +400,11 @@ export function Editor(props : EditorProps) {
 
     const updateEnvironment = (e) => {
         console.log("Set environment", e.target.value);
-        setEnvironment(e.target.value);
+        if (e.target.value == "No Environment") {
+            setEnvironment(null)
+        } else {
+            setEnvironment(e.target.value);
+        }
     }
 
     function triggerFlo(flo_id: string, trigger_id: string) {
@@ -453,6 +457,7 @@ export function Editor(props : EditorProps) {
                                 <div className={"flo-editor-property-action-section"}>
                                     <div className={"flo-editor-action-button"} data-tooltip-id={"tooltip-action-set-environment"} data-tooltip-content={"Select Environment"} data-tooltip-place={"bottom"}>
                                         <select id={"flo-environment"} className={"flo-editor-title-textbox"} onChange={updateEnvironment}>
+                                            <option value={null} key={"none"} selected={flo.environment_id === null}>No Environment</option>
                                             {environments.map(env => {
                                                 return <option value={env.id} key={env.id} selected={env.id === flo.environment_id}>{env.name}</option>
                                             })}
