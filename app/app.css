@@ -589,6 +589,10 @@ a.active {
   min-width: 40px;
 }
 
+.table-button-danger {
+  background-color: var(--error-action-colour);
+}
+
 @media (min-width: 1024px) {
   .table-button {
     min-width: 80px;
@@ -600,6 +604,12 @@ a.active {
 }
 
 .table-button:disabled {
+  background-color: var(--primary-background);
+  opacity: 0.25;
+}
+
+.table-button-danger:disabled {
+  background-color: var(--error-action-colour);
   opacity: 0.25;
 }
 

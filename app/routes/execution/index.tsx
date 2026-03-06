@@ -13,6 +13,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
 import {faLink} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
+import {LogOutput} from "~/components/logOutput";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -32,6 +33,8 @@ export default function ExecutionDetail() {
 
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
     const [ width, setWidth ] = useState<number>(0);
+
+    const [ logModeRaw, setLogModeRaw ] = useState<boolean>(true)
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -153,18 +156,32 @@ export default function ExecutionDetail() {
                     <div className={"code-block-label"}>
                         Logs
                     </div>
-                    <pre className={"code-block"}>
+
+                    <button className={"table-button"} disabled={logModeRaw} onClick={() => setLogModeRaw(!logModeRaw)}>
+                        Raw
+                    </button>
+                    <button className={"table-button"} disabled={!logModeRaw} onClick={() => setLogModeRaw(!logModeRaw)}>
+                        Parsed
+                    </button>
+
+                    {!logModeRaw && (
+                        <LogOutput logs={exec.result} />
+                    )}
+
+                    {logModeRaw && (
+                        <pre className={"code-block"}>
                         {!exec.result && (
                             <>
                                 &nbsp;
                             </>
                         )}
-                        {exec.result && (
-                            <>
-                                {exec.result.logs}
-                            </>
-                        )}
+                            {exec.result && (
+                                <>
+                                    {exec.result.logs}
+                                </>
+                            )}
                     </pre>
+                    )}
                 </>
             )}
         </Container>

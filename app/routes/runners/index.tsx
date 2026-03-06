@@ -5,11 +5,11 @@ import axios from "axios";
 import {useEffect, useState} from "react";
 import type {Runner} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPencil, faSpinner, faShield} from "@fortawesome/free-solid-svg-icons";
+import {faPencil, faSpinner, faShield, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
 import {useSearchParams} from "react-router";
 import dayjs from "dayjs";
-import {faCheck, faCopy} from "@fortawesome/pro-solid-svg-icons";
+import { faCopy, faPause} from "@fortawesome/pro-solid-svg-icons";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import useCookieToken from "~/components/cookie";
@@ -142,6 +142,12 @@ export default function Runners() {
                                     <td>
                                         <button disabled={true || r.state != "active"} className={"table-button"}>
                                             <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
+                                        </button>
+                                        <button disabled={true} className={"table-button"}>
+                                            <FontAwesomeIcon icon={faPause}/> <span>Pause</span>
+                                        </button>
+                                        <button disabled={true} className={"table-button table-button-danger"}>
+                                            <FontAwesomeIcon icon={faTrash}/> <span>Remove</span>
                                         </button>
                                     </td>
                                 </tr>
