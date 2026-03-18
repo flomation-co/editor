@@ -130,6 +130,44 @@ publish-deb:
     - inject-metadata
     - build-deb
 
+publish-rpm-8-live:
+  extends: .publish-rpm-template
+  variables:
+    RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el8*.rpm"
+    EL_VERSION: "8"
+    CI_TEMPLATES_REF: "main"
+    S3_ACCESS_KEY_PARAM: ${S3_ACCESS_KEY_PARAM_DEV}
+    S3_SECRET_KEY_PARAM: ${S3_SECRET_KEY_PARAM_DEV}
+    PUBLISH_BUCKET: ${AWS_PACKAGE_BUCKET_LIVE}
+  needs:
+    - inject-metadata
+    - build-rpm-8
+
+publish-rpm-9-live:
+  extends: .publish-rpm-template
+  variables:
+    RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el9*.rpm"
+    EL_VERSION: "9"
+    CI_TEMPLATES_REF: "main"
+    S3_ACCESS_KEY_PARAM: ${S3_ACCESS_KEY_PARAM_DEV}
+    S3_SECRET_KEY_PARAM: ${S3_SECRET_KEY_PARAM_DEV}
+    PUBLISH_BUCKET: ${AWS_PACKAGE_BUCKET_LIVE}
+  needs:
+    - inject-metadata
+    - build-rpm-9
+
+publish-deb-live:
+  extends: .publish-deb-template
+  variables:
+    DEB_FILE_PATTERN: "${PACKAGE_NAME}_*.deb"
+    CI_TEMPLATES_REF: "main"
+    S3_ACCESS_KEY_PARAM: ${S3_ACCESS_KEY_PARAM_DEV}
+    S3_SECRET_KEY_PARAM: ${S3_SECRET_KEY_PARAM_DEV}
+    PUBLISH_BUCKET: ${AWS_PACKAGE_BUCKET_LIVE}
+  needs:
+    - inject-metadata
+    - build-deb
+
 publish:
   stage: publish
   only:
