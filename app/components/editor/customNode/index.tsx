@@ -13,6 +13,22 @@ import { BaseNode } from "~/components/base-node";
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
 library.add(fab, fas);
 
+const NODE_COLOURS: Record<number, { bg: string; glow: string; text: string }> = {
+    1: { bg: '#00aa9c', glow: 'rgba(0,170,156,0.35)', text: '#00aa9c' },   // Trigger
+    2: { bg: '#8b00de', glow: 'rgba(139,0,222,0.35)', text: '#8b00de' },   // Action
+    3: { bg: '#00aa9c', glow: 'rgba(0,170,156,0.35)', text: '#00aa9c' },   // Output
+    4: { bg: '#efd467', glow: 'rgba(239,212,103,0.35)', text: '#efd467' },  // Conditional
+    5: { bg: '#b967ef', glow: 'rgba(185,103,239,0.35)', text: '#b967ef' },  // Loop
+};
+
+const NODE_CLASS_MAP: Record<number, string> = {
+    1: 'flo-node flo-node--trigger',
+    2: 'flo-node flo-node--action',
+    3: 'flo-node flo-node--output',
+    4: 'flo-node flo-node--conditional',
+    5: 'flo-node flo-node--loop',
+};
+
 const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // RG: PERFORMANCE IMPROVEMENT: cache the icon so not to re-parse on every use
     const icon = useMemo(() => {
@@ -23,119 +39,74 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
         }
     }, [data?.config?.icon]);
 
-    const onChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
-        console.log(data.config, evt.target.id, evt.target.value);
-    }, []);
-
-    const isRunning = data && data.config && data.running || false;
+    const type = data?.config?.type ?? 2;
+    const colours = NODE_COLOURS[type] ?? NODE_COLOURS[2];
+    const nodeClass = NODE_CLASS_MAP[type] ?? NODE_CLASS_MAP[2];
+    const hasInputs = data?.config?.inputs && data.config.inputs.length > 0;
+    const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     return (
         <>
-            <div className={"node-name"}>
-                {data.config && data.config.name && (
-                    <>
-                        {data.config.name}
-                    </>
+            <div className="node-name">
+                {data.config?.name && (
+                    <>{data.config.name}</>
                 )}
-
-                {data.config && data.config.label && (
-                    <div className={"node-label"}>
+                {data.config?.label && (
+                    <div className="node-label">
                         {data.config.label}
                     </div>
                 )}
             </div>
 
-            {data && data.config && data.config.type == 1 && (
-                <div className={"react-flow__node-input"}>
-                    {data && data.config && data.config.icon && (
-                        <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
-                        </div>
-                    )}
+            <div className={nodeClass}>
+                {hasInputs && (
+                    <Handle type="target" position={Position.Left} />
+                )}
 
-                    {data.config && data.config.outputs && data.config.outputs.length > 0 && (
-                        <Handle type="source" position={Position.Right} />
-                    )}
-                </div>
-            )}
+                {icon && (
+                    <div
+                        className="node-icon-badge"
+                        style={{
+                            backgroundColor: colours.bg,
+                            boxShadow: `0 0 10px ${colours.glow}`,
+                        }}
+                    >
+                        <FontAwesomeIcon
+                            icon={["fa-solid", "fa-" + icon]}
+                            style={{ fontSize: '16px', color: '#fff' }}
+                        />
+                    </div>
+                )}
 
-            {data && data.config && data.config.type == 2 && (
-                <div className={"react-flow__node-custom-node"}>
-                    {data && data.config && data.config.inputs && data.config.inputs.length > 0 && (
-                        <Handle type="target" position={Position.Left} />
-                    )}
+                <span className="node-inline-label">
+                    {data.config?.label || data.config?.name || ''}
+                </span>
 
-                    {data && data.config && data.config.icon && (
-                        <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
-                        </div>
-                    )}
+                {/* Standard source handle for types 1, 2, 3 */}
+                {type !== 4 && type !== 5 && hasOutputs && (
+                    <Handle
+                        type="source"
+                        position={Position.Right}
+                        {...(type === 3 ? { id: "input" } : {})}
+                    />
+                )}
 
-                    {data.config && data.config.outputs && data.config.outputs.length > 0 && (
-                        <Handle type="source" position={Position.Right} />
-                    )}
-                </div>
-            )}
+                {/* Conditional (type 4): True/False branching handles */}
+                {type === 4 && hasOutputs && (
+                    <div className="handle-wrapper">
+                        <LabeledHandle type="source" position={Position.Right} id="true-branch" title="True" />
+                        <LabeledHandle type="source" position={Position.Right} id="false-branch" title="False" />
+                    </div>
+                )}
 
-            {data && data.config && data.config.type == 3 && (
-                <div className={"react-flow__node-output"}>
-                    {data && data.config && data.config.inputs && data.config.inputs.length > 0 && (
-                        <Handle type="target" position={Position.Left} />
-                    )}
-
-                    {data && data.config && data.config.icon && (
-                        <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
-                        </div>
-                    )}
-
-                    {data.config && data.config.outputs && data.config.outputs.length > 0 && (
-                        <Handle type="source" position={Position.Right} id={"input"}/>
-                    )}
-                </div>
-            )}
-
-            {data && data.config && data.config.type == 4 && (
-                <div className={"react-flow__node-conditional"}>
-                    {data && data.config && data.config.inputs && data.config.inputs.length > 0 && (
-                        <Handle type="target" position={Position.Left} />
-                    )}
-
-                    {data && data.config && data.config.icon && (
-                        <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
-                        </div>
-                    )}
-
-                    {data.config && data.config.outputs && data.config.outputs.length > 0 && (
-                        <div className={"handle-wrapper"}>
-                            <LabeledHandle type="source" position={Position.Right} id={"true-branch"} title={"True"} />
-                            <LabeledHandle type="source" position={Position.Right} id={"false-branch"} title={"False"} />
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {data && data.config && data.config.type == 5 && (
-                <div className={"react-flow__node-looping"}>
-                    {data && data.config && data.config.inputs && data.config.inputs.length > 0 && (
-                        <Handle type="target" position={Position.Left} />
-                    )}
-
-                    {data && data.config && data.config.icon && (
-                        <div className={"node-collapsed-title" }>
-                            <FontAwesomeIcon icon={["fa-solid", "fa-" + icon]} size={"3x"} />
-                        </div>
-                    )}
-
-                    {data.config && data.config.outputs && data.config.outputs.length > 0 && (
-                        <>
-                            <Handle type="source" position={Position.Bottom} id={"loop"} />
-                            <Handle type="source" position={Position.Right} id={"output"} />
-                        </>
-                    )}
-                </div>
-            )}
+                {/* Loop (type 5): Bottom + Right handles */}
+                {type === 5 && hasOutputs && (
+                    <>
+                        <Handle type="source" position={Position.Bottom} id="loop" />
+                        <Handle type="source" position={Position.Right} id="output" />
+                    </>
+                )}
+            </div>
         </>
     );
 });

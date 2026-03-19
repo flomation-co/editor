@@ -514,7 +514,7 @@ export function Editor(props : EditorProps) {
                                         minZoom={0.1}
                                         defaultEdgeOptions={defaultEdgeOptions}
                                     >
-                                        <Background color="#4b5563" variant={BackgroundVariant.Dots} bgColor={"#111827"} />
+                                        <Background color="#333" variant={BackgroundVariant.Dots} bgColor={"#0a0a0a"} />
                                         <>
                                             {showMiniMap && (
                                                 <MiniMap position={"top-left"} />

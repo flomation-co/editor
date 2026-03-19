@@ -16,18 +16,15 @@
 
   --primary-input-colour: #17202e;
 
-  --xy-node-border-radius: 3px;
-  /*--xy-node-border: 1px solid rgb(60, 60, 60);*/
-  /*--xy-node-border: 1px solid rgb(203, 203, 203);*/
-  --xy-node-border: 1px solid #4b5563;
+  --xy-node-border-radius: 10px;
+  --xy-node-border: 1px solid rgba(255,255,255,0.06);
   --xy-minimap-background-color: #525252;
   --xy-edge-stroke: #9d9d9d;
   --xy-edge-stroke-selected: #fff;
-  --xy-selected-colour: 80, 0, 166;
-  --xy-selected-shadow: 0px 0px 20px 10px rgba(var(--xy-selected-colour), 0.75);
-  /*--xy-node-background-color: rgb(68, 68, 68);*/
-  --xy-node-background-color: #1f2937;
-  --xy-background-dot-colour: #666;
+  --xy-selected-colour: 139, 0, 222;
+  --xy-selected-shadow: 0px 0px 14px 4px rgba(var(--xy-selected-colour), 0.35);
+  --xy-node-background-color: #131313;
+  --xy-background-dot-colour: #333;
 
   --xy-success-colour: rgba(17, 255, 0, 0.75);
   --xy-error-colour: rgba(255, 0, 0, 0.75);
