@@ -21,6 +21,9 @@ export type Trigger = {
     organisation_id?: string,
     created_at?: string,
     type: string,
+    type_name?: string,
+    data?: object,
+    flo_id?: string,
 }
 
 export type Execution = {
