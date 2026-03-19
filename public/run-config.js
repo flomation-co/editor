@@ -1,7 +1,7 @@
 const local = {
-    AUTOMATE_API_URL: 'http://localhost:8080',
+    AUTOMATE_API_URL: 'http://localhost:9080',
     TRIGGER_URL: 'http://localhost:8081',
-    LOGIN_URL: 'http://localhost:8081',
+    LOGIN_URL: 'http://localhost:8999',
 }
 
 const dev = {
