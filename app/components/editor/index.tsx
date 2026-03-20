@@ -1,7 +1,7 @@
 import "./index.css"
 import "./nodes.css"
 import type {Flo, Environment} from "~/types";
-import {useState, useCallback, useEffect, useMemo} from "react";
+import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -195,32 +195,45 @@ export function Editor(props : EditorProps) {
         }
     }, [ name, viewport, environment ]);
 
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     useEffect(() => {
         setNeedsUpdate(true);
 
-        if (flo && !dragging && !propertyMenuVisible) {
-            // console.log("nodes", nodes);
-
+        if (flo && !dragging) {
             setStatus("Updating...");
-            axios.post(API_URL + '/api/v1/flo/' + flo.id + '/revision', {
-                data: {
-                    nodes: nodes,
-                    edges: edges
-                },
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": "Bearer " + token,
-                }
-            })
-                .then(() => {
-                    setStatus("Up to Date");
+
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
+
+            saveTimerRef.current = setTimeout(() => {
+                axios.post(API_URL + '/api/v1/flo/' + flo.id + '/revision', {
+                    data: {
+                        nodes: nodes,
+                        edges: edges
+                    },
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": "Bearer " + token,
+                    }
                 })
-                .catch(error => {
-                    console.error(error);
-                })
+                    .then(() => {
+                        setStatus("Up to Date");
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    })
+            }, 500);
         }
-    }, [ nodes, edges, flo, dragging, propertyMenuVisible ]);
+
+        return () => {
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
+        };
+    }, [ nodes, edges, flo, dragging ]);
 
     const handleNameChange = useCallback((e) => {
         setName(e.target.value);
@@ -331,40 +344,38 @@ export function Editor(props : EditorProps) {
     }, [ setMenuVisible ])
 
     const onValueChange = useCallback((id: string, property: string, value: any) => {
-        for (let n = 0; n < nodes.length; n++) {
-            if (!nodes[n].data.config.inputs) {
-                continue;
-            }
-
-            if (nodes[n].id !== id) {
-                continue;
-            }
-
-
-            for (let i = 0; i < nodes[n].data.config.inputs.length; i++) {
-                if (nodes[n].data.config.inputs[i].name === property) {
-                    nodes[n].data.config.inputs[i].value = value;
-                }
-            }
-        }
-    }, [ nodes ])
+        setNodes((prev) => prev.map((node) => {
+            if (node.id !== id || !node.data.config.inputs) return node;
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    config: {
+                        ...node.data.config,
+                        inputs: node.data.config.inputs.map((input) =>
+                            input.name === property ? { ...input, value } : input
+                        ),
+                    },
+                },
+            };
+        }));
+    }, [setNodes])
 
     const onNameChange = useCallback((id: string, value: any) => {
-        for (let n = 0; n < nodes.length; n++) {
-            if (!nodes[n].data.config.inputs) {
-                continue;
-            }
-
-            if (nodes[n].id !== id) {
-                continue;
-            }
-
-            for (let i = 0; i < nodes[n].data.config.inputs.length; i++) {
-                nodes[n].data.config.label = value;
-            }
-
-        }
-    }, [ nodes ])
+        setNodes((prev) => prev.map((node) => {
+            if (node.id !== id) return node;
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    config: {
+                        ...node.data.config,
+                        label: value,
+                    },
+                },
+            };
+        }));
+    }, [setNodes])
 
     const defaultEdgeOptions = useMemo(() => {
         return {
