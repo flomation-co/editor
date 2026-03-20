@@ -13,12 +13,12 @@ import { BaseNode } from "~/components/base-node";
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
 library.add(fab, fas);
 
-const NODE_COLOURS: Record<number, { bg: string; glow: string; text: string }> = {
-    1: { bg: '#00aa9c', glow: 'rgba(0,170,156,0.35)', text: '#00aa9c' },   // Trigger
-    2: { bg: '#8b00de', glow: 'rgba(139,0,222,0.35)', text: '#8b00de' },   // Action
-    3: { bg: '#00aa9c', glow: 'rgba(0,170,156,0.35)', text: '#00aa9c' },   // Output
-    4: { bg: '#efd467', glow: 'rgba(239,212,103,0.35)', text: '#efd467' },  // Conditional
-    5: { bg: '#b967ef', glow: 'rgba(185,103,239,0.35)', text: '#b967ef' },  // Loop
+const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
+    1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
+    2: { bg: '#8b00de', bgAlpha: 'rgba(70,0,112,0.3)',     glow: 'rgba(139,0,222,0.35)',   text: '#8b00de', iconColour: '#b49eed' },   // Action
+    3: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Output
+    4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', text: '#efd467', iconColour: '#efd467' },  // Conditional
+    5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', text: '#b967ef', iconColour: '#b967ef' },  // Loop
 };
 
 const NODE_CLASS_MAP: Record<number, string> = {
@@ -58,7 +58,13 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 )}
             </div>
 
-            <div className={nodeClass}>
+            <div
+                className={nodeClass}
+                style={{
+                    '--node-colour': colours.bg,
+                    '--node-glow': colours.glow,
+                } as React.CSSProperties}
+            >
                 {hasInputs && (
                     <Handle type="target" position={Position.Left} />
                 )}
@@ -67,13 +73,13 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     <div
                         className="node-icon-badge"
                         style={{
-                            backgroundColor: colours.bg,
-                            boxShadow: `0 0 10px ${colours.glow}`,
+                            backgroundColor: colours.bgAlpha,
+                            boxShadow: `0 0 14px ${colours.glow}`,
                         }}
                     >
                         <FontAwesomeIcon
                             icon={["fa-solid", "fa-" + icon]}
-                            style={{ fontSize: '16px', color: '#fff' }}
+                            style={{ fontSize: '16px', color: colours.iconColour }}
                         />
                     </div>
                 )}
