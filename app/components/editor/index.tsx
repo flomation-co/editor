@@ -417,6 +417,12 @@ export function Editor(props : EditorProps) {
         }));
     }, [setNodes])
 
+    const hasValidationErrors = useMemo(() => {
+        return nodes.some(node =>
+            node.data?.config?.inputs?.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')))
+        );
+    }, [nodes]);
+
     const defaultEdgeOptions = useMemo(() => {
         return {
             type: "simplebezier",
@@ -547,8 +553,15 @@ export function Editor(props : EditorProps) {
                             </div>
                             <div className={"flo-editor-property-action-section"}>
                                 {id && (
-                                    <a onClick={() => {triggerFlo(id, 'default')}} className={"flo-editor-property-action-button"}>
+                                    <a
+                                        onClick={() => { if (!hasValidationErrors) triggerFlo(id, 'default') }}
+                                        className={`flo-editor-property-action-button${hasValidationErrors ? ' flo-editor-property-action-button--disabled' : ''}`}
+                                        data-tooltip-id={"tooltip-action-execute"}
+                                        data-tooltip-content={hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo"}
+                                        data-tooltip-place={"bottom"}
+                                    >
                                         <FontAwesomeIcon icon={faPlay}/> <span className={"hide-sm"}>Execute Flo</span>
+                                        <Tooltip id={"tooltip-action-execute"} />
                                     </a>
                                 )}
                             </div>

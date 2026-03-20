@@ -12,6 +12,7 @@ import StringProperty from "~/components/propertyMenu/stringProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
+import SelectProperty from "~/components/propertyMenu/selectProperty";
 
 type PropertyMenuProps = {
     node: object;
@@ -88,6 +89,21 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 </div>
                                 {props.node.data.config.inputs && (
                                     props.node.data.config.inputs.map(i => {
+                                        if (i.options && i.options.length > 0) {
+                                            return (
+                                                <SelectProperty
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    key={i.name}
+                                                    value={i.value}
+                                                    options={i.options}
+                                                    required={i.required}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            )
+                                        }
+
                                         switch (i.type) {
                                             case "qr":
                                                 return (
@@ -105,6 +121,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
+                                                        required={i.required}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -118,6 +135,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
+                                                        required={i.required}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -131,6 +149,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
+                                                        required={i.required}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -143,6 +162,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
+                                                        required={i.required}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -156,6 +176,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
+                                                        required={i.required}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )

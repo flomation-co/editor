@@ -66,13 +66,20 @@ export type Flo = {
     environment_name?: string,
 }
 
+export type ParameterOption = {
+    name: string,
+    value: string
+}
+
 export type ParameterDefinition = {
     id?: string,
     name: string,
     type: string,
     placeholder?: string,
     value: string,
-    label?: string
+    label?: string,
+    required?: boolean,
+    options?: ParameterOption[]
 }
 
 export type Runner = {

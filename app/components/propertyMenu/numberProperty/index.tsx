@@ -6,6 +6,7 @@ type PropertyProps = {
     placeholder: string;
     label: string;
     value: string;
+    required?: boolean;
     onValueChange?: (property: string, value: any) => void;
 }
 
@@ -25,7 +26,7 @@ const NumberProperty = (props: PropertyProps) => {
 
     return (
         <div className={"property-menu-input-row"} key={props.name} >
-            <div className={"property-menu-input-name"} >{props.label ? props.label : props.name}</div>
+            <div className={"property-menu-input-name"} >{props.label ? props.label : props.name}{props.required && <span className="property-menu-required"> *</span>}</div>
             <input placeholder={props.placeholder} type={"number"} value={value} onChange={(e) => {
                 setValue(e.target.value);
             }}/>

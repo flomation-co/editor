@@ -45,6 +45,18 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const hasInputs = data?.config?.inputs && data.config.inputs.length > 0;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
+    const hasIncompleteRequired = useMemo(() => {
+        if (!data?.config?.inputs) return false;
+        return data.config.inputs.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
+    }, [data?.config?.inputs]);
+
+    const effectiveColours = hasIncompleteRequired
+        ? { ...colours, bg: '#e6a817', glow: 'rgba(230,168,23,0.35)' }
+        : colours;
+    const effectiveClass = hasIncompleteRequired
+        ? `${nodeClass} flo-node--invalid`
+        : nodeClass;
+
     return (
         <>
             <div className="node-name">
@@ -59,10 +71,10 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
             </div>
 
             <div
-                className={nodeClass}
+                className={effectiveClass}
                 style={{
-                    '--node-colour': colours.bg,
-                    '--node-glow': colours.glow,
+                    '--node-colour': effectiveColours.bg,
+                    '--node-glow': effectiveColours.glow,
                 } as React.CSSProperties}
             >
                 {hasInputs && (
