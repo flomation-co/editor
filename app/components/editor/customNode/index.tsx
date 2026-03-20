@@ -78,7 +78,11 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 } as React.CSSProperties}
             >
                 {hasInputs && (
-                    <Handle type="target" position={Position.Left} />
+                    <Handle
+                        type="target"
+                        position={Position.Left}
+                        {...(type === 4 ? { style: { top: '100%' } } : {})}
+                    />
                 )}
 
                 {icon && (
@@ -109,11 +113,11 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     />
                 )}
 
-                {/* Conditional (type 4): True/False branching handles at diamond points */}
+                {/* Conditional (type 4): True/False handles at diamond edges */}
                 {type === 4 && hasOutputs && (
                     <>
-                        <Handle type="source" position={Position.Right} id="true-branch" />
-                        <Handle type="source" position={Position.Bottom} id="false-branch" />
+                        <Handle type="source" position={Position.Top} id="true-branch" />
+                        <Handle type="source" position={Position.Right} id="false-branch" />
                         <span className="diamond-label diamond-label--true">T</span>
                         <span className="diamond-label diamond-label--false">F</span>
                     </>
