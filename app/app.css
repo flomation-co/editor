@@ -606,7 +606,6 @@ a.active {
 }
 
 .property-menu-delete button {
-  width: 100%;
   padding: 6px 12px;
   background: transparent;
   color: rgba(190, 0, 0, 0.5);
