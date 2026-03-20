@@ -222,8 +222,34 @@
 
 .flo-node--conditional {
     border-color: rgba(239,212,103,0.25);
-    border-radius: 24px;
-    padding: 10px 22px 10px 18px;
+    border-radius: 4px;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    min-width: unset;
+    transform: rotate(45deg);
+    justify-content: center;
+    gap: 0;
+}
+
+/* Counter-rotate content so icon/label read horizontally */
+.flo-node--conditional .node-icon-badge {
+    transform: rotate(-45deg);
+}
+
+/* Hide inline label inside diamond — name shows above the node */
+.flo-node--conditional .node-inline-label {
+    display: none;
+}
+
+/* Counter-rotate handles so they connect at correct positions */
+.flo-node--conditional .react-flow__handle {
+    transform: rotate(-45deg);
+}
+
+/* Counter-rotate labeled handle wrappers */
+.flo-node--conditional .relative {
+    transform: rotate(-45deg);
 }
 
 .flo-node--loop {

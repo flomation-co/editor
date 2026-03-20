@@ -109,12 +109,12 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     />
                 )}
 
-                {/* Conditional (type 4): True/False branching handles */}
+                {/* Conditional (type 4): True/False branching handles on diamond points */}
                 {type === 4 && hasOutputs && (
-                    <div className="handle-wrapper">
-                        <LabeledHandle type="source" position={Position.Right} id="true-branch" title="True" />
-                        <LabeledHandle type="source" position={Position.Right} id="false-branch" title="False" />
-                    </div>
+                    <>
+                        <LabeledHandle type="source" position={Position.Top} id="true-branch" title="T" />
+                        <LabeledHandle type="source" position={Position.Bottom} id="false-branch" title="F" />
+                    </>
                 )}
 
                 {/* Loop (type 5): Bottom + Right handles */}
