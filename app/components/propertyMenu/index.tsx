@@ -14,8 +14,6 @@ import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 
 type PropertyMenuProps = {
-    x?: number;
-    y?: number;
     node: object;
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
@@ -68,103 +66,105 @@ const PropertyMenu = (props: PropertyMenuProps) => {
             )}
 
             {!loading && (
-                // <div className={"property-menu-background"}>
-                    <div className={"property-menu"} style={{top: props.y + "px", left: props.x + "px"}} >
-                        <div className={"property-menu-content"}>
-                            {props.node && props.node.data && props.node.data.config && (
-                                <>
-                                    <div className={"property-menu-title"} >
-                                        {props.node.data.config.name}
-                                    </div>
-                                    <div className={"property-divider"}></div>
-                                    <div className={"property-menu-input-row"} >
-                                        <div className={"property-menu-input-name"} >Name</div>
-                                        <input placeholder={"Name"} type={"text"} value={name} onChange={(e) => {
-                                            console.log('name change', e.target.value);
-                                            setName(e.target.value);
-                                        }}/>
-                                    </div>
-                                    {props.node.data.config.inputs && (
-                                        props.node.data.config.inputs.map(i => {
-                                            switch (i.type) {
-                                                case "qr":
-                                                    return (
-                                                        <QRProperty
-                                                            id={props.node.data.id}
-                                                        />
-                                                    )
+                <div className={"property-menu"} onClick={(e) => e.stopPropagation()}>
+                    {props.node && props.node.data && props.node.data.config && (
+                        <>
+                            <div className={"property-menu-header"}>
+                                <div className={"property-menu-header-title"}>
+                                    {props.node.data.config.name}
+                                </div>
+                                <button className={"property-menu-close"} onClick={handleDismiss}>
+                                    <FontAwesomeIcon icon={["fas", "xmark"]} />
+                                </button>
+                            </div>
+                            <div className={"property-menu-content"}>
+                                <div className={"property-menu-input-row"} >
+                                    <div className={"property-menu-input-name"} >Name</div>
+                                    <input placeholder={"Name"} type={"text"} value={name} onChange={(e) => {
+                                        console.log('name change', e.target.value);
+                                        setName(e.target.value);
+                                    }}/>
+                                </div>
+                                {props.node.data.config.inputs && (
+                                    props.node.data.config.inputs.map(i => {
+                                        switch (i.type) {
+                                            case "qr":
+                                                return (
+                                                    <QRProperty
+                                                        id={props.node.data.id}
+                                                    />
+                                                )
 
-                                                case "string":
-                                                    return (
-                                                        <StringProperty
-                                                            nodeId={props.node.data.id}
-                                                            name={i.name}
-                                                            placeholder={i.placeholder}
-                                                            label={i.label}
-                                                            key={i.name}
-                                                            value={i.value}
-                                                            onValueChange={onValueChange}
-                                                        />
-                                                    )
+                                            case "string":
+                                                return (
+                                                    <StringProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={i.name}
+                                                        value={i.value}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
 
-                                                case "text":
-                                                    return (
-                                                        <TextProperty
-                                                            nodeId={props.node.data.id}
-                                                            name={i.name}
-                                                            placeholder={i.placeholder}
-                                                            label={i.label}
-                                                            key={i.name}
-                                                            value={i.value}
-                                                            onValueChange={onValueChange}
-                                                        />
-                                                    )
+                                            case "text":
+                                                return (
+                                                    <TextProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={i.name}
+                                                        value={i.value}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
 
-                                                case "number":
-                                                    return (
-                                                        <NumberProperty
-                                                            nodeId={props.node.data.id}
-                                                            name={i.name}
-                                                            placeholder={i.placeholder}
-                                                            label={i.label}
-                                                            key={i.name}
-                                                            value={i.value}
-                                                            onValueChange={onValueChange}
-                                                        />
-                                                    )
+                                            case "number":
+                                                return (
+                                                    <NumberProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={i.name}
+                                                        value={i.value}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
 
-                                                case "boolean":
-                                                    return (
-                                                        <BooleanProperty
-                                                            name={i.name}
-                                                            placeholder={i.placeholder}
-                                                            label={i.label}
-                                                            key={i.name}
-                                                            value={i.value}
-                                                            onValueChange={onValueChange}
-                                                        />
-                                                    )
+                                            case "boolean":
+                                                return (
+                                                    <BooleanProperty
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={i.name}
+                                                        value={i.value}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
 
-                                                default:
-                                                    return (
-                                                        <StringProperty
-                                                            nodeId={props.node.data.id}
-                                                            name={i.name}
-                                                            placeholder={i.placeholder}
-                                                            label={i.label}
-                                                            key={i.name}
-                                                            value={i.value}
-                                                            onValueChange={onValueChange}
-                                                        />
-                                                    )
-                                            }
-                                        })
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </div>
-                // </div>
+                                            default:
+                                                return (
+                                                    <StringProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={i.name}
+                                                        value={i.value}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+                                        }
+                                    })
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
             )}
         </>
     );

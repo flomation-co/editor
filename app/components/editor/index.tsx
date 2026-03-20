@@ -273,13 +273,22 @@ export function Editor(props : EditorProps) {
         }
     }, 500), [ setViewport, rfInstance ]);
 
+    const graphRef = useRef<HTMLDivElement>(null);
+
     const onContextMenuOpen = useCallback((e) => {
         if (e) {
             e.preventDefault();
-            menuXRef.current = e.pageX;
-            menuYRef.current = e.pageY;
-            setMenuXLocation(e.pageX);
-            setMenuYLocation(e.pageY);
+            menuXRef.current = e.clientX;
+            menuYRef.current = e.clientY;
+
+            const rect = graphRef.current?.getBoundingClientRect();
+            if (rect) {
+                setMenuXLocation(e.clientX - rect.left);
+                setMenuYLocation(e.clientY - rect.top);
+            } else {
+                setMenuXLocation(e.clientX);
+                setMenuYLocation(e.clientY);
+            }
         }
 
         setMenuVisible(true);
@@ -422,8 +431,16 @@ export function Editor(props : EditorProps) {
     const showAddNode = useCallback(() => {
         menuXRef.current = 0;
         menuYRef.current = 0;
-        setMenuXLocation(0);
-        setMenuYLocation(0);
+
+        const rect = graphRef.current?.getBoundingClientRect();
+        if (rect) {
+            setMenuXLocation(rect.width / 2 - 160);
+            setMenuYLocation(rect.height / 3);
+        } else {
+            setMenuXLocation(0);
+            setMenuYLocation(0);
+        }
+
         onContextMenuOpen(null);
     }, [])
 
@@ -520,7 +537,7 @@ export function Editor(props : EditorProps) {
                             </div>
                         </div>
                         <div className={"flo-editor"}>
-                            <div className={"flo-editor-graph"}>
+                            <div className={"flo-editor-graph"} ref={graphRef}>
                                 <ReactFlowProvider>
                                     <ReactFlow
                                         onClick={(e) => {onContextMenuClose(e); setDragging(false)}}
@@ -532,11 +549,11 @@ export function Editor(props : EditorProps) {
                                         onEdgesChange={onEdgesChange}
                                         onConnect={onConnect}
                                         onInit={onInit}
-                                        onMove={() => {setPropertyMenuVisible(false); debouncedMove()}}
-                                        onMoveStart={() => {setPropertyMenuVisible(false); setDragging(true)}}
-                                        onMoveEnd={() => {setPropertyMenuVisible(false); setDragging(false)}}
+                                        onMove={() => {debouncedMove()}}
+                                        onMoveStart={() => {setDragging(true)}}
+                                        onMoveEnd={() => {setDragging(false)}}
                                         onNodeDragStart={() => {setPropertyMenuVisible(false); setMenuVisible(false); setDragging(true)}}
-                                        onNodeDragStop={() => {setPropertyMenuVisible(false); setMenuVisible(false); setDragging(false)}}
+                                        onNodeDragStop={() => {setMenuVisible(false); setDragging(false)}}
                                         onSelectionChange={onSelectionChange}
                                         nodeTypes={nodeTypes}
                                         snapToGrid={snapToGrid}
@@ -554,7 +571,11 @@ export function Editor(props : EditorProps) {
                                 {menuVisible && (
                                     <ContextMenu
                                         visible={menuVisible}
+                                        x={menuXLocation}
+                                        y={menuYLocation}
+                                        isMobile={isMobile}
                                         onNodeAdd={onNodeAdd}
+                                        onClose={() => setMenuVisible(false)}
                                         plugins={plugins}
                                     />
                                 )}

@@ -341,29 +341,109 @@ textarea {
   backdrop-filter: blur(10px);
 }
 
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpProperty {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .property-menu {
+  position: absolute;
   z-index: 1000;
-  position: relative;
-  top: 0;
-  right: 0;
-  border-radius: 5px;
+  top: 16px;
+  right: 16px;
+  width: 320px;
+  max-height: calc(100% - 32px);
+  background: #131313;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   font-size: 12px;
   color: #fff;
   text-align: left;
-  border: 1px solid var(--primary-background);
-  min-width: 300px;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: floatIn 0.15s ease-out;
+}
+
+.property-menu-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  gap: 8px;
+}
+
+.property-menu-header-title {
+  flex: 1;
+  font-size: 1.2em;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+}
+
+.property-menu-close {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.property-menu-close:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
 }
 
 .property-menu-content {
-  overflow-y: scroll;
-  height: 100%;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 12px;
 }
 
 .property-menu-title {
   text-align: center;
   padding: 10px;
   font-size: 1.2em;
+}
+
+@media (max-width: 768px) {
+  .property-menu {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 55vh;
+    border-radius: 14px 14px 0 0;
+    animation: slideUpProperty 0.2s ease-out;
+  }
 }
 
 .property-menu-input-row {

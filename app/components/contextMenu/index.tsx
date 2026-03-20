@@ -13,7 +13,9 @@ type ContextMenuProps = {
     visible: boolean
     x?: number;
     y?: number;
+    isMobile?: boolean;
     onNodeAdd?: (nodeType: string) => void;
+    onClose?: () => void;
     plugins: PluginDefinition[];
 }
 
@@ -50,11 +52,20 @@ const ContextMenu = (props: ContextMenuProps) => {
         }
     }, [props.visible]);
 
+    const positionStyle = (!props.isMobile && props.x !== undefined && props.y !== undefined)
+        ? { top: props.y + "px", left: props.x + "px" }
+        : {};
+
     return (
         <>
             {props.visible && (
-                <div className={"context-menu"} style={{top: props.y + "px", left: props.x + "px"}} >
-                    <input placeholder={"Search for Trigger, Action or Output..."} onChange={onSearchChange} />
+                <div className={"context-menu"} style={positionStyle} onClick={(e) => e.stopPropagation()}>
+                    <div className={"context-menu-header"}>
+                        <input placeholder={"Search for Trigger, Action or Output..."} onChange={onSearchChange} autoFocus />
+                        <button className={"context-menu-close"} onClick={props.onClose}>
+                            <FontAwesomeIcon icon={["fas", "xmark"]} />
+                        </button>
+                    </div>
                     {currentPage != Page.Root && (
                         <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Root)} key={"triggers"}>
                             <div className={"node-type-icon-column"}>
