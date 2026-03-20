@@ -581,7 +581,7 @@ export function Editor(props : EditorProps) {
                                 )}
 
 
-                               {propertyMenuVisible && !dragging && (
+                               {propertyMenuVisible && (
                                     <PropertyMenu
                                         node={propertyNode}
                                         onValueChange={onValueChange}
