@@ -60,6 +60,8 @@ export function Editor(props : EditorProps) {
     const [ menuVisible, setMenuVisible ] = useState<boolean>(false);
     const [ menuXLocation, setMenuXLocation ] = useState<number>(0);
     const [ menuYLocation, setMenuYLocation ] = useState<number>(0);
+    const menuXRef = useRef<number>(0);
+    const menuYRef = useRef<number>(0);
     const [ snapToGrid, setSnapToGrid ] = useState<boolean>(false);
     const [ showMiniMap, setShowMiniMap ] = useState<boolean>(true);
     const [ needsUpdate, setNeedsUpdate ] = useState<boolean>(false);
@@ -274,6 +276,8 @@ export function Editor(props : EditorProps) {
     const onContextMenuOpen = useCallback((e) => {
         if (e) {
             e.preventDefault();
+            menuXRef.current = e.pageX;
+            menuYRef.current = e.pageY;
             setMenuXLocation(e.pageX);
             setMenuYLocation(e.pageY);
         }
@@ -291,14 +295,17 @@ export function Editor(props : EditorProps) {
             return;
         }
 
+        const mx = menuXRef.current;
+        const my = menuYRef.current;
+
         const graphElement = document.querySelector('.react-flow');
         const rect = graphElement?.getBoundingClientRect();
         const centreX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
         const centreY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
 
         const nodePosition = rfInstance.screenToFlowPosition({
-            x: menuXLocation || centreX,
-            y: menuYLocation || centreY
+            x: mx || centreX,
+            y: my || centreY
         })
 
         let pluginType = "custom"
@@ -327,7 +334,7 @@ export function Editor(props : EditorProps) {
         if (rfInstance) {
             // TODO: Send Revision
         }
-    }, [ rfInstance, menuXLocation, menuYLocation ]);
+    }, [ rfInstance ]);
 
 
     const onSelectionChange = useCallback((n) => {
@@ -413,6 +420,8 @@ export function Editor(props : EditorProps) {
     }, [ showMiniMap ])
 
     const showAddNode = useCallback(() => {
+        menuXRef.current = 0;
+        menuYRef.current = 0;
         setMenuXLocation(0);
         setMenuYLocation(0);
         onContextMenuOpen(null);
