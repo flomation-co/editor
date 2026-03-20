@@ -326,17 +326,19 @@ export function Editor(props : EditorProps) {
 
 
     const onSelectionChange = useCallback((n) => {
-        setPropertyMenuVisible(false);
-        setPropertyNode(null);
-
-        if (rfInstance) {
-            if (n.nodes.length == 1) {
-                setPropertyMenuVisible(true);
-                setPropertyNode(n.nodes[0]);
-            }
+        if (n.nodes.length == 1 && rfInstance) {
+            setPropertyNode((prev) => {
+                if (prev && prev.id === n.nodes[0].id) {
+                    return prev;
+                }
+                return n.nodes[0];
+            });
+            setPropertyMenuVisible(true);
+        } else {
+            setPropertyMenuVisible(false);
+            setPropertyNode(null);
         }
-
-    }, [ rfInstance, propertyMenuXLocation, propertyMenuYLocation, propertyNode, propertyMenuVisible ]);
+    }, [ rfInstance ]);
 
     const onContextMenuClose = useCallback((e) => {
         e.preventDefault();
