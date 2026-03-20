@@ -157,12 +157,10 @@ export default function ExecutionDetail() {
                         Logs
                     </div>
 
-                    <button className={"table-button"} disabled={logModeRaw} onClick={() => setLogModeRaw(!logModeRaw)}>
-                        Raw
-                    </button>
-                    <button className={"table-button"} disabled={!logModeRaw} onClick={() => setLogModeRaw(!logModeRaw)}>
-                        Parsed
-                    </button>
+                    <div className={"log-toggle"}>
+                        <span className={!logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(false)}>Parsed</span>
+                        <span className={logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(true)}>Raw</span>
+                    </div>
 
                     {!logModeRaw && (
                         <LogOutput logs={exec.result} />

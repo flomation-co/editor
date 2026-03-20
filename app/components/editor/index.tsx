@@ -291,9 +291,14 @@ export function Editor(props : EditorProps) {
             return;
         }
 
+        const graphElement = document.querySelector('.react-flow');
+        const rect = graphElement?.getBoundingClientRect();
+        const centreX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        const centreY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+
         const nodePosition = rfInstance.screenToFlowPosition({
-            x: menuXLocation,
-            y: menuYLocation
+            x: menuXLocation || centreX,
+            y: menuYLocation || centreY
         })
 
         let pluginType = "custom"
@@ -408,6 +413,8 @@ export function Editor(props : EditorProps) {
     }, [ showMiniMap ])
 
     const showAddNode = useCallback(() => {
+        setMenuXLocation(0);
+        setMenuYLocation(0);
         onContextMenuOpen(null);
     }, [])
 

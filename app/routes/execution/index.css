@@ -29,10 +29,36 @@
     font-family: monospace;
     background-color: #1f2937;
     padding: 5px;
-    max-width: 100%;
+    width: 0;
+    min-width: 100%;
     white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
     overflow-x: auto;
-    overflow-y: scroll;
+    box-sizing: border-box;
+}
+
+.log-toggle {
+    display: inline-flex;
+    background-color: #1f2937;
+    border-radius: 9999px;
+    padding: 3px;
+    margin-bottom: 10px;
+}
+
+.log-toggle-option {
+    padding: 6px 16px;
+    border-radius: 9999px;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 0.9em;
+    transition: background-color 0.2s, color 0.2s;
+    user-select: none;
+}
+
+.log-toggle-option.active {
+    background-color: #460070;
+    color: #fff;
 }
 
 pre {
