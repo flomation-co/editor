@@ -59,7 +59,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
         } else {
             setName('');
         }
-    }, [ props ]);
+    }, [ props.node?.id ]);
 
     return (
         <>
