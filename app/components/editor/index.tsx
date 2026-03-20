@@ -283,8 +283,18 @@ export function Editor(props : EditorProps) {
 
             const rect = graphRef.current?.getBoundingClientRect();
             if (rect) {
-                setMenuXLocation(e.clientX - rect.left);
-                setMenuYLocation(e.clientY - rect.top);
+                const menuWidth = 320;
+                const menuHeight = 400;
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                if (x + menuWidth > rect.width) x = rect.width - menuWidth;
+                if (y + menuHeight > rect.height) y = rect.height - menuHeight;
+                if (x < 0) x = 0;
+                if (y < 0) y = 0;
+
+                setMenuXLocation(x);
+                setMenuYLocation(y);
             } else {
                 setMenuXLocation(e.clientX);
                 setMenuYLocation(e.clientY);
