@@ -18,6 +18,7 @@ type PropertyMenuProps = {
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
+    onNodeDelete?: (node_id: string) => void;
 }
 
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
@@ -160,6 +161,13 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 )
                                         }
                                     })
+                                )}
+                                {props.onNodeDelete && (
+                                    <div className={"property-menu-delete"}>
+                                        <button onClick={() => props.onNodeDelete(props.node.data.id)}>
+                                            <FontAwesomeIcon icon={["fas", "trash"]} /> Delete Node
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </>

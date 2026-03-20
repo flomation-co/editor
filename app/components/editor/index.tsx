@@ -376,6 +376,13 @@ export function Editor(props : EditorProps) {
         setMenuVisible(false);
     }, [ setMenuVisible ])
 
+    const onNodeDelete = useCallback((id: string) => {
+        setNodes((nds) => nds.filter((node) => node.id !== id));
+        setEdges((eds) => eds.filter((edge) => edge.source !== id && edge.target !== id));
+        setPropertyMenuVisible(false);
+        setPropertyNode(null);
+    }, [setNodes, setEdges]);
+
     const onValueChange = useCallback((id: string, property: string, value: any) => {
         setNodes((prev) => prev.map((node) => {
             if (node.id !== id || !node.data.config.inputs) return node;
@@ -597,6 +604,7 @@ export function Editor(props : EditorProps) {
                                         onValueChange={onValueChange}
                                         onNameChange={onNameChange}
                                         onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}
+                                        onNodeDelete={onNodeDelete}
                                     />
                                 )}
                             </div>
