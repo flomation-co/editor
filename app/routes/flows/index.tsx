@@ -221,13 +221,14 @@ export default function Flows() {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
                                                     <td>
+                                                        {flo.name}
                                                         {flo.has_validation_errors && (
                                                             <>
-                                                                <FontAwesomeIcon icon={faTriangleExclamation} style={{color: '#e6a817', marginRight: '6px'}} data-tooltip-id={"validation-" + flo.id} data-tooltip-content={"Required fields are incomplete"} data-tooltip-place={"bottom"} />
+                                                                <FontAwesomeIcon icon={faTriangleExclamation} style={{color: '#e6a817', marginLeft: '6px'}} data-tooltip-id={"validation-" + flo.id} data-tooltip-content={"Required fields are incomplete"} data-tooltip-place={"bottom"} />
                                                                 <Tooltip id={"validation-" + flo.id} />
                                                             </>
                                                         )}
-                                                        {flo.name}<span className={"flo-table-subtext table-column-hide-sm"}>{flo.id}</span>
+                                                        <span className={"flo-table-subtext table-column-hide-sm"}>{flo.id}</span>
                                                     </td>
                                                     <td className={"table-column-hide-sm"}>
                                                         {flo.environment_id && (
