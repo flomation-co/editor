@@ -16,7 +16,7 @@ library.add(fab, fas);
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
     2: { bg: '#8b00de', bgAlpha: 'rgba(70,0,112,0.3)',     glow: 'rgba(139,0,222,0.35)',   text: '#8b00de', iconColour: '#b49eed' },   // Action
-    3: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Output
+    3: { bg: '#e8604c', bgAlpha: 'rgba(232,96,76,0.15)',    glow: 'rgba(232,96,76,0.35)',   text: '#e8604c', iconColour: '#e8604c' },   // Output
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', text: '#efd467', iconColour: '#efd467' },  // Conditional
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', text: '#b967ef', iconColour: '#b967ef' },  // Loop
 };
@@ -78,7 +78,11 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 } as React.CSSProperties}
             >
                 {hasInputs && (
-                    <Handle type="target" position={Position.Left} />
+                    <Handle
+                        type="target"
+                        position={Position.Left}
+                        {...(type === 4 ? { style: { top: '100%' } } : {})}
+                    />
                 )}
 
                 {icon && (
@@ -109,12 +113,18 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     />
                 )}
 
-                {/* Conditional (type 4): True/False branching handles */}
+                {/* Conditional (type 4): True/False handles at diamond edges.
+                     Position sets edge path direction; style overrides set visual placement
+                     on the rotated square's edge midpoints (top-right & bottom-right diamond edges). */}
                 {type === 4 && hasOutputs && (
-                    <div className="handle-wrapper">
-                        <LabeledHandle type="source" position={Position.Right} id="true-branch" title="True" />
-                        <LabeledHandle type="source" position={Position.Right} id="false-branch" title="False" />
-                    </div>
+                    <>
+                        <Handle type="source" position={Position.Top} id="true-branch"
+                            style={{ right: 'auto', left: '50%', top: '-3px', transform: 'translate(-50%, 0)' }} />
+                        <Handle type="source" position={Position.Bottom} id="false-branch"
+                            style={{ bottom: 'auto', left: 'auto', right: '-3px', top: '50%', transform: 'translate(0, -50%)' }} />
+                        <span className="diamond-label diamond-label--true">T</span>
+                        <span className="diamond-label diamond-label--false">F</span>
+                    </>
                 )}
 
                 {/* Loop (type 5): Bottom + Right handles */}

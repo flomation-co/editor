@@ -67,8 +67,8 @@ export function Editor(props : EditorProps) {
     const [ needsUpdate, setNeedsUpdate ] = useState<boolean>(false);
     const [ plugins, setPlugins ] = useState(null);
     const [ dragging, setDragging ] = useState<boolean>(false);
-    const [ width, setWidth ] = useState<number>(0);
-    const [ isMobile, setIsMobile ] = useState<boolean>(true);
+    const [ width, setWidth ] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+    const [ isMobile, setIsMobile ] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : true);
 
     const [ environments, setEnvironments ] = useState<Environment[]>();
 
