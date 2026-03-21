@@ -96,6 +96,7 @@ const VariableInput = (props: VariableInputProps) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const highlightRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const autocompleteRef = useRef<HTMLDivElement>(null);
 
@@ -108,6 +109,23 @@ const VariableInput = (props: VariableInputProps) => {
     useEffect(() => {
         setValue(props.value || "");
     }, [props.nodeId]);
+
+    // Keep highlight div sized to match the input/textarea
+    useEffect(() => {
+        const input = inputRef.current;
+        const highlight = highlightRef.current;
+        if (!input || !highlight) return;
+
+        const sync = () => {
+            highlight.style.height = input.offsetHeight + "px";
+            highlight.style.width = input.offsetWidth + "px";
+        };
+        sync();
+
+        const observer = new ResizeObserver(sync);
+        observer.observe(input);
+        return () => observer.disconnect();
+    }, []);
 
     const segments = useMemo(
         () => parseSegments(value, props.variables),
@@ -266,6 +284,7 @@ const VariableInput = (props: VariableInputProps) => {
     return (
         <div className="variable-input-container" ref={containerRef}>
             <div
+                ref={highlightRef}
                 className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""}`}
                 aria-hidden="true"
             >
