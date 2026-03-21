@@ -61,7 +61,15 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
         <>
             <div className="node-name">
                 {data.config?.name && (
-                    <>{data.config.name}</>
+                    <>
+                        {hasIncompleteRequired && (
+                            <FontAwesomeIcon
+                                icon={["fa-solid", "fa-triangle-exclamation"]}
+                                className="node-name-warning"
+                            />
+                        )}
+                        {data.config.name}
+                    </>
                 )}
                 {data.config?.label && (
                     <div className="node-label">
