@@ -64,6 +64,7 @@ export type Flo = {
     last_execution?: Execution
     environment_id?: string,
     environment_name?: string,
+    has_validation_errors?: boolean,
 }
 
 export type ParameterOption = {
