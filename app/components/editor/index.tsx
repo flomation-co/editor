@@ -1,6 +1,7 @@
 import "./index.css"
 import "./nodes.css"
-import type {Flo, Environment} from "~/types";
+import type {Flo, Environment, Property, Secret} from "~/types";
+import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -71,6 +72,7 @@ export function Editor(props : EditorProps) {
     const [ isMobile, setIsMobile ] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : true);
 
     const [ environments, setEnvironments ] = useState<Environment[]>();
+    const [ envVariables, setEnvVariables ] = useState<VariableItem[]>([]);
 
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
@@ -117,6 +119,36 @@ export function Editor(props : EditorProps) {
                 console.error("Unable to fetch actions", error);
             })
     }, []);
+
+    useEffect(() => {
+        if (!environment) {
+            setEnvVariables([]);
+            return;
+        }
+
+        const items: VariableItem[] = [];
+
+        Promise.all([
+            axios.get(API_URL + "/api/v1/environment/" + environment + "/property", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+            axios.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+        ]).then(([propsRes, secretsRes]) => {
+            const properties = propsRes.data || [];
+            const secrets = secretsRes.data || [];
+
+            properties.forEach((p: Property) => {
+                items.push({ name: p.name, category: "env" });
+            });
+            secrets.forEach((s: Secret) => {
+                items.push({ name: s.name, category: "secrets" });
+            });
+
+            setEnvVariables(items);
+        });
+    }, [environment]);
 
     useEffect(() => {
         axios.get(API_URL + "/api/v1/action", {
@@ -417,6 +449,37 @@ export function Editor(props : EditorProps) {
         }));
     }, [setNodes])
 
+    // Derive parent node outputs for the selected property node
+    const allVariables = useMemo<VariableItem[]>(() => {
+        const items: VariableItem[] = [...envVariables];
+
+        if (!propertyNode || !plugins) return items;
+
+        // Find parent nodes via edges
+        const parentNodeIds = edges
+            .filter((e) => e.target === propertyNode.id)
+            .map((e) => e.source);
+
+        for (const parentId of parentNodeIds) {
+            const parentNode = nodes.find((n) => n.id === parentId);
+            if (!parentNode?.data?.config?.outputs) continue;
+
+            const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+
+            for (const output of parentNode.data.config.outputs) {
+                if (output.name) {
+                    items.push({
+                        name: output.name,
+                        category: "input",
+                        source: parentLabel,
+                    });
+                }
+            }
+        }
+
+        return items;
+    }, [envVariables, propertyNode, edges, nodes, plugins]);
+
     const hasValidationErrors = useMemo(() => {
         return nodes.some(node =>
             node.data?.config?.inputs?.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')))
@@ -614,6 +677,7 @@ export function Editor(props : EditorProps) {
                                {propertyMenuVisible && (
                                     <PropertyMenu
                                         node={propertyNode}
+                                        variables={allVariables}
                                         onValueChange={onValueChange}
                                         onNameChange={onNameChange}
                                         onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}

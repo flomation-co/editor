@@ -1,0 +1,238 @@
+.variable-input-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Shared base for highlight + input overlap */
+.variable-input-highlight,
+.variable-input-field {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.5;
+    padding: 10px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    /* Single-line: no wrapping, scroll on overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Multiline variants restore wrapping */
+.variable-input-highlight--multiline,
+.variable-input-field--multiline {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-overflow: unset;
+}
+
+/* Input gets scrollbar, highlight scrolls programmatically via JS */
+.variable-input-field--multiline {
+    overflow: auto;
+}
+
+.variable-input-highlight--multiline {
+    overflow: hidden;
+}
+
+/* Highlight layer sits behind — shows plain text + styled variable pills */
+.variable-input-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background: #17202e;
+    color: #fff;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.variable-input-highlight--multiline {
+    min-height: 100px;
+    resize: both;
+}
+
+/* Input layer sits on top with transparent text */
+.variable-input-field {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    color: transparent;
+    caret-color: #fff;
+    outline: none;
+}
+
+.variable-input-field::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.variable-input-field:focus {
+    box-shadow: 0 0 10px 1px var(--highlight-colour);
+}
+
+.variable-input-field--multiline {
+    min-height: 100px;
+    resize: both;
+}
+
+/* Variable pills in the highlight layer — no padding/border to keep
+   character positions exactly aligned with the transparent input layer */
+.variable-pill {
+    display: inline;
+    border-radius: 3px;
+    font-size: inherit;
+    line-height: inherit;
+    font-weight: 500;
+    /* Use box-shadow for the "border" effect — doesn't affect layout */
+    padding: 0;
+    border: none;
+}
+
+.variable-pill--secrets {
+    background: rgba(139, 0, 222, 0.35);
+    box-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
+    color: #d4a3f9;
+}
+
+.variable-pill--env {
+    background: rgba(0, 170, 156, 0.3);
+    box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
+    color: #6ee7d8;
+}
+
+.variable-pill--input {
+    background: rgba(72, 171, 224, 0.3);
+    box-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
+    color: #7fc8f0;
+}
+
+.variable-pill--invalid {
+    background: rgba(190, 0, 0, 0.3);
+    box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
+    color: #ff6b6b;
+}
+
+/* Autocomplete dropdown */
+.variable-autocomplete {
+    position: absolute;
+    z-index: 100;
+    min-width: 220px;
+    max-width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    animation: floatIn 0.1s ease-out;
+}
+
+.variable-autocomplete-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.variable-autocomplete-item:hover,
+.variable-autocomplete-item--selected {
+    background: rgba(139, 0, 222, 0.2);
+}
+
+.variable-autocomplete-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.variable-autocomplete-badge--secrets {
+    background: rgba(139, 0, 222, 0.3);
+    color: #d4a3f9;
+}
+
+.variable-autocomplete-badge--env {
+    background: rgba(0, 170, 156, 0.25);
+    color: #6ee7d8;
+}
+
+.variable-autocomplete-badge--input {
+    background: rgba(72, 171, 224, 0.25);
+    color: #7fc8f0;
+}
+
+.variable-autocomplete-source {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100px;
+}
+
+.variable-autocomplete-name {
+    color: #e0e0e0;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Variable mode toggle for non-text inputs */
+.variable-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.variable-mode-row > input,
+.variable-mode-row > select,
+.variable-mode-row > .property-menu-input-inline-row,
+.variable-mode-row > .variable-input-container {
+    flex: 1;
+    min-width: 0;
+}
+
+.variable-mode-toggle {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    background: #17202e;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+}
+
+.variable-mode-toggle:hover {
+    background: rgba(139, 0, 222, 0.15);
+    border-color: rgba(139, 0, 222, 0.4);
+    color: #d4a3f9;
+}
+
+.variable-mode-toggle--active {
+    background: rgba(139, 0, 222, 0.25);
+    border-color: rgba(139, 0, 222, 0.6);
+    color: #d4a3f9;
+}
