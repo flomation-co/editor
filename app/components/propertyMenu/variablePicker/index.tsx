@@ -10,9 +10,13 @@ type VariablePickerProps = {
 };
 
 function parseVariableRef(val: string): { category: string; name: string } | null {
-    const match = typeof val === "string" && val.match(/^\$\{(secrets|env)\.(.+)}$/);
-    if (!match) return null;
-    return { category: match[1], name: match[2] };
+    if (typeof val !== "string") return null;
+    // Match ${secrets.NAME}, ${env.NAME}, or ${bare_name}
+    const prefixed = val.match(/^\$\{(secrets|env)\.(.+)}$/);
+    if (prefixed) return { category: prefixed[1], name: prefixed[2] };
+    const bare = val.match(/^\$\{([\w.-]+)}$/);
+    if (bare) return { category: "input", name: bare[1] };
+    return null;
 }
 
 const VariablePicker = (props: VariablePickerProps) => {
@@ -61,7 +65,10 @@ const VariablePicker = (props: VariablePickerProps) => {
     }, [open]);
 
     const handleSelect = useCallback((v: VariableItem) => {
-        props.onSelect(`\${${v.category}.${v.name}}`);
+        const ref = v.category === "input"
+            ? `\${${v.name}}`
+            : `\${${v.category}.${v.name}}`;
+        props.onSelect(ref);
         setOpen(false);
         setSearch("");
     }, [props.onSelect]);

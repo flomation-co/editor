@@ -95,6 +95,12 @@
     color: #6ee7d8;
 }
 
+.variable-pill--input {
+    background: rgba(72, 171, 224, 0.3);
+    box-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
+    color: #7fc8f0;
+}
+
 .variable-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
     box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
@@ -150,6 +156,22 @@
 .variable-autocomplete-badge--env {
     background: rgba(0, 170, 156, 0.25);
     color: #6ee7d8;
+}
+
+.variable-autocomplete-badge--input {
+    background: rgba(72, 171, 224, 0.25);
+    color: #7fc8f0;
+}
+
+.variable-autocomplete-source {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100px;
 }
 
 .variable-autocomplete-name {

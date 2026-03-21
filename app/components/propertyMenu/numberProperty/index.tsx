@@ -14,7 +14,7 @@ type PropertyProps = {
 }
 
 function isVariableRef(val: string): boolean {
-    return typeof val === "string" && /^\$\{(secrets|env)\..+}$/.test(val);
+    return typeof val === "string" && /^\$\{[\w.-]+}$/.test(val);
 }
 
 const NumberProperty = (props: PropertyProps) => {

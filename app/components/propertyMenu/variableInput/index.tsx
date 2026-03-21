@@ -3,7 +3,9 @@ import "./index.css";
 
 export type VariableItem = {
     name: string;
-    category: "secrets" | "env";
+    category: "secrets" | "env" | "input";
+    /** Optional label shown in autocomplete (e.g. parent node name) */
+    source?: string;
 };
 
 type VariableInputProps = {
@@ -28,7 +30,8 @@ type ParsedSegment = {
 
 function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[] {
     const segments: ParsedSegment[] = [];
-    const regex = /\$\{((?:secrets|env)\.[\w.-]*)}/g;
+    // Match ${secrets.NAME}, ${env.NAME}, or ${bare_name} (parent outputs)
+    const regex = /\$\{([\w.-]+)}/g;
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
@@ -39,8 +42,18 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
 
         const inner = match[1];
         const dotIndex = inner.indexOf(".");
-        const category = dotIndex >= 0 ? inner.slice(0, dotIndex) : inner;
-        const varName = dotIndex >= 0 ? inner.slice(dotIndex + 1) : "";
+        let category: string;
+        let varName: string;
+
+        if (dotIndex >= 0) {
+            category = inner.slice(0, dotIndex);
+            varName = inner.slice(dotIndex + 1);
+        } else {
+            // Bare name — parent output
+            category = "input";
+            varName = inner;
+        }
+
         const valid = variables.some(
             (v) => v.category === category && v.name === varName
         );
@@ -156,7 +169,10 @@ const VariableInput = (props: VariableInputProps) => {
             const afterCursor = inputRef.current
                 ? value.slice(inputRef.current.selectionStart || 0)
                 : "";
-            const insertion = `\${${variable.category}.${variable.name}}`;
+            // Parent outputs use bare ${name}, secrets/env use ${category.name}
+            const insertion = variable.category === "input"
+                ? `\${${variable.name}}`
+                : `\${${variable.category}.${variable.name}}`;
             const newValue = before + insertion + afterCursor;
             setValue(newValue);
             setAutocomplete((prev) => ({ ...prev, visible: false }));
@@ -292,6 +308,11 @@ const VariableInput = (props: VariableInputProps) => {
                             <span className="variable-autocomplete-name">
                                 {v.name}
                             </span>
+                            {v.source && (
+                                <span className="variable-autocomplete-source">
+                                    {v.source}
+                                </span>
+                            )}
                         </div>
                     ))}
                 </div>

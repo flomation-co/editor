@@ -449,6 +449,37 @@ export function Editor(props : EditorProps) {
         }));
     }, [setNodes])
 
+    // Derive parent node outputs for the selected property node
+    const allVariables = useMemo<VariableItem[]>(() => {
+        const items: VariableItem[] = [...envVariables];
+
+        if (!propertyNode || !plugins) return items;
+
+        // Find parent nodes via edges
+        const parentNodeIds = edges
+            .filter((e) => e.target === propertyNode.id)
+            .map((e) => e.source);
+
+        for (const parentId of parentNodeIds) {
+            const parentNode = nodes.find((n) => n.id === parentId);
+            if (!parentNode?.data?.config?.outputs) continue;
+
+            const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+
+            for (const output of parentNode.data.config.outputs) {
+                if (output.name) {
+                    items.push({
+                        name: output.name,
+                        category: "input",
+                        source: parentLabel,
+                    });
+                }
+            }
+        }
+
+        return items;
+    }, [envVariables, propertyNode, edges, nodes, plugins]);
+
     const hasValidationErrors = useMemo(() => {
         return nodes.some(node =>
             node.data?.config?.inputs?.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')))
@@ -646,7 +677,7 @@ export function Editor(props : EditorProps) {
                                {propertyMenuVisible && (
                                     <PropertyMenu
                                         node={propertyNode}
-                                        variables={envVariables}
+                                        variables={allVariables}
                                         onValueChange={onValueChange}
                                         onNameChange={onNameChange}
                                         onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}
