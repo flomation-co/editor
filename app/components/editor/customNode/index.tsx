@@ -113,11 +113,15 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     />
                 )}
 
-                {/* Conditional (type 4): True/False handles at diamond edges */}
+                {/* Conditional (type 4): True/False handles at diamond edges.
+                     Position sets edge path direction; style overrides set visual placement
+                     on the rotated square's edge midpoints (top-right & bottom-right diamond edges). */}
                 {type === 4 && hasOutputs && (
                     <>
-                        <Handle type="source" position={Position.Top} id="true-branch" />
-                        <Handle type="source" position={Position.Right} id="false-branch" />
+                        <Handle type="source" position={Position.Right} id="true-branch"
+                            style={{ right: 'auto', left: '50%', top: '-3px', transform: 'translate(-50%, 0)' }} />
+                        <Handle type="source" position={Position.Bottom} id="false-branch"
+                            style={{ bottom: 'auto', left: 'auto', right: '-3px', top: '50%', transform: 'translate(0, -50%)' }} />
                         <span className="diamond-label diamond-label--true">T</span>
                         <span className="diamond-label diamond-label--false">F</span>
                     </>

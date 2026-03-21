@@ -243,6 +243,11 @@
     display: none;
 }
 
+/* Push node name further above the diamond (rotated bounding box extends ~13px beyond layout box) */
+.react-flow__node:has(.flo-node--conditional) > .node-name {
+    bottom: calc(100% + 22px);
+}
+
 /* T/F labels at diamond output edges */
 .diamond-label {
     position: absolute;
@@ -253,16 +258,16 @@
     pointer-events: none;
 }
 
-/* True label: near top-right edge (Position.Top after rotation) */
+/* True label: near top-right diamond edge */
 .diamond-label--true {
-    top: -14px;
+    top: -22px;
     left: 50%;
     translate: -50% 0;
 }
 
-/* False label: near bottom-right edge (Position.Right after rotation) */
+/* False label: near bottom-right diamond edge */
 .diamond-label--false {
-    right: -14px;
+    right: -22px;
     top: 50%;
     translate: 0 -50%;
 }
