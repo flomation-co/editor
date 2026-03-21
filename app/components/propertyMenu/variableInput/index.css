@@ -59,32 +59,34 @@
     resize: both;
 }
 
-/* Variable pills in the highlight layer */
+/* Variable pills in the highlight layer — no padding/border to keep
+   character positions exactly aligned with the transparent input layer */
 .variable-pill {
     display: inline;
-    padding: 1px 5px;
     border-radius: 3px;
     font-size: inherit;
     line-height: inherit;
-    color: #fff;
     font-weight: 500;
+    /* Use box-shadow for the "border" effect — doesn't affect layout */
+    padding: 0;
+    border: none;
 }
 
 .variable-pill--secrets {
     background: rgba(139, 0, 222, 0.35);
-    border: 1px solid rgba(139, 0, 222, 0.6);
+    box-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
     color: #d4a3f9;
 }
 
 .variable-pill--env {
     background: rgba(0, 170, 156, 0.3);
-    border: 1px solid rgba(0, 170, 156, 0.5);
+    box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
     color: #6ee7d8;
 }
 
 .variable-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
-    border: 1px solid rgba(190, 0, 0, 0.6);
+    box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
     color: #ff6b6b;
 }
 

@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
-import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
+import type {VariableItem} from "~/components/propertyMenu/variableInput";
+import VariablePicker from "~/components/propertyMenu/variablePicker";
 
 type PropertyProps = {
     nodeId?: string;
@@ -12,13 +13,12 @@ type PropertyProps = {
     onValueChange?: (property: string, value: any) => void;
 }
 
-function looksLikeVariable(val: any): boolean {
-    return typeof val === "string" && /\$\{/.test(val);
+function isVariableRef(val: any): boolean {
+    return typeof val === "string" && /^\$\{(secrets|env)\..+}$/.test(val);
 }
 
 const BooleanProperty = (props: PropertyProps) => {
     const [ value, setValue ] = useState<boolean | string>(props.value);
-    const [ variableMode, setVariableMode ] = useState<boolean>(looksLikeVariable(props.value));
     const hasVariables = props.variables && props.variables.length > 0;
 
     useEffect(() => {
@@ -29,17 +29,9 @@ const BooleanProperty = (props: PropertyProps) => {
 
     useEffect(() => {
         setValue(props.value);
-        setVariableMode(looksLikeVariable(props.value));
     }, [ props.nodeId ]);
 
-    const toggleVariableMode = () => {
-        if (variableMode) {
-            setValue(false);
-        } else {
-            setValue("");
-        }
-        setVariableMode(!variableMode);
-    };
+    const showPicker = isVariableRef(value);
 
     return (
         <div className={"property-menu-input-row"} key={props.name}>
@@ -47,20 +39,15 @@ const BooleanProperty = (props: PropertyProps) => {
                 {props.label ? props.label : props.name}
                 {props.required && <span className="property-menu-required"> *</span>}
             </div>
-            <div className="variable-mode-row">
-                {variableMode ? (
-                    <VariableInput
-                        nodeId={props.nodeId || ""}
-                        name={props.name}
-                        placeholder={"${secrets.NAME} or ${env.NAME}"}
-                        label={props.label}
-                        value={typeof value === "string" ? value : ""}
-                        required={props.required}
-                        multiline={false}
-                        variables={props.variables || []}
-                        onValueChange={(_, v) => setValue(v)}
-                    />
-                ) : (
+            {showPicker ? (
+                <VariablePicker
+                    value={value as string}
+                    variables={props.variables || []}
+                    onSelect={(ref) => setValue(ref)}
+                    onClear={() => setValue(false)}
+                />
+            ) : (
+                <div className="variable-mode-row">
                     <div className={"property-menu-input-inline-row"} style={{ margin: 0 }}>
                         <label htmlFor={props.name} className={"property-menu-checkbox-label"}>
                             <input
@@ -74,18 +61,16 @@ const BooleanProperty = (props: PropertyProps) => {
                             <span className={"property-menu-checkbox"}></span>
                         </label>
                     </div>
-                )}
-                {hasVariables && (
-                    <button
-                        type="button"
-                        className={`variable-mode-toggle ${variableMode ? "variable-mode-toggle--active" : ""}`}
-                        onClick={toggleVariableMode}
-                        title={variableMode ? "Switch to checkbox" : "Use a variable"}
-                    >
-                        {"{x}"}
-                    </button>
-                )}
-            </div>
+                    {hasVariables && (
+                        <VariablePicker
+                            value={typeof value === "string" ? value : ""}
+                            variables={props.variables!}
+                            onSelect={(ref) => setValue(ref)}
+                            onClear={() => setValue(false)}
+                        />
+                    )}
+                </div>
+            )}
         </div>
     )
 }
