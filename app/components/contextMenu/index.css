@@ -20,6 +20,17 @@
     }
 }
 
+@keyframes expandIn {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
 .context-menu {
     position: absolute;
     z-index: 1000;
@@ -28,7 +39,7 @@
     border-top: 2px solid rgba(139,0,222,0.4);
     border-radius: 10px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    width: 320px;
+    width: 340px;
     max-height: min(70vh, 500px);
     font-size: 12px;
     color: #fff;
@@ -121,18 +132,100 @@
 }
 
 .node-type-text-column {
-
+    flex: 1;
+    min-width: 0;
 }
 
 .node-type-title {
     padding: 3px;
     font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .node-type-description {
     padding: 3px;
     font-size: 1.0em;
     color: rgba(255,255,255,0.45);
+}
+
+/* Category group styles */
+.context-category-group {
+    margin: 1px 0;
+}
+
+.context-category-header {
+    position: relative;
+}
+
+.context-category-header.expanded {
+    border-left: 2px solid rgba(139,0,222,0.35);
+    background: rgba(255,255,255,0.02);
+}
+
+.category-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background: rgba(139,0,222,0.15);
+    color: rgba(255,255,255,0.5);
+    font-size: 0.7em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.category-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    min-width: 24px;
+    color: rgba(255,255,255,0.25);
+    transition: color 0.12s ease;
+}
+
+.context-category-header:hover .category-chevron {
+    color: rgba(255,255,255,0.5);
+}
+
+/* Nested action items within a group */
+.context-category-actions {
+    padding-left: 12px;
+    border-left: 2px solid rgba(139,0,222,0.12);
+    margin-left: 16px;
+    animation: expandIn 0.15s ease-out;
+    overflow: hidden;
+}
+
+.context-category-actions .context-node-action {
+    padding: 7px 10px;
+}
+
+.context-category-actions .context-node-action .node-type-icon-column {
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+}
+
+.context-category-actions .context-node-action .node-type-title {
+    font-size: 1.05em;
+}
+
+.context-category-actions .context-node-action .node-type-description {
+    font-size: 0.9em;
+}
+
+/* No results state */
+.context-no-results {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 13px;
 }
 
 /* Mobile bottom-sheet */

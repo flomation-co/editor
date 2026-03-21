@@ -118,6 +118,13 @@ export enum NodeCategoryType {
     Loop
 }
 
+export type PluginCategory = {
+    key: string,
+    name: string,
+    icon: string,
+    description: string
+}
+
 export type PluginDefinition = {
     id: string,
     name: string,
@@ -126,7 +133,8 @@ export type PluginDefinition = {
     type: NodeCategoryType,
     icon: string[],
     inputs?: ParameterDefinition[],
-    outputs?: ParameterDefinition[]
+    outputs?: ParameterDefinition[],
+    category?: PluginCategory
 }
 
 export type Environment = {

@@ -1,12 +1,12 @@
 import "./index.css"
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {fas} from '@fortawesome/free-solid-svg-icons'
 import {fab} from '@fortawesome/free-brands-svg-icons'
-import type { PluginDefinition } from "~/types";
+import type { PluginDefinition, PluginCategory } from "~/types";
 import { NodeCategoryType } from "~/types";
 
 type ContextMenuProps = {
@@ -31,9 +31,15 @@ enum Page {
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
 library.add(fab, fas);
 
+type CategoryGroup = {
+    category: PluginCategory;
+    actions: PluginDefinition[];
+}
+
 const ContextMenu = (props: ContextMenuProps) => {
     const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
     const [ searchTerm, setSearchTerm ] = useState<string>("");
+    const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
 
     const handleNodeClick = (name: string) => {
         if (props.onNodeAdd) {
@@ -41,7 +47,7 @@ const ContextMenu = (props: ContextMenuProps) => {
         }
     }
 
-    const onSearchChange = (evt) => {
+    const onSearchChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(evt.target.value.toLowerCase());
     }
 
@@ -49,8 +55,116 @@ const ContextMenu = (props: ContextMenuProps) => {
         if (!props.visible) {
             setSearchTerm("");
             setCurrentPage(Page.Root);
+            setExpandedGroup(null);
         }
     }, [props.visible]);
+
+    // Reset expanded group when changing pages
+    useEffect(() => {
+        setExpandedGroup(null);
+    }, [currentPage]);
+
+    // Group plugins by category for a given node type
+    const getGroupedPlugins = (nodeType: NodeCategoryType): CategoryGroup[] => {
+        if (!props.plugins) return [];
+
+        const filtered = Object.keys(props.plugins)
+            .map(k => props.plugins[k])
+            .filter(p => p.type === nodeType);
+
+        const groupMap = new Map<string, CategoryGroup>();
+
+        for (const plugin of filtered) {
+            const key = plugin.category?.key || "other";
+            if (!groupMap.has(key)) {
+                groupMap.set(key, {
+                    category: plugin.category || { key: "other", name: "Other", icon: "puzzle-piece", description: "" },
+                    actions: []
+                });
+            }
+            groupMap.get(key)!.actions.push(plugin);
+        }
+
+        // Sort groups alphabetically by name
+        return Array.from(groupMap.values()).sort((a, b) =>
+            a.category.name.localeCompare(b.category.name)
+        );
+    }
+
+    // Get all plugins matching search across all types
+    const getSearchResults = (): PluginDefinition[] => {
+        if (!props.plugins || !searchTerm) return [];
+        return Object.keys(props.plugins)
+            .map(k => props.plugins[k])
+            .filter(p =>
+                p.name.toLowerCase().includes(searchTerm) ||
+                p.description.toLowerCase().includes(searchTerm) ||
+                (p.category?.name.toLowerCase().includes(searchTerm))
+            );
+    }
+
+    const renderActionItem = (nt: PluginDefinition) => (
+        <div className={"context-node-type context-node-action"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
+            <div className={"node-type-icon-column"}>
+                <FontAwesomeIcon icon={["fa-solid" as any, ("fa-" + nt.icon) as any]} size={"lg"}/>
+            </div>
+            <div className={"node-type-text-column"}>
+                <div className={"node-type-title"}>
+                    {nt.name}
+                </div>
+                <div className={"node-type-description"}>
+                    {nt.description}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderCategoryGroup = (group: CategoryGroup) => {
+        const isExpanded = expandedGroup === group.category.key;
+        const actionCount = group.actions.length;
+
+        return (
+            <div key={group.category.key} className={"context-category-group"}>
+                <div
+                    className={`context-node-type context-category-header ${isExpanded ? "expanded" : ""}`}
+                    onClick={() => setExpandedGroup(isExpanded ? null : group.category.key)}
+                >
+                    <div className={"node-type-icon-column"}>
+                        <FontAwesomeIcon icon={["fas", ("fa-" + group.category.icon) as any]} size={"xl"}/>
+                    </div>
+                    <div className={"node-type-text-column"}>
+                        <div className={"node-type-title"}>
+                            {group.category.name}
+                            <span className={"category-count"}>{actionCount}</span>
+                        </div>
+                        <div className={"node-type-description"}>
+                            {group.category.description}
+                        </div>
+                    </div>
+                    <div className={"category-chevron"}>
+                        <FontAwesomeIcon icon={["fas", isExpanded ? "chevron-down" : "chevron-right"]} size={"sm"}/>
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className={"context-category-actions"}>
+                        {group.actions.map(renderActionItem)}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderGroupedPage = (nodeType: NodeCategoryType) => {
+        const groups = getGroupedPlugins(nodeType);
+
+        // If there's only one group, expand it automatically
+        if (groups.length === 1 && expandedGroup === null) {
+            // Use a flat list instead of nesting for single groups
+            return groups[0].actions.map(renderActionItem);
+        }
+
+        return groups.map(renderCategoryGroup);
+    };
 
     const positionStyle = (!props.isMobile && props.x !== undefined && props.y !== undefined)
         ? { top: props.y + "px", left: props.x + "px" }
@@ -66,8 +180,8 @@ const ContextMenu = (props: ContextMenuProps) => {
                             <FontAwesomeIcon icon={["fas", "xmark"]} />
                         </button>
                     </div>
-                    {currentPage != Page.Root && (
-                        <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Root)} key={"triggers"}>
+                    {currentPage != Page.Root && !searchTerm && (
+                        <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Root)} key={"back"}>
                             <div className={"node-type-icon-column"}>
                                 <FontAwesomeIcon icon={["fas", "arrow-left"]} size={"2xl"}/>
                             </div>
@@ -79,6 +193,19 @@ const ContextMenu = (props: ContextMenuProps) => {
                         </div>
                     )}
                     <div className={"context-node-type-list"}>
+                        {/* Search results */}
+                        {searchTerm && (
+                            <>
+                                {getSearchResults().map(renderActionItem)}
+                                {getSearchResults().length === 0 && (
+                                    <div className={"context-no-results"}>
+                                        No actions found
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* Root menu */}
                         {!searchTerm && currentPage == Page.Root && (
                             <>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Triggers)} key={"triggers"}>
@@ -149,146 +276,12 @@ const ContextMenu = (props: ContextMenuProps) => {
                             </>
                         )}
 
-                        {(searchTerm || currentPage == Page.Triggers) && (
-                            <>
-                                {props.plugins && Object.keys(props.plugins).map((k) => {
-                                    const nt = props.plugins[k];
-                                    if (nt.type != NodeCategoryType.Trigger) {
-                                        return
-                                    }
-
-                                    if (!searchTerm || (nt.name.toLowerCase().includes(searchTerm) || nt.description.toLowerCase().includes(searchTerm))) {
-                                        return (
-                                            <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
-                                                <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
-                                                </div>
-                                                <div className={"node-type-text-column"}>
-                                                    <div className={"node-type-title"}>
-                                                        {nt.name}
-                                                    </div>
-                                                    <div className={"node-type-description"}>
-                                                        {nt.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </>
-                        )}
-                        {(searchTerm || currentPage == Page.Processing) && (
-                            <>
-                                {props.plugins && Object.keys(props.plugins).map((k) => {
-                                    const nt = props.plugins[k];
-                                    if (nt.type != NodeCategoryType.Processing) {
-                                        return
-                                    }
-
-                                    if (!searchTerm || (nt.name.toLowerCase().includes(searchTerm) || nt.description.toLowerCase().includes(searchTerm))) {
-                                        return (
-                                            <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
-                                                <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
-                                                </div>
-                                                <div className={"node-type-text-column"}>
-                                                    <div className={"node-type-title"}>
-                                                        {nt.name}
-                                                    </div>
-                                                    <div className={"node-type-description"}>
-                                                        {nt.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </>
-                        )}
-                        {(searchTerm || currentPage == Page.Outputs) && (
-                            <>
-                                {props.plugins && Object.keys(props.plugins).map((k) => {
-                                    const nt = props.plugins[k];
-                                    if (nt.type != NodeCategoryType.Output) {
-                                        return
-                                    }
-
-                                    if (!searchTerm || (nt.name.toLowerCase().includes(searchTerm) || nt.description.toLowerCase().includes(searchTerm))) {
-                                        return (
-                                            <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
-                                                <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
-                                                </div>
-                                                <div className={"node-type-text-column"}>
-                                                    <div className={"node-type-title"}>
-                                                        {nt.name}
-                                                    </div>
-                                                    <div className={"node-type-description"}>
-                                                        {nt.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </>
-                        )}
-                        {(searchTerm || currentPage == Page.Conditional) && (
-                            <>
-                                {props.plugins && Object.keys(props.plugins).map((k) => {
-                                    const nt = props.plugins[k];
-                                    if (nt.type != NodeCategoryType.Conditional) {
-                                        return
-                                    }
-
-                                    if (!searchTerm || (nt.name.toLowerCase().includes(searchTerm) || nt.description.toLowerCase().includes(searchTerm))) {
-                                        return (
-                                            <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
-                                                <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
-                                                </div>
-                                                <div className={"node-type-text-column"}>
-                                                    <div className={"node-type-title"}>
-                                                        {nt.name}
-                                                    </div>
-                                                    <div className={"node-type-description"}>
-                                                        {nt.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </>
-                        )}
-                        {(searchTerm || currentPage == Page.Loop) && (
-                            <>
-                                {props.plugins && Object.keys(props.plugins).map((k) => {
-                                    const nt = props.plugins[k];
-                                    if (nt.type != NodeCategoryType.Loop) {
-                                        return
-                                    }
-
-                                    if (!searchTerm || (nt.name.toLowerCase().includes(searchTerm) || nt.description.toLowerCase().includes(searchTerm))) {
-                                        return (
-                                            <div className={"context-node-type"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
-                                                <div className={"node-type-icon-column"}>
-                                                    <FontAwesomeIcon icon={["fa-solid", "fa-" + nt.icon]} size={"2xl"}/>
-                                                </div>
-                                                <div className={"node-type-text-column"}>
-                                                    <div className={"node-type-title"}>
-                                                        {nt.name}
-                                                    </div>
-                                                    <div className={"node-type-description"}>
-                                                        {nt.description}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </>
-                        )}
+                        {/* Category pages with nested groups */}
+                        {!searchTerm && currentPage == Page.Triggers && renderGroupedPage(NodeCategoryType.Trigger)}
+                        {!searchTerm && currentPage == Page.Processing && renderGroupedPage(NodeCategoryType.Processing)}
+                        {!searchTerm && currentPage == Page.Outputs && renderGroupedPage(NodeCategoryType.Output)}
+                        {!searchTerm && currentPage == Page.Conditional && renderGroupedPage(NodeCategoryType.Conditional)}
+                        {!searchTerm && currentPage == Page.Loop && renderGroupedPage(NodeCategoryType.Loop)}
                     </div>
                 </div>
             )}
