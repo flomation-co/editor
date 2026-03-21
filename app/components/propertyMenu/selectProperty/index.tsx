@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import type {ParameterOption} from "~/types";
+import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
 
 type PropertyProps = {
     nodeId: string;
@@ -8,11 +9,18 @@ type PropertyProps = {
     value: string;
     options: ParameterOption[];
     required?: boolean;
+    variables?: VariableItem[];
     onValueChange?: (property: string, value: any) => void;
+}
+
+function looksLikeVariable(val: string): boolean {
+    return typeof val === "string" && /\$\{/.test(val);
 }
 
 const SelectProperty = (props: PropertyProps) => {
     const [ value, setValue ] = useState<string>(props.value);
+    const [ variableMode, setVariableMode ] = useState<boolean>(looksLikeVariable(props.value));
+    const hasVariables = props.variables && props.variables.length > 0;
 
     useEffect(() => {
         if (props.onValueChange) {
@@ -21,8 +29,16 @@ const SelectProperty = (props: PropertyProps) => {
     }, [ value ]);
 
     useEffect(() => {
-        setValue(props.value)
+        setValue(props.value);
+        setVariableMode(looksLikeVariable(props.value));
     }, [ props.nodeId ]);
+
+    const toggleVariableMode = () => {
+        if (variableMode) {
+            setValue("");
+        }
+        setVariableMode(!variableMode);
+    };
 
     return (
         <div className={"property-menu-input-row"} key={props.name} >
@@ -30,12 +46,38 @@ const SelectProperty = (props: PropertyProps) => {
                 {props.label ? props.label : props.name}
                 {props.required && <span className="property-menu-required"> *</span>}
             </div>
-            <select value={value} onChange={(e) => setValue(e.target.value)}>
-                <option value="">Select...</option>
-                {props.options && props.options.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.name}</option>
-                ))}
-            </select>
+            <div className="variable-mode-row">
+                {variableMode ? (
+                    <VariableInput
+                        nodeId={props.nodeId}
+                        name={props.name}
+                        placeholder={"${secrets.NAME} or ${env.NAME}"}
+                        label={props.label}
+                        value={value}
+                        required={props.required}
+                        multiline={false}
+                        variables={props.variables || []}
+                        onValueChange={(_, v) => setValue(v)}
+                    />
+                ) : (
+                    <select value={value} onChange={(e) => setValue(e.target.value)}>
+                        <option value="">Select...</option>
+                        {props.options && props.options.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.name}</option>
+                        ))}
+                    </select>
+                )}
+                {hasVariables && (
+                    <button
+                        type="button"
+                        className={`variable-mode-toggle ${variableMode ? "variable-mode-toggle--active" : ""}`}
+                        onClick={toggleVariableMode}
+                        title={variableMode ? "Switch to dropdown" : "Use a variable"}
+                    >
+                        {"{x}"}
+                    </button>
+                )}
+            </div>
         </div>
     )
 }

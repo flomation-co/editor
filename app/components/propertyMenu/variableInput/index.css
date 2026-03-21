@@ -19,14 +19,14 @@
     overflow-wrap: break-word;
 }
 
-/* Highlight layer sits behind */
+/* Highlight layer sits behind — shows plain text + styled variable pills */
 .variable-input-highlight {
     position: absolute;
     top: 0;
     left: 0;
     pointer-events: none;
     background: #17202e;
-    color: transparent;
+    color: #fff;
     z-index: 0;
     overflow: hidden;
 }
@@ -145,4 +145,51 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Variable mode toggle for non-text inputs */
+.variable-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.variable-mode-row > input,
+.variable-mode-row > select,
+.variable-mode-row > .property-menu-input-inline-row,
+.variable-mode-row > .variable-input-container {
+    flex: 1;
+    min-width: 0;
+}
+
+.variable-mode-toggle {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    background: #17202e;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    padding: 0;
+}
+
+.variable-mode-toggle:hover {
+    background: rgba(139, 0, 222, 0.15);
+    border-color: rgba(139, 0, 222, 0.4);
+    color: #d4a3f9;
+}
+
+.variable-mode-toggle--active {
+    background: rgba(139, 0, 222, 0.25);
+    border-color: rgba(139, 0, 222, 0.6);
+    color: #d4a3f9;
 }

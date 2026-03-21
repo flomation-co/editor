@@ -101,6 +101,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     value={i.value}
                                                     options={i.options}
                                                     required={i.required}
+                                                    variables={props.variables}
                                                     onValueChange={onValueChange}
                                                 />
                                             )
@@ -154,6 +155,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         key={i.name}
                                                         value={i.value}
                                                         required={i.required}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -161,12 +163,14 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             case "boolean":
                                                 return (
                                                     <BooleanProperty
+                                                        nodeId={props.node.data.id}
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
                                                         key={i.name}
                                                         value={i.value}
                                                         required={i.required}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
