@@ -221,7 +221,9 @@ export default function Flows() {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
                                                     <td>
-                                                        {flo.name}
+                                                        <Link to={"/flo/" + flo.id}>
+                                                            {flo.name}
+                                                        </Link>
                                                         {flo.has_validation_errors && (
                                                             <>
                                                                 <FontAwesomeIcon icon={faTriangleExclamation} style={{color: '#e6a817', marginLeft: '6px'}} data-tooltip-id={"validation-" + flo.id} data-tooltip-content={"Required fields are incomplete"} data-tooltip-place={"bottom"} />
@@ -248,9 +250,15 @@ export default function Flows() {
                                                         )}
                                                     </td>
                                                     <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                <span data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place={"bottom"}>
-                                                    {formatDate(flo.last_run)}
-                                                </span>
+                                                        {flo.last_execution ? (
+                                                            <Link to={"/execution/" + flo.last_execution.id} data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place={"bottom"}>
+                                                                {formatDate(flo.last_run)}
+                                                            </Link>
+                                                        ) : (
+                                                            <span data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place={"bottom"}>
+                                                                {formatDate(flo.last_run)}
+                                                            </span>
+                                                        )}
                                                         <Tooltip id={"tooltip-time-" + flo.id} />
                                                     </td>
                                                     <td className={"table-column-hide-sm flo-table-subdued"}>
