@@ -6,7 +6,7 @@ import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons'
 import Modal from "~/components/modal";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
@@ -220,7 +220,15 @@ export default function Flows() {
                                         {flos?.map((flo, index) => {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
-                                                    <td>{flo.name}<span className={"flo-table-subtext table-column-hide-sm"}>{flo.id}</span></td>
+                                                    <td>
+                                                        {flo.has_validation_errors && (
+                                                            <>
+                                                                <FontAwesomeIcon icon={faTriangleExclamation} style={{color: '#e6a817', marginRight: '6px'}} data-tooltip-id={"validation-" + flo.id} data-tooltip-content={"Required fields are incomplete"} data-tooltip-place={"bottom"} />
+                                                                <Tooltip id={"validation-" + flo.id} />
+                                                            </>
+                                                        )}
+                                                        {flo.name}<span className={"flo-table-subtext table-column-hide-sm"}>{flo.id}</span>
+                                                    </td>
                                                     <td className={"table-column-hide-sm"}>
                                                         {flo.environment_id && (
                                                             <Link to={"/environment/" + flo.environment_id}>
@@ -262,7 +270,7 @@ export default function Flows() {
                                                         <>{flo.execution_count}</>
                                                     )}</td>
                                                     <td>
-                                                        <button className={"table-button"} onClick={() => {triggerFlo(flo.id, 'default')}} data-tooltip-id={"trigger-" + flo.id} data-tooltip-content={"Execute Default Trigger"} data-tooltip-place={"bottom"}>
+                                                        <button className={"table-button"} disabled={flo.has_validation_errors} onClick={() => {if (!flo.has_validation_errors) triggerFlo(flo.id, 'default')}} data-tooltip-id={"trigger-" + flo.id} data-tooltip-content={flo.has_validation_errors ? "Complete all required fields before executing" : "Execute Default Trigger"} data-tooltip-place={"bottom"}>
                                                             {flo.triggers && flo.triggers.length > 0 &&  flo.triggers.some(e => e.name === "Default Trigger") && (
                                                                 <>
                                                                     {currentTrigger == flo.id && (
