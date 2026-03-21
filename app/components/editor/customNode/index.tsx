@@ -118,7 +118,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                      on the rotated square's edge midpoints (top-right & bottom-right diamond edges). */}
                 {type === 4 && hasOutputs && (
                     <>
-                        <Handle type="source" position={Position.Right} id="true-branch"
+                        <Handle type="source" position={Position.Top} id="true-branch"
                             style={{ right: 'auto', left: '50%', top: '-3px', transform: 'translate(-50%, 0)' }} />
                         <Handle type="source" position={Position.Bottom} id="false-branch"
                             style={{ bottom: 'auto', left: 'auto', right: '-3px', top: '50%', transform: 'translate(0, -50%)' }} />
