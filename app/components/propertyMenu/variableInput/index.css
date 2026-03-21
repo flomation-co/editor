@@ -1,0 +1,148 @@
+.variable-input-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Shared base for highlight + input overlap */
+.variable-input-highlight,
+.variable-input-field {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.5;
+    padding: 10px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Highlight layer sits behind */
+.variable-input-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background: #17202e;
+    color: transparent;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.variable-input-highlight--multiline {
+    min-height: 100px;
+    resize: both;
+}
+
+/* Input layer sits on top with transparent text */
+.variable-input-field {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    color: transparent;
+    caret-color: #fff;
+    outline: none;
+}
+
+.variable-input-field::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.variable-input-field:focus {
+    box-shadow: 0 0 10px 1px var(--highlight-colour);
+}
+
+.variable-input-field--multiline {
+    min-height: 100px;
+    resize: both;
+}
+
+/* Variable pills in the highlight layer */
+.variable-pill {
+    display: inline;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: inherit;
+    line-height: inherit;
+    color: #fff;
+    font-weight: 500;
+}
+
+.variable-pill--secrets {
+    background: rgba(139, 0, 222, 0.35);
+    border: 1px solid rgba(139, 0, 222, 0.6);
+    color: #d4a3f9;
+}
+
+.variable-pill--env {
+    background: rgba(0, 170, 156, 0.3);
+    border: 1px solid rgba(0, 170, 156, 0.5);
+    color: #6ee7d8;
+}
+
+.variable-pill--invalid {
+    background: rgba(190, 0, 0, 0.3);
+    border: 1px solid rgba(190, 0, 0, 0.6);
+    color: #ff6b6b;
+}
+
+/* Autocomplete dropdown */
+.variable-autocomplete {
+    position: absolute;
+    z-index: 100;
+    min-width: 220px;
+    max-width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    animation: floatIn 0.1s ease-out;
+}
+
+.variable-autocomplete-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.variable-autocomplete-item:hover,
+.variable-autocomplete-item--selected {
+    background: rgba(139, 0, 222, 0.2);
+}
+
+.variable-autocomplete-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.variable-autocomplete-badge--secrets {
+    background: rgba(139, 0, 222, 0.3);
+    color: #d4a3f9;
+}
+
+.variable-autocomplete-badge--env {
+    background: rgba(0, 170, 156, 0.25);
+    color: #6ee7d8;
+}
+
+.variable-autocomplete-name {
+    color: #e0e0e0;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

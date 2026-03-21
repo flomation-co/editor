@@ -7,6 +7,7 @@ import {library} from '@fortawesome/fontawesome-svg-core'
 import {fas} from '@fortawesome/free-solid-svg-icons'
 import {fab} from '@fortawesome/free-brands-svg-icons'
 import type {NodeDefinition} from "~/types";
+import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import TextProperty from "~/components/propertyMenu/textProperty";
 import StringProperty from "~/components/propertyMenu/stringProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
@@ -16,6 +17,7 @@ import SelectProperty from "~/components/propertyMenu/selectProperty";
 
 type PropertyMenuProps = {
     node: object;
+    variables?: VariableItem[];
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
@@ -122,6 +124,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         key={i.name}
                                                         value={i.value}
                                                         required={i.required}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -136,6 +139,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         key={i.name}
                                                         value={i.value}
                                                         required={i.required}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
@@ -177,6 +181,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         key={i.name}
                                                         value={i.value}
                                                         required={i.required}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )

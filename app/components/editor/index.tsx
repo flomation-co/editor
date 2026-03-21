@@ -1,6 +1,7 @@
 import "./index.css"
 import "./nodes.css"
-import type {Flo, Environment} from "~/types";
+import type {Flo, Environment, Property, Secret} from "~/types";
+import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -71,6 +72,7 @@ export function Editor(props : EditorProps) {
     const [ isMobile, setIsMobile ] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth <= 768 : true);
 
     const [ environments, setEnvironments ] = useState<Environment[]>();
+    const [ envVariables, setEnvVariables ] = useState<VariableItem[]>([]);
 
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
@@ -117,6 +119,36 @@ export function Editor(props : EditorProps) {
                 console.error("Unable to fetch actions", error);
             })
     }, []);
+
+    useEffect(() => {
+        if (!environment) {
+            setEnvVariables([]);
+            return;
+        }
+
+        const items: VariableItem[] = [];
+
+        Promise.all([
+            axios.get(API_URL + "/api/v1/environment/" + environment + "/property", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+            axios.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+        ]).then(([propsRes, secretsRes]) => {
+            const properties = propsRes.data || [];
+            const secrets = secretsRes.data || [];
+
+            properties.forEach((p: Property) => {
+                items.push({ name: p.name, category: "env" });
+            });
+            secrets.forEach((s: Secret) => {
+                items.push({ name: s.name, category: "secrets" });
+            });
+
+            setEnvVariables(items);
+        });
+    }, [environment]);
 
     useEffect(() => {
         axios.get(API_URL + "/api/v1/action", {
@@ -614,6 +646,7 @@ export function Editor(props : EditorProps) {
                                {propertyMenuVisible && (
                                     <PropertyMenu
                                         node={propertyNode}
+                                        variables={envVariables}
                                         onValueChange={onValueChange}
                                         onNameChange={onNameChange}
                                         onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}
