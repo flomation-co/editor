@@ -110,21 +110,30 @@ const VariableInput = (props: VariableInputProps) => {
         setValue(props.value || "");
     }, [props.nodeId]);
 
-    // Keep highlight div sized to match the input/textarea
+    // Keep highlight div sized and scrolled to match the input/textarea
     useEffect(() => {
         const input = inputRef.current;
         const highlight = highlightRef.current;
         if (!input || !highlight) return;
 
-        const sync = () => {
+        const syncSize = () => {
             highlight.style.height = input.offsetHeight + "px";
             highlight.style.width = input.offsetWidth + "px";
         };
-        sync();
+        syncSize();
 
-        const observer = new ResizeObserver(sync);
+        const syncScroll = () => {
+            highlight.scrollTop = input.scrollTop;
+            highlight.scrollLeft = input.scrollLeft;
+        };
+
+        input.addEventListener("scroll", syncScroll);
+        const observer = new ResizeObserver(syncSize);
         observer.observe(input);
-        return () => observer.disconnect();
+        return () => {
+            input.removeEventListener("scroll", syncScroll);
+            observer.disconnect();
+        };
     }, []);
 
     const segments = useMemo(

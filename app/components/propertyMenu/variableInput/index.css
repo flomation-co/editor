@@ -26,8 +26,16 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    overflow: auto;
     text-overflow: unset;
+}
+
+/* Input gets scrollbar, highlight scrolls programmatically via JS */
+.variable-input-field--multiline {
+    overflow: auto;
+}
+
+.variable-input-highlight--multiline {
+    overflow: hidden;
 }
 
 /* Highlight layer sits behind — shows plain text + styled variable pills */
