@@ -14,9 +14,20 @@
     border-radius: 5px;
     width: 100%;
     box-sizing: border-box;
+    /* Single-line: no wrapping, scroll on overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Multiline variants restore wrapping */
+.variable-input-highlight--multiline,
+.variable-input-field--multiline {
     white-space: pre-wrap;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    overflow: auto;
+    text-overflow: unset;
 }
 
 /* Highlight layer sits behind — shows plain text + styled variable pills */
