@@ -29,7 +29,7 @@ export default function ExecutionDetail() {
     const [ executionID, setExecutionID ] = useState<string>(useParams().id)
     const [ exec, setExec ] = useState<Execution>();
 
-    const [ liveUpdate, setLiveUpdate ] = useState<boolean>(false);
+    const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
 
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
     const [ width, setWidth ] = useState<number>(0);
@@ -67,12 +67,6 @@ export default function ExecutionDetail() {
             .then(response => {
                 if (response) {
                     setExec(response.data);
-
-                    if (response.data.completion_status === "pending") {
-                        setLiveUpdate(true);
-                    } else {
-                        setLiveUpdate(false);
-                    }
                 }
             })
             .catch(error => {
@@ -80,23 +74,44 @@ export default function ExecutionDetail() {
             })
     }
 
-    useEffect(() => {
-        console.log(exec);
-    }, [ exec ]);
-
+    // Initial fetch
     useEffect(() => {
         queryExecutionState();
     }, [ executionID ]);
 
+    // SSE streaming for live logs
     useEffect(() => {
-        if (liveUpdate) {
+        if (!exec || exec.completion_status !== "pending") return;
+
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/execution/' + executionID + '/stream?token=' + encodeURIComponent(token);
+
+        const eventSource = new EventSource(url);
+
+        eventSource.onmessage = (event) => {
+            setStreamingLogs(prev => [...prev, event.data]);
+        };
+
+        eventSource.addEventListener("complete", () => {
+            eventSource.close();
+            // Re-fetch the full execution to get final state
+            queryExecutionState();
+        });
+
+        eventSource.onerror = () => {
+            eventSource.close();
+            // Fall back to polling on SSE failure
             const interval = setInterval(() => {
                 queryExecutionState();
-            }, 500);
+            }, 2000);
 
             return () => clearInterval(interval);
-        }
-    }, [ executionID, liveUpdate ]);
+        };
+
+        return () => {
+            eventSource.close();
+        };
+    }, [ exec?.completion_status, executionID ]);
 
     function formatDate(date) {
         if (!date) {
@@ -168,14 +183,19 @@ export default function ExecutionDetail() {
 
                     {logModeRaw && (
                         <pre className={"code-block"}>
-                        {!exec.result && (
+                        {!exec.result && streamingLogs.length === 0 && (
                             <>
                                 &nbsp;
                             </>
                         )}
-                            {exec.result && (
+                            {exec.result && exec.result.logs && (
                                 <>
                                     {exec.result.logs}
+                                </>
+                            )}
+                            {!exec.result && streamingLogs.length > 0 && (
+                                <>
+                                    {streamingLogs.join("\n")}
                                 </>
                             )}
                     </pre>
