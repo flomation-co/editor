@@ -587,8 +587,8 @@ export function Editor(props : EditorProps) {
                             </div>
                             {environments && (
                                 <div className={"flo-editor-property-action-section"}>
-                                    <div className={"flo-editor-action-button"} data-tooltip-id={"tooltip-action-set-environment"} data-tooltip-content={"Select Environment"} data-tooltip-place={"bottom"}>
-                                        <select id={"flo-environment"} className={"flo-editor-title-textbox"} onChange={updateEnvironment}>
+                                    <div data-tooltip-id={"tooltip-action-set-environment"} data-tooltip-content={"Select Environment"} data-tooltip-place={"bottom"}>
+                                        <select id={"flo-environment"} className={"flo-editor-select"} onChange={updateEnvironment}>
                                             <option value={null} key={"none"} selected={flo.environment_id === null}>No Environment</option>
                                             {environments.map(env => {
                                                 return <option value={env.id} key={env.id} selected={env.id === flo.environment_id}>{env.name}</option>
