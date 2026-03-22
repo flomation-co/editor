@@ -40,6 +40,7 @@ export default function Environment() {
     const [ confirmDeletionID, setConfirmDeletionID ] = useState<string>(null);
 
     const [ editingPropertyID, setEditingPropertyID ] = useState<string | null>(null);
+    const [ editingPropertyName, setEditingPropertyName ] = useState<string>("");
     const [ editingPropertyValue, setEditingPropertyValue ] = useState<string>("");
 
     const [ editingSecretID, setEditingSecretID ] = useState<string | null>(null);
@@ -247,11 +248,13 @@ export default function Environment() {
 
     const startEditProperty = (prop) => {
         setEditingPropertyID(prop.id);
+        setEditingPropertyName(prop.name);
         setEditingPropertyValue(prop.value);
     }
 
     const cancelEditProperty = () => {
         setEditingPropertyID(null);
+        setEditingPropertyName("");
         setEditingPropertyValue("");
     }
 
@@ -260,7 +263,7 @@ export default function Environment() {
         const config = useConfig();
         const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + editingPropertyID;
 
-        api.post(url, { value: editingPropertyValue }, {
+        api.post(url, { name: editingPropertyName, value: editingPropertyValue }, {
             headers: { Authorization: "Bearer " + token }
         })
             .then(() => { cancelEditProperty(); updateProperties(); })
