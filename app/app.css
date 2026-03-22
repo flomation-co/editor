@@ -299,7 +299,7 @@ body {
 input {
   width: 100%;
   padding: 10px;
-  background-color: var(--primary-background);
+  background: transparent;
   color: var(--primary-font-colour);
   outline: none;
   border: 0;
@@ -316,9 +316,8 @@ input:focus {
 
 textarea {
   width: 100%;
-  min-height: 50px;
   padding: 10px;
-  background-color: var(--primary-background);
+  background: transparent;
   color: var(--primary-font-colour);
   outline: none;
   border: none;
