@@ -11,7 +11,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
-import {faLink} from "@fortawesome/pro-solid-svg-icons";
+import {faLink, faSpinner} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {LogOutput} from "~/components/logOutput";
 
@@ -160,10 +160,13 @@ export default function ExecutionDetail() {
                         Outputs
                     </div>
                     <pre className={"code-block"}>
-                        {!exec.result && (
-                            <>
-                                &nbsp;
-                            </>
+                        {exec.completion_status === "pending" && !exec.result && (
+                            <div className={"loading-container"} style={{padding: "20px 0"}}>
+                                <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Waiting for execution to complete...</span>
+                            </div>
+                        )}
+                        {exec.completion_status !== "pending" && !exec.result && (
+                            <>&nbsp;</>
                         )}
                         {exec.result && (
                             <>
@@ -182,15 +185,27 @@ export default function ExecutionDetail() {
                     </div>
 
                     {!logModeRaw && (
-                        <LogOutput logs={exec.result} />
+                        <>
+                            {exec.completion_status === "pending" && !exec.result && (
+                                <pre className={"code-block"}>
+                                    <div className={"loading-container"} style={{padding: "20px 0"}}>
+                                        <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Streaming logs...</span>
+                                    </div>
+                                </pre>
+                            )}
+                            {exec.result && <LogOutput logs={exec.result} />}
+                        </>
                     )}
 
                     {logModeRaw && (
                         <pre className={"code-block"}>
-                        {!exec.result && streamingLogs.length === 0 && (
-                            <>
-                                &nbsp;
-                            </>
+                        {exec.completion_status === "pending" && !exec.result && streamingLogs.length === 0 && (
+                            <div className={"loading-container"} style={{padding: "20px 0"}}>
+                                <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Waiting for logs...</span>
+                            </div>
+                        )}
+                        {exec.completion_status !== "pending" && !exec.result && streamingLogs.length === 0 && (
+                            <>&nbsp;</>
                         )}
                             {exec.result && exec.result.logs && (
                                 <>
