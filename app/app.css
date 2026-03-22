@@ -299,10 +299,11 @@ body {
 input {
   width: 100%;
   padding: 10px;
-  background: transparent;
+  background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   box-sizing: border-box;
 }
 
@@ -317,11 +318,11 @@ input:focus {
 textarea {
   width: 100%;
   padding: 10px;
-  background: transparent;
+  background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: none;
-  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   box-sizing: border-box;
   resize: vertical;
   font-family: inherit;
