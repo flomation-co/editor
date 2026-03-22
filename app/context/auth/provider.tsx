@@ -8,49 +8,46 @@ import axios from "axios";
 export default function AuthProvider({ children }: { children: React.ReactNode}) {
     const [ user, setUser ] = useState<AuthUser | null>(null);
     const [ userID, setUserID ] = useState<string | null>(null);
-    const [ token, setToken ] = useState<string>(useCookieToken());
     const config = useConfig()
+
+    // Read the cookie directly on each render (works client-side after hydration,
+    // matching the pattern used by Dashboard and other pages).
+    const token = useCookieToken();
 
     useEffect(() => {
         if (!token) {
             const redirectUrl = config("LOGIN_URL");
-            const location = window.location;
-            window.location.replace(redirectUrl + "?redirect_url=" + location.href)
+            if (redirectUrl) {
+                window.location.replace(redirectUrl + "?redirect_url=" + window.location.href)
+            }
             return;
         }
 
         const tokenParts = token.split(".");
         if (tokenParts.length != 3) {
-            setToken(null);
             return;
         }
 
-        // TODO: We should check Header + Footer parts, for now just parse the payload and store as a User
         const payload : JWTPayload = JSON.parse(atob(tokenParts[1]));
         if (!payload) {
-            setToken(null);
             return;
         }
 
         setUserID(payload.id)
-    }, [ token ]);
 
-    useEffect(() => {
-        if (userID) {
-            const API_URL = config("AUTOMATE_API_URL");
-            axios.get(API_URL + "/api/v1/user", {
-                headers: {
-                    "Authorization": "Bearer " + token,
-                }
+        const API_URL = config("AUTOMATE_API_URL");
+        axios.get(API_URL + "/api/v1/user", {
+            headers: {
+                "Authorization": "Bearer " + token,
+            }
+        })
+            .then(response => {
+                setUser(response.data);
             })
-                .then(response => {
-                    setUser(response.data);
-                })
-                .catch(error => {
-                    console.error("Unable to fetch user", error);
-                })
-        }
-    }, [ userID ]);
+            .catch(error => {
+                console.error("Unable to fetch user", error);
+            })
+    }, [ token ]);
 
     return (
         <AuthContext.Provider value={{ user, setUser, userID, token }}>
