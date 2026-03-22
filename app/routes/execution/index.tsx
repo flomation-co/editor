@@ -92,6 +92,10 @@ export default function ExecutionDetail() {
             setStreamingLogs(prev => [...prev, event.data]);
         };
 
+        eventSource.addEventListener("status", (event) => {
+            setExec(prev => prev ? {...prev, execution_status: event.data} : prev);
+        });
+
         eventSource.addEventListener("complete", () => {
             eventSource.close();
             // Re-fetch the full execution to get final state
