@@ -203,6 +203,7 @@ export type JWTPayload = {
 export type Queue = {
     id: string,
     organisation_id?: string,
+    parent_id?: string,
     name: string,
     registration_code: string,
     created_at?: string,
