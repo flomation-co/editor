@@ -115,8 +115,8 @@ export function VerticalNav(props: VerticalNavProps) {
                             <div className={"menu-section-header"}>Manage</div>
                             <div className={"menu-section-list"}>
                                 <NavLink to={"/organisation"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
-                                <NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>
-                                <NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>
+                                {/*<NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>*/}
+                                {/*<NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>*/}
                             </div>
                         </>
                     )}
