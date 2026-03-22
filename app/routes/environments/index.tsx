@@ -9,7 +9,7 @@ import {ExecuteState} from "~/components/executionState";
 import {PaginationControls} from "~/components/paginationControls";
 import {useEffect, useState} from "react";
 import useConfig from "~/components/config";
-import axios from "axios";
+import api from "~/lib/api";
 import useCookieToken from "~/components/cookie";
 import type {Environment} from "~/types";
 import {faCancel, faCheck, faGlobe, faWarning} from "@fortawesome/pro-solid-svg-icons";
@@ -48,7 +48,7 @@ export default function Environments() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment';
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 "Authorization": "Bearer " + token,
@@ -93,7 +93,7 @@ export default function Environments() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + id;
 
-        axios.delete(url, {
+        api.delete(url, {
             signal: controller.signal,
             headers: {
                 "Authorization": "Bearer " + token,
@@ -118,7 +118,7 @@ export default function Environments() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment';
 
-        axios.post(url, {
+        api.post(url, {
             name: inputEnvironmentName,
         }, {
             signal: controller.signal,

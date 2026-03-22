@@ -3,16 +3,23 @@ import type {AuthUser, JWTPayload} from "~/types";
 import AuthContext from "~/context/auth/context";
 import useCookieToken from "~/components/cookie";
 import useConfig from "~/components/config";
-import axios from "axios";
+import Cookies from "js-cookie";
+import api from "~/lib/api";
 
 export default function AuthProvider({ children }: { children: React.ReactNode}) {
     const [ user, setUser ] = useState<AuthUser | null>(null);
     const [ userID, setUserID ] = useState<string | null>(null);
     const config = useConfig()
 
-    // Read the cookie directly on each render (works client-side after hydration,
-    // matching the pattern used by Dashboard and other pages).
     const token = useCookieToken();
+
+    const logout = () => {
+        Cookies.remove("flomation-token");
+        const redirectUrl = config("LOGIN_URL");
+        if (redirectUrl) {
+            window.location.replace(redirectUrl + "?redirect_url=" + window.location.href);
+        }
+    };
 
     useEffect(() => {
         if (!token) {
@@ -33,10 +40,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode})
             return;
         }
 
+        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+            logout();
+            return;
+        }
+
         setUserID(payload.id)
 
         const API_URL = config("AUTOMATE_API_URL");
-        axios.get(API_URL + "/api/v1/user", {
+        api.get(API_URL + "/api/v1/user", {
             headers: {
                 "Authorization": "Bearer " + token,
             }
@@ -50,7 +62,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode})
     }, [ token ]);
 
     return (
-        <AuthContext.Provider value={{ user, setUser, userID, token }}>
+        <AuthContext.Provider value={{ user, setUser, userID, token, logout }}>
             {children}
         </AuthContext.Provider>
     )

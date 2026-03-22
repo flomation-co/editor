@@ -3,7 +3,7 @@ import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useAuth} from "~/context/auth/use";
 import type {AuthUser} from "~/types";
-import axios from "axios";
+import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import dayjs from "dayjs";
@@ -60,7 +60,7 @@ export default function Profile() {
 
         updatedUser.name = name ? name : "";
 
-        axios.post(url + '/api/v1/user/' + updatedUser.id, updatedUser, {
+        api.post(url + '/api/v1/user/' + updatedUser.id, updatedUser, {
             headers: {
                 'Content-Type': 'application/json',
                 "Authorization": "Bearer " + token,

@@ -4,7 +4,7 @@ import { faCircleExclamation, faCubesStacked, faChartColumn, faLandmark, faPerso
 
 import {Link, NavLink, useNavigate} from "react-router";
 import {useEffect, useState} from "react";
-import axios from "axios";
+import api from "~/lib/api";
 import {faArrowUpRightFromSquare, faHourglassStart, faKey, faWrench} from "@fortawesome/pro-solid-svg-icons";
 import {faDiscord} from "@fortawesome/free-brands-svg-icons";
 import useConfig from "~/components/config";
@@ -33,7 +33,7 @@ export function VerticalNav(props: VerticalNavProps) {
     function createNewFlo() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL");
-        axios.post(url + '/api/v1/flo', {
+        api.post(url + '/api/v1/flo', {
             "name": "Untitled Flo"
         }, {
             headers: {
@@ -53,7 +53,7 @@ export function VerticalNav(props: VerticalNavProps) {
     }
 
     const updateStatus = () => {
-        axios.get(API_URL + '/version')
+        api.get(API_URL + '/version')
             .then(() => {
                 setIsStatusGood(true);
                 setIsStatusPending(false);

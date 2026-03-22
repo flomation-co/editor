@@ -6,6 +6,7 @@ interface AuthContextType {
     setUser: (user: AuthUser | null) => void;
     userID: string | null;
     token: string | null;
+    logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
