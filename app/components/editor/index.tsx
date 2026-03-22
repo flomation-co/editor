@@ -31,7 +31,7 @@ import {NodeCategoryType, useDebounce} from "~/types";
 import {faPlay, faTruckRampBox} from "@fortawesome/free-solid-svg-icons";
 import PropertyMenu from "~/components/propertyMenu";
 import useConfig from "~/components/config";
-import {faGrid, faMap, faPlus} from "@fortawesome/pro-solid-svg-icons";
+import {faChevronDown, faGrid, faMap, faPlus, faWrench} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useNavigate} from "react-router";
 import {Tooltip} from "react-tooltip";
@@ -73,6 +73,8 @@ export function Editor(props : EditorProps) {
 
     const [ environments, setEnvironments ] = useState<Environment[]>();
     const [ envVariables, setEnvVariables ] = useState<VariableItem[]>([]);
+    const [ envDropdownOpen, setEnvDropdownOpen ] = useState<boolean>(false);
+    const envDropdownRef = useRef<HTMLDivElement>(null);
 
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
@@ -530,14 +532,21 @@ export function Editor(props : EditorProps) {
         onContextMenuOpen(null);
     }, [])
 
-    const updateEnvironment = (e) => {
-        console.log("Set environment", e.target.value);
-        if (e.target.value == "No Environment") {
-            setEnvironment(null)
-        } else {
-            setEnvironment(e.target.value);
-        }
+    const selectEnvironment = (envId: string | null) => {
+        setEnvironment(envId);
+        setEnvDropdownOpen(false);
     }
+
+    // Close env dropdown on outside click
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (envDropdownRef.current && !envDropdownRef.current.contains(e.target as Node)) {
+                setEnvDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, []);
 
     function triggerFlo(flo_id: string, trigger_id: string) {
         if (isTriggering) {
@@ -587,14 +596,31 @@ export function Editor(props : EditorProps) {
                             </div>
                             {environments && (
                                 <div className={"flo-editor-property-action-section"}>
-                                    <div data-tooltip-id={"tooltip-action-set-environment"} data-tooltip-content={"Select Environment"} data-tooltip-place={"bottom"}>
-                                        <select id={"flo-environment"} className={"flo-editor-select"} onChange={updateEnvironment}>
-                                            <option value={null} key={"none"} selected={flo.environment_id === null}>No Environment</option>
-                                            {environments.map(env => {
-                                                return <option value={env.id} key={env.id} selected={env.id === flo.environment_id}>{env.name}</option>
-                                            })}
-                                        </select>
-                                        <Tooltip id={"tooltip-action-set-environment"} />
+                                    <div className={"flo-editor-env-dropdown"} ref={envDropdownRef}>
+                                        <button className={"flo-editor-env-button"} onClick={() => setEnvDropdownOpen(!envDropdownOpen)}>
+                                            <FontAwesomeIcon icon={faWrench} className={"flo-editor-env-icon"} />
+                                            <span>{flo.environment_id ? environments.find(e => e.id === flo.environment_id)?.name || "Environment" : "No Environment"}</span>
+                                            <FontAwesomeIcon icon={faChevronDown} className={"flo-editor-env-chevron"} />
+                                        </button>
+                                        {envDropdownOpen && (
+                                            <div className={"flo-editor-env-menu"}>
+                                                <div
+                                                    className={`flo-editor-env-item ${!flo.environment_id ? "active" : ""}`}
+                                                    onClick={() => selectEnvironment(null)}
+                                                >
+                                                    No Environment
+                                                </div>
+                                                {environments.map(env => (
+                                                    <div
+                                                        key={env.id}
+                                                        className={`flo-editor-env-item ${env.id === flo.environment_id ? "active" : ""}`}
+                                                        onClick={() => selectEnvironment(env.id)}
+                                                    >
+                                                        {env.name}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

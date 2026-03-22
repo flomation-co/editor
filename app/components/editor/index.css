@@ -221,6 +221,73 @@
     background-position: right 10px center;
 }
 
+.flo-editor-env-dropdown {
+    position: relative;
+}
+
+.flo-editor-env-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--secondary-font-colour);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    white-space: nowrap;
+}
+
+.flo-editor-env-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.flo-editor-env-icon {
+    font-size: 11px;
+    color: #00aa9c;
+}
+
+.flo-editor-env-chevron {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.flo-editor-env-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 200px;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    z-index: 10000;
+}
+
+.flo-editor-env-item {
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #d1d5db;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.flo-editor-env-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.flo-editor-env-item.active {
+    background: rgba(0, 170, 156, 0.15);
+    color: #2dd4bf;
+}
+
 /*.react-flow__node-default {*/
 /*    min-width: 100px;*/
 /*    max-width: 300px;*/
