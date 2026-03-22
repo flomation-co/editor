@@ -131,17 +131,20 @@ export default function Queues() {
             <div className={"header"}>Queues</div>
 
             {isAdmin && (
-                <div className={"queue-create"}>
-                    <input
-                        type="text"
-                        placeholder="New queue name"
-                        value={newQueueName}
-                        onChange={e => setNewQueueName(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && createQueue()}
-                    />
-                    <button onClick={createQueue} disabled={!newQueueName.trim()} style={{cursor: newQueueName.trim() ? "pointer" : "not-allowed"}}>
-                        <FontAwesomeIcon icon={faPlus} /> Create Queue
-                    </button>
+                <div className={"search-section"}>
+                    <div className={"queue-create"}>
+                        <input
+                            type="text"
+                            className={"search-textbox"}
+                            placeholder="New queue name..."
+                            value={newQueueName}
+                            onChange={e => setNewQueueName(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && createQueue()}
+                        />
+                        <button className={"table-button"} onClick={createQueue} disabled={!newQueueName.trim()} style={{cursor: newQueueName.trim() ? "pointer" : "not-allowed", height: "auto", padding: "10px 16px"}}>
+                            <FontAwesomeIcon icon={faPlus} /> <span>Create Queue</span>
+                        </button>
+                    </div>
                 </div>
             )}
 
