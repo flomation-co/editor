@@ -76,10 +76,8 @@
 
 /* Dropdown */
 .vp-dropdown {
-    position: absolute;
-    z-index: 100;
-    top: calc(100% + 4px);
-    right: 0;
+    position: fixed;
+    z-index: 10000;
     min-width: 240px;
     background: #1a1a2e;
     border: 1px solid rgba(139, 0, 222, 0.3);

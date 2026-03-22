@@ -117,10 +117,10 @@
 
 /* Autocomplete dropdown */
 .variable-autocomplete {
-    position: absolute;
-    z-index: 100;
+    position: fixed;
+    z-index: 10000;
     min-width: 220px;
-    max-width: 100%;
+    max-width: 300px;
     max-height: 350px;
     overflow-y: auto;
     background: #1a1a2e;

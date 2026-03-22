@@ -173,15 +173,14 @@ const VariableInput = (props: VariableInputProps) => {
 
             const filter = between;
 
-            // Position the dropdown relative to the input
-            if (inputRef.current && containerRef.current) {
+            // Position the dropdown using viewport coordinates for fixed positioning
+            if (inputRef.current) {
                 const inputRect = inputRef.current.getBoundingClientRect();
-                const containerRect = containerRef.current.getBoundingClientRect();
 
                 setAutocomplete({
                     visible: true,
-                    x: 0,
-                    y: inputRect.bottom - containerRect.top + 4,
+                    x: inputRect.left,
+                    y: inputRect.bottom + 4,
                     filter,
                     insertStart: openIndex,
                 });
