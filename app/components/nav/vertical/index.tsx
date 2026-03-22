@@ -133,7 +133,7 @@ export function VerticalNav(props: VerticalNavProps) {
                 </div>
 
                 <div className={"vertical-nav-bottom-section"}>
-                    <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flo</a>
+                    <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flow</a>
 
                     <div className={"menu-section-list"}>
                         {/*<NavLink to={"/docs"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBook}/></div><span className={"menu-section-list-item-label"}>Documentation</span></NavLink>*/}
