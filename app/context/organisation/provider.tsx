@@ -48,11 +48,19 @@ export default function OrganisationProvider({ children }: { children: React.Rea
     }, [organisations]);
 
     const setCurrentOrg = (org: Organisation | null) => {
+        const previousOrgId = localStorage.getItem(ORG_STORAGE_KEY);
+        const newOrgId = org?.id || null;
+
         setCurrentOrgState(org);
         if (org) {
             localStorage.setItem(ORG_STORAGE_KEY, org.id);
         } else {
             localStorage.removeItem(ORG_STORAGE_KEY);
+        }
+
+        // Reload the page so all data re-fetches with the new org context
+        if (previousOrgId !== newOrgId) {
+            window.location.reload();
         }
     };
 
