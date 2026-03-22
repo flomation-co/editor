@@ -20,7 +20,6 @@ function isVariableRef(val: string): boolean {
 
 const SelectProperty = (props: PropertyProps) => {
     const [ value, setValue ] = useState<string>(props.value);
-    const hasVariables = props.variables && props.variables.length > 0;
 
     useEffect(() => {
         if (props.onValueChange) {
@@ -55,14 +54,12 @@ const SelectProperty = (props: PropertyProps) => {
                             <option key={opt.value} value={opt.value}>{opt.name}</option>
                         ))}
                     </select>
-                    {hasVariables && (
-                        <VariablePicker
-                            value={value}
-                            variables={props.variables!}
-                            onSelect={(ref) => setValue(ref)}
-                            onClear={() => setValue("")}
-                        />
-                    )}
+                    <VariablePicker
+                        value={value}
+                        variables={props.variables ?? []}
+                        onSelect={(ref) => setValue(ref)}
+                        onClear={() => setValue("")}
+                    />
                 </div>
             )}
         </div>

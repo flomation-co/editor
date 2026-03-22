@@ -25,30 +25,20 @@ const TextProperty = (props: PropertyProps) => {
         setValue(props.value)
     }, [ props.nodeId ]);
 
-    const hasVariables = props.variables && props.variables.length > 0;
-
     return (
         <div className={"property-menu-input-row"} key={props.name} >
             <div className={"property-menu-input-name"} >{props.label ? props.label : props.name}{props.required && <span className="property-menu-required"> *</span>}</div>
-            {hasVariables ? (
-                <VariableInput
-                    nodeId={props.nodeId}
-                    name={props.name}
-                    placeholder={props.placeholder}
-                    label={props.label}
-                    value={value}
-                    required={props.required}
-                    multiline={true}
-                    variables={props.variables!}
-                    onValueChange={(_, v) => setValue(v)}
-                />
-            ) : (
-                <textarea placeholder={props.placeholder} value={value} onChange={(e) => {
-                    setValue(e.target.value);
-                }}>
-
-                </textarea>
-            )}
+            <VariableInput
+                nodeId={props.nodeId}
+                name={props.name}
+                placeholder={props.placeholder}
+                label={props.label}
+                value={value}
+                required={props.required}
+                multiline={true}
+                variables={props.variables ?? []}
+                onValueChange={(_, v) => setValue(v)}
+            />
         </div>
     )
 }
