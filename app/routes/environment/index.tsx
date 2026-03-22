@@ -293,7 +293,7 @@ export default function Environment() {
                                 <input type={"text"} placeholder={"Property name..."} autoFocus={true} value={inputEnvironmentPropertyName} onChange={changeEnvironmentPropertyName} />
                             </td>
                             <td>
-                                <textarea placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} rows={3} style={{width: "100%", resize: "vertical"}} />
+                                <textarea placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} rows={3} />
                             </td>
                             <td className={"table-column-small-col"}>
                                 <button className={"table-button"} onClick={() => saveProperty()}>
@@ -353,7 +353,7 @@ export default function Environment() {
                                 <input type={"text"} placeholder={"Secret name..."} autoFocus={true} value={inputEnvironmentSecretName} onChange={changeEnvironmentSecretName} />
                             </td>
                             <td>
-                                <textarea placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} rows={3} style={{width: "100%", resize: "vertical"}} />
+                                <textarea placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} rows={3} />
                             </td>
                             <td className={"table-column-small-col"}>
                                 <button className={"table-button"} onClick={() => saveSecret()}>

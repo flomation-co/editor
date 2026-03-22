@@ -316,14 +316,20 @@ input:focus {
 
 textarea {
   width: 100%;
-  min-height: 100px;
+  min-height: 50px;
   padding: 10px;
   background-color: var(--primary-background);
   color: var(--primary-font-colour);
   outline: none;
   border: 0;
   box-sizing: border-box;
-  resize: both;
+  resize: vertical;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+textarea:focus {
+  box-shadow: 0 0 10px 1px var(--highlight-colour);
 }
 
 .loading-container{
