@@ -321,11 +321,14 @@ textarea {
   background-color: var(--primary-background);
   color: var(--primary-font-colour);
   outline: none;
-  border: 0;
+  border: none;
+  border-radius: 0;
   box-sizing: border-box;
   resize: vertical;
   font-family: inherit;
   font-size: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 textarea:focus {
