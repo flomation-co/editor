@@ -19,7 +19,6 @@ function isVariableRef(val: any): boolean {
 
 const BooleanProperty = (props: PropertyProps) => {
     const [ value, setValue ] = useState<boolean | string>(props.value);
-    const hasVariables = props.variables && props.variables.length > 0;
 
     useEffect(() => {
         if (props.onValueChange) {
@@ -61,14 +60,12 @@ const BooleanProperty = (props: PropertyProps) => {
                             <span className={"property-menu-checkbox"}></span>
                         </label>
                     </div>
-                    {hasVariables && (
-                        <VariablePicker
-                            value={typeof value === "string" ? value : ""}
-                            variables={props.variables!}
-                            onSelect={(ref) => setValue(ref)}
-                            onClear={() => setValue(false)}
-                        />
-                    )}
+                    <VariablePicker
+                        value={typeof value === "string" ? value : ""}
+                        variables={props.variables ?? []}
+                        onSelect={(ref) => setValue(ref)}
+                        onClear={() => setValue(false)}
+                    />
                 </div>
             )}
         </div>
