@@ -8,10 +8,20 @@ import axios from "axios";
 export default function AuthProvider({ children }: { children: React.ReactNode}) {
     const [ user, setUser ] = useState<AuthUser | null>(null);
     const [ userID, setUserID ] = useState<string | null>(null);
-    const [ token, setToken ] = useState<string>(useCookieToken());
+    const [ token, setToken ] = useState<string | null>(null);
     const config = useConfig()
 
+    // Read the cookie on the client only, after hydration.
     useEffect(() => {
+        const cookieToken = useCookieToken();
+        setToken(cookieToken);
+    }, []);
+
+    useEffect(() => {
+        if (token === null) {
+            return;
+        }
+
         if (!token) {
             const redirectUrl = config("LOGIN_URL");
             const location = window.location;
