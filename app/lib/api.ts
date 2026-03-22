@@ -32,6 +32,14 @@ api.interceptors.response.use(
             }
         }
 
+        if (error.response && error.response.status === 403 && typeof window !== "undefined") {
+            const path = window.location.pathname;
+            const segments = path.split("/").filter(Boolean);
+            if (segments.length > 1) {
+                window.location.replace("/" + segments[0]);
+            }
+        }
+
         return Promise.reject(error);
     }
 );
