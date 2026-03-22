@@ -94,6 +94,12 @@ body {
   flex: 1;
 }
 
+.small-label {
+  display: inline-block;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
 .table-spacer {
   margin-top: 10px;
   margin-bottom: 10px;
