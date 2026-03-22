@@ -9,6 +9,7 @@ import {faArrowUpRightFromSquare, faHourglassStart, faKey, faWrench} from "@fort
 import {faDiscord} from "@fortawesome/free-brands-svg-icons";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
+import {useOrganisation} from "~/context/organisation/use";
 
 type VerticalNavProps = {
     active?: string
@@ -24,11 +25,16 @@ export function VerticalNav(props: VerticalNavProps) {
 
     const [ showAutomate, setShowAutomate ] = useState<boolean>(true);
     const [ showConfigure, setShowConfigure ] = useState<boolean>(true);
+    const { organisations } = useOrganisation();
     const [ showManage, setShowManage ] = useState<boolean>(false);
     const [ showAdminister, setShowAdminister ] = useState<boolean>(false);
     const [ currentlyActive, setCurrentlyActive ] = useState(props.active);
     const [ isStatusGood, setIsStatusGood ] = useState<boolean>(false);
     const [ isStatusPending, setIsStatusPending ] = useState<boolean>(true);
+
+    useEffect(() => {
+        setShowManage(true);
+    }, [organisations]);
 
     function createNewFlo() {
         const config = useConfig();

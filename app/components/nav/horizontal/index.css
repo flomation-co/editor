@@ -33,3 +33,99 @@
     background-color: var(--primary-background);
     cursor: pointer;
 }
+
+.org-switcher {
+    position: relative;
+    margin-left: 12px;
+}
+
+.org-switcher-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #d1d5db;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.org-switcher-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.org-switcher-icon {
+    font-size: 12px;
+    color: #8b5cf6;
+}
+
+.org-switcher-label {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.org-switcher-chevron {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.org-switcher-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 220px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 6px;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.org-switcher-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #d1d5db;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.org-switcher-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.org-switcher-item.active {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.org-switcher-item-icon {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.org-switcher-item.active .org-switcher-item-icon {
+    color: #a78bfa;
+}
+
+.org-switcher-role {
+    margin-left: auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+}

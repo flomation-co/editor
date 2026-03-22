@@ -204,3 +204,31 @@ export type UserDashboard = {
     usage: number,
     allowance: number
 }
+
+export type Organisation = {
+    id: string,
+    name: string,
+    icon?: string,
+    role: string,
+    created_at?: string
+}
+
+export type OrganisationMember = {
+    user_id: string,
+    name: string,
+    role: string,
+    joined_at?: string
+}
+
+export type OrganisationInvite = {
+    id: string,
+    organisation_id: string,
+    email?: string,
+    invite_code: string,
+    role: string,
+    created_by: string,
+    created_at: string,
+    accepted_at?: string,
+    accepted_by?: string,
+    expires_at: string
+}
