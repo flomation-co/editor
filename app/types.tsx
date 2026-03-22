@@ -210,6 +210,7 @@ export type Organisation = {
     name: string,
     icon?: string,
     role: string,
+    allow_public_runners: boolean,
     created_at?: string
 }
 

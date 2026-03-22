@@ -133,9 +133,41 @@ export default function Organisations() {
         );
     }
 
+    const togglePublicRunners = () => {
+        if (!currentOrg || !isAdmin) return;
+        const updated = { ...currentOrg, allow_public_runners: !currentOrg.allow_public_runners };
+        api.post(`${API_URL}/api/v1/organisation/${currentOrg.id}`, updated, {
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }
+        })
+            .then(() => refreshOrganisations())
+            .catch(err => console.error("Unable to update organisation", err));
+    };
+
     return (
         <Container>
             <div className={"header"}>{currentOrg.name}</div>
+
+            {isAdmin && (
+                <div className={"org-section"}>
+                    <div className={"org-section-header"}>Settings</div>
+                    <div className={"org-setting-row"}>
+                        <div className={"org-setting-label"}>
+                            <div className={"org-setting-name"}>Allow Public Runners</div>
+                            <div className={"org-setting-description"}>
+                                When enabled, organisation flows can be executed by public runners that are not assigned to any organisation queue.
+                            </div>
+                        </div>
+                        <label className={"org-toggle"}>
+                            <input
+                                type="checkbox"
+                                checked={currentOrg.allow_public_runners}
+                                onChange={togglePublicRunners}
+                            />
+                            <span className={"org-toggle-slider"}></span>
+                        </label>
+                    </div>
+                </div>
+            )}
 
             <div className={"org-section"}>
                 <div className={"org-section-header"}>Members</div>
