@@ -6,7 +6,7 @@ import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import axios from 'axios';
+import api from "~/lib/api";
 
 import Container from "~/components/container";
 import ContextMenu from "~/components/contextMenu";
@@ -106,7 +106,7 @@ export function Editor(props : EditorProps) {
     }, []);
 
     useEffect(() => {
-        axios.get(API_URL + "/api/v1/environment", {
+        api.get(API_URL + "/api/v1/environment", {
             headers: {
                 "Authorization": "Bearer " + token
             }
@@ -129,10 +129,10 @@ export function Editor(props : EditorProps) {
         const items: VariableItem[] = [];
 
         Promise.all([
-            axios.get(API_URL + "/api/v1/environment/" + environment + "/property", {
+            api.get(API_URL + "/api/v1/environment/" + environment + "/property", {
                 headers: { "Authorization": "Bearer " + token }
             }).catch(() => ({ data: [] })),
-            axios.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
+            api.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
                 headers: { "Authorization": "Bearer " + token }
             }).catch(() => ({ data: [] })),
         ]).then(([propsRes, secretsRes]) => {
@@ -151,7 +151,7 @@ export function Editor(props : EditorProps) {
     }, [environment]);
 
     useEffect(() => {
-        axios.get(API_URL + "/api/v1/action", {
+        api.get(API_URL + "/api/v1/action", {
             headers: {
                 "Authorization": "Bearer " + token
             }
@@ -167,7 +167,7 @@ export function Editor(props : EditorProps) {
 
     useEffect(() => {
         if (id) {
-            axios.get(API_URL + '/api/v1/flo/' + id, {
+            api.get(API_URL + '/api/v1/flo/' + id, {
                 headers: {
                     "Authorization": "Bearer " + token
                 }
@@ -214,7 +214,7 @@ export function Editor(props : EditorProps) {
 
     useEffect(() => {
         if (flo) {
-            axios.post(API_URL + '/api/v1/flo/' + flo.id, flo, {
+            api.post(API_URL + '/api/v1/flo/' + flo.id, flo, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + token
@@ -242,7 +242,7 @@ export function Editor(props : EditorProps) {
             }
 
             saveTimerRef.current = setTimeout(() => {
-                axios.post(API_URL + '/api/v1/flo/' + flo.id + '/revision', {
+                api.post(API_URL + '/api/v1/flo/' + flo.id + '/revision', {
                     data: {
                         nodes: nodes,
                         edges: edges
@@ -547,7 +547,7 @@ export function Editor(props : EditorProps) {
         setIsTriggering(true)
         setCurrentTrigger(flo_id)
 
-        axios.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
+        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
             headers: {
                 "Authorization": "Bearer " + token,
             }

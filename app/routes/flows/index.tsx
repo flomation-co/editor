@@ -1,6 +1,6 @@
 import type {Route} from "../+types/home";
 import {useEffect, useState} from "react";
-import axios from "axios";
+import api from "~/lib/api";
 import type {Flo} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
@@ -72,7 +72,7 @@ export default function Flows() {
 
         setIsLoading(true);
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 "Authorization": "Bearer " + token,
@@ -109,9 +109,9 @@ export default function Flows() {
 
     function confirmDeleteFlo() {
         if (deleteFloID) {
-            axios.delete(API_URL + '/api/v1/flo/' + deleteFloID)
+            api.delete(API_URL + '/api/v1/flo/' + deleteFloID)
                 .then(response => {
-                    axios.get(API_URL + '/api/v1/flo', {
+                    api.get(API_URL + '/api/v1/flo', {
                         headers: {
                             "Authorization": "Bearer " + token
                         }
@@ -156,7 +156,7 @@ export default function Flows() {
         setIsTriggering(true)
         setCurrentTrigger(flo_id)
 
-        axios.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
+        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
             headers: {
                 "Authorization": "Bearer " + token,
             }

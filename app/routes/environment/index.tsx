@@ -3,7 +3,7 @@ import Container from "~/components/container";
 import type {Environment, Property, Secret} from "~/types";
 import {useEffect, useState} from "react";
 import {Link, useParams, useSearchParams} from "react-router";
-import axios from "axios";
+import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {Tooltip} from "react-tooltip";
@@ -84,7 +84,7 @@ export default function Environment() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID;
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -104,7 +104,7 @@ export default function Environment() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property';
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -124,7 +124,7 @@ export default function Environment() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret';
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -156,7 +156,7 @@ export default function Environment() {
             value: inputEnvironmentPropertyValue,
         }
 
-        axios.post(url, property, {
+        api.post(url, property, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -180,7 +180,7 @@ export default function Environment() {
             value: inputEnvironmentSecretValue,
         }
 
-        axios.post(url, property, {
+        api.post(url, property, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -202,7 +202,7 @@ export default function Environment() {
         const config = useConfig();
         const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + id;
 
-        axios.delete(url, {
+        api.delete(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,
@@ -223,7 +223,7 @@ export default function Environment() {
         const config = useConfig();
         const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret/' + id;
 
-        axios.delete(url, {
+        api.delete(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,

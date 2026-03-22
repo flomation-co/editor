@@ -1,7 +1,7 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import useConfig from "~/components/config";
-import axios from "axios";
+import api from "~/lib/api";
 import {useEffect, useState} from "react";
 import type {Runner} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -40,7 +40,7 @@ export default function Runners() {
     const queryRunners = () => {
         setLoading(true);
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 "Authorization": "Bearer "+ token,

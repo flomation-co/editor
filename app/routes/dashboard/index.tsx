@@ -9,7 +9,7 @@ import SubscriptionUpgradeWidget from "~/components/widgets/subscription-upgrade
 import "~/components/widgets/widgets.css";
 import useCookieToken from "~/components/cookie";
 import type {UserDashboard} from "~/types";
-import axios from "axios";
+import api from "~/lib/api";
 import useConfig from "~/components/config";
 import SupportWidget from "~/components/widgets/support-widget";
 
@@ -53,7 +53,7 @@ export default function Dashboard() {
     useEffect(() => {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/dashboard';
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 "Authorization": "Bearer " + token,

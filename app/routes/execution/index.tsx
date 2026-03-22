@@ -5,7 +5,7 @@ import {Link, useParams} from "react-router";
 import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
 import {useContext, useEffect, useState} from "react";
-import axios from "axios";
+import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
@@ -58,7 +58,7 @@ export default function ExecutionDetail() {
         const config = useConfig();
         let url = config("AUTOMATE_API_URL") + '/api/v1/execution/' + executionID;
 
-        axios.get(url, {
+        api.get(url, {
             signal: controller.signal,
             headers: {
                 Authorization: "Bearer " + token,

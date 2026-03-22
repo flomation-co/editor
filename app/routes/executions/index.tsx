@@ -7,7 +7,7 @@ import {Link, useSearchParams} from "react-router";
 import {ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
 import {useEffect, useState} from "react";
-import axios from "axios";
+import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
@@ -77,7 +77,7 @@ export default function Executions() {
             }
             url += "offset=" + offset + "&limit=" + limit;
 
-            axios.get(url, {
+            api.get(url, {
                 signal: controller.signal,
                 headers: {
                     "Authorization": "Bearer " + token,
