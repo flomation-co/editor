@@ -200,6 +200,15 @@ export type JWTPayload = {
     verified: boolean
 }
 
+export type Queue = {
+    id: string,
+    organisation_id?: string,
+    name: string,
+    registration_code: string,
+    created_at?: string,
+    location_code?: string
+}
+
 export type UserDashboard = {
     usage: number,
     allowance: number

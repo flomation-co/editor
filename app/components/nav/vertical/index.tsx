@@ -105,7 +105,7 @@ export function VerticalNav(props: VerticalNavProps) {
                             <div className={"menu-section-list"}>
                                 <NavLink to={"/environment"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faWrench} /></div><span className={"menu-section-list-item-label"}>Environments</span></NavLink>
                                 <NavLink to={"/runner"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPersonRunning} /></div><span className={"menu-section-list-item-label"}>Runners</span></NavLink>
-                                {/*<NavLink to={"/queue"} className={"menu-section-list-item disabled"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>*/}
+                                <NavLink to={"/queue"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>
                             </div>
                         </>
                     )}
