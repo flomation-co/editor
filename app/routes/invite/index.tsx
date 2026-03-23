@@ -36,7 +36,7 @@ export default function AcceptInvite() {
     const API_URL = config("AUTOMATE_API_URL");
     const LOGIN_URL = config("LOGIN_URL");
 
-    // Fetch invite preview (no auth required)
+    // Fetch invite preview or auto-accept if returning from login
     useEffect(() => {
         if (!code || !API_URL) return;
 
@@ -48,15 +48,18 @@ export default function AcceptInvite() {
             return;
         }
 
-        api.get(`${API_URL}/api/v1/invite/${code}`)
-            .then(response => {
-                setPreview(response.data);
-                setState("preview");
-            })
-            .catch(() => {
-                setState("invalid");
-            });
-    }, [code, API_URL]);
+        // Only fetch preview if not already accepting
+        if (state === "loading") {
+            api.get(`${API_URL}/api/v1/invite/${code}`)
+                .then(response => {
+                    setPreview(response.data);
+                    setState("preview");
+                })
+                .catch(() => {
+                    setState("invalid");
+                });
+        }
+    }, [code, API_URL, token]);
 
     function acceptInvite() {
         if (!code || !API_URL) return;
