@@ -1,0 +1,116 @@
+.support-widget {
+    min-height: auto;
+}
+
+.support-channels {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.support-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--primary-background-muted);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    cursor: pointer;
+}
+
+.support-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.support-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.support-card-icon--email {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.support-card:hover .support-card-icon--email {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+.support-card-icon--github {
+    background: rgba(255, 255, 255, 0.08);
+    color: #d1d5db;
+}
+
+.support-card:hover .support-card-icon--github {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.support-card-icon--discord {
+    background: rgba(88, 101, 242, 0.15);
+    color: #7289da;
+}
+
+.support-card:hover .support-card-icon--discord {
+    background: rgba(88, 101, 242, 0.25);
+}
+
+.support-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.support-card-title {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--primary-font-colour);
+}
+
+.support-card-detail {
+    font-size: 0.78em;
+    color: var(--secondary-font-colour);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.support-footer {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--primary-background-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8em;
+    color: var(--secondary-font-colour);
+}
+
+.support-footer-icon {
+    color: var(--secondary-font-colour);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.support-footer a {
+    color: var(--highlight-colour, #a78bfa);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.support-footer a:hover {
+    text-decoration: underline;
+}

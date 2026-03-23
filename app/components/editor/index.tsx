@@ -40,14 +40,7 @@ type EditorProps = {
     id? : string
 }
 
-const defaultTriggerNode: Node[] = [{
-    id: crypto.randomUUID(),
-    position: { x: 250, y: 200 },
-    data: { label: "trigger/manual", config: { name: "Manual Trigger", type: NodeCategoryType.Trigger, icon: ["fa-solid", "hand-pointer"] } },
-    type: "trigger/manual",
-    sourcePosition: "right",
-    targetPosition: "left"
-}];
+const initialNodes : Node[] = [];
 const initialEdges : Edge[] = [];
 const config = useConfig();
 const API_URL = config("AUTOMATE_API_URL");
@@ -62,7 +55,7 @@ export function Editor(props : EditorProps) {
     const [ flo, setFlo ] = useState<Flo | null>(null);
     const [ id, setId ] = useState(props.id);
     const [ status, setStatus ] = useState<string>("Up to date");
-    const [ nodes, setNodes ] = useNodesState<Node[]>(defaultTriggerNode);
+    const [ nodes, setNodes ] = useNodesState<Node[]>(initialNodes);
     const [ edges, setEdges ] = useEdgesState<Edge[]>(initialEdges);
     const [ rfInstance, setRfInstance ] = useState(null);
     const [ menuVisible, setMenuVisible ] = useState<boolean>(false);
@@ -189,7 +182,7 @@ export function Editor(props : EditorProps) {
                         zoom: response.data ? response.data.scale : 1
                     });
                     setEdges(response.data.revision ? response.data.revision.data.edges : initialEdges);
-                    setNodes(response.data.revision ? response.data.revision.data.nodes : defaultTriggerNode);
+                    setNodes(response.data.revision ? response.data.revision.data.nodes : initialNodes);
                     setName(response.data ? response.data.name : "Untitled Flo");
                     setEnvironment(response.data ? response.data.environment_id : null);
                     setStatus("Up to date");
@@ -200,6 +193,20 @@ export function Editor(props : EditorProps) {
                 })
         }
     }, [id]);
+
+    useEffect(() => {
+        if (flo && !flo.revision && plugins && plugins["trigger/manual"] && nodes.length === 0) {
+            const nodeId = '' + self.crypto.randomUUID() + '';
+            setNodes([{
+                id: nodeId,
+                position: { x: 250, y: 200 },
+                data: { id: nodeId, label: "trigger/manual", config: plugins["trigger/manual"] },
+                type: "trigger/manual",
+                sourcePosition: 'right',
+                targetPosition: 'left'
+            }]);
+        }
+    }, [flo, plugins]);
 
     useEffect(() => {
         if (flo) {

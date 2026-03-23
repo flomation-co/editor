@@ -121,9 +121,12 @@
     color: #a78bfa;
 }
 
-.horizontal-nav > a {
+.horizontal-nav > a,
+.horizontal-nav > a:visited {
     display: flex;
     align-items: center;
+    height: 40px;
+    text-decoration: none;
 }
 
 .org-switcher-role {
