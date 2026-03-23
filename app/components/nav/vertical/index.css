@@ -22,14 +22,14 @@
 .vertical-nav-top-section {
     flex: 1;
     overflow-y: auto;
-    max-height: calc(100dvh - 310px);
+    min-height: 0;
 }
 
 .vertical-nav-bottom-section {
-    flex: 0;
-    height: 250px;
+    flex-shrink: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding-top: 8px;
+    padding-bottom: 8px;
 }
 
 .menu-section-header {
