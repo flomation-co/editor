@@ -17,6 +17,7 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import AuthContext from "~/context/auth/context";
 import AuthProvider from "~/context/auth/provider";
 import OrganisationProvider from "~/context/organisation/provider";
+import PermissionsProvider from "~/context/permissions/provider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -65,9 +66,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <AuthProvider>
           <OrganisationProvider>
-            {children}
-            <ScrollRestoration />
-            <Scripts />
+            <PermissionsProvider>
+              {children}
+              <ScrollRestoration />
+              <Scripts />
+            </PermissionsProvider>
           </OrganisationProvider>
         </AuthProvider>
       </body>

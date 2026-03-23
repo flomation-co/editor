@@ -1,0 +1,349 @@
+.groups-section {
+    margin-top: 24px;
+    padding: 0 20px;
+}
+
+.groups-description {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-bottom: 20px;
+}
+
+.groups-section-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #d1d5db;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.groups-create-form {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin-bottom: 20px;
+}
+
+.groups-create-form input {
+    flex: 1;
+}
+
+.groups-create-form button {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.groups-create-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.group-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+}
+
+.group-card.expanded {
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.group-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.group-card-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.group-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.group-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.group-card-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.group-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.group-badge.default {
+    background: rgba(0, 170, 156, 0.15);
+    color: #00aa9c;
+}
+
+.group-member-count {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.group-card-chevron {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.group-card-body {
+    padding: 0 16px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Permission toggles */
+.perm-category {
+    margin-top: 16px;
+}
+
+.perm-category-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.perm-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.perm-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.perm-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.perm-toggle.active {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+}
+
+.perm-toggle input {
+    display: none;
+}
+
+.perm-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    transition: all 0.12s ease;
+    flex-shrink: 0;
+}
+
+.perm-toggle.active .perm-check {
+    background: #8b5cf6;
+    border-color: #8b5cf6;
+    color: #fff;
+}
+
+/* Group settings row */
+.group-settings-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.group-settings-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+}
+
+.group-settings-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #8b5cf6;
+}
+
+.group-action-button {
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.group-action-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.group-action-button.danger {
+    color: rgba(239, 68, 68, 0.7);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.group-action-button.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+
+/* Members section */
+.group-members {
+    margin-top: 16px;
+}
+
+.group-members-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.group-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.group-member-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+}
+
+.group-member-row .member-name {
+    flex: 1;
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+.group-member-row .remove-btn {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.group-member-row .remove-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+
+.group-add-member {
+    display: flex;
+    gap: 8px;
+}
+
+.group-add-member select {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #e5e7eb;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.group-add-member button {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.group-add-member button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.groups-empty {
+    padding: 30px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}

@@ -10,6 +10,8 @@ import {faDiscord} from "@fortawesome/free-brands-svg-icons";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useOrganisation} from "~/context/organisation/use";
+import {usePermissions} from "~/context/permissions/use";
+import {PERMISSIONS} from "~/types";
 
 type VerticalNavProps = {
     active?: string
@@ -26,6 +28,7 @@ export function VerticalNav(props: VerticalNavProps) {
     const [ showAutomate, setShowAutomate ] = useState<boolean>(true);
     const [ showConfigure, setShowConfigure ] = useState<boolean>(true);
     const { organisations } = useOrganisation();
+    const { hasPermission } = usePermissions();
     const [ showManage, setShowManage ] = useState<boolean>(false);
     const [ showAdminister, setShowAdminister ] = useState<boolean>(false);
     const [ currentlyActive, setCurrentlyActive ] = useState(props.active);
@@ -103,9 +106,15 @@ export function VerticalNav(props: VerticalNavProps) {
                         <>
                             <div className={"menu-section-header"}>Configure</div>
                             <div className={"menu-section-list"}>
-                                <NavLink to={"/environment"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faWrench} /></div><span className={"menu-section-list-item-label"}>Environments</span></NavLink>
-                                <NavLink to={"/runner"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPersonRunning} /></div><span className={"menu-section-list-item-label"}>Runners</span></NavLink>
-                                <NavLink to={"/queue"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>
+                                {(hasPermission(PERMISSIONS.ENVIRONMENT_VIEW) || hasPermission(PERMISSIONS.ENVIRONMENT_MANAGE)) && (
+                                    <NavLink to={"/environment"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faWrench} /></div><span className={"menu-section-list-item-label"}>Environments</span></NavLink>
+                                )}
+                                {(hasPermission(PERMISSIONS.RUNNER_VIEW) || hasPermission(PERMISSIONS.RUNNER_MANAGE)) && (
+                                    <NavLink to={"/runner"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPersonRunning} /></div><span className={"menu-section-list-item-label"}>Runners</span></NavLink>
+                                )}
+                                {hasPermission(PERMISSIONS.RUNNER_MANAGE) && (
+                                    <NavLink to={"/queue"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>
+                                )}
                             </div>
                         </>
                     )}
@@ -114,8 +123,12 @@ export function VerticalNav(props: VerticalNavProps) {
                         <>
                             <div className={"menu-section-header"}>Manage</div>
                             <div className={"menu-section-list"}>
-                                <NavLink to={"/organisation"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
-                                {/*<NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>*/}
+                                {(hasPermission(PERMISSIONS.ORGANISATION_VIEW) || hasPermission(PERMISSIONS.ORGANISATION_MANAGE)) && (
+                                    <NavLink to={"/organisation"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
+                                )}
+                                {hasPermission(PERMISSIONS.ORGANISATION_MANAGE) && (
+                                    <NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Groups</span></NavLink>
+                                )}
                                 {/*<NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>*/}
                             </div>
                         </>
@@ -133,7 +146,9 @@ export function VerticalNav(props: VerticalNavProps) {
                 </div>
 
                 <div className={"vertical-nav-bottom-section"}>
-                    <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flow</a>
+                    {hasPermission(PERMISSIONS.FLOW_CREATE) && (
+                        <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flow</a>
+                    )}
 
                     <div className={"menu-section-list"}>
                         {/*<NavLink to={"/docs"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBook}/></div><span className={"menu-section-list-item-label"}>Documentation</span></NavLink>*/}

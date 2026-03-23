@@ -247,3 +247,81 @@ export type OrganisationInvite = {
     accepted_by?: string,
     expires_at: string
 }
+
+export type Group = {
+    id: string,
+    organisation_id: string,
+    name: string,
+    description?: string,
+    is_default: boolean,
+    created_at: string,
+    permissions?: string[],
+    member_count?: number
+}
+
+export type GroupMember = {
+    user_id: string,
+    name: string,
+    added_at?: string
+}
+
+export type UserPermissions = {
+    role: string,
+    permissions: string[],
+    is_admin: boolean
+}
+
+export const PERMISSIONS = {
+    FLOW_CREATE: "flow.create",
+    FLOW_EDIT: "flow.edit",
+    FLOW_DELETE: "flow.delete",
+    FLOW_EXECUTE: "flow.execute",
+    RUNNER_MANAGE: "runner.manage",
+    RUNNER_VIEW: "runner.view",
+    ORGANISATION_MANAGE: "organisation.manage",
+    ORGANISATION_VIEW: "organisation.view",
+    ENVIRONMENT_MANAGE: "environment.manage",
+    ENVIRONMENT_VIEW: "environment.view",
+    BILLING_MANAGE: "billing.manage",
+    BILLING_VIEW: "billing.view",
+} as const;
+
+export const PERMISSION_CATEGORIES = [
+    {
+        name: "Flows",
+        permissions: [
+            { key: PERMISSIONS.FLOW_CREATE, label: "Create Flows" },
+            { key: PERMISSIONS.FLOW_EDIT, label: "Edit Flows" },
+            { key: PERMISSIONS.FLOW_DELETE, label: "Delete Flows" },
+            { key: PERMISSIONS.FLOW_EXECUTE, label: "Execute Flows" },
+        ]
+    },
+    {
+        name: "Runners",
+        permissions: [
+            { key: PERMISSIONS.RUNNER_VIEW, label: "View Runners" },
+            { key: PERMISSIONS.RUNNER_MANAGE, label: "Manage Runners" },
+        ]
+    },
+    {
+        name: "Environments",
+        permissions: [
+            { key: PERMISSIONS.ENVIRONMENT_VIEW, label: "View Environments" },
+            { key: PERMISSIONS.ENVIRONMENT_MANAGE, label: "Manage Environments" },
+        ]
+    },
+    {
+        name: "Organisation",
+        permissions: [
+            { key: PERMISSIONS.ORGANISATION_VIEW, label: "View Organisation" },
+            { key: PERMISSIONS.ORGANISATION_MANAGE, label: "Manage Organisation" },
+        ]
+    },
+    {
+        name: "Billing",
+        permissions: [
+            { key: PERMISSIONS.BILLING_VIEW, label: "View Billing" },
+            { key: PERMISSIONS.BILLING_MANAGE, label: "Manage Billing" },
+        ]
+    },
+] as const;
