@@ -98,7 +98,6 @@ export default function AcceptInvite() {
                     });
                 }
 
-                setTimeout(() => navigate("/organisation"), 2000);
             })
             .catch(error => {
                 localStorage.removeItem(acceptanceKey);
@@ -323,12 +322,24 @@ export default function AcceptInvite() {
                             }}>
                                 You've joined {orgName}!
                             </p>
-                            <p style={{
-                                color: "rgba(255,255,255,0.5)",
-                                fontSize: "14px",
-                            }}>
-                                Redirecting to organisation page...
-                            </p>
+                            <button
+                                onClick={() => navigate("/")}
+                                style={{
+                                    marginTop: "20px",
+                                    padding: "12px 24px",
+                                    borderRadius: "10px",
+                                    border: "none",
+                                    background: "linear-gradient(135deg, #460070, #5a0090)",
+                                    color: "#fff",
+                                    cursor: "pointer",
+                                    fontSize: "15px",
+                                    fontWeight: 600,
+                                    boxShadow: "0 4px 16px rgba(70, 0, 112, 0.4)",
+                                    width: "100%",
+                                }}
+                            >
+                                Get Started
+                            </button>
                         </div>
                     )}
 
