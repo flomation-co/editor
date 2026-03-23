@@ -23,6 +23,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode})
 
     useEffect(() => {
         if (!token) {
+            // Skip redirect for invite pages — they handle auth themselves
+            if (window.location.pathname.startsWith("/invite/")) {
+                return;
+            }
+
             const redirectUrl = config("LOGIN_URL");
             if (redirectUrl) {
                 window.location.replace(redirectUrl + "?redirect_url=" + window.location.href)
