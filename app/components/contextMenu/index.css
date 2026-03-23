@@ -220,6 +220,40 @@
     font-size: 0.9em;
 }
 
+/* Sub-group styles */
+.context-sub-group {
+    margin: 1px 0;
+}
+
+.context-sub-header {
+    position: relative;
+}
+
+.context-sub-header .node-type-icon-column {
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+}
+
+.context-sub-header .node-type-title {
+    font-size: 1.05em;
+}
+
+.context-sub-header .node-type-description {
+    font-size: 0.9em;
+}
+
+.context-sub-header.expanded {
+    border-left: 2px solid rgba(0,170,156,0.35);
+    background: rgba(255,255,255,0.02);
+}
+
+.context-sub-group .context-category-actions {
+    border-left-color: rgba(0,170,156,0.12);
+    margin-left: 12px;
+    padding-left: 10px;
+}
+
 /* No results state */
 .context-no-results {
     padding: 20px;
