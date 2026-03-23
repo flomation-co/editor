@@ -5,6 +5,7 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useOrganisation} from "~/context/organisation/use";
+import logo from "~/components/nav/horizontal/flomation-wordtype-small-white.png";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -136,7 +137,7 @@ export default function AcceptInvite() {
                     borderBottom: "1px solid rgba(174, 159, 185, 0.1)",
                 }}>
                     <img
-                        src="/flomation_logo_dark.gif"
+                        src={logo}
                         alt="Flomation"
                         style={{ height: "32px", marginBottom: "8px" }}
                     />
