@@ -10,14 +10,14 @@ const QRProperty = (props: PropertyProps) => {
     let url = config("TRIGGER_URL");
 
     return (
-        <div className={"property-menu-input-row"} key={props.name}>
+        <div className={"property-menu-input-row"} key={props.id}>
             <div className={"qr-code-container"}>
                 <QRCode
                     size={256}
-                    value={url + "/" + props.id}
-                    style={{height: "autp", maxWidth: "100%", width: "100%", padding: "10px"}}
+                    value={url + "/qr/" + props.id}
+                    style={{height: "auto", maxWidth: "100%", width: "100%", padding: "10px"}}
                     id={props.id + "-img"} />
-                <pre>
+                <pre style={{fontSize: "10px", wordBreak: "break-all", whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.5)"}}>
                     {url + "/qr/" + props.id}
                 </pre>
             </div>

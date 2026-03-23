@@ -6,11 +6,13 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {fas} from '@fortawesome/free-solid-svg-icons'
 import {fab} from '@fortawesome/free-brands-svg-icons'
-import type {NodeDefinition} from "~/types";
+import type {NodeDefinition, Trigger} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import TextProperty from "~/components/propertyMenu/textProperty";
 import StringProperty from "~/components/propertyMenu/stringProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
+import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
+import FormBuilder from "~/components/propertyMenu/formBuilder";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
@@ -18,6 +20,7 @@ import SelectProperty from "~/components/propertyMenu/selectProperty";
 type PropertyMenuProps = {
     node: object;
     variables?: VariableItem[];
+    triggers?: Trigger[];
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
@@ -107,6 +110,17 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             )
                                         }
 
+                                        // Special case: form_definition on form triggers
+                                        if (i.name === "form_definition" && props.node.data.label === "trigger/form") {
+                                            return (
+                                                <FormBuilder
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value || "{}"}
+                                                    onChange={(val) => onValueChange(i.name, val)}
+                                                />
+                                            );
+                                        }
+
                                         switch (i.type) {
                                             case "qr":
                                                 return (
@@ -192,6 +206,10 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         }
                                     })
                                 )}
+                                <TriggerURLProperty
+                                    node={props.node}
+                                    triggers={props.triggers}
+                                />
                                 {props.onNodeDelete && (
                                     <div className={"property-menu-delete"}>
                                         <button onClick={() => props.onNodeDelete(props.node.data.id)}>
