@@ -6,6 +6,7 @@ import type {AuthUser} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
+import {useToast} from "~/components/toast";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
@@ -25,6 +26,7 @@ export default function Profile() {
 
     const auth = useAuth();
     const token = useCookieToken();
+    const { showToast } = useToast();
 
     const [ user, setUser ] = useState<AuthUser | null>()
     const [ name, setName ] = useState<string | null>();
@@ -69,11 +71,12 @@ export default function Profile() {
             .then(response => {
                 if (response) {
                     auth.setUser(response.data);
-                    //     TODO: show a success toast or something
+                    showToast("Profile saved successfully");
                 }
             })
             .catch(error => {
                 console.error(error);
+                showToast("Failed to save profile", "error");
             })
     }
 

@@ -18,6 +18,7 @@ import AuthContext from "~/context/auth/context";
 import AuthProvider from "~/context/auth/provider";
 import OrganisationProvider from "~/context/organisation/provider";
 import PermissionsProvider from "~/context/permissions/provider";
+import {ToastProvider} from "~/components/toast";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -67,9 +68,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <OrganisationProvider>
             <PermissionsProvider>
-              {children}
-              <ScrollRestoration />
-              <Scripts />
+              <ToastProvider>
+                {children}
+                <ScrollRestoration />
+                <Scripts />
+              </ToastProvider>
             </PermissionsProvider>
           </OrganisationProvider>
         </AuthProvider>

@@ -6,7 +6,8 @@ import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid} from '@fortawesome/free-solid-svg-icons'
+import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
@@ -17,6 +18,7 @@ import useConfig from "~/components/config";
 import {PaginationControls} from "~/components/paginationControls";
 import {useAuth} from "~/context/auth/use";
 import useCookieToken from "~/components/cookie";
+import {useOrganisation} from "~/context/organisation/use";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -53,6 +55,25 @@ export default function Flows() {
 
     const auth = useAuth();
     const token = useCookieToken();
+    const { currentOrg } = useOrganisation();
+
+    const favouritesKey = `flomation-favourites-${auth.user?.id || "anon"}-${currentOrg?.id || "personal"}`;
+
+    const [favourites, setFavourites] = useState<Set<string>>(() => {
+        try {
+            const stored = localStorage.getItem(favouritesKey);
+            return new Set(stored ? JSON.parse(stored) : []);
+        } catch { return new Set(); }
+    });
+
+    const toggleFavourite = (floId: string) => {
+        setFavourites(prev => {
+            const next = new Set(prev);
+            if (next.has(floId)) { next.delete(floId); } else { next.add(floId); }
+            localStorage.setItem(favouritesKey, JSON.stringify([...next]));
+            return next;
+        });
+    };
 
     useEffect(() => {
         const config = useConfig();
@@ -198,6 +219,23 @@ export default function Flows() {
                             <FontAwesomeIcon icon={faSpinner} spin />
                         </div>
                     )}
+                    {!isLoading && flos && flos.length > 0 && favourites.size > 0 && (
+                        <div className={"favourites-section"}>
+                            <div className={"favourites-header"}>Favourites</div>
+                            <div className={"favourites-list"}>
+                                {flos.filter(f => favourites.has(f.id)).map(flo => (
+                                    <Link key={flo.id} to={"/flo/" + flo.id} className={"favourite-card"}>
+                                        <FontAwesomeIcon icon={faStarSolid} className={"favourite-star"} />
+                                        <div className={"favourite-name"}>{flo.name}</div>
+                                        {flo.last_execution && (
+                                            <ExecuteState state={flo.last_execution.execution_status || ExecutionStateValue.created} completionState={flo.last_execution.completion_status || CompletionStateValue.unknown} />
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {!isLoading && (
                         <>
                             {flos && flos.length > 0 && (
@@ -221,6 +259,9 @@ export default function Flows() {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
                                                     <td>
+                                                        <span className={"fav-toggle"} onClick={(e) => { e.stopPropagation(); toggleFavourite(flo.id); }}>
+                                                            <FontAwesomeIcon icon={favourites.has(flo.id) ? faStarSolid : faStarOutline} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
+                                                        </span>
                                                         <Link to={"/flo/" + flo.id}>
                                                             {flo.name}
                                                         </Link>

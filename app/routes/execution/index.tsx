@@ -1,7 +1,7 @@
 import type {Route} from "../+types/home";
 import "./index.css"
 import Container from "~/components/container";
-import {Link, useParams} from "react-router";
+import {Link, useNavigate, useParams} from "react-router";
 import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
 import {useContext, useEffect, useState} from "react";
@@ -11,8 +11,9 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
-import {faLink, faSpinner} from "@fortawesome/pro-solid-svg-icons";
+import {faLink, faSpinner, faRotateRight} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
+import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
 
 dayjs.extend(relativeTime);
@@ -26,8 +27,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function ExecutionDetail() {
+    const navigate = useNavigate();
     const [ executionID, setExecutionID ] = useState<string>(useParams().id)
     const [ exec, setExec ] = useState<Execution>();
+    const [ isRerunning, setIsRerunning ] = useState<boolean>(false);
+    const { showToast } = useToast();
 
     const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
 
@@ -73,6 +77,29 @@ export default function ExecutionDetail() {
                 console.error(error);
             })
     }
+
+    const rerunExecution = () => {
+        if (!exec || isRerunning) return;
+        setIsRerunning(true);
+
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + `/api/v1/flo/${exec.flo_id}/trigger/default/execute`;
+
+        api.post(url, null, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(response => {
+                if (response?.data?.id) {
+                    showToast("Flow re-triggered successfully");
+                    navigate("/execution/" + response.data.id);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showToast("Failed to re-run flow", "error");
+            })
+            .finally(() => setIsRerunning(false));
+    };
 
     // Initial fetch
     useEffect(() => {
@@ -137,7 +164,15 @@ export default function ExecutionDetail() {
         <Container>
             {exec && (
                 <>
-                    <div className={"header"}>{exec.name} - #{exec.sequence}<div className={"small-label"}><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div></div>
+                    <div className={"header"}>
+                        {exec.name} - #{exec.sequence}
+                        <div className={"small-label"}><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div>
+                        {exec.completion_status !== "pending" && (
+                            <button className={"rerun-button"} onClick={rerunExecution} disabled={isRerunning}>
+                                <FontAwesomeIcon icon={isRerunning ? faSpinner : faRotateRight} spin={isRerunning} /> Re-run
+                            </button>
+                        )}
+                    </div>
 
                     <div><div className={"property-label"}>Flow: <span className={"flo-table-subtext"}><Link to={"/flo/" + exec.flo_id}>{exec.name} <FontAwesomeIcon icon={faLink} /> </Link></span></div></div>
                     <div><div className={"property-label"}>Started: <span className={"flo-table-subtext"}>{formatDateString(exec.created_at)}</span></div></div>

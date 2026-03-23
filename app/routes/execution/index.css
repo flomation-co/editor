@@ -3,6 +3,33 @@
     display: inline-block;
 }
 
+.rerun-button {
+    margin-left: 16px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: middle;
+    transition: opacity 0.15s ease;
+}
+
+.rerun-button:hover {
+    opacity: 0.85;
+}
+
+.rerun-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .code-block-label {
     padding-top: 5px;
     padding-bottom: 5px;

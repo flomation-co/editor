@@ -1,0 +1,69 @@
+/* Favourites section */
+.favourites-section {
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+.favourites-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.favourites-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.favourite-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    text-decoration: none;
+    color: #e5e7eb;
+    font-size: 13px;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.favourite-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.favourite-star {
+    color: #fbbf24;
+    font-size: 12px;
+}
+
+.favourite-name {
+    font-weight: 500;
+}
+
+/* Star toggle in table */
+.fav-toggle {
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 13px;
+}
+
+.fav-active {
+    color: #fbbf24;
+}
+
+.fav-inactive {
+    color: rgba(255, 255, 255, 0.15);
+    transition: color 0.12s ease;
+}
+
+.fav-toggle:hover .fav-inactive {
+    color: rgba(255, 255, 255, 0.4);
+}
