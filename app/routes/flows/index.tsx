@@ -57,22 +57,42 @@ export default function Flows() {
     const token = useCookieToken();
     const { currentOrg } = useOrganisation();
 
-    const favouritesKey = `flomation-favourites-${auth.user?.id || "anon"}-${currentOrg?.id || "personal"}`;
+    const [favourites, setFavourites] = useState<Set<string>>(new Set());
 
-    const [favourites, setFavourites] = useState<Set<string>>(() => {
-        try {
-            const stored = localStorage.getItem(favouritesKey);
-            return new Set(stored ? JSON.parse(stored) : []);
-        } catch { return new Set(); }
-    });
+    const fetchFavourites = () => {
+        api.get(API_URL + '/api/v1/favourite', {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(res => {
+                if (res.data && Array.isArray(res.data)) {
+                    setFavourites(new Set(res.data));
+                }
+            })
+            .catch(() => setFavourites(new Set()));
+    };
+
+    useEffect(() => {
+        if (token) fetchFavourites();
+    }, [token]);
 
     const toggleFavourite = (floId: string) => {
+        const isFav = favourites.has(floId);
+        // Optimistic update
         setFavourites(prev => {
             const next = new Set(prev);
-            if (next.has(floId)) { next.delete(floId); } else { next.add(floId); }
-            localStorage.setItem(favouritesKey, JSON.stringify([...next]));
+            if (isFav) { next.delete(floId); } else { next.add(floId); }
             return next;
         });
+
+        if (isFav) {
+            api.delete(API_URL + '/api/v1/favourite/' + floId, {
+                headers: { Authorization: "Bearer " + token }
+            }).catch(() => fetchFavourites());
+        } else {
+            api.post(API_URL + '/api/v1/favourite/' + floId, null, {
+                headers: { Authorization: "Bearer " + token }
+            }).catch(() => fetchFavourites());
+        }
     };
 
     useEffect(() => {
