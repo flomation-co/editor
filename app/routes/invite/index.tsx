@@ -26,7 +26,7 @@ export default function AcceptInvite() {
     const navigate = useNavigate();
     const config = useConfig();
     const token = useCookieToken();
-    const { refreshOrganisations, setCurrentOrg } = useOrganisation();
+    const { refreshOrganisations } = useOrganisation();
 
     const [state, setState] = useState<InviteState>("loading");
     const [preview, setPreview] = useState<InvitePreview | null>(null);
@@ -88,15 +88,6 @@ export default function AcceptInvite() {
                 setState("success");
                 setOrgName(response.data?.name || "the organisation");
                 refreshOrganisations();
-
-                if (response.data) {
-                    setCurrentOrg({
-                        id: response.data.id,
-                        name: response.data.name,
-                        icon: response.data.icon,
-                        role: "member",
-                    });
-                }
 
             })
             .catch(error => {
