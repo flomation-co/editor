@@ -31,15 +31,25 @@ enum Page {
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
 library.add(fab, fas);
 
+type SubGroup = {
+    key: string;
+    name: string;
+    icon: string;
+    description: string;
+    actions: PluginDefinition[];
+}
+
 type CategoryGroup = {
     category: PluginCategory;
     actions: PluginDefinition[];
+    subGroups: SubGroup[];
 }
 
 const ContextMenu = (props: ContextMenuProps) => {
     const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
     const [ searchTerm, setSearchTerm ] = useState<string>("");
     const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
+    const [ expandedSubGroup, setExpandedSubGroup ] = useState<string | null>(null);
 
     const handleNodeClick = (name: string) => {
         if (props.onNodeAdd) {
@@ -56,15 +66,17 @@ const ContextMenu = (props: ContextMenuProps) => {
             setSearchTerm("");
             setCurrentPage(Page.Root);
             setExpandedGroup(null);
+            setExpandedSubGroup(null);
         }
     }, [props.visible]);
 
     // Reset expanded group when changing pages
     useEffect(() => {
         setExpandedGroup(null);
+        setExpandedSubGroup(null);
     }, [currentPage]);
 
-    // Group plugins by category for a given node type
+    // Group plugins by category for a given node type, with optional sub-groups
     const getGroupedPlugins = (nodeType: NodeCategoryType): CategoryGroup[] => {
         if (!props.plugins) return [];
 
@@ -79,16 +91,39 @@ const ContextMenu = (props: ContextMenuProps) => {
             if (!groupMap.has(key)) {
                 groupMap.set(key, {
                     category: plugin.category || { key: "other", name: "Other", icon: "puzzle-piece", description: "" },
-                    actions: []
+                    actions: [],
+                    subGroups: []
                 });
             }
-            groupMap.get(key)!.actions.push(plugin);
+            const group = groupMap.get(key)!;
+
+            const subKey = plugin.category?.sub_key;
+            if (subKey) {
+                let subGroup = group.subGroups.find(sg => sg.key === subKey);
+                if (!subGroup) {
+                    subGroup = {
+                        key: subKey,
+                        name: plugin.category?.sub_name || subKey,
+                        icon: plugin.category?.sub_icon || group.category.icon,
+                        description: plugin.category?.sub_description || "",
+                        actions: []
+                    };
+                    group.subGroups.push(subGroup);
+                }
+                subGroup.actions.push(plugin);
+            } else {
+                group.actions.push(plugin);
+            }
         }
 
-        // Sort groups alphabetically by name
-        return Array.from(groupMap.values()).sort((a, b) =>
+        // Sort groups and sub-groups alphabetically
+        const result = Array.from(groupMap.values()).sort((a, b) =>
             a.category.name.localeCompare(b.category.name)
         );
+        for (const group of result) {
+            group.subGroups.sort((a, b) => a.name.localeCompare(b.name));
+        }
+        return result;
     }
 
     // Get all plugins matching search across all types
@@ -119,15 +154,57 @@ const ContextMenu = (props: ContextMenuProps) => {
         </div>
     );
 
+    const renderSubGroup = (subGroup: SubGroup) => {
+        const isExpanded = expandedSubGroup === subGroup.key;
+        const actionCount = subGroup.actions.length;
+
+        return (
+            <div key={subGroup.key} className={"context-sub-group"}>
+                <div
+                    className={`context-node-type context-sub-header ${isExpanded ? "expanded" : ""}`}
+                    onClick={() => setExpandedSubGroup(isExpanded ? null : subGroup.key)}
+                >
+                    <div className={"node-type-icon-column"}>
+                        {subGroup.icon && (
+                            <FontAwesomeIcon icon={["fas", ("fa-" + subGroup.icon) as any]} size={"lg"}/>
+                        )}
+                    </div>
+                    <div className={"node-type-text-column"}>
+                        <div className={"node-type-title"}>
+                            {subGroup.name}
+                            <span className={"category-count"}>{actionCount}</span>
+                        </div>
+                        {subGroup.description && (
+                            <div className={"node-type-description"}>
+                                {subGroup.description}
+                            </div>
+                        )}
+                    </div>
+                    <div className={"category-chevron"}>
+                        <FontAwesomeIcon icon={["fas", isExpanded ? "chevron-down" : "chevron-right"]} size={"sm"}/>
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className={"context-category-actions"}>
+                        {subGroup.actions.map(renderActionItem)}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderCategoryGroup = (group: CategoryGroup) => {
         const isExpanded = expandedGroup === group.category.key;
-        const actionCount = group.actions.length;
+        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + sg.actions.length, 0);
 
         return (
             <div key={group.category.key} className={"context-category-group"}>
                 <div
                     className={`context-node-type context-category-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => setExpandedGroup(isExpanded ? null : group.category.key)}
+                    onClick={() => {
+                        setExpandedGroup(isExpanded ? null : group.category.key);
+                        setExpandedSubGroup(null);
+                    }}
                 >
                     <div className={"node-type-icon-column"}>
                         <FontAwesomeIcon icon={["fas", ("fa-" + group.category.icon) as any]} size={"xl"}/>
@@ -135,7 +212,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                     <div className={"node-type-text-column"}>
                         <div className={"node-type-title"}>
                             {group.category.name}
-                            <span className={"category-count"}>{actionCount}</span>
+                            <span className={"category-count"}>{totalCount}</span>
                         </div>
                         <div className={"node-type-description"}>
                             {group.category.description}
@@ -148,6 +225,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                 {isExpanded && (
                     <div className={"context-category-actions"}>
                         {group.actions.map(renderActionItem)}
+                        {group.subGroups.map(renderSubGroup)}
                     </div>
                 )}
             </div>

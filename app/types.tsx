@@ -123,7 +123,11 @@ export type PluginCategory = {
     key: string,
     name: string,
     icon: string,
-    description: string
+    description: string,
+    sub_key?: string,
+    sub_name?: string,
+    sub_icon?: string,
+    sub_description?: string
 }
 
 export type PluginDefinition = {
