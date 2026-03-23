@@ -45,6 +45,12 @@
     color: #7fc8f0;
 }
 
+.vp-pill--flow {
+    background: rgba(234, 155, 9, 0.15);
+    border: 1px solid rgba(234, 155, 9, 0.3);
+    color: #f59e0b;
+}
+
 .vp-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
     border: 1px solid rgba(190, 0, 0, 0.6);
@@ -147,6 +153,11 @@
 .vp-badge--input {
     background: rgba(72, 171, 224, 0.25);
     color: #7fc8f0;
+}
+
+.vp-badge--flow {
+    background: rgba(234, 155, 9, 0.2);
+    color: #f59e0b;
 }
 
 .vp-name {

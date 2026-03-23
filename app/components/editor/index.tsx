@@ -459,9 +459,23 @@ export function Editor(props : EditorProps) {
         }));
     }, [setNodes])
 
+    // Static flow-level variables resolved at execution time
+    const FLOW_VARIABLES: VariableItem[] = [
+        { name: "flow_id", category: "flow", source: "Execution" },
+        { name: "execution_id", category: "flow", source: "Execution" },
+        { name: "sequence", category: "flow", source: "Execution" },
+        { name: "author_id", category: "flow", source: "Execution" },
+        { name: "organisation_id", category: "flow", source: "Execution" },
+        { name: "runner_id", category: "flow", source: "Execution" },
+        { name: "start_time", category: "flow", source: "Execution" },
+        { name: "trigger_type", category: "flow", source: "Execution" },
+        { name: "author_email", category: "flow", source: "Execution" },
+        { name: "triggerer_email", category: "flow", source: "Execution" },
+    ];
+
     // Derive parent node outputs for the selected property node
     const allVariables = useMemo<VariableItem[]>(() => {
-        const items: VariableItem[] = [...envVariables];
+        const items: VariableItem[] = [...FLOW_VARIABLES, ...envVariables];
 
         if (!propertyNode || !plugins) return items;
 
