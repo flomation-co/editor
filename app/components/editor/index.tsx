@@ -704,6 +704,7 @@ export function Editor(props : EditorProps) {
                                     <PropertyMenu
                                         node={propertyNode}
                                         variables={allVariables}
+                                        triggers={flo?.triggers}
                                         onValueChange={onValueChange}
                                         onNameChange={onNameChange}
                                         onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}

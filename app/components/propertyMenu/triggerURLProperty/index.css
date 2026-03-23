@@ -1,0 +1,65 @@
+.trigger-url-section {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 8px;
+}
+
+.trigger-url-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 6px;
+}
+
+.trigger-url-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    font-style: italic;
+    padding: 8px 0;
+}
+
+.trigger-url-box {
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.trigger-url-text {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    word-break: break-all;
+    line-height: 1.4;
+    font-family: 'Courier New', monospace;
+}
+
+.trigger-url-copy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    background: rgba(255, 255, 255, 0.04);
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.1s ease;
+}
+
+.trigger-url-copy:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.trigger-qr-container {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
