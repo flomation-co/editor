@@ -40,7 +40,14 @@ type EditorProps = {
     id? : string
 }
 
-const initialNodes : Node[] = [];
+const defaultTriggerNode: Node[] = [{
+    id: crypto.randomUUID(),
+    position: { x: 250, y: 200 },
+    data: { label: "trigger/manual", config: { name: "Manual Trigger", type: NodeCategoryType.Trigger, icon: ["fa-solid", "hand-pointer"] } },
+    type: "trigger/manual",
+    sourcePosition: "right",
+    targetPosition: "left"
+}];
 const initialEdges : Edge[] = [];
 const config = useConfig();
 const API_URL = config("AUTOMATE_API_URL");
@@ -55,7 +62,7 @@ export function Editor(props : EditorProps) {
     const [ flo, setFlo ] = useState<Flo | null>(null);
     const [ id, setId ] = useState(props.id);
     const [ status, setStatus ] = useState<string>("Up to date");
-    const [ nodes, setNodes ] = useNodesState<Node[]>(initialNodes);
+    const [ nodes, setNodes ] = useNodesState<Node[]>(defaultTriggerNode);
     const [ edges, setEdges ] = useEdgesState<Edge[]>(initialEdges);
     const [ rfInstance, setRfInstance ] = useState(null);
     const [ menuVisible, setMenuVisible ] = useState<boolean>(false);
@@ -63,7 +70,7 @@ export function Editor(props : EditorProps) {
     const [ menuYLocation, setMenuYLocation ] = useState<number>(0);
     const menuXRef = useRef<number>(0);
     const menuYRef = useRef<number>(0);
-    const [ snapToGrid, setSnapToGrid ] = useState<boolean>(false);
+    const [ snapToGrid, setSnapToGrid ] = useState<boolean>(true);
     const [ showMiniMap, setShowMiniMap ] = useState<boolean>(true);
     const [ needsUpdate, setNeedsUpdate ] = useState<boolean>(false);
     const [ plugins, setPlugins ] = useState(null);
@@ -182,7 +189,7 @@ export function Editor(props : EditorProps) {
                         zoom: response.data ? response.data.scale : 1
                     });
                     setEdges(response.data.revision ? response.data.revision.data.edges : initialEdges);
-                    setNodes(response.data.revision ? response.data.revision.data.nodes : initialNodes);
+                    setNodes(response.data.revision ? response.data.revision.data.nodes : defaultTriggerNode);
                     setName(response.data ? response.data.name : "Untitled Flo");
                     setEnvironment(response.data ? response.data.environment_id : null);
                     setStatus("Up to date");

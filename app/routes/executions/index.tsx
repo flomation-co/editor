@@ -202,7 +202,7 @@ export default function Executions() {
                                     {execs?.map((exec, index) => {
                                         return (
                                             <tr className={"flo-table-row"} key={exec.id}>
-                                                <td>{exec.name}<span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span></td>
+                                                <td><Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link><span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span></td>
                                                 <td className={"table-column-hide-sm"}>#{exec.sequence}</td>
                                                 <td className={"table-column-hide-sm"}>
                                                         <span data-tooltip-id={"tooltip-time-" + exec.id} data-tooltip-content={formatDateString(exec.created_at)} data-tooltip-place={"bottom"}>

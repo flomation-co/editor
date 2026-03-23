@@ -121,6 +121,11 @@
     color: #a78bfa;
 }
 
+.horizontal-nav > a {
+    display: flex;
+    align-items: center;
+}
+
 .org-switcher-role {
     margin-left: auto;
     font-size: 10px;
