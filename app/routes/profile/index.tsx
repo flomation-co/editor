@@ -96,7 +96,7 @@ export default function Profile() {
                         <div className={"flo-table-subtext"}>Registered {dayjs.utc(user?.created_at).fromNow()}</div>
                     </div>
                     <div className={"form-row"} >
-                        <input type={"submit"} value={"Manage MFA"} disabled={true} style={{opacity: 0.5, cursor: "not-allowed"}} onClick={openMFA}/>
+                        <input type={"submit"} value={"Manage MFA"} disabled={!user} style={{cursor: user ? "pointer" : "not-allowed"}} onClick={openMFA}/>
                     </div>
                     <div className={"form-row"} >
                         <div className={`form-input-name`} ></div>
