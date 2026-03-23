@@ -12,6 +12,7 @@ import TextProperty from "~/components/propertyMenu/textProperty";
 import StringProperty from "~/components/propertyMenu/stringProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
 import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
+import FormBuilder from "~/components/propertyMenu/formBuilder";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
@@ -107,6 +108,17 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     onValueChange={onValueChange}
                                                 />
                                             )
+                                        }
+
+                                        // Special case: form_definition on form triggers
+                                        if (i.name === "form_definition" && props.node.data.label === "trigger/form") {
+                                            return (
+                                                <FormBuilder
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value || "{}"}
+                                                    onChange={(val) => onValueChange(i.name, val)}
+                                                />
+                                            );
                                         }
 
                                         switch (i.type) {
