@@ -109,6 +109,12 @@
     color: #7fc8f0;
 }
 
+.variable-pill--flow {
+    background: rgba(234, 155, 9, 0.15);
+    box-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
+    color: #f59e0b;
+}
+
 .variable-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
     box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
@@ -169,6 +175,11 @@
 .variable-autocomplete-badge--input {
     background: rgba(72, 171, 224, 0.25);
     color: #7fc8f0;
+}
+
+.variable-autocomplete-badge--flow {
+    background: rgba(234, 155, 9, 0.2);
+    color: #f59e0b;
 }
 
 .variable-autocomplete-source {
