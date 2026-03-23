@@ -257,6 +257,14 @@ export function Editor(props : EditorProps) {
                 })
                     .then(() => {
                         setStatus("Up to Date");
+                        // Re-fetch flow to get updated triggers
+                        api.get(API_URL + '/api/v1/flo/' + flo.id, {
+                            headers: { "Authorization": "Bearer " + token }
+                        }).then(res => {
+                            if (res.data?.triggers) {
+                                setFlo(prev => prev ? {...prev, triggers: res.data.triggers} : prev);
+                            }
+                        }).catch(() => {});
                     })
                     .catch(error => {
                         console.error(error);
