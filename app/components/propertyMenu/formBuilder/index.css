@@ -1,15 +1,15 @@
 .form-builder {
-    padding: 10px 14px;
+    padding: 14px 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
 .fb-section {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .fb-field-row {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
 }
 
 .fb-label {
@@ -24,12 +24,12 @@
 
 .fb-input {
     width: 100%;
-    padding: 6px 8px;
+    padding: 8px 10px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
+    border-radius: 6px;
     color: #d1d5db;
-    font-size: 12px;
+    font-size: 13px;
     font-family: inherit;
     outline: none;
     margin: 0;
@@ -40,36 +40,36 @@
 }
 
 .fb-input-sm {
-    font-size: 11px;
-    padding: 4px 6px;
+    font-size: 12px;
+    padding: 6px 8px;
 }
 
 .fb-select {
-    padding: 4px 6px;
+    padding: 6px 8px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
+    border-radius: 6px;
     color: #d1d5db;
-    font-size: 11px;
+    font-size: 12px;
     font-family: inherit;
     outline: none;
-    min-width: 80px;
+    min-width: 90px;
 }
 
 .fb-page {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
 }
 
 .fb-page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -88,17 +88,17 @@
 }
 
 .fb-component {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
 }
 
 .fb-component-header {
     display: flex;
     align-items: flex-start;
-    gap: 6px;
-    padding: 6px;
+    gap: 10px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .fb-grip {
@@ -112,12 +112,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
 .fb-row {
     display: flex;
-    gap: 4px;
+    gap: 8px;
     align-items: center;
 }
 
@@ -144,8 +144,8 @@
 }
 
 .fb-icon-btn {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,7 +175,7 @@
 
 .fb-add-field, .fb-add-page {
     width: 100%;
-    padding: 6px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px dashed rgba(255, 255, 255, 0.1);
     border-radius: 6px;
