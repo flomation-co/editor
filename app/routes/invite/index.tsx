@@ -69,9 +69,8 @@ export default function AcceptInvite() {
         if (!token) {
             // Store acceptance intent and redirect to login
             localStorage.setItem(acceptanceKey, "true");
-            const redirectUrl = `${window.location.origin}/invite/${code}`;
             if (LOGIN_URL) {
-                window.location.replace(`${LOGIN_URL}?redirect_url=${encodeURIComponent(redirectUrl)}`);
+                window.location.replace(`${LOGIN_URL}?redirect_url=${encodeURIComponent(window.location.href)}`);
             }
             return;
         }
@@ -314,7 +313,7 @@ export default function AcceptInvite() {
                                 You've joined {orgName}!
                             </p>
                             <button
-                                onClick={() => navigate("/")}
+                                onClick={() => { window.location.href = "/"; }}
                                 style={{
                                     marginTop: "20px",
                                     padding: "12px 24px",
