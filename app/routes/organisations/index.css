@@ -1,0 +1,225 @@
+.org-section {
+    margin-top: 24px;
+    padding: 0 20px;
+}
+
+.org-description {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-bottom: 20px;
+}
+
+.org-section-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #d1d5db;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.org-create-form {
+    display: flex;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.org-create-form input {
+    flex: 1;
+}
+
+.org-create-form button,
+.org-invite-form button {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.org-create-form button:disabled {
+    opacity: 0.5;
+}
+
+.org-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.org-member-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.org-member-name {
+    flex: 1;
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+.org-member-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.org-member-role.admin {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.org-member-role.member {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.org-action-button {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s ease;
+}
+
+.org-action-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.org-action-button.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+.org-invite-form {
+    display: flex;
+    gap: 10px;
+    max-width: 500px;
+    margin-bottom: 16px;
+}
+
+.org-invite-form input {
+    flex: 1;
+}
+
+.org-invites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.org-invite-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.org-invite-detail {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    color: #d1d5db;
+}
+
+.org-invite-expires {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 2px;
+}
+
+.org-setting-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.org-setting-label {
+    flex: 1;
+}
+
+.org-setting-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+
+.org-setting-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.5;
+}
+
+.org-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.org-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.org-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    transition: background 0.2s ease;
+}
+
+.org-toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.org-toggle input:checked + .org-toggle-slider {
+    background: #8b5cf6;
+}
+
+.org-toggle input:checked + .org-toggle-slider::before {
+    transform: translateX(20px);
+}

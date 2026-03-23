@@ -3,7 +3,8 @@
     width: 50px;
     display: inline-block;
     overflow: hidden;
-    border-right: 1px solid var(--primary-background);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.01);
 }
 
 @media (min-width: 1024px) {
@@ -20,36 +21,38 @@
 
 .vertical-nav-top-section {
     flex: 1;
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: calc(100dvh - 310px);
 }
 
 .vertical-nav-bottom-section {
     flex: 0;
     height: 250px;
-    border-top: 1px solid var(--primary-background);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 8px;
 }
 
 .menu-section-header {
     content: "";
     content-visibility: hidden;
-    border-top: 1px solid var(--primary-background);
-    color: var(--secondary-font-colour);
-    font-size: 0.9em;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 @media (min-width: 1024px) {
     .menu-section-header {
-        padding-top: 20px;
-        padding-left: 20px;
+        padding: 20px 20px 6px;
         border: none;
         content-visibility: visible;
     }
 }
 
 .menu-section-list {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 4px 8px;
     flex: 0;
     display: flex;
     flex-direction: column;
@@ -59,27 +62,35 @@
 @media (min-width: 1024px) {
     .menu-section-list {
         display: block;
+        padding: 4px 10px;
     }
 }
 
 .menu-section-list-item {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    display:block;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 6px;
+    color: var(--secondary-font-colour);
+    font-size: 13px;
+    transition: background 0.1s ease, color 0.1s ease;
 }
 
 @media (min-width: 1024px) {
     .menu-section-list-item {
-        padding-left: 50px;
+        padding: 8px 16px;
     }
 }
 
-.menu-section-list-item-active {
-    background-color: var(--primary-background);
+.menu-section-list-item.active {
+    background: rgba(139, 92, 246, 0.12);
+    color: #a78bfa;
 }
 
 .menu-section-list-item:hover {
-    background-color: var(--primary-background);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
     cursor: pointer;
 }
 
@@ -95,12 +106,17 @@
 
 .menu-section-list-icon {
     text-align: center;
-    display: inline-block;
-    width: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
 }
 
-@media (min-width: 1024px) {
-    text-align: left;
+.menu-section-list-item:hover .menu-section-list-icon,
+.menu-section-list-item.active .menu-section-list-icon {
+    color: inherit;
 }
 
 .menu-section-button {
@@ -109,17 +125,21 @@
 
 @media (min-width: 1024px) {
     .menu-section-button {
-        display: block;
-        margin: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px;
         padding: 10px;
-        background-color: var(--primary-foreground);
+        background: linear-gradient(135deg, #460070, #6b21a8);
         text-align: center;
-        border-radius: 10px;
-        position: relative;
+        border-radius: 8px;
         cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: opacity 0.15s ease;
     }
 }
 
 .menu-section-button:hover {
-    background-color: var(--primary-background);
+    opacity: 0.85;
 }

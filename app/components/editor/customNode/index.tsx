@@ -42,7 +42,8 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const type = data?.config?.type ?? 2;
     const colours = NODE_COLOURS[type] ?? NODE_COLOURS[2];
     const nodeClass = NODE_CLASS_MAP[type] ?? NODE_CLASS_MAP[2];
-    const hasInputs = data?.config?.inputs && data.config.inputs.length > 0;
+    const isTrigger = type === 1;
+    const hasInputs = !isTrigger && data?.config?.inputs && data.config.inputs.length > 0;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     const hasIncompleteRequired = useMemo(() => {

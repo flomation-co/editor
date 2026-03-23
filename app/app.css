@@ -94,6 +94,12 @@ body {
   flex: 1;
 }
 
+.small-label {
+  display: inline-block;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
 .table-spacer {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -171,39 +177,52 @@ body {
 }
 
 .execution-state-label {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   text-align: center;
-  margin: 5px;
-  padding: 5px;
-  position: relative;
-  font-size: 0.75em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .execution-state-success {
-  background-color: var(--primary-background);
-  border: 1px solid #0a0;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #4ade80;
 }
 
 .execution-state-created {
-  background-color: var(--primary-background);
-  border: 1px solid #015def;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
 }
 
 .execution-state-running {
-  background-color: #00aa9c;
-  border: 1px solid #00aa9c;
-  animation: border-blink 0.75s ease-in infinite;
+  background: rgba(0, 170, 156, 0.15);
+  border: 1px solid rgba(0, 170, 156, 0.3);
+  color: #2dd4bf;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 170, 156, 0.3); }
+  50% { box-shadow: 0 0 8px 2px rgba(0, 170, 156, 0.15); }
 }
 
 .execution-state-cancelled {
-  background-color: var(--primary-background);
-  border: 1px solid #606060;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .execution-state-failed {
-  background-color: var(--primary-background);
-  border: 1px solid #aa004c;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
 }
 
 .flo-table-subdued {
@@ -299,10 +318,11 @@ body {
 input {
   width: 100%;
   padding: 10px;
-  background-color: var(--primary-background);
+  background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   box-sizing: border-box;
 }
 
@@ -316,14 +336,22 @@ input:focus {
 
 textarea {
   width: 100%;
-  min-height: 100px;
   padding: 10px;
-  background-color: var(--primary-background);
+  background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   box-sizing: border-box;
-  resize: both;
+  resize: vertical;
+  font-family: inherit;
+  font-size: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+textarea:focus {
+  box-shadow: 0 0 10px 1px var(--highlight-colour);
 }
 
 .loading-container{
@@ -644,15 +672,18 @@ a.active {
   }
 }
 .environment-label {
-  display: block;
-  text-align: center;
-  margin: 5px;
-  padding: 5px;
-  position: relative;
-  font-size: 0.75em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  background-color: var(--primary-background);
-  border: 1px solid #40495b;
+  letter-spacing: 0.5px;
+  background: rgba(0, 170, 156, 0.12);
+  border: 1px solid rgba(0, 170, 156, 0.25);
+  color: #2dd4bf;
 }
 
 @keyframes success-pulse {
@@ -683,36 +714,55 @@ a.active {
 }
 
 .table-button {
-  background-color: var(--primary-background);
-  padding: 10px;
-  border-radius: 5px;
-  margin-left: 5px;
-  margin-right: 5px;
-  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  margin-left: 3px;
+  margin-right: 3px;
+  min-width: 32px;
+  color: var(--secondary-font-colour);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.1s ease, border-color 0.1s ease;
 }
 
 .table-button-danger {
-  background-color: var(--error-action-colour);
+  background: rgba(190, 0, 0, 0.1);
+  border-color: rgba(190, 0, 0, 0.2);
+  color: #f87171;
 }
 
 @media (min-width: 1024px) {
   .table-button {
-    min-width: 80px;
+    min-width: 70px;
   }
 }
 
 .table-button:hover {
-  background-color: var(--secondary-font-colour);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.table-button-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
 .table-button:disabled {
-  background-color: var(--primary-background);
-  opacity: 0.25;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .table-button-danger:disabled {
-  background-color: var(--error-action-colour);
-  opacity: 0.25;
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .table-button-red {

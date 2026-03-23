@@ -9,6 +9,7 @@ import {faArrowUpRightFromSquare, faHourglassStart, faKey, faWrench} from "@fort
 import {faDiscord} from "@fortawesome/free-brands-svg-icons";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
+import {useOrganisation} from "~/context/organisation/use";
 
 type VerticalNavProps = {
     active?: string
@@ -24,11 +25,16 @@ export function VerticalNav(props: VerticalNavProps) {
 
     const [ showAutomate, setShowAutomate ] = useState<boolean>(true);
     const [ showConfigure, setShowConfigure ] = useState<boolean>(true);
+    const { organisations } = useOrganisation();
     const [ showManage, setShowManage ] = useState<boolean>(false);
     const [ showAdminister, setShowAdminister ] = useState<boolean>(false);
     const [ currentlyActive, setCurrentlyActive ] = useState(props.active);
     const [ isStatusGood, setIsStatusGood ] = useState<boolean>(false);
     const [ isStatusPending, setIsStatusPending ] = useState<boolean>(true);
+
+    useEffect(() => {
+        setShowManage(true);
+    }, [organisations]);
 
     function createNewFlo() {
         const config = useConfig();
@@ -99,7 +105,7 @@ export function VerticalNav(props: VerticalNavProps) {
                             <div className={"menu-section-list"}>
                                 <NavLink to={"/environment"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faWrench} /></div><span className={"menu-section-list-item-label"}>Environments</span></NavLink>
                                 <NavLink to={"/runner"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPersonRunning} /></div><span className={"menu-section-list-item-label"}>Runners</span></NavLink>
-                                {/*<NavLink to={"/queue"} className={"menu-section-list-item disabled"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>*/}
+                                <NavLink to={"/queue"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faCubesStacked} /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>
                             </div>
                         </>
                     )}
@@ -109,8 +115,8 @@ export function VerticalNav(props: VerticalNavProps) {
                             <div className={"menu-section-header"}>Manage</div>
                             <div className={"menu-section-list"}>
                                 <NavLink to={"/organisation"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
-                                <NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>
-                                <NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>
+                                {/*<NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>*/}
+                                {/*<NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>*/}
                             </div>
                         </>
                     )}
@@ -127,7 +133,7 @@ export function VerticalNav(props: VerticalNavProps) {
                 </div>
 
                 <div className={"vertical-nav-bottom-section"}>
-                    <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flo</a>
+                    <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flow</a>
 
                     <div className={"menu-section-list"}>
                         {/*<NavLink to={"/docs"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBook}/></div><span className={"menu-section-list-item-label"}>Documentation</span></NavLink>*/}

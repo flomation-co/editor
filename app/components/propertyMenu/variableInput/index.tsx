@@ -173,15 +173,32 @@ const VariableInput = (props: VariableInputProps) => {
 
             const filter = between;
 
-            // Position the dropdown relative to the input
-            if (inputRef.current && containerRef.current) {
+            // Position the dropdown using viewport coordinates for fixed positioning
+            if (inputRef.current) {
                 const inputRect = inputRef.current.getBoundingClientRect();
-                const containerRect = containerRef.current.getBoundingClientRect();
+                const dropdownWidth = 300;
+                const dropdownMaxHeight = 350;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // Clamp horizontal position so dropdown stays within viewport
+                let x = inputRect.left;
+                if (x + dropdownWidth > viewportWidth) {
+                    x = viewportWidth - dropdownWidth - 8;
+                }
+                if (x < 8) x = 8;
+
+                // If not enough space below, show above
+                let y = inputRect.bottom + 4;
+                if (y + dropdownMaxHeight > viewportHeight) {
+                    y = inputRect.top - dropdownMaxHeight - 4;
+                    if (y < 8) y = 8;
+                }
 
                 setAutocomplete({
                     visible: true,
-                    x: 0,
-                    y: inputRect.bottom - containerRect.top + 4,
+                    x,
+                    y,
                     filter,
                     insertStart: openIndex,
                 });

@@ -10,7 +10,7 @@ import {Tooltip} from "react-tooltip";
 import ReactCountryFlag from "react-country-flag";
 import {ExecuteState} from "~/components/executionState";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleStop, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faCircleStop, faPencil, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {faCancel, faCheck, faGlobe, faPlus} from "@fortawesome/pro-solid-svg-icons";
 
 export function meta({}: Route.MetaArgs) {
@@ -38,6 +38,13 @@ export default function Environment() {
     const [ inputEnvironmentSecretValue, setInputEnvironmentSecretValue ] = useState<string>("");
 
     const [ confirmDeletionID, setConfirmDeletionID ] = useState<string>(null);
+
+    const [ editingPropertyID, setEditingPropertyID ] = useState<string | null>(null);
+    const [ editingPropertyName, setEditingPropertyName ] = useState<string>("");
+    const [ editingPropertyValue, setEditingPropertyValue ] = useState<string>("");
+
+    const [ editingSecretID, setEditingSecretID ] = useState<string | null>(null);
+    const [ editingSecretValue, setEditingSecretValue ] = useState<string>("");
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -239,6 +246,52 @@ export default function Environment() {
             })
     }
 
+    const startEditProperty = (prop) => {
+        setEditingPropertyID(prop.id);
+        setEditingPropertyName(prop.name);
+        setEditingPropertyValue(prop.value);
+    }
+
+    const cancelEditProperty = () => {
+        setEditingPropertyID(null);
+        setEditingPropertyName("");
+        setEditingPropertyValue("");
+    }
+
+    const saveEditProperty = () => {
+        if (!editingPropertyID) return;
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + editingPropertyID;
+
+        api.post(url, { name: editingPropertyName, value: editingPropertyValue }, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => { cancelEditProperty(); updateProperties(); })
+            .catch(error => console.error(error));
+    }
+
+    const startEditSecret = (secret) => {
+        setEditingSecretID(secret.id);
+        setEditingSecretValue("");
+    }
+
+    const cancelEditSecret = () => {
+        setEditingSecretID(null);
+        setEditingSecretValue("");
+    }
+
+    const saveEditSecret = () => {
+        if (!editingSecretID) return;
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret/' + editingSecretID;
+
+        api.post(url, { value: editingSecretValue }, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => { cancelEditSecret(); updateSecrets(); })
+            .catch(error => console.error(error));
+    }
+
     return (
         <Container>
             <div className={"header"}>Environment</div>
@@ -265,14 +318,37 @@ export default function Environment() {
                 <tbody>
                 <>
                     {properties && properties?.map((prop, index) => {
+                        const isEditing = editingPropertyID === prop.id;
                         return (
                             <tr className={"flo-table-row"} key={prop.id}>
                                 <td>{prop.name}<span className={"table-column-hide-sm flo-table-subtext"}>{prop.id}</span></td>
-                                <td className={"table-column-hide-sm"}>{prop.value}</td>
+                                <td className={"table-column-hide-sm"}>
+                                    {isEditing ? (
+                                        <textarea value={editingPropertyValue} onChange={(e) => setEditingPropertyValue(e.target.value)} rows={3} autoFocus />
+                                    ) : (
+                                        prop.value
+                                    )}
+                                </td>
                                 <td>
-                                    <button className={"table-button"} onClick={() => deleteProperty(prop.id)}>
-                                        <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
-                                    </button>
+                                    {isEditing ? (
+                                        <>
+                                            <button className={"table-button"} onClick={saveEditProperty}>
+                                                <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                            </button>
+                                            <button className={"table-button"} onClick={cancelEditProperty}>
+                                                <FontAwesomeIcon icon={faCancel}/> <span>Cancel</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className={"table-button"} onClick={() => startEditProperty(prop)}>
+                                                <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
+                                            </button>
+                                            <button className={"table-button"} onClick={() => deleteProperty(prop.id)}>
+                                                <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         )
@@ -293,7 +369,7 @@ export default function Environment() {
                                 <input type={"text"} placeholder={"Property name..."} autoFocus={true} value={inputEnvironmentPropertyName} onChange={changeEnvironmentPropertyName} />
                             </td>
                             <td>
-                                <input type={"text"} placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} />
+                                <textarea placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} rows={3} />
                             </td>
                             <td className={"table-column-small-col"}>
                                 <button className={"table-button"} onClick={() => saveProperty()}>
@@ -326,14 +402,37 @@ export default function Environment() {
                 <tbody>
                 <>
                     {secrets && secrets?.map((secret, index) => {
+                        const isEditing = editingSecretID === secret.id;
                         return (
                             <tr className={"flo-table-row"} key={secret.id}>
                                 <td>{secret.name}<span className={"table-column-hide-sm flo-table-subtext"}>{secret.id}</span></td>
-                                <td className={"table-column-hide-sm"}><small>Hidden</small> </td>
+                                <td className={"table-column-hide-sm"}>
+                                    {isEditing ? (
+                                        <textarea placeholder={"Enter new secret value..."} value={editingSecretValue} onChange={(e) => setEditingSecretValue(e.target.value)} rows={3} autoFocus />
+                                    ) : (
+                                        <small>Hidden</small>
+                                    )}
+                                </td>
                                 <td>
-                                    <button className={"table-button"} onClick={() => deleteSecret(secret.id)}>
-                                        <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
-                                    </button>
+                                    {isEditing ? (
+                                        <>
+                                            <button className={"table-button"} onClick={saveEditSecret}>
+                                                <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                            </button>
+                                            <button className={"table-button"} onClick={cancelEditSecret}>
+                                                <FontAwesomeIcon icon={faCancel}/> <span>Cancel</span>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className={"table-button"} onClick={() => startEditSecret(secret)}>
+                                                <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
+                                            </button>
+                                            <button className={"table-button"} onClick={() => deleteSecret(secret.id)}>
+                                                <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         )
@@ -353,7 +452,7 @@ export default function Environment() {
                                 <input type={"text"} placeholder={"Secret name..."} autoFocus={true} value={inputEnvironmentSecretName} onChange={changeEnvironmentSecretName} />
                             </td>
                             <td>
-                                <input type={"text"} placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} />
+                                <textarea placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} rows={3} />
                             </td>
                             <td className={"table-column-small-col"}>
                                 <button className={"table-button"} onClick={() => saveSecret()}>

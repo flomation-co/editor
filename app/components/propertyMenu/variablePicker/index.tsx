@@ -23,8 +23,10 @@ const VariablePicker = (props: VariablePickerProps) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [dropdownPos, setDropdownPos] = useState<{top: number, left: number}>({top: 0, left: 0});
     const containerRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
+    const toggleRef = useRef<HTMLButtonElement>(null);
 
     const parsed = parseVariableRef(props.value);
     const isVariable = parsed !== null;
@@ -116,15 +118,31 @@ const VariablePicker = (props: VariablePickerProps) => {
     return (
         <div className="vp-container" ref={containerRef}>
             <button
+                ref={toggleRef}
                 type="button"
                 className="variable-mode-toggle"
-                onClick={() => setOpen(!open)}
+                onClick={() => {
+                    if (!open && toggleRef.current) {
+                        const rect = toggleRef.current.getBoundingClientRect();
+                        const dropdownWidth = 240;
+                        let left = rect.right - dropdownWidth;
+                        if (left < 8) left = 8;
+                        if (left + dropdownWidth > window.innerWidth) left = window.innerWidth - dropdownWidth - 8;
+                        let top = rect.bottom + 4;
+                        if (top + 350 > window.innerHeight) {
+                            top = rect.top - 350 - 4;
+                            if (top < 8) top = 8;
+                        }
+                        setDropdownPos({top, left});
+                    }
+                    setOpen(!open);
+                }}
                 title="Use a variable"
             >
                 {"{x}"}
             </button>
             {open && (
-                <div className="vp-dropdown">
+                <div className="vp-dropdown" style={{top: dropdownPos.top, left: dropdownPos.left}}>
                     <input
                         ref={searchRef}
                         className="vp-search"

@@ -22,11 +22,14 @@
 
 .flo-editor-title-textbox {
     width: 100%;
-    padding: 10px;
-    background-color: var(--primary-background);
+    padding: 8px 12px;
+    background: transparent;
     color: var(--primary-font-colour);
-    /*font-size: 2em;*/
+    font-size: 15px;
+    font-weight: 500;
     outline: none;
+    border: none;
+    border-radius: 0;
 }
 
 /* style={{width: 100 + "%", padding: 10 + "px", color: "#ccc", fontSize: "2em"}}*/
@@ -39,47 +42,50 @@
 
 .flo-editor-property {
     width: 100%;
-    /*padding-top: 20px;*/
-    /*padding-left: 20px;*/
-    /*padding-right: 20px;*/
-    border-left: 1px solid var(--primary-background);
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: row;
+    align-items: center;
+    gap: 8px;
     z-index: 1000;
 }
 
 .flo-editor-property-property-section {
     flex: 1;
+    min-width: 0;
 }
 
 .flo-editor-property-action-section {
-    align-content: center;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    gap: 4px;
 }
 
 .flo-editor-action-divider {
-    width: 10px;
-    aspect-ratio: 1;
-    /*height: 50px;*/
-    border: 1px solid var(--primary-background);
-    box-sizing: content-box;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    cursor: pointer;
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
 }
 
 .flo-editor-action-button {
-    width: 40px;
-    aspect-ratio: 1;
-    /*height: 50px;*/
-    border: 1px solid var(--primary-background);
-    box-sizing: content-box;
+    height: 34px;
+    min-width: 34px;
+    padding: 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
     justify-content: center;
     align-items: center;
     display: flex;
     cursor: pointer;
+    color: var(--secondary-font-colour);
+    font-size: 13px;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    gap: 6px;
 }
 
 .flo-editor-action-button > span {
@@ -88,28 +94,26 @@
 
 @media (min-width: 1024px) {
     .flo-editor-action-button {
-        aspect-ratio: auto;
-        min-width: 40px;
-        width: auto;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding: 0 12px;
     }
 
     .flo-editor-action-button > span {
         display: inline-block;
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: 0.8em;
+        font-size: 12px;
         color: var(--secondary-font-colour);
+        white-space: nowrap;
     }
 }
 
 .flo-editor-action-button:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .flo-editor-action-button-enabled {
-    background-color: rgba(255, 255, 255, 0.15);
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #a78bfa;
 }
 
 .flo-editor-status {
@@ -163,18 +167,125 @@
 }
 
 .flo-editor-property-action-button {
-    display: block;
-    padding: 10px;
-    background-color: rgba(0, 160, 0, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 6px;
     text-align: center;
     box-sizing: border-box;
-    color: var(--secondary-action-colour);
+    color: #4ade80;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    white-space: nowrap;
+    text-decoration: none;
 }
 
 .flo-editor-property-action-button:hover {
-    background-color: var(--secondary-action-colour);
-    color: #fff;
+    background: rgba(34, 197, 94, 0.25);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #4ade80;
+}
+
+.flo-editor-property-action-button--disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.flo-editor-property-action-button--disabled:hover {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.flo-editor-select {
+    height: 34px;
+    padding: 0 28px 0 10px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--secondary-font-colour);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ae9fb9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+.flo-editor-env-dropdown {
+    position: relative;
+}
+
+.flo-editor-env-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--secondary-font-colour);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    white-space: nowrap;
+}
+
+.flo-editor-env-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.flo-editor-env-icon {
+    font-size: 11px;
+    color: #00aa9c;
+}
+
+.flo-editor-env-chevron {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.flo-editor-env-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 200px;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    z-index: 10000;
+}
+
+.flo-editor-env-item {
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #d1d5db;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.flo-editor-env-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.flo-editor-env-item.active {
+    background: rgba(0, 170, 156, 0.15);
+    color: #2dd4bf;
 }
 
 /*.react-flow__node-default {*/

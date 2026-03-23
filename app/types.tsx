@@ -200,7 +200,46 @@ export type JWTPayload = {
     verified: boolean
 }
 
+export type Queue = {
+    id: string,
+    organisation_id?: string,
+    parent_id?: string,
+    name: string,
+    registration_code: string,
+    created_at?: string,
+    location_code?: string
+}
+
 export type UserDashboard = {
     usage: number,
     allowance: number
+}
+
+export type Organisation = {
+    id: string,
+    name: string,
+    icon?: string,
+    role: string,
+    allow_public_runners: boolean,
+    created_at?: string
+}
+
+export type OrganisationMember = {
+    user_id: string,
+    name: string,
+    role: string,
+    joined_at?: string
+}
+
+export type OrganisationInvite = {
+    id: string,
+    organisation_id: string,
+    email?: string,
+    invite_code: string,
+    role: string,
+    created_by: string,
+    created_at: string,
+    accepted_at?: string,
+    accepted_by?: string,
+    expires_at: string
 }

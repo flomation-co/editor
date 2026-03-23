@@ -10,7 +10,9 @@ export default [
     route("integration", "routes/integrations/index.tsx"),
     route("runner", "routes/runners/index.tsx"),
 
+    route("queue", "routes/queues/index.tsx"),
     route("organisation", "routes/organisations/index.tsx"),
+    route("invite/:code", "routes/invite/index.tsx"),
     route("team", "routes/teams/index.tsx"),
     route("usage", "routes/usage/index.tsx"),
     

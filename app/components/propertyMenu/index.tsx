@@ -97,7 +97,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     nodeId={props.node.data.id}
                                                     name={i.name}
                                                     label={i.label}
-                                                    key={i.name}
+                                                    key={props.node.data.id + "-" + i.name}
                                                     value={i.value}
                                                     options={i.options}
                                                     required={i.required}
@@ -122,7 +122,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
-                                                        key={i.name}
+                                                        key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
@@ -137,7 +137,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
-                                                        key={i.name}
+                                                        key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
@@ -152,7 +152,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
-                                                        key={i.name}
+                                                        key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
@@ -167,7 +167,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
-                                                        key={i.name}
+                                                        key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
@@ -182,7 +182,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         name={i.name}
                                                         placeholder={i.placeholder}
                                                         label={i.label}
-                                                        key={i.name}
+                                                        key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
