@@ -3,9 +3,9 @@
    ═══════════════════════════════════════════════ */
 .flows-action-bar {
     width: 100%;
-    padding: 8px 20px;
-    background: rgba(255, 255, 255, 0.02);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 20px 0;
+    padding: 0 20px;
+    min-height: 38px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -102,22 +102,22 @@
     align-items: center;
     flex: 1;
     min-width: 0;
-    background: rgba(255, 255, 255, 0.04);
+    background-color: var(--primary-background);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
-    padding: 0 10px;
-    height: 34px;
+    padding: 0 12px;
+    height: 38px;
     gap: 8px;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .flows-search-input-wrap:focus-within {
-    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
 }
 
 .flows-search-icon {
     color: rgba(255, 255, 255, 0.3);
-    font-size: 12px;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
@@ -127,8 +127,15 @@
     background: transparent;
     border: none;
     outline: none;
+    box-shadow: none;
     color: var(--primary-font-colour);
-    font-size: 13px;
+    font-size: 14px;
+    padding: 0;
+}
+
+.flows-search-input:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 .flows-search-input::placeholder {
@@ -140,8 +147,8 @@
     border: none;
     color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    font-size: 12px;
-    padding: 2px 4px;
+    font-size: 13px;
+    padding: 4px 6px;
     border-radius: 4px;
     transition: color 0.1s ease;
     flex-shrink: 0;
@@ -235,6 +242,7 @@
    ═══════════════════════════════════════════════ */
 .favourites-section {
     padding: 0 20px;
+    margin-top: 16px;
     margin-bottom: 20px;
 }
 

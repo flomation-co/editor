@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileImport, faSpinner, faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { faFileImport, faSpinner, faCircleCheck, faCircleXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
@@ -131,7 +131,12 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
                         <div className="import-preview">
                             {parsedWrappers.map((w, i) => (
                                 <div key={i} className="import-preview-item">
-                                    <div className="import-preview-name">{w.flomation_export.source_flow_name}</div>
+                                    <div className="import-preview-item-header">
+                                        <div className="import-preview-name">{w.flomation_export.source_flow_name}</div>
+                                        <button className="import-preview-remove" onClick={() => setParsedWrappers(prev => prev.filter((_, idx) => idx !== i))}>
+                                            <FontAwesomeIcon icon={faXmark} />
+                                        </button>
+                                    </div>
                                     <div className="import-preview-meta">
                                         <span>
                                             <FontAwesomeIcon icon={faCircleCheck} className="import-hash-valid" />
