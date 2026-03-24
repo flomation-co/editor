@@ -39,28 +39,6 @@ export function VerticalNav(props: VerticalNavProps) {
         setShowManage(true);
     }, [organisations]);
 
-    function createNewFlo() {
-        const config = useConfig();
-        let url = config("AUTOMATE_API_URL");
-        api.post(url + '/api/v1/flo', {
-            "name": "Untitled Flo"
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                "Authorization": "Bearer " + token
-            }
-        })
-            .then(response => {
-                if (response) {
-                    const flo_id = response.data.id;
-                    navigate("/flo/" + flo_id);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
     const updateStatus = () => {
         api.get(API_URL + '/version')
             .then(() => {
@@ -146,10 +124,6 @@ export function VerticalNav(props: VerticalNavProps) {
                 </div>
 
                 <div className={"vertical-nav-bottom-section"}>
-                    {hasPermission(PERMISSIONS.FLOW_CREATE) && (
-                        <a className={"menu-section-button"} onClick={() => {createNewFlo()}}>New Flow</a>
-                    )}
-
                     <div className={"menu-section-list"}>
                         {/*<NavLink to={"/docs"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBook}/></div><span className={"menu-section-list-item-label"}>Documentation</span></NavLink>*/}
                         {/*<NavLink to={"/support"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faLifeRing} /></div><span className={"menu-section-list-item-label"}>Help &amp; Feedback</span></NavLink>*/}
