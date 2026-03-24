@@ -97,6 +97,8 @@ build-deb:
 
 publish-rpm-8:
   extends: .publish-rpm-template
+  only:
+    - main
   variables:
     RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el8*.rpm"
     EL_VERSION: "8"
@@ -109,6 +111,8 @@ publish-rpm-8:
 
 publish-rpm-9:
   extends: .publish-rpm-template
+  only:
+    - main
   variables:
     RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el9*.rpm"
     EL_VERSION: "9"
@@ -121,6 +125,8 @@ publish-rpm-9:
 
 publish-deb:
   extends: .publish-deb-template
+  only:
+    - main
   variables:
     DEB_FILE_PATTERN: "${PACKAGE_NAME}_*.deb"
     CI_TEMPLATES_REF: "main"
@@ -132,6 +138,8 @@ publish-deb:
 
 publish-rpm-8-live:
   extends: .publish-rpm-template
+  only:
+    - main
   variables:
     RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el8*.rpm"
     EL_VERSION: "8"
@@ -145,6 +153,8 @@ publish-rpm-8-live:
 
 publish-rpm-9-live:
   extends: .publish-rpm-template
+  only:
+    - main
   variables:
     RPM_FILE_PATTERN: "${PACKAGE_NAME}-*el9*.rpm"
     EL_VERSION: "9"
@@ -158,6 +168,8 @@ publish-rpm-9-live:
 
 publish-deb-live:
   extends: .publish-deb-template
+  only:
+    - main
   variables:
     DEB_FILE_PATTERN: "${PACKAGE_NAME}_*.deb"
     CI_TEMPLATES_REF: "main"
