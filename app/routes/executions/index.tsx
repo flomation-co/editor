@@ -133,36 +133,17 @@ export default function Executions() {
         setLimit(limit);
     }
 
-    function friendlyDuration(duration?: number) : string {
-        if (!duration) {
-            return "";
-        }
-
-        if (duration === 0) {
-            return ""
-        }
-
-        // const newDate = new Date(duration);
-        // const hours = newDate.getUTCHours();
-        // const minutes = newDate.getUTCMinutes();
-        // const seconds = newDate.getUTCSeconds();
-        // const milliseconds = newDate.getUTCMilliseconds();
-        // console.log(hours, minutes, seconds, milliseconds);
-        //
-        // let friendlyDate = milliseconds + " ms";
-        // if (hours > 0) {
-        //     return hours + " h " + minutes + " m " + seconds + " s " + milliseconds + " ms";
-        // }
-        //
-        // if (minutes > 0) {
-        //     return minutes + " m " + seconds + " s " + milliseconds + " ms";
-        // }
-        //
-        // if (seconds > 0) {
-        //     return seconds + " s " + milliseconds + " ms";
-        // }
-
-        return duration + " ms";
+    function friendlyDuration(ms?: number): string {
+        if (!ms || ms === 0) return "";
+        if (ms < 1000) return ms + "ms";
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) return seconds + "s";
+        const minutes = Math.floor(seconds / 60);
+        const remainSec = seconds % 60;
+        if (minutes < 60) return remainSec > 0 ? `${minutes}m ${remainSec}s` : `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        const remainMin = minutes % 60;
+        return remainMin > 0 ? `${hours}h ${remainMin}m` : `${hours}h`;
     }
 
     return (
