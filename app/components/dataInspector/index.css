@@ -1,0 +1,208 @@
+/* ── Data Inspector ── */
+.di-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.di-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.di-toolbar-count {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.di-toolbar-copy {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.di-toolbar-copy:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.di-entries {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(15, 15, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 6px 0;
+    min-height: 0;
+}
+
+.di-empty {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* ── Property Row ── */
+.di-row {
+    padding: 4px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+}
+
+.di-row:last-child {
+    border-bottom: none;
+}
+
+.di-row-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.di-key {
+    font-size: 12px;
+    font-weight: 600;
+    color: #00aa9c;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.di-key--index {
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 400;
+}
+
+.di-type-tag {
+    font-size: 9px;
+    font-weight: 500;
+    opacity: 0.6;
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+}
+
+.di-row-value {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    padding-left: 2px;
+    line-height: 1.5;
+}
+
+.di-row-value--block {
+    padding-left: 0;
+}
+
+/* ── Values ── */
+.di-val {
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.di-val--string {
+    color: #a5d6a7;
+}
+
+.di-val--multiline {
+    display: block;
+    word-break: break-word;
+    white-space: pre-wrap;
+    padding: 4px 0;
+}
+
+.di-val--number {
+    color: #90caf9;
+}
+
+.di-val--bool {
+    color: #ce93d8;
+}
+
+.di-val--null {
+    color: rgba(255, 255, 255, 0.25);
+    font-style: italic;
+}
+
+.di-val--empty {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.di-type-hint {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.15);
+    font-style: italic;
+    margin-left: 4px;
+}
+
+/* ── Object/Array Trees ── */
+.di-tree {
+    display: flex;
+    flex-direction: column;
+}
+
+.di-tree-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 0;
+    transition: opacity 0.15s ease;
+}
+
+.di-tree-header:hover {
+    opacity: 0.8;
+}
+
+.di-chevron {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.25);
+    width: 10px;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.di-tree-header:hover .di-chevron {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.di-type-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+}
+
+.di-type-badge--object {
+    background: rgba(0, 170, 156, 0.1);
+    color: rgba(0, 170, 156, 0.7);
+}
+
+.di-type-badge--array {
+    background: rgba(239, 212, 103, 0.1);
+    color: rgba(239, 212, 103, 0.7);
+}
+
+.di-count {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.di-tree-children {
+    padding-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    margin-left: 4px;
+    margin-top: 2px;
+}

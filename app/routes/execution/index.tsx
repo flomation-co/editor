@@ -17,6 +17,7 @@ import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
 import ExecutionFlowView from "~/components/executionFlowView";
 import NodeInspector from "~/components/executionFlowView/NodeInspector";
+import DataInspector from "~/components/dataInspector";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -277,24 +278,21 @@ export default function ExecutionDetail() {
                                 <div className="exec-detail-panel-body">
                                     {/* Inputs tab */}
                                     {detailTab === 'inputs' && (
-                                        <pre className="exec-detail-code">
-                                            {exec.data ? JSON.stringify(exec.data, null, 4) : '\u00A0'}
-                                        </pre>
+                                        <DataInspector data={exec.data} emptyMessage="No input data" />
                                     )}
 
                                     {/* Outputs tab */}
                                     {detailTab === 'outputs' && (
-                                        <pre className="exec-detail-code">
+                                        <>
                                             {exec.completion_status === "pending" && !exec.result && (
                                                 <div className="exec-detail-loading">
                                                     <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for execution to complete...</span>
                                                 </div>
                                             )}
-                                            {exec.result && exec.result.outputs
-                                                ? JSON.stringify(exec.result.outputs, null, 4)
-                                                : exec.completion_status !== "pending" ? '\u00A0' : ''
-                                            }
-                                        </pre>
+                                            {(exec.result?.outputs || exec.completion_status !== "pending") && (
+                                                <DataInspector data={exec.result?.outputs} emptyMessage="No output data" />
+                                            )}
+                                        </>
                                     )}
 
                                     {/* Logs tab */}
