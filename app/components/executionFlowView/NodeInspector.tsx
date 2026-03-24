@@ -11,7 +11,18 @@ type NodeInspectorProps = {
 
 const SENSITIVE_KEYS = /secret|password|key|token|credential|auth/i;
 
-function obfuscateValue(key: string, value: any): string {
+function renderWithBreaks(str: string): React.ReactNode {
+    const segments = str.split(/\n|<br\s*\/?>/);
+    if (segments.length <= 1) return str;
+    return segments.map((seg, i) => (
+        <React.Fragment key={i}>
+            {i > 0 && <br />}
+            {seg}
+        </React.Fragment>
+    ));
+}
+
+function obfuscateValue(key: string, value: any): React.ReactNode {
     if (typeof value === 'string' && value === '********') {
         return '********';
     }
@@ -19,16 +30,16 @@ function obfuscateValue(key: string, value: any): string {
         return '********';
     }
     if (typeof value === 'object' && value !== null) {
-        return JSON.stringify(value, null, 2);
+        return renderWithBreaks(JSON.stringify(value, null, 2));
     }
-    return String(value ?? '');
+    return renderWithBreaks(String(value ?? ''));
 }
 
-function formatOutputValue(key: string, value: any): string {
+function formatOutputValue(key: string, value: any): React.ReactNode {
     if (typeof value === 'object' && value !== null) {
-        return JSON.stringify(value, null, 2);
+        return renderWithBreaks(JSON.stringify(value, null, 2));
     }
-    return String(value ?? '');
+    return renderWithBreaks(String(value ?? ''));
 }
 
 export default function NodeInspector({ nodeId, status, onClose }: NodeInspectorProps) {
