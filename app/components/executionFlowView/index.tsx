@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     ReactFlow,
     ReactFlowProvider,
@@ -27,10 +27,11 @@ const nodeTypes = { executionNode: ExecutionNode };
 function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionFlowViewProps) {
     const config = useConfig();
     const token = useCookieToken();
-    const [nodes, setNodes] = useState<Node[]>([]);
+    const [baseNodes, setBaseNodes] = useState<Node[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
     const [defaultViewport, setDefaultViewport] = useState({ x: 0, y: 0, zoom: 1 });
 
+    // Fetch flow definition once — stores base nodes without execution status
     useEffect(() => {
         const url = config("AUTOMATE_API_URL") + '/api/v1/flo/' + floId;
 
@@ -47,20 +48,11 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 const flowNodes = revisionData.nodes || [];
                 const flowEdges = revisionData.edges || [];
 
-                // Convert flow nodes to ReactFlow nodes with executionNode type,
-                // applying any already-known node statuses (e.g. from persisted results)
                 const rfNodes: Node[] = flowNodes.map((n: any) => ({
                     id: n.id,
                     type: 'executionNode',
                     position: n.position || { x: 0, y: 0 },
-                    data: {
-                        ...n.data,
-                        executionStatus: nodeStatuses.has(n.id)
-                            ? nodeStatuses.get(n.id)!.status
-                            : 'pending',
-                        onNodeClick,
-                        nodeId: n.id,
-                    },
+                    data: { ...n.data, nodeId: n.id },
                 }));
 
                 const rfEdges: Edge[] = flowEdges.map((e: any) => ({
@@ -72,10 +64,9 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                     type: 'simplebezier',
                 }));
 
-                setNodes(rfNodes);
+                setBaseNodes(rfNodes);
                 setEdges(rfEdges);
 
-                // Use saved viewport if available
                 if (response.data.x !== undefined && response.data.y !== undefined) {
                     setDefaultViewport({
                         x: response.data.x ?? 0,
@@ -89,12 +80,11 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
             });
     }, [floId]);
 
-    // Update node execution statuses when nodeStatuses changes or nodes are first loaded
-    const nodeCount = nodes.length;
-    useEffect(() => {
-        if (nodeCount === 0 || nodeStatuses.size === 0) return;
-
-        setNodes(prev => prev.map(node => ({
+    // Derive final nodes by merging base nodes with current execution statuses.
+    // This recalculates whenever baseNodes, nodeStatuses, or onNodeClick changes —
+    // no stale closures, no race conditions.
+    const nodes = useMemo(() => {
+        return baseNodes.map(node => ({
             ...node,
             data: {
                 ...node.data,
@@ -104,8 +94,8 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 onNodeClick,
                 nodeId: node.id,
             },
-        })));
-    }, [nodeStatuses, onNodeClick, nodeCount]);
+        }));
+    }, [baseNodes, nodeStatuses, onNodeClick]);
 
     return (
         <div className="execution-flow-container">
