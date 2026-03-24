@@ -3,8 +3,8 @@ import "./index.css"
 import Container from "~/components/container";
 import {Link, useNavigate, useParams} from "react-router";
 import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/components/executionState";
-import type {Execution} from "~/types";
-import {useContext, useEffect, useState} from "react";
+import type {Execution, NodeStatus} from "~/types";
+import {useCallback, useEffect, useState} from "react";
 import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -15,6 +15,8 @@ import {faLink, faSpinner, faRotateRight} from "@fortawesome/pro-solid-svg-icons
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
+import ExecutionFlowView from "~/components/executionFlowView";
+import NodeInspector from "~/components/executionFlowView/NodeInspector";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -34,6 +36,8 @@ export default function ExecutionDetail() {
     const { showToast } = useToast();
 
     const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
+    const [ nodeStatuses, setNodeStatuses ] = useState<Map<string, NodeStatus>>(new Map());
+    const [ selectedNodeId, setSelectedNodeId ] = useState<string | null>(null);
 
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
     const [ width, setWidth ] = useState<number>(0);
@@ -123,6 +127,21 @@ export default function ExecutionDetail() {
             setExec(prev => prev ? {...prev, execution_status: event.data} : prev);
         });
 
+        eventSource.addEventListener("node", (event) => {
+            try {
+                const nodeData = JSON.parse(event.data) as NodeStatus;
+                setNodeStatuses(prev => {
+                    const next = new Map(prev);
+                    const existing = next.get(nodeData.id);
+                    // Merge with existing data — running events lack inputs/outputs
+                    next.set(nodeData.id, { ...existing, ...nodeData });
+                    return next;
+                });
+            } catch (e) {
+                console.error("Failed to parse node event", e);
+            }
+        });
+
         eventSource.addEventListener("complete", () => {
             eventSource.close();
             // Re-fetch the full execution to get final state
@@ -143,6 +162,21 @@ export default function ExecutionDetail() {
             eventSource.close();
         };
     }, [ exec?.completion_status, executionID ]);
+
+    // Populate node statuses from persisted results (completed/historical executions)
+    useEffect(() => {
+        if (exec?.result?.node_results) {
+            const map = new Map<string, NodeStatus>();
+            for (const [id, nr] of Object.entries(exec.result.node_results as Record<string, NodeStatus>)) {
+                map.set(id, nr);
+            }
+            setNodeStatuses(map);
+        }
+    }, [exec?.result]);
+
+    const handleNodeClick = useCallback((nodeId: string) => {
+        setSelectedNodeId(nodeId);
+    }, []);
 
     function formatDate(date) {
         if (!date) {
@@ -179,6 +213,20 @@ export default function ExecutionDetail() {
                     <div><div className={"property-label"}>Completed: <span className={"flo-table-subtext"}>{exec.completed_at ? formatDateString(exec.completed_at) : "-"}</span></div></div>
                     <div><div className={"property-label"}>Runner: <span className={"flo-table-subtext"}>{exec.runner_id ? exec.runner_id : "-"}</span></div></div>
                     <div><div className={"property-label"}>Duration: <span className={"flo-table-subtext"}>{exec.duration > 0 ? exec.duration + " ms" : ""}</span></div></div>
+
+                    <div className={"code-block-label"}>Flow</div>
+                    <ExecutionFlowView
+                        floId={exec.flo_id}
+                        nodeStatuses={nodeStatuses}
+                        onNodeClick={handleNodeClick}
+                    />
+                    {selectedNodeId && nodeStatuses.has(selectedNodeId) && (
+                        <NodeInspector
+                            nodeId={selectedNodeId}
+                            status={nodeStatuses.get(selectedNodeId)!}
+                            onClose={() => setSelectedNodeId(null)}
+                        />
+                    )}
 
                     <div className={"code-block-label"}>
                         Inputs
