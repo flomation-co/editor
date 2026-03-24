@@ -234,12 +234,7 @@ export default function Flows() {
                         <Tooltip id={"search"} />
                     </div>
 
-                    {isLoading && (
-                        <div className={"loading-container"}>
-                            <FontAwesomeIcon icon={faSpinner} spin />
-                        </div>
-                    )}
-                    {!isLoading && flos && flos.length > 0 && favourites.size > 0 && (
+                    {flos && flos.length > 0 && favourites.size > 0 && (
                         <div className={"favourites-section"}>
                             <div className={"favourites-header"}>Favourites</div>
                             <div className={"favourites-list"}>
@@ -256,25 +251,29 @@ export default function Flows() {
                         </div>
                     )}
 
-                    {!isLoading && (
+                    {isLoading && !flos && (
+                        <div className={"loading-container"}>
+                            <FontAwesomeIcon icon={faSpinner} spin />
+                        </div>
+                    )}
+
+                    {flos && flos.length > 0 && (
                         <>
-                            {flos && flos.length > 0 && (
-                                <>
-                                    <table className={"flo-table"}>
-                                        <thead className={"flo-table-head"}>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th className={"table-column-hide-sm"}>Environment</th>
-                                            <th className={"table-column-hide-sm"}>Status</th>
-                                            <th className={"table-column-hide-sm"}>Last Run</th>
-                                            <th className={"table-column-hide-sm"}>Duration</th>
-                                            <th className={"table-column-hide-sm"}>Executions</th>
-                                            <th className={"table-column-center"}>
-                                                <span className={"table-column-hide-sm"}>Actions</span>
-                                            </th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
+                            <table className={"flo-table"} style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
+                                <thead className={"flo-table-head"}>
+                                <tr>
+                                    <th>Name</th>
+                                    <th className={"table-column-hide-sm"}>Environment</th>
+                                    <th className={"table-column-hide-sm"}>Status</th>
+                                    <th className={"table-column-hide-sm"}>Last Run</th>
+                                    <th className={"table-column-hide-sm"}>Duration</th>
+                                    <th className={"table-column-hide-sm"}>Executions</th>
+                                    <th className={"table-column-center"}>
+                                        <span className={"table-column-hide-sm"}>Actions</span>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
                                         {flos?.map((flo, index) => {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
@@ -374,9 +373,7 @@ export default function Flows() {
                                         })}
                                         </tbody>
                                     </table>
-                                    <PaginationControls onPageChange={handlePageChange} disableRightPagination={disableRightPagination} totalCount={totalFloCount}/>
-                                </>
-                            )}
+                            <PaginationControls onPageChange={handlePageChange} disableRightPagination={disableRightPagination} totalCount={totalFloCount}/>
                         </>
                     )}
                 </>

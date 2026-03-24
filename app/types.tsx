@@ -1,6 +1,17 @@
 import type {ExecutionStateValue} from "~/components/executionState";
 import {CompletionStateValue} from "~/components/executionState";
 
+export type NodeStatus = {
+    id: string;
+    action: string;
+    label: string;
+    status: 'pending' | 'running' | 'success' | 'failed';
+    inputs?: Record<string, any>;
+    outputs?: Record<string, any>;
+    error?: string;
+    duration_ms?: number;
+};
+
 export type NavItem = {
     icon?: string,
     value: string,

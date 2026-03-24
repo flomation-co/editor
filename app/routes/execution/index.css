@@ -1,10 +1,57 @@
-.small-label {
+/* ── Execution page — full-height layout ── */
+.exec-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ── Header bar ── */
+.exec-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.exec-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.exec-header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exec-header-sequence {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.35);
+    font-weight: 500;
+}
+
+.exec-header-status {
     max-width: 100px;
     display: inline-block;
 }
 
+.exec-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .rerun-button {
-    margin-left: 16px;
     padding: 6px 14px;
     background: linear-gradient(135deg, #460070, #6b21a8);
     border: none;
@@ -17,7 +64,6 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    vertical-align: middle;
     transition: opacity 0.15s ease;
 }
 
@@ -30,49 +76,219 @@
     cursor: not-allowed;
 }
 
-.code-block-label {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 5px;
-    color: #d1d5db;
+/* ── Metadata chips ── */
+.exec-meta-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
-.property-label {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 5px;
-    color: #d1d5db;
-    /*width: 500px;*/
+.exec-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    white-space: nowrap;
+    text-decoration: none;
 }
 
-.property {
+.exec-meta-chip--link {
+    color: rgba(139, 0, 222, 0.8);
+    border-color: rgba(139, 0, 222, 0.15);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exec-meta-chip--link:hover {
+    background: rgba(139, 0, 222, 0.08);
+    border-color: rgba(139, 0, 222, 0.3);
+    color: #b49eed;
+}
+
+/* ── Flow area — fills remaining space ── */
+.exec-flow-area {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.exec-flow-area .execution-flow-container {
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    margin-bottom: 0;
+}
+
+/* ── Quick-access tab buttons at bottom of flow ── */
+.exec-detail-tabs-bar {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    z-index: 50;
+    background: rgba(19, 19, 19, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.exec-detail-tab-btn {
+    padding: 6px 18px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.exec-detail-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Floating detail panel ── */
+.exec-detail-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 55%;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    background: rgba(19, 19, 19, 0.92);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    animation: slideUpPanel 0.2s ease-out;
+}
+
+@keyframes slideUpPanel {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.exec-detail-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.exec-detail-panel-tabs {
+    display: flex;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.exec-detail-panel-tab {
+    padding: 5px 16px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.exec-detail-panel-tab:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.exec-detail-panel-tab.active {
+    background: #460070;
     color: #fff;
-    margin-left: 20px;
 }
 
-.code-block {
+.exec-detail-panel-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background 0.15s ease;
+}
+
+.exec-detail-panel-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.exec-detail-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    min-height: 0;
+}
+
+.exec-detail-code {
     display: block;
-    margin-bottom: 10px;
-    font-family: monospace;
-    background-color: #1f2937;
-    padding: 5px;
-    width: 0;
-    min-width: 100%;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 8px;
+    padding: 12px;
+    color: #d1d5db;
     white-space: pre-wrap;
     word-break: break-all;
     overflow-wrap: break-word;
-    overflow-x: auto;
-    box-sizing: border-box;
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.log-toggle {
+.exec-detail-loading {
+    padding: 16px 0;
+    color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exec-detail-log-toggle {
     display: inline-flex;
-    background-color: #1f2937;
+    background: rgba(31, 41, 55, 0.5);
     border-radius: 9999px;
     padding: 3px;
     margin-bottom: 10px;
 }
 
+/* ── Reuse log toggle styles ── */
 .log-toggle-option {
     padding: 6px 16px;
     border-radius: 9999px;
@@ -89,9 +305,28 @@
 }
 
 pre {
-    white-space: pre-wrap;       /* Since CSS 2.1 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+/* ── Mobile: panel takes more space ── */
+@media (max-width: 768px) {
+    .exec-header {
+        padding: 10px 14px;
+    }
+
+    .exec-meta-bar {
+        padding: 6px 14px;
+    }
+
+    .exec-detail-panel {
+        max-height: 65%;
+    }
+
+    .exec-header-title {
+        font-size: 14px;
+    }
 }
