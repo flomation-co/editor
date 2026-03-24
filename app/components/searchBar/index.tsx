@@ -24,7 +24,7 @@ export default function SearchBar({ value, onChange, placeholder = "Search...", 
         updateExpanded(false);
     };
 
-    if (disabled) return <div className="search-bar-wrap" />;
+    if (disabled) return <div className="search-bar-spacer" />;
 
     return (
         <div className="search-bar-wrap">
