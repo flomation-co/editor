@@ -280,29 +280,6 @@
     gap: 8px;
 }
 
-.exec-detail-log-toggle {
-    display: inline-flex;
-    background: rgba(31, 41, 55, 0.5);
-    border-radius: 9999px;
-    padding: 3px;
-    margin-bottom: 10px;
-}
-
-/* ── Reuse log toggle styles ── */
-.log-toggle-option {
-    padding: 6px 16px;
-    border-radius: 9999px;
-    cursor: pointer;
-    color: #9ca3af;
-    font-size: 0.9em;
-    transition: background-color 0.2s, color 0.2s;
-    user-select: none;
-}
-
-.log-toggle-option.active {
-    background-color: #460070;
-    color: #fff;
-}
 
 pre {
     white-space: pre-wrap;

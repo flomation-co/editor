@@ -1,15 +1,292 @@
-.log-info {
-    color: #fff;
+/* ── Log Viewer ── */
+.log-viewer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
 }
 
-.log-error {
-    color: #ef6767;
+/* ── Toolbar ── */
+.log-viewer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    flex-shrink: 0;
 }
 
-.log-warning {
+.log-viewer-search {
+    flex: 1;
+    height: 30px;
+    padding: 0 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #d1d5db;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.log-viewer-search:focus {
+    border-color: rgba(139, 0, 222, 0.4);
+}
+
+.log-viewer-search::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.log-viewer-level-select {
+    height: 30px;
+    padding: 0 24px 0 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #d1d5db;
+    font-size: 11px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ae9fb9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.log-viewer-count {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Entries container ── */
+.log-viewer-entries {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(15, 15, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    min-height: 0;
+}
+
+.log-viewer-empty {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* ── Log Entry ── */
+.log-entry {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-entry-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+    line-height: 1.5;
+}
+
+.log-entry-main:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Timestamp ── */
+.log-entry-time {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 10px;
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+/* ── Level badge ── */
+.log-entry-level {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    min-width: 42px;
+    text-align: center;
+}
+
+.log-entry-level--info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+}
+
+.log-entry-level--debug {
+    background: rgba(139, 0, 222, 0.12);
+    color: #b49eed;
+}
+
+.log-entry-level--warning,
+.log-entry-level--warn {
+    background: rgba(239, 212, 103, 0.12);
     color: #efd467;
 }
 
-.log-debug {
-    color: #b967ef;
+.log-entry-level--error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+}
+
+.log-entry-level--fatal,
+.log-entry-level--panic {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    font-weight: 800;
+}
+
+/* ── Message ── */
+.log-entry-msg {
+    color: #d1d5db;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.log-entry--error .log-entry-msg {
+    color: #fca5a5;
+}
+
+.log-entry--warning .log-entry-msg,
+.log-entry--warn .log-entry-msg {
+    color: #fde68a;
+}
+
+.log-entry-error {
+    color: #f87171;
+    font-size: 11px;
+    flex-shrink: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+/* ── Expand chevron ── */
+.log-entry-expand {
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 9px;
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+    transition: color 0.15s ease;
+}
+
+.log-entry-main:hover .log-entry-expand {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Expanded detail ── */
+.log-entry-detail {
+    padding: 6px 10px 8px 98px;
+    background: rgba(255, 255, 255, 0.01);
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.log-entry-field {
+    padding: 2px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+}
+
+.log-entry-field-key {
+    color: rgba(0, 170, 156, 0.7);
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.log-entry-field-sep {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+/* ── Object tree ── */
+.log-object-tree {
+    display: inline;
+}
+
+.log-toggle-icon {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 8px;
+    margin-right: 4px;
+    display: inline-block;
+    width: 10px;
+    transition: color 0.15s ease;
+}
+
+.log-toggle-icon:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.log-object-children {
+    padding-left: 16px;
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    margin-left: 4px;
+    margin-top: 2px;
+}
+
+.log-object-entry {
+    padding: 1px 0;
+}
+
+.log-object-key {
+    color: rgba(0, 170, 156, 0.6);
+    font-size: 11px;
+}
+
+.log-object-sep {
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 11px;
+}
+
+.log-object-count {
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 9px;
+    margin-left: 4px;
+}
+
+/* ── Value types ── */
+.log-val {
+    font-size: 11px;
+}
+
+.log-val--string {
+    color: #a5d6a7;
+}
+
+.log-val--number {
+    color: #90caf9;
+}
+
+.log-val--bool {
+    color: #ce93d8;
+}
+
+.log-val--null {
+    color: rgba(255, 255, 255, 0.25);
+    font-style: italic;
+}
+
+.log-val--bracket {
+    color: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
 }
