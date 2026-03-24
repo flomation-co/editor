@@ -47,14 +47,17 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 const flowNodes = revisionData.nodes || [];
                 const flowEdges = revisionData.edges || [];
 
-                // Convert flow nodes to ReactFlow nodes with executionNode type
+                // Convert flow nodes to ReactFlow nodes with executionNode type,
+                // applying any already-known node statuses (e.g. from persisted results)
                 const rfNodes: Node[] = flowNodes.map((n: any) => ({
                     id: n.id,
                     type: 'executionNode',
                     position: n.position || { x: 0, y: 0 },
                     data: {
                         ...n.data,
-                        executionStatus: 'pending',
+                        executionStatus: nodeStatuses.has(n.id)
+                            ? nodeStatuses.get(n.id)!.status
+                            : 'pending',
                         onNodeClick,
                         nodeId: n.id,
                     },
@@ -86,9 +89,10 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
             });
     }, [floId]);
 
-    // Update node execution statuses when nodeStatuses changes
+    // Update node execution statuses when nodeStatuses changes or nodes are first loaded
+    const nodeCount = nodes.length;
     useEffect(() => {
-        if (nodes.length === 0) return;
+        if (nodeCount === 0 || nodeStatuses.size === 0) return;
 
         setNodes(prev => prev.map(node => ({
             ...node,
@@ -101,7 +105,7 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 nodeId: node.id,
             },
         })));
-    }, [nodeStatuses, onNodeClick]);
+    }, [nodeStatuses, onNodeClick, nodeCount]);
 
     return (
         <div className="execution-flow-container">
