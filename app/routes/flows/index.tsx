@@ -486,14 +486,23 @@ export default function Flows() {
                                                         )}
                                                     </td>
                                                     <td className={"table-column-hide-sm"}>
-                                                        {flo.last_execution && (
-                                                            <Link to={"/execution/" + flo.last_execution?.id}>
-                                                                <ExecuteState state={flo.last_execution?.execution_status || ExecutionStateValue.created} completionState={flo.last_execution?.completion_status || CompletionStateValue.unknown} />
-                                                            </Link>
-                                                        )}
-                                                        {!flo.last_execution && (
-                                                            <></>
-                                                        )}
+                                                        <div className="flo-status-cell">
+                                                            {flo.last_execution && (
+                                                                <Link to={"/execution/" + flo.last_execution?.id}>
+                                                                    <ExecuteState state={flo.last_execution?.execution_status || ExecutionStateValue.created} completionState={flo.last_execution?.completion_status || CompletionStateValue.unknown} />
+                                                                </Link>
+                                                            )}
+                                                            {flo.recent_executions && flo.recent_executions.length > 0 && (
+                                                                <div className="flo-recent-dots">
+                                                                    {flo.recent_executions.map((exec, i) => (
+                                                                        <Link key={exec.id} to={"/execution/" + exec.id} className={`flo-dot flo-dot--${exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status}`} data-tooltip-id={`dot-${flo.id}-${i}`} data-tooltip-content={exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status} data-tooltip-place="bottom" />
+                                                                    ))}
+                                                                    {flo.recent_executions.map((exec, i) => (
+                                                                        <Tooltip key={`tip-${i}`} id={`dot-${flo.id}-${i}`} />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className={"table-column-hide-sm flo-table-subdued"}>
                                                         {flo.last_execution ? (

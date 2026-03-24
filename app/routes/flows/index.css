@@ -98,6 +98,69 @@
 
 
 
+/* Status cell with recent execution dots */
+.flo-status-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.flo-recent-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.flo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: transform 0.1s ease;
+    flex-shrink: 0;
+}
+
+.flo-dot:hover {
+    transform: scale(1.4);
+}
+
+.flo-dot--success {
+    background: #4ade80;
+    box-shadow: 0 0 4px rgba(74, 222, 128, 0.4);
+}
+
+.flo-dot--fail {
+    background: #f87171;
+    box-shadow: 0 0 4px rgba(248, 113, 113, 0.4);
+}
+
+.flo-dot--cancel {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.flo-dot--running {
+    background: #2dd4bf;
+    box-shadow: 0 0 4px rgba(45, 212, 191, 0.4);
+    animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.flo-dot--created,
+.flo-dot--allocated {
+    background: #60a5fa;
+    box-shadow: 0 0 4px rgba(96, 165, 250, 0.3);
+}
+
+.flo-dot--unknown {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+
 /* Fix left-alignment: first-child is now the checkbox, name is second */
 .flo-table > thead > tr > th:nth-child(2) {
     text-align: left;

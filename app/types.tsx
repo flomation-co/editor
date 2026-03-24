@@ -76,6 +76,13 @@ export type Flo = {
     environment_id?: string,
     environment_name?: string,
     has_validation_errors?: boolean,
+    recent_executions?: ExecutionStatusDot[],
+}
+
+export type ExecutionStatusDot = {
+    id: string,
+    execution_status: string,
+    completion_status: string,
 }
 
 export type ParameterOption = {
