@@ -6,10 +6,11 @@ import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faXmark, faPlus, faMagnifyingGlass, faEllipsisVertical} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faPlus, faEllipsisVertical} from '@fortawesome/free-solid-svg-icons'
 import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
+import SearchBar from "~/components/searchBar";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -65,6 +66,7 @@ export default function Flows() {
     const [selectedFlows, setSelectedFlows] = useState<Set<string>>(new Set());
     const [isExporting, setIsExporting] = useState(false);
     const [importModalVisible, setImportModalVisible] = useState(false);
+    const [searchExpanded, setSearchExpanded] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -349,8 +351,6 @@ export default function Flows() {
             });
     };
 
-    const [searchExpanded, setSearchExpanded] = useState(false);
-
     return (
         <Container>
             <>
@@ -358,28 +358,7 @@ export default function Flows() {
 
                 <div className="flows-action-bar">
                     <div className="flows-action-bar-search">
-                        {searchExpanded ? (
-                            <div className="flows-search-input-wrap">
-                                <FontAwesomeIcon icon={faMagnifyingGlass} className="flows-search-icon" />
-                                <input
-                                    type="text"
-                                    className="flows-search-input"
-                                    placeholder="Search flows..."
-                                    autoFocus
-                                    value={search || ''}
-                                    onChange={(e) => handleUpdateSearch(e.target.value)}
-                                    onBlur={() => { if (!search) setSearchExpanded(false); }}
-                                />
-                                <button className="flows-search-close" onClick={() => { setSearch(''); setSearchExpanded(false); }}>
-                                    <FontAwesomeIcon icon={faXmark} />
-                                </button>
-                            </div>
-                        ) : (
-                            <button className="flows-action-btn" onClick={() => setSearchExpanded(true)} data-tooltip-id="search-tip" data-tooltip-content="Search flows" data-tooltip-place="bottom">
-                                <FontAwesomeIcon icon={faMagnifyingGlass} /><span>Search</span>
-                            </button>
-                        )}
-                        <Tooltip id="search-tip" />
+                        <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search flows..." onExpandChange={setSearchExpanded} />
                     </div>
 
                     {!searchExpanded && (

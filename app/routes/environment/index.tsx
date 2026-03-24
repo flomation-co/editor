@@ -7,6 +7,7 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 import ReactCountryFlag from "react-country-flag";
 import {ExecuteState} from "~/components/executionState";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -296,10 +297,7 @@ export default function Environment() {
         <Container>
             <div className={"header"}>Environment</div>
 
-            <div className={"search-section"}>
-                <input disabled={true} type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Environment Property by Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search properties..." disabled={true} />
 
             <div className={"table-spacer"}></div>
             <div className={"header"}>Properties</div>

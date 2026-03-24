@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 import ReactCountryFlag from "react-country-flag"
 import {PaginationControls} from "~/components/paginationControls";
 import useConfig from "~/components/config";
@@ -168,10 +169,7 @@ export default function Executions() {
         <Container>
             <div className={"header"}>Executions</div>
 
-            <div className={"search-section"}>
-                <input type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Execution by flow Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
 
             {isLoading && (
                 <div className={"loading-container"}>

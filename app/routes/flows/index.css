@@ -96,67 +96,6 @@
     pointer-events: none;
 }
 
-/* Search input (inline expand) */
-.flows-search-input-wrap {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-    background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0 12px;
-    height: 38px;
-    gap: 8px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.flows-search-input-wrap:focus-within {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
-}
-
-.flows-search-icon {
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 13px;
-    flex-shrink: 0;
-}
-
-.flows-search-input {
-    flex: 1;
-    min-width: 0;
-    background: transparent;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    color: var(--primary-font-colour);
-    font-size: 14px;
-    padding: 0;
-}
-
-.flows-search-input:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-.flows-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
-}
-
-.flows-search-close {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    font-size: 13px;
-    padding: 4px 6px;
-    border-radius: 4px;
-    transition: color 0.1s ease;
-    flex-shrink: 0;
-}
-
-.flows-search-close:hover {
-    color: rgba(255, 255, 255, 0.6);
-}
 
 
 /* Fix left-alignment: first-child is now the checkbox, name is second */

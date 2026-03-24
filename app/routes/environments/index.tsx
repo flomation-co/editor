@@ -3,6 +3,7 @@ import Container from "~/components/container";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCircleStop, faEye, faSpinner, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 import ReactCountryFlag from "react-country-flag";
 import {Link, useNavigate, useSearchParams} from "react-router";
 import {ExecuteState} from "~/components/executionState";
@@ -152,10 +153,7 @@ export default function Environments() {
         <Container>
             <div className={"header"}>Environments</div>
 
-            <div className={"search-section"}>
-                <input disabled={true} type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Environment by Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search environments..." disabled={true} />
 
             {isLoading && (
                 <div className={"loading-container"}>
