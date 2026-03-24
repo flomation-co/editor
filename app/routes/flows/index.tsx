@@ -1,12 +1,12 @@
 import type {Route} from "../+types/home";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import api from "~/lib/api";
 import type {Flo} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faXmark, faPlus, faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faXmark, faPlus, faMagnifyingGlass, faEllipsisVertical} from '@fortawesome/free-solid-svg-icons'
 import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
@@ -60,10 +60,13 @@ export default function Flows() {
     const token = useCookieToken();
     const { currentOrg } = useOrganisation();
 
+    const [refreshKey, setRefreshKey] = useState<number>(0);
     const [favourites, setFavourites] = useState<Set<string>>(new Set());
     const [selectedFlows, setSelectedFlows] = useState<Set<string>>(new Set());
     const [isExporting, setIsExporting] = useState(false);
     const [importModalVisible, setImportModalVisible] = useState(false);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const fetchFavourites = () => {
         api.get(API_URL + '/api/v1/favourite', {
@@ -80,6 +83,18 @@ export default function Flows() {
     useEffect(() => {
         if (token) fetchFavourites();
     }, [token]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setOpenMenuId(null);
+            }
+        };
+        if (openMenuId) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [openMenuId]);
 
     const toggleFavourite = (floId: string) => {
         const isFav = favourites.has(floId);
@@ -143,7 +158,7 @@ export default function Flows() {
             .finally(() => {
                 setIsLoading(false);
             })
-    }, [search, offset, limit]);
+    }, [search, offset, limit, refreshKey]);
 
     function deleteFlo(id : string) {
         setDeleteFloID(id);
@@ -320,7 +335,7 @@ export default function Flows() {
 
     const refreshFlows = () => {
         setOffset(0);
-        setSearch(search); // trigger useEffect re-fetch
+        setRefreshKey(k => k + 1);
     };
 
     const createNewFlo = () => {
@@ -525,34 +540,42 @@ export default function Flows() {
                                                         <>{flo.execution_count}</>
                                                     )}</td>
                                                     <td>
-                                                        <button className={"table-button"} disabled={flo.has_validation_errors} onClick={() => {if (!flo.has_validation_errors) triggerFlo(flo.id, 'default')}} data-tooltip-id={"trigger-" + flo.id} data-tooltip-content={flo.has_validation_errors ? "Complete all required fields before executing" : "Execute Default Trigger"} data-tooltip-place={"bottom"}>
-                                                            {flo.triggers && flo.triggers.length > 0 &&  flo.triggers.some(e => e.name === "Default Trigger") && (
-                                                                <>
-                                                                    {currentTrigger == flo.id && (
-                                                                        <>
-                                                                            <FontAwesomeIcon icon={faSpinner} spin/> <span>Run</span>
-                                                                        </>
-                                                                    )}
-                                                                    {currentTrigger != flo.id && (
-                                                                        <>
-                                                                            <FontAwesomeIcon icon={faPlay}/> <span>Run</span>
-                                                                        </>
+                                                        <div className="flo-actions-cell">
+                                                            <button
+                                                                className="flo-run-btn"
+                                                                disabled={flo.has_validation_errors}
+                                                                onClick={() => { if (!flo.has_validation_errors) triggerFlo(flo.id, 'default'); }}
+                                                                data-tooltip-id={"trigger-" + flo.id}
+                                                                data-tooltip-content={flo.has_validation_errors ? "Complete all required fields before executing" : "Execute Default Trigger"}
+                                                                data-tooltip-place="bottom"
+                                                            >
+                                                                {flo.triggers && flo.triggers.length > 0 && flo.triggers.some(e => e.name === "Default Trigger") && (
+                                                                    currentTrigger == flo.id
+                                                                        ? <><FontAwesomeIcon icon={faSpinner} spin /> Run</>
+                                                                        : <><FontAwesomeIcon icon={faPlay} /> Run</>
+                                                                )}
+                                                            </button>
+                                                            <Tooltip id={"trigger-" + flo.id} />
 
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                        <Tooltip id={"trigger-" + flo.id} />
-
-                                                        <Link className={"table-button"} to={{pathname: "/flo/" + flo.id}} data-tooltip-id={"edit-" + flo.id} data-tooltip-content={"Edit Flow"} data-tooltip-place={"bottom"}>
-                                                            <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
-                                                        </Link>
-                                                        <Tooltip id={"edit-" + flo.id} />
-
-                                                        <button disabled={true} className={"table-button"} onClick={() => {deleteFlo(flo.id)}} data-tooltip-id={"delete-" + flo.id} data-tooltip-content={"Delete Flow"} data-tooltip-place={"bottom"}>
-                                                            <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
-                                                        </button>
-                                                        <Tooltip id={"delete-" + flo.id} />
+                                                            <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
+                                                                <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
+                                                                    <FontAwesomeIcon icon={faEllipsisVertical} />
+                                                                </button>
+                                                                {openMenuId === flo.id && (
+                                                                    <div className="flo-more-dropdown">
+                                                                        <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
+                                                                            <FontAwesomeIcon icon={faPencil} /> Edit
+                                                                        </Link>
+                                                                        <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
+                                                                            <FontAwesomeIcon icon={faFileExport} /> Export
+                                                                        </button>
+                                                                        <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
+                                                                            <FontAwesomeIcon icon={faTrash} /> Delete
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )
