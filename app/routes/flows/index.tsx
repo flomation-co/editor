@@ -197,6 +197,19 @@ export default function Flows() {
         // return date;
     }
 
+    function friendlyDuration(ms?: number): string {
+        if (!ms || ms === 0) return "";
+        if (ms < 1000) return ms + "ms";
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) return seconds + "s";
+        const minutes = Math.floor(seconds / 60);
+        const remainSec = seconds % 60;
+        if (minutes < 60) return remainSec > 0 ? `${minutes}m ${remainSec}s` : `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        const remainMin = minutes % 60;
+        return remainMin > 0 ? `${hours}h ${remainMin}m` : `${hours}h`;
+    }
+
     function formatDateString(date) {
         if (!date) {
             return "Never Run";
@@ -495,18 +508,7 @@ export default function Flows() {
                                                         <Tooltip id={"tooltip-time-" + flo.id} />
                                                     </td>
                                                     <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                        {flo.duration && (
-                                                            <>
-                                                                {flo.duration}m {flo.duration_additional && (
-                                                                <span className={"premium-allocation"}>(+{flo.duration_additional}m</span>
-                                                            )}
-                                                            </>
-                                                        )}
-                                                        {!flo.duration && (
-                                                            <>
-
-                                                            </>
-                                                        )}
+                                                        {friendlyDuration(flo.last_execution?.duration)}
                                                     </td>
                                                     <td className={"table-column-hide-sm flo-table-subdued"}>{flo.execution_count > 0 && (
                                                         <>{flo.execution_count}</>
