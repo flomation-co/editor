@@ -11,7 +11,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
-import {faLink, faSpinner, faRotateRight} from "@fortawesome/pro-solid-svg-icons";
+import {faLink, faSpinner, faRotateRight, faXmark, faClock, faArrowUpRightFromSquare, faChevronDown, faChevronUp} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
@@ -28,6 +28,8 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
+type DetailTab = 'inputs' | 'outputs' | 'logs';
+
 export default function ExecutionDetail() {
     const navigate = useNavigate();
     const [ executionID, setExecutionID ] = useState<string>(useParams().id)
@@ -39,28 +41,12 @@ export default function ExecutionDetail() {
     const [ nodeStatuses, setNodeStatuses ] = useState<Map<string, NodeStatus>>(new Map());
     const [ selectedNodeId, setSelectedNodeId ] = useState<string | null>(null);
 
-    const [ isMobile, setIsMobile ] = useState<boolean>(true);
-    const [ width, setWidth ] = useState<number>(0);
-
-    const [ logModeRaw, setLogModeRaw ] = useState<boolean>(true)
+    const [ detailPanelOpen, setDetailPanelOpen ] = useState<boolean>(false);
+    const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
+    const [ logModeRaw, setLogModeRaw ] = useState<boolean>(true);
 
     const controller = new AbortController();
     const token = useCookieToken();
-
-    function handleWindowSizeChange() {
-        setWidth(window.innerWidth);
-    }
-
-    useEffect(() => {
-        window.addEventListener('resize', handleWindowSizeChange);
-        return () => {
-            window.removeEventListener('resize', handleWindowSizeChange);
-        }
-    }, []);
-
-    useEffect(() => {
-        setIsMobile(width <= 768);
-    }, [ width ]);
 
     const queryExecutionState = () => {
         const config = useConfig();
@@ -133,7 +119,6 @@ export default function ExecutionDetail() {
                 setNodeStatuses(prev => {
                     const next = new Map(prev);
                     const existing = next.get(nodeData.id);
-                    // Merge with existing data — running events lack inputs/outputs
                     next.set(nodeData.id, { ...existing, ...nodeData });
                     return next;
                 });
@@ -144,13 +129,11 @@ export default function ExecutionDetail() {
 
         eventSource.addEventListener("complete", () => {
             eventSource.close();
-            // Re-fetch the full execution to get final state
             queryExecutionState();
         });
 
         eventSource.onerror = () => {
             eventSource.close();
-            // Fall back to polling on SSE failure
             const interval = setInterval(() => {
                 queryExecutionState();
             }, 2000);
@@ -178,14 +161,6 @@ export default function ExecutionDetail() {
         setSelectedNodeId(nodeId);
     }, []);
 
-    function formatDate(date) {
-        if (!date) {
-            return "";
-        }
-
-        return dayjs.utc(date).fromNow();
-    }
-
     function formatDateString(date) {
         if (!date) {
             return "Never Run";
@@ -194,115 +169,165 @@ export default function ExecutionDetail() {
         return dayjs.utc(date).local().format("D MMM YYYY H:mm:ss");
     }
 
+    const openDetailPanel = (tab: DetailTab) => {
+        setDetailTab(tab);
+        setDetailPanelOpen(true);
+    };
+
     return (
-        <Container>
+        <Container noPadding>
             {exec && (
-                <>
-                    <div className={"header"}>
-                        {exec.name} - #{exec.sequence}
-                        <div className={"small-label"}><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div>
-                        {exec.completion_status !== "pending" && (
-                            <button className={"rerun-button"} onClick={rerunExecution} disabled={isRerunning}>
-                                <FontAwesomeIcon icon={isRerunning ? faSpinner : faRotateRight} spin={isRerunning} /> Re-run
-                            </button>
+                <div className="exec-page">
+                    {/* ── Compact header bar ── */}
+                    <div className="exec-header">
+                        <div className="exec-header-left">
+                            <span className="exec-header-title">{exec.name}</span>
+                            <span className="exec-header-sequence">#{exec.sequence}</span>
+                            <div className="exec-header-status"><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div>
+                        </div>
+                        <div className="exec-header-right">
+                            {exec.completion_status !== "pending" && (
+                                <button className="rerun-button" onClick={rerunExecution} disabled={isRerunning}>
+                                    <FontAwesomeIcon icon={isRerunning ? faSpinner : faRotateRight} spin={isRerunning} /> Re-run
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ── Metadata chips ── */}
+                    <div className="exec-meta-bar">
+                        <Link to={"/flo/" + exec.flo_id} className="exec-meta-chip exec-meta-chip--link">
+                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} /> {exec.name}
+                        </Link>
+                        <span className="exec-meta-chip">
+                            <FontAwesomeIcon icon={faClock} /> {formatDateString(exec.created_at)}
+                        </span>
+                        {exec.duration > 0 && (
+                            <span className="exec-meta-chip">{exec.duration}ms</span>
+                        )}
+                        {exec.runner_id && (
+                            <span className="exec-meta-chip">{exec.runner_id}</span>
                         )}
                     </div>
 
-                    <div><div className={"property-label"}>Flow: <span className={"flo-table-subtext"}><Link to={"/flo/" + exec.flo_id}>{exec.name} <FontAwesomeIcon icon={faLink} /> </Link></span></div></div>
-                    <div><div className={"property-label"}>Started: <span className={"flo-table-subtext"}>{formatDateString(exec.created_at)}</span></div></div>
-                    <div><div className={"property-label"}>Completed: <span className={"flo-table-subtext"}>{exec.completed_at ? formatDateString(exec.completed_at) : "-"}</span></div></div>
-                    <div><div className={"property-label"}>Runner: <span className={"flo-table-subtext"}>{exec.runner_id ? exec.runner_id : "-"}</span></div></div>
-                    <div><div className={"property-label"}>Duration: <span className={"flo-table-subtext"}>{exec.duration > 0 ? exec.duration + " ms" : ""}</span></div></div>
-
-                    <div className={"code-block-label"}>Flow</div>
-                    <ExecutionFlowView
-                        floId={exec.flo_id}
-                        nodeStatuses={nodeStatuses}
-                        onNodeClick={handleNodeClick}
-                    />
-                    {selectedNodeId && nodeStatuses.has(selectedNodeId) && (
-                        <NodeInspector
-                            nodeId={selectedNodeId}
-                            status={nodeStatuses.get(selectedNodeId)!}
-                            onClose={() => setSelectedNodeId(null)}
+                    {/* ── Flow visualisation (fills remaining space) ── */}
+                    <div className="exec-flow-area">
+                        <ExecutionFlowView
+                            floId={exec.flo_id}
+                            nodeStatuses={nodeStatuses}
+                            onNodeClick={handleNodeClick}
                         />
-                    )}
 
-                    <div className={"code-block-label"}>
-                        Inputs
-                    </div>
-                    <pre className={"code-block"}>
-                        {exec.data && (
-                            <>
-                                {JSON.stringify(exec.data, null, 4)}
-                            </>
+                        {/* ── Node inspector overlay ── */}
+                        {selectedNodeId && nodeStatuses.has(selectedNodeId) && (
+                            <NodeInspector
+                                nodeId={selectedNodeId}
+                                status={nodeStatuses.get(selectedNodeId)!}
+                                onClose={() => setSelectedNodeId(null)}
+                            />
                         )}
-                    </pre>
 
-                    <div className={"code-block-label"}>
-                        Outputs
-                    </div>
-                    <pre className={"code-block"}>
-                        {exec.completion_status === "pending" && !exec.result && (
-                            <div className={"loading-container"} style={{padding: "20px 0"}}>
-                                <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Waiting for execution to complete...</span>
+                        {/* ── Quick-access tab buttons (bottom of flow area) ── */}
+                        {!detailPanelOpen && (
+                            <div className="exec-detail-tabs-bar">
+                                <button className="exec-detail-tab-btn" onClick={() => openDetailPanel('inputs')}>Inputs</button>
+                                <button className="exec-detail-tab-btn" onClick={() => openDetailPanel('outputs')}>Outputs</button>
+                                <button className="exec-detail-tab-btn" onClick={() => openDetailPanel('logs')}>Logs</button>
                             </div>
                         )}
-                        {exec.completion_status !== "pending" && !exec.result && (
-                            <>&nbsp;</>
-                        )}
-                        {exec.result && (
-                            <>
-                                {exec.result.outputs ? JSON.stringify(exec.result.outputs, null, 4): " "}
-                            </>
-                        )}
-                    </pre>
 
-                    <div className={"code-block-label"}>
-                        Logs
-                    </div>
-
-                    <div className={"log-toggle"}>
-                        <span className={!logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(false)}>Parsed</span>
-                        <span className={logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(true)}>Raw</span>
-                    </div>
-
-                    {!logModeRaw && (
-                        <>
-                            {exec.completion_status === "pending" && !exec.result && (
-                                <pre className={"code-block"}>
-                                    <div className={"loading-container"} style={{padding: "20px 0"}}>
-                                        <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Streaming logs...</span>
+                        {/* ── Floating detail panel ── */}
+                        {detailPanelOpen && (
+                            <div className="exec-detail-panel">
+                                <div className="exec-detail-panel-header">
+                                    <div className="exec-detail-panel-tabs">
+                                        <button
+                                            className={`exec-detail-panel-tab ${detailTab === 'inputs' ? 'active' : ''}`}
+                                            onClick={() => setDetailTab('inputs')}
+                                        >
+                                            Inputs
+                                        </button>
+                                        <button
+                                            className={`exec-detail-panel-tab ${detailTab === 'outputs' ? 'active' : ''}`}
+                                            onClick={() => setDetailTab('outputs')}
+                                        >
+                                            Outputs
+                                        </button>
+                                        <button
+                                            className={`exec-detail-panel-tab ${detailTab === 'logs' ? 'active' : ''}`}
+                                            onClick={() => setDetailTab('logs')}
+                                        >
+                                            Logs
+                                        </button>
                                     </div>
-                                </pre>
-                            )}
-                            {exec.result && <LogOutput logs={exec.result} />}
-                        </>
-                    )}
+                                    <button className="exec-detail-panel-close" onClick={() => setDetailPanelOpen(false)}>
+                                        <FontAwesomeIcon icon={faXmark} />
+                                    </button>
+                                </div>
 
-                    {logModeRaw && (
-                        <pre className={"code-block"}>
-                        {exec.completion_status === "pending" && !exec.result && streamingLogs.length === 0 && (
-                            <div className={"loading-container"} style={{padding: "20px 0"}}>
-                                <FontAwesomeIcon icon={faSpinner} spin /> <span style={{marginLeft: "8px", color: "rgba(255,255,255,0.4)"}}>Waiting for logs...</span>
+                                <div className="exec-detail-panel-body">
+                                    {/* Inputs tab */}
+                                    {detailTab === 'inputs' && (
+                                        <pre className="exec-detail-code">
+                                            {exec.data ? JSON.stringify(exec.data, null, 4) : '\u00A0'}
+                                        </pre>
+                                    )}
+
+                                    {/* Outputs tab */}
+                                    {detailTab === 'outputs' && (
+                                        <pre className="exec-detail-code">
+                                            {exec.completion_status === "pending" && !exec.result && (
+                                                <div className="exec-detail-loading">
+                                                    <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for execution to complete...</span>
+                                                </div>
+                                            )}
+                                            {exec.result && exec.result.outputs
+                                                ? JSON.stringify(exec.result.outputs, null, 4)
+                                                : exec.completion_status !== "pending" ? '\u00A0' : ''
+                                            }
+                                        </pre>
+                                    )}
+
+                                    {/* Logs tab */}
+                                    {detailTab === 'logs' && (
+                                        <>
+                                            <div className="exec-detail-log-toggle">
+                                                <span className={!logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(false)}>Parsed</span>
+                                                <span className={logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(true)}>Raw</span>
+                                            </div>
+
+                                            {!logModeRaw && (
+                                                <>
+                                                    {exec.completion_status === "pending" && !exec.result && (
+                                                        <pre className="exec-detail-code">
+                                                            <div className="exec-detail-loading">
+                                                                <FontAwesomeIcon icon={faSpinner} spin /> <span>Streaming logs...</span>
+                                                            </div>
+                                                        </pre>
+                                                    )}
+                                                    {exec.result && <LogOutput logs={exec.result} />}
+                                                </>
+                                            )}
+
+                                            {logModeRaw && (
+                                                <pre className="exec-detail-code">
+                                                    {exec.completion_status === "pending" && !exec.result && streamingLogs.length === 0 && (
+                                                        <div className="exec-detail-loading">
+                                                            <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for logs...</span>
+                                                        </div>
+                                                    )}
+                                                    {exec.completion_status !== "pending" && !exec.result && streamingLogs.length === 0 && '\u00A0'}
+                                                    {exec.result && exec.result.logs && exec.result.logs}
+                                                    {!exec.result && streamingLogs.length > 0 && streamingLogs.join("\n")}
+                                                </pre>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         )}
-                        {exec.completion_status !== "pending" && !exec.result && streamingLogs.length === 0 && (
-                            <>&nbsp;</>
-                        )}
-                            {exec.result && exec.result.logs && (
-                                <>
-                                    {exec.result.logs}
-                                </>
-                            )}
-                            {!exec.result && streamingLogs.length > 0 && (
-                                <>
-                                    {streamingLogs.join("\n")}
-                                </>
-                            )}
-                    </pre>
-                    )}
-                </>
+                    </div>
+                </div>
             )}
         </Container>
     )

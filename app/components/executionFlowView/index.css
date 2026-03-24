@@ -1,13 +1,12 @@
 /* ── Execution Flow View Container ── */
 .execution-flow-container {
     width: 100%;
-    height: 400px;
+    height: 100%;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     background: #0d0d0d;
     position: relative;
     overflow: hidden;
-    margin-bottom: 16px;
 }
 
 .execution-flow-container .react-flow__background {
