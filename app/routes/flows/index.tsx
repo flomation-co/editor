@@ -1,12 +1,12 @@
 import type {Route} from "../+types/home";
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState} from "react";
 import api from "~/lib/api";
 import type {Flo} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faXmark} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faXmark, faPlus, faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons'
 import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
@@ -323,33 +323,86 @@ export default function Flows() {
         setSearch(search); // trigger useEffect re-fetch
     };
 
+    const createNewFlo = () => {
+        api.post(API_URL + '/api/v1/flo', { name: "Untitled Flo" }, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: "Bearer " + token,
+            }
+        })
+            .then(response => {
+                if (response) {
+                    navigate("/flo/" + response.data.id);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                toast.error("Failed to create flow");
+            });
+    };
+
+    const [searchExpanded, setSearchExpanded] = useState(false);
+
     return (
         <Container>
             <>
-                <div className={"header"}>Flows</div>
+                <div className="flows-action-bar">
+                    <div className="flows-action-bar-title">Flows</div>
 
-                <>
-                    <div className={"search-section"}>
-                        <input type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for flow by Name or ID"} data-tooltip-place={"bottom-start"}/>
-                        <Tooltip id={"search"} />
-                        <button className={"import-flow-btn"} onClick={() => setImportModalVisible(true)} data-tooltip-id={"import-btn"} data-tooltip-content={"Import flow from file"} data-tooltip-place={"bottom"}>
-                            <FontAwesomeIcon icon={faFileImport} /> Import
-                        </button>
-                        <Tooltip id={"import-btn"} />
+                    <div className="flows-action-bar-search">
+                        {searchExpanded ? (
+                            <div className="flows-search-input-wrap">
+                                <FontAwesomeIcon icon={faMagnifyingGlass} className="flows-search-icon" />
+                                <input
+                                    type="text"
+                                    className="flows-search-input"
+                                    placeholder="Search flows..."
+                                    autoFocus
+                                    value={search || ''}
+                                    onChange={(e) => handleUpdateSearch(e.target.value)}
+                                    onBlur={() => { if (!search) setSearchExpanded(false); }}
+                                />
+                                <button className="flows-search-close" onClick={() => { setSearch(''); setSearchExpanded(false); }}>
+                                    <FontAwesomeIcon icon={faXmark} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button className="flows-action-btn" onClick={() => setSearchExpanded(true)} data-tooltip-id="search-tip" data-tooltip-content="Search flows" data-tooltip-place="bottom">
+                                <FontAwesomeIcon icon={faMagnifyingGlass} /><span>Search</span>
+                            </button>
+                        )}
+                        <Tooltip id="search-tip" />
                     </div>
 
-                    {selectedFlows.size > 0 && (
-                        <div className={"selection-action-bar"}>
-                            <span className={"selection-count"}>{selectedFlows.size} flow{selectedFlows.size > 1 ? "s" : ""} selected</span>
-                            <button className={"selection-export-btn"} onClick={exportSelectedFlows} disabled={isExporting}>
-                                {isExporting ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFileExport} />}
-                                {" "}Export {selectedFlows.size > 1 ? "as ZIP" : ""}
-                            </button>
-                            <button className={"selection-clear-btn"} onClick={() => setSelectedFlows(new Set())}>
-                                <FontAwesomeIcon icon={faXmark} /> Clear
-                            </button>
-                        </div>
-                    )}
+                    <div className="flows-action-bar-divider" />
+
+                    <div className="flows-action-bar-actions">
+                        <button className="flows-action-btn flows-action-btn--primary" onClick={createNewFlo} data-tooltip-id="new-tip" data-tooltip-content="Create new flow" data-tooltip-place="bottom">
+                            <FontAwesomeIcon icon={faPlus} /><span>New</span>
+                        </button>
+                        <Tooltip id="new-tip" />
+
+                        <button className="flows-action-btn" onClick={() => setImportModalVisible(true)} data-tooltip-id="import-tip" data-tooltip-content="Import flow from file" data-tooltip-place="bottom">
+                            <FontAwesomeIcon icon={faFileImport} /><span>Import</span>
+                        </button>
+                        <Tooltip id="import-tip" />
+
+                        <button
+                            className={`flows-action-btn ${selectedFlows.size > 0 ? '' : 'flows-action-btn--disabled'}`}
+                            onClick={exportSelectedFlows}
+                            disabled={selectedFlows.size === 0 || isExporting}
+                            data-tooltip-id="export-tip"
+                            data-tooltip-content={selectedFlows.size > 0 ? `Export ${selectedFlows.size} flow${selectedFlows.size > 1 ? 's' : ''}` : 'Select flows to export'}
+                            data-tooltip-place="bottom"
+                        >
+                            {isExporting ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFileExport} />}
+                            <span>Export{selectedFlows.size > 0 ? ` (${selectedFlows.size})` : ''}</span>
+                        </button>
+                        <Tooltip id="export-tip" />
+                    </div>
+                </div>
+
+                <>
 
                     {flos && flos.length > 0 && favourites.size > 0 && (
                         <div className={"favourites-section"}>
@@ -379,8 +432,11 @@ export default function Flows() {
                             <table className={"flo-table"} style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
                                 <thead className={"flo-table-head"}>
                                 <tr>
-                                    <th className={"checkbox-column"}>
-                                        <input type="checkbox" checked={flos !== undefined && flos.length > 0 && selectedFlows.size === flos.length} onChange={toggleSelectAll} />
+                                    <th className="flo-checkbox-col">
+                                        <label className="flo-checkbox">
+                                            <input type="checkbox" checked={flos !== undefined && flos.length > 0 && selectedFlows.size === flos.length} onChange={toggleSelectAll} />
+                                            <span className="flo-checkbox-box" />
+                                        </label>
                                     </th>
                                     <th>Name</th>
                                     <th className={"table-column-hide-sm"}>Environment</th>
@@ -397,8 +453,11 @@ export default function Flows() {
                                         {flos?.map((flo, index) => {
                                             return (
                                                 <tr key={flo.id} className={"flo-table-row"}>
-                                                    <td className={"checkbox-column"}>
-                                                        <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
+                                                    <td className="flo-checkbox-col">
+                                                        <label className="flo-checkbox">
+                                                            <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
+                                                            <span className="flo-checkbox-box" />
+                                                        </label>
                                                     </td>
                                                     <td>
                                                         <span className={"fav-toggle"} onClick={(e) => { e.stopPropagation(); toggleFavourite(flo.id); }}>
@@ -485,11 +544,6 @@ export default function Flows() {
                                                             <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
                                                         </Link>
                                                         <Tooltip id={"edit-" + flo.id} />
-
-                                                        <button className={"table-button"} onClick={() => exportSingleFlow(flo)} disabled={isExporting} data-tooltip-id={"export-" + flo.id} data-tooltip-content={"Export Flow"} data-tooltip-place={"bottom"}>
-                                                            <FontAwesomeIcon icon={faFileExport}/> <span className={"table-column-hide-sm"}>Export</span>
-                                                        </button>
-                                                        <Tooltip id={"export-" + flo.id} />
 
                                                         <button disabled={true} className={"table-button"} onClick={() => {deleteFlo(flo.id)}} data-tooltip-id={"delete-" + flo.id} data-tooltip-content={"Delete Flow"} data-tooltip-place={"bottom"}>
                                                             <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>

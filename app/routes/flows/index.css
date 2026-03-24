@@ -1,4 +1,236 @@
-/* Favourites section */
+/* ═══════════════════════════════════════════════
+   Flows Action Bar (matches editor toolbar pattern)
+   ═══════════════════════════════════════════════ */
+.flows-action-bar {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.flows-action-bar-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--primary-font-colour);
+    white-space: nowrap;
+    padding: 0 4px;
+}
+
+.flows-action-bar-search {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.flows-action-bar-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+.flows-action-bar-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Action bar buttons — mirrors .flo-editor-action-button */
+.flows-action-btn {
+    height: 34px;
+    min-width: 34px;
+    padding: 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    color: var(--secondary-font-colour);
+    font-size: 13px;
+    transition: background 0.1s ease, border-color 0.1s ease, opacity 0.1s ease;
+    gap: 6px;
+}
+
+.flows-action-btn > span {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .flows-action-btn {
+        padding: 0 12px;
+    }
+
+    .flows-action-btn > span {
+        display: inline-block;
+        font-size: 12px;
+        color: var(--secondary-font-colour);
+        white-space: nowrap;
+    }
+}
+
+.flows-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.flows-action-btn--primary {
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #e5e7eb;
+}
+
+.flows-action-btn--primary > span {
+    color: #e5e7eb;
+}
+
+.flows-action-btn--primary:hover {
+    background: linear-gradient(135deg, #5b0092, #7c3aed);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.flows-action-btn--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Search input (inline expand) */
+.flows-search-input-wrap {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0 10px;
+    height: 34px;
+    gap: 8px;
+    transition: border-color 0.15s ease;
+}
+
+.flows-search-input-wrap:focus-within {
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.flows-search-icon {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.flows-search-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--primary-font-colour);
+    font-size: 13px;
+}
+
+.flows-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.flows-search-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.1s ease;
+    flex-shrink: 0;
+}
+
+.flows-search-close:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* ═══════════════════════════════════════════════
+   Custom Checkbox (matches property-menu-checkbox)
+   ═══════════════════════════════════════════════ */
+.flo-checkbox-col {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    text-align: center;
+    padding: 0 !important;
+    vertical-align: middle;
+}
+
+.flo-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.flo-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.flo-checkbox-box {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 4px;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.flo-checkbox:hover .flo-checkbox-box {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.flo-checkbox input:checked ~ .flo-checkbox-box {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.flo-checkbox-box::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 4px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.flo-checkbox input:checked ~ .flo-checkbox-box::after {
+    display: block;
+}
+
+
+/* ═══════════════════════════════════════════════
+   Favourites section
+   ═══════════════════════════════════════════════ */
 .favourites-section {
     padding: 0 20px;
     margin-bottom: 20px;
@@ -66,110 +298,4 @@
 
 .fav-toggle:hover .fav-inactive {
     color: rgba(255, 255, 255, 0.4);
-}
-
-/* Checkbox column */
-.checkbox-column {
-    width: 36px;
-    min-width: 36px;
-    max-width: 36px;
-    text-align: center;
-    padding: 0 4px !important;
-}
-
-.checkbox-column input[type="checkbox"] {
-    accent-color: #7c3aed;
-    cursor: pointer;
-    width: 15px;
-    height: 15px;
-}
-
-/* Import button in search section */
-.import-flow-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-}
-
-.import-flow-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #e5e7eb;
-}
-
-/* Selection action bar */
-.selection-action-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
-    margin: 0 0 8px;
-    background: rgba(139, 92, 246, 0.08);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 10px;
-    animation: slideDown 0.15s ease;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.selection-count {
-    font-size: 13px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-    margin-right: auto;
-}
-
-.selection-export-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
-    border: none;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.selection-export-btn:hover {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-}
-
-.selection-export-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.selection-clear-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.selection-clear-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.8);
 }
