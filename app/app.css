@@ -56,8 +56,10 @@ body {
 
 .flo-container {
   width: 100%;
+  min-width: 0;
   padding: 25px;
   overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .page-row-container {
@@ -77,6 +79,7 @@ body {
 .page-container {
   display: flex;
   flex: 1;
+  min-width: 0;
   justify-items: center;
   /*align-items: center;*/
 }

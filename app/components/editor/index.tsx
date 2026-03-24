@@ -63,7 +63,7 @@ export function Editor(props : EditorProps) {
     const [ menuYLocation, setMenuYLocation ] = useState<number>(0);
     const menuXRef = useRef<number>(0);
     const menuYRef = useRef<number>(0);
-    const [ snapToGrid, setSnapToGrid ] = useState<boolean>(false);
+    const [ snapToGrid, setSnapToGrid ] = useState<boolean>(true);
     const [ showMiniMap, setShowMiniMap ] = useState<boolean>(true);
     const [ needsUpdate, setNeedsUpdate ] = useState<boolean>(false);
     const [ plugins, setPlugins ] = useState(null);
@@ -193,6 +193,20 @@ export function Editor(props : EditorProps) {
                 })
         }
     }, [id]);
+
+    useEffect(() => {
+        if (flo && !flo.revision && plugins && plugins["trigger/manual"] && nodes.length === 0) {
+            const nodeId = '' + self.crypto.randomUUID() + '';
+            setNodes([{
+                id: nodeId,
+                position: { x: 250, y: 200 },
+                data: { id: nodeId, label: "trigger/manual", config: plugins["trigger/manual"] },
+                type: "trigger/manual",
+                sourcePosition: 'right',
+                targetPosition: 'left'
+            }]);
+        }
+    }, [flo, plugins]);
 
     useEffect(() => {
         if (flo) {

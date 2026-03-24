@@ -27,7 +27,7 @@ export function VerticalNav(props: VerticalNavProps) {
 
     const [ showAutomate, setShowAutomate ] = useState<boolean>(true);
     const [ showConfigure, setShowConfigure ] = useState<boolean>(true);
-    const { organisations } = useOrganisation();
+    const { organisations, isOrgMode } = useOrganisation();
     const { hasPermission } = usePermissions();
     const [ showManage, setShowManage ] = useState<boolean>(false);
     const [ showAdminister, setShowAdminister ] = useState<boolean>(false);
@@ -126,7 +126,7 @@ export function VerticalNav(props: VerticalNavProps) {
                                 {(hasPermission(PERMISSIONS.ORGANISATION_VIEW) || hasPermission(PERMISSIONS.ORGANISATION_MANAGE)) && (
                                     <NavLink to={"/organisation"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
                                 )}
-                                {hasPermission(PERMISSIONS.ORGANISATION_MANAGE) && (
+                                {isOrgMode && hasPermission(PERMISSIONS.ORGANISATION_MANAGE) && (
                                     <NavLink to={"/team"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Groups</span></NavLink>
                                 )}
                                 {/*<NavLink to={"/usage"} className={"menu-section-list-item"}><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPieChart} /></div><span className={"menu-section-list-item-label"}>Usage</span></NavLink>*/}
