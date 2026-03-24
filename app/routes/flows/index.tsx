@@ -346,9 +346,9 @@ export default function Flows() {
     return (
         <Container>
             <>
-                <div className="flows-action-bar">
-                    <div className="flows-action-bar-title">Flows</div>
+                <div className={"header"}>Flows</div>
 
+                <div className="flows-action-bar">
                     <div className="flows-action-bar-search">
                         {searchExpanded ? (
                             <div className="flows-search-input-wrap">
@@ -374,32 +374,36 @@ export default function Flows() {
                         <Tooltip id="search-tip" />
                     </div>
 
-                    <div className="flows-action-bar-divider" />
+                    {!searchExpanded && (
+                        <>
+                            <div className="flows-action-bar-divider" />
 
-                    <div className="flows-action-bar-actions">
-                        <button className="flows-action-btn flows-action-btn--primary" onClick={createNewFlo} data-tooltip-id="new-tip" data-tooltip-content="Create new flow" data-tooltip-place="bottom">
-                            <FontAwesomeIcon icon={faPlus} /><span>New</span>
-                        </button>
-                        <Tooltip id="new-tip" />
+                            <div className="flows-action-bar-actions">
+                                <button className="flows-action-btn flows-action-btn--primary" onClick={createNewFlo} data-tooltip-id="new-tip" data-tooltip-content="Create new flow" data-tooltip-place="bottom">
+                                    <FontAwesomeIcon icon={faPlus} /><span>New</span>
+                                </button>
+                                <Tooltip id="new-tip" />
 
-                        <button className="flows-action-btn" onClick={() => setImportModalVisible(true)} data-tooltip-id="import-tip" data-tooltip-content="Import flow from file" data-tooltip-place="bottom">
-                            <FontAwesomeIcon icon={faFileImport} /><span>Import</span>
-                        </button>
-                        <Tooltip id="import-tip" />
+                                <button className="flows-action-btn" onClick={() => setImportModalVisible(true)} data-tooltip-id="import-tip" data-tooltip-content="Import flow from file" data-tooltip-place="bottom">
+                                    <FontAwesomeIcon icon={faFileImport} /><span>Import</span>
+                                </button>
+                                <Tooltip id="import-tip" />
 
-                        <button
-                            className={`flows-action-btn ${selectedFlows.size > 0 ? '' : 'flows-action-btn--disabled'}`}
-                            onClick={exportSelectedFlows}
-                            disabled={selectedFlows.size === 0 || isExporting}
-                            data-tooltip-id="export-tip"
-                            data-tooltip-content={selectedFlows.size > 0 ? `Export ${selectedFlows.size} flow${selectedFlows.size > 1 ? 's' : ''}` : 'Select flows to export'}
-                            data-tooltip-place="bottom"
-                        >
-                            {isExporting ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFileExport} />}
-                            <span>Export{selectedFlows.size > 0 ? ` (${selectedFlows.size})` : ''}</span>
-                        </button>
-                        <Tooltip id="export-tip" />
-                    </div>
+                                <button
+                                    className={`flows-action-btn ${selectedFlows.size > 0 ? '' : 'flows-action-btn--disabled'}`}
+                                    onClick={exportSelectedFlows}
+                                    disabled={selectedFlows.size === 0 || isExporting}
+                                    data-tooltip-id="export-tip"
+                                    data-tooltip-content={selectedFlows.size > 0 ? `Export ${selectedFlows.size} flow${selectedFlows.size > 1 ? 's' : ''}` : 'Select flows to export'}
+                                    data-tooltip-place="bottom"
+                                >
+                                    {isExporting ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFileExport} />}
+                                    <span>Export{selectedFlows.size > 0 ? ` (${selectedFlows.size})` : ''}</span>
+                                </button>
+                                <Tooltip id="export-tip" />
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <>

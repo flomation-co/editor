@@ -3,21 +3,13 @@
    ═══════════════════════════════════════════════ */
 .flows-action-bar {
     width: 100%;
-    padding: 8px 12px;
+    padding: 8px 20px;
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 8px;
-}
-
-.flows-action-bar-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--primary-font-colour);
-    white-space: nowrap;
-    padding: 0 4px;
 }
 
 .flows-action-bar-search {
@@ -160,15 +152,25 @@
 }
 
 
+/* Fix left-alignment: first-child is now the checkbox, name is second */
+.flo-table > thead > tr > th:nth-child(2) {
+    text-align: left;
+}
+
+.flo-table > tbody > tr > td:nth-child(2) {
+    text-align: left;
+}
+
+
 /* ═══════════════════════════════════════════════
    Custom Checkbox (matches property-menu-checkbox)
    ═══════════════════════════════════════════════ */
 .flo-checkbox-col {
-    width: 40px;
-    min-width: 40px;
-    max-width: 40px;
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
     text-align: center;
-    padding: 0 !important;
+    padding: 8px 8px 8px 16px !important;
     vertical-align: middle;
 }
 
