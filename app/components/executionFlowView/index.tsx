@@ -91,6 +91,7 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 executionStatus: nodeStatuses.has(node.id)
                     ? nodeStatuses.get(node.id)!.status
                     : 'pending',
+                nodeStatusData: nodeStatuses.get(node.id) ?? null,
                 onNodeClick,
                 nodeId: node.id,
             },

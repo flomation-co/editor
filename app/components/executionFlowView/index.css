@@ -155,6 +155,134 @@
     white-space: nowrap;
 }
 
+/* ── Hover wrapper — CSS-only tooltip trigger ── */
+.exec-node-hover-wrap {
+    position: relative;
+    pointer-events: all !important;
+}
+
+/* ── CSS-only hover tooltip ── */
+.exec-node-tooltip {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 10px;
+    z-index: 1000;
+    min-width: 220px;
+    max-width: 300px;
+    background: rgba(16, 16, 24, 0.97);
+    border: 1px solid rgba(139, 0, 222, 0.25);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Show on hover — pure CSS, no JS state needed */
+.exec-node-hover-wrap:hover .exec-node-tooltip {
+    display: block;
+    animation: execTooltipIn 0.15s ease-out;
+}
+
+@keyframes execTooltipIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.exec-node-tooltip-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.exec-node-tooltip-status {
+    font-size: 11px;
+    font-weight: 600;
+}
+.exec-node-tooltip-status--success { color: #4ade80; }
+.exec-node-tooltip-status--failed { color: #f87171; }
+.exec-node-tooltip-status--running { color: #2dd4bf; }
+
+.exec-node-tooltip-dur {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.exec-node-tooltip-err {
+    font-size: 11px;
+    color: #f87171;
+    word-break: break-word;
+    margin-bottom: 6px;
+    padding: 4px 6px;
+    background: rgba(239, 68, 68, 0.06);
+    border-radius: 4px;
+}
+
+.exec-node-tooltip-sect {
+    margin-bottom: 6px;
+}
+
+.exec-node-tooltip-lbl {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.exec-node-tooltip-kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    padding: 1px 0;
+}
+
+.exec-node-tooltip-k {
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px;
+    flex-shrink: 0;
+}
+
+.exec-node-tooltip-v {
+    color: #e5e7eb;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.exec-node-tooltip-more {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.2);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.exec-node-tooltip-hint {
+    font-size: 9px;
+    color: rgba(139, 0, 222, 0.5);
+    text-align: center;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
 /* ── Node Inspector Panel ── */
 .node-inspector-overlay {
     position: absolute;

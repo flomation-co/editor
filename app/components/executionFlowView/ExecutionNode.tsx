@@ -1,10 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark, faSpinner } from "@fortawesome/pro-solid-svg-icons";
+import { faCheck, faXmark, faSpinner, faClock } from "@fortawesome/pro-solid-svg-icons";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/pro-solid-svg-icons';
 import { fab } from '@fortawesome/free-brands-svg-icons';
+import type { NodeStatus } from '~/types';
 
 library.add(fab, fas);
 
@@ -16,9 +17,14 @@ const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; 
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', iconColour: '#b967ef' },
 };
 
-const TYPE_CLASS_MAP: Record<number, string> = {
-    4: 'exec-node--conditional',
-};
+const SENSITIVE_KEYS = /secret|password|key|token|credential|auth/i;
+
+function formatVal(key: string, value: any): string {
+    if (typeof value === 'string' && value === '********') return '********';
+    if (SENSITIVE_KEYS.test(key)) return '********';
+    const str = typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value ?? '');
+    return str.length > 35 ? str.slice(0, 32) + '...' : str;
+}
 
 export type ExecutionNodeData = {
     config?: {
@@ -30,6 +36,7 @@ export type ExecutionNodeData = {
         outputs?: any[];
     };
     executionStatus?: string;
+    nodeStatusData?: NodeStatus | null;
     onNodeClick?: (nodeId: string) => void;
     nodeId?: string;
 };
@@ -46,6 +53,7 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
     const type = data?.config?.type ?? 2;
     const colours = NODE_COLOURS[type] ?? NODE_COLOURS[2];
     const status = data?.executionStatus ?? 'pending';
+    const nodeStatus = data?.nodeStatusData ?? null;
     const isTrigger = type === 1;
     const isConditional = type === 4;
     const hasInputs = !isTrigger && data?.config?.inputs && data.config.inputs.length > 0;
@@ -59,8 +67,14 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
         }
     };
 
+    const showTooltip = status !== 'pending';
+    const hasDetail = nodeStatus &&
+        ((nodeStatus.inputs && Object.keys(nodeStatus.inputs).length > 0) ||
+         (nodeStatus.outputs && Object.keys(nodeStatus.outputs).length > 0) ||
+         nodeStatus.error);
+
     return (
-        <>
+        <div className="exec-node-hover-wrap">
             <div className="exec-node-name">
                 {data.config?.name && data.config.name}
                 {data.config?.label && (
@@ -96,12 +110,10 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     {data.config?.label || data.config?.name || ''}
                 </span>
 
-                {/* Handles for non-conditional/non-loop */}
                 {type !== 4 && type !== 5 && hasOutputs && (
                     <Handle type="source" position={Position.Right} />
                 )}
 
-                {/* Conditional handles */}
                 {type === 4 && hasOutputs && (
                     <>
                         <Handle type="source" position={Position.Top} id="true-branch"
@@ -111,7 +123,6 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     </>
                 )}
 
-                {/* Loop handles */}
                 {type === 5 && hasOutputs && (
                     <>
                         <Handle type="source" position={Position.Bottom} id="loop" />
@@ -119,7 +130,6 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     </>
                 )}
 
-                {/* Status badge */}
                 {status === 'running' && (
                     <div className="exec-node-status-badge exec-node-status-badge--running">
                         <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '9px' }} />
@@ -136,7 +146,63 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     </div>
                 )}
             </div>
-        </>
+
+            {/* CSS-only hover tooltip — .exec-node-hover-wrap:hover makes this visible */}
+            {showTooltip && (
+                <div className="exec-node-tooltip">
+                    <div className="exec-node-tooltip-hdr">
+                        <span className={`exec-node-tooltip-status exec-node-tooltip-status--${status}`}>
+                            {status === 'success' && 'Success'}
+                            {status === 'failed' && 'Failed'}
+                            {status === 'running' && 'Running'}
+                        </span>
+                        {nodeStatus?.duration_ms !== undefined && nodeStatus.duration_ms > 0 && (
+                            <span className="exec-node-tooltip-dur">
+                                <FontAwesomeIcon icon={faClock} /> {nodeStatus.duration_ms}ms
+                            </span>
+                        )}
+                    </div>
+
+                    {nodeStatus?.error && (
+                        <div className="exec-node-tooltip-err">
+                            {nodeStatus.error.length > 80 ? nodeStatus.error.slice(0, 77) + '...' : nodeStatus.error}
+                        </div>
+                    )}
+
+                    {hasDetail && nodeStatus!.inputs && Object.keys(nodeStatus!.inputs).length > 0 && (
+                        <div className="exec-node-tooltip-sect">
+                            <div className="exec-node-tooltip-lbl">Inputs</div>
+                            {Object.entries(nodeStatus!.inputs!).slice(0, 4).map(([k, v]) => (
+                                <div key={k} className="exec-node-tooltip-kv">
+                                    <span className="exec-node-tooltip-k">{k}</span>
+                                    <span className="exec-node-tooltip-v">{formatVal(k, v)}</span>
+                                </div>
+                            ))}
+                            {Object.keys(nodeStatus!.inputs!).length > 4 && (
+                                <div className="exec-node-tooltip-more">+{Object.keys(nodeStatus!.inputs!).length - 4} more</div>
+                            )}
+                        </div>
+                    )}
+
+                    {hasDetail && nodeStatus!.outputs && Object.keys(nodeStatus!.outputs).length > 0 && (
+                        <div className="exec-node-tooltip-sect">
+                            <div className="exec-node-tooltip-lbl">Outputs</div>
+                            {Object.entries(nodeStatus!.outputs!).slice(0, 4).map(([k, v]) => (
+                                <div key={k} className="exec-node-tooltip-kv">
+                                    <span className="exec-node-tooltip-k">{k}</span>
+                                    <span className="exec-node-tooltip-v">{formatVal(k, v)}</span>
+                                </div>
+                            ))}
+                            {Object.keys(nodeStatus!.outputs!).length > 4 && (
+                                <div className="exec-node-tooltip-more">+{Object.keys(nodeStatus!.outputs!).length - 4} more</div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="exec-node-tooltip-hint">Click to inspect</div>
+                </div>
+            )}
+        </div>
     );
 });
 
