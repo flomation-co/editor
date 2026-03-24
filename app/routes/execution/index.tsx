@@ -32,7 +32,7 @@ type DetailTab = 'inputs' | 'outputs' | 'logs';
 
 export default function ExecutionDetail() {
     const navigate = useNavigate();
-    const [ executionID, setExecutionID ] = useState<string>(useParams().id)
+    const { id: executionID } = useParams();
     const [ exec, setExec ] = useState<Execution>();
     const [ isRerunning, setIsRerunning ] = useState<boolean>(false);
     const { showToast } = useToast();
@@ -47,6 +47,16 @@ export default function ExecutionDetail() {
 
     const controller = new AbortController();
     const token = useCookieToken();
+
+    // Reset all state when the execution ID changes (e.g. after re-run)
+    useEffect(() => {
+        setExec(undefined);
+        setStreamingLogs([]);
+        setNodeStatuses(new Map());
+        setSelectedNodeId(null);
+        setDetailPanelOpen(false);
+        setIsRerunning(false);
+    }, [executionID]);
 
     const queryExecutionState = () => {
         const config = useConfig();
