@@ -17,6 +17,7 @@ import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
 import ExecutionFlowView from "~/components/executionFlowView";
 import NodeInspector from "~/components/executionFlowView/NodeInspector";
+import DataInspector from "~/components/dataInspector";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -43,7 +44,6 @@ export default function ExecutionDetail() {
 
     const [ detailPanelOpen, setDetailPanelOpen ] = useState<boolean>(false);
     const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
-    const [ logModeRaw, setLogModeRaw ] = useState<boolean>(true);
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -278,60 +278,29 @@ export default function ExecutionDetail() {
                                 <div className="exec-detail-panel-body">
                                     {/* Inputs tab */}
                                     {detailTab === 'inputs' && (
-                                        <pre className="exec-detail-code">
-                                            {exec.data ? JSON.stringify(exec.data, null, 4) : '\u00A0'}
-                                        </pre>
+                                        <DataInspector data={exec.data} emptyMessage="No input data" />
                                     )}
 
                                     {/* Outputs tab */}
                                     {detailTab === 'outputs' && (
-                                        <pre className="exec-detail-code">
+                                        <>
                                             {exec.completion_status === "pending" && !exec.result && (
                                                 <div className="exec-detail-loading">
                                                     <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for execution to complete...</span>
                                                 </div>
                                             )}
-                                            {exec.result && exec.result.outputs
-                                                ? JSON.stringify(exec.result.outputs, null, 4)
-                                                : exec.completion_status !== "pending" ? '\u00A0' : ''
-                                            }
-                                        </pre>
+                                            {(exec.result?.outputs || exec.completion_status !== "pending") && (
+                                                <DataInspector data={exec.result?.outputs} emptyMessage="No output data" />
+                                            )}
+                                        </>
                                     )}
 
                                     {/* Logs tab */}
                                     {detailTab === 'logs' && (
-                                        <>
-                                            <div className="exec-detail-log-toggle">
-                                                <span className={!logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(false)}>Parsed</span>
-                                                <span className={logModeRaw ? "log-toggle-option active" : "log-toggle-option"} onClick={() => setLogModeRaw(true)}>Raw</span>
-                                            </div>
-
-                                            {!logModeRaw && (
-                                                <>
-                                                    {exec.completion_status === "pending" && !exec.result && (
-                                                        <pre className="exec-detail-code">
-                                                            <div className="exec-detail-loading">
-                                                                <FontAwesomeIcon icon={faSpinner} spin /> <span>Streaming logs...</span>
-                                                            </div>
-                                                        </pre>
-                                                    )}
-                                                    {exec.result && <LogOutput logs={exec.result} />}
-                                                </>
-                                            )}
-
-                                            {logModeRaw && (
-                                                <pre className="exec-detail-code">
-                                                    {exec.completion_status === "pending" && !exec.result && streamingLogs.length === 0 && (
-                                                        <div className="exec-detail-loading">
-                                                            <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for logs...</span>
-                                                        </div>
-                                                    )}
-                                                    {exec.completion_status !== "pending" && !exec.result && streamingLogs.length === 0 && '\u00A0'}
-                                                    {exec.result && exec.result.logs && exec.result.logs}
-                                                    {!exec.result && streamingLogs.length > 0 && streamingLogs.join("\n")}
-                                                </pre>
-                                            )}
-                                        </>
+                                        <LogOutput
+                                            logs={exec.result}
+                                            streamingLines={!exec.result ? streamingLogs : undefined}
+                                        />
                                     )}
                                 </div>
                             </div>
