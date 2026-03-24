@@ -28,6 +28,7 @@
     "dotenv": "^17.0.1",
     "isbot": "^5.1.17",
     "js-cookie": "^3.0.5",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.543.0",
     "react": "^19.0.0",
     "react-country-flag": "^3.1.0",

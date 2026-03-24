@@ -131,36 +131,47 @@ body {
 
 .flo-table {
   width: 100%;
-  padding: 25px;
+  padding: 0 20px;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .flo-table > tbody > tr {
-  border: 1px solid var(--primary-background);
+  border: none;
 }
 
 .flo-table > tbody > tr > td {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+}
+
+.flo-table > tbody > tr:last-child > td {
+  border-bottom: none;
 }
 
 .flo-table > tbody > tr > td:first-child {
-  padding-left: 20px;
+  padding-left: 16px;
   text-align: left;
 }
 
 .flo-table-head {
-  background-color: var(--primary-background);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .flo-table-head > tr > th {
-  font-weight: lighter;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 10px 10px;
   text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .flo-table-head > tr > th:first-child {
-  padding-left: 20px;
+  padding-left: 16px;
   text-align: left;
 }
 
@@ -169,14 +180,12 @@ body {
 }
 
 .flo-table-row {
-  padding: 15px;
   text-align: center;
-  /*background: radial-gradient(at top left, var(--background-colour), rgba(0, 128, 0, 0.2));*/
+  transition: background 0.1s ease;
 }
 
 .flo-table-row:hover {
-  background-color: var(--primary-background);
-  /*cursor: pointer;*/
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .execution-state-label {
@@ -229,13 +238,15 @@ body {
 }
 
 .flo-table-subdued {
-  color: var(--secondary-font-colour)
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
 }
 
 .flo-table-subtext {
-  color: var(--secondary-font-colour);
-  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 11px;
   display: block;
+  margin-top: 2px;
 }
 
 .search-section {
@@ -721,40 +732,42 @@ a.active {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  height: 30px;
+  padding: 0 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  margin-left: 3px;
-  margin-right: 3px;
-  min-width: 32px;
-  color: var(--secondary-font-colour);
+  margin-left: 2px;
+  margin-right: 2px;
+  min-width: 30px;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.1s ease, border-color 0.1s ease;
+  transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+  text-decoration: none;
 }
 
 .table-button-danger {
-  background: rgba(190, 0, 0, 0.1);
-  border-color: rgba(190, 0, 0, 0.2);
-  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: rgba(248, 113, 113, 0.7);
 }
 
 @media (min-width: 1024px) {
   .table-button {
-    min-width: 70px;
+    min-width: 60px;
   }
 }
 
 .table-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
+  color: #e5e7eb;
 }
 
 .table-button-danger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.3);
   color: #f87171;
 }
 
@@ -769,7 +782,7 @@ a.active {
 }
 
 .table-button-red {
-  color: var(--error-action-colour);
+  color: #f87171;
 }
 
 .table-button > span {

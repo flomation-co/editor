@@ -23,11 +23,30 @@
 .org-create-form {
     display: flex;
     gap: 10px;
-    max-width: 400px;
+    max-width: 500px;
+    align-items: center;
 }
 
 .org-create-form input {
     flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.org-create-form input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.org-create-form input:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
 }
 
 .org-create-form button,
@@ -118,10 +137,29 @@
     gap: 10px;
     max-width: 500px;
     margin-bottom: 16px;
+    align-items: center;
 }
 
 .org-invite-form input {
     flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.org-invite-form input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.org-invite-form input:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
 }
 
 .org-invites-list {

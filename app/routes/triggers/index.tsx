@@ -11,6 +11,7 @@ import useCookieToken from "~/components/cookie";
 import type {Trigger} from "~/types";
 import {useSearchParams} from "react-router";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 
 const TRIGGER_TYPES = [
     {value: "manual", label: "Manual"},
@@ -176,10 +177,7 @@ export default function Triggers() {
         <Container>
             <div className={"header"}>Triggers</div>
 
-            <div className={"search-section"}>
-                <input disabled={true} type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Trigger by Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search triggers..." disabled={true} />
 
             {isLoading && (
                 <div className={"loading-container"}>

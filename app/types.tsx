@@ -282,6 +282,27 @@ export type UserPermissions = {
     is_admin: boolean
 }
 
+export type FlomationExportMetadata = {
+    version: number,
+    exported_at: string,
+    source_flow_id: string,
+    source_flow_name: string,
+    author_email: string,
+    environment_name?: string,
+    hash: string
+}
+
+export type FlomationExport = {
+    flomation_export: FlomationExportMetadata,
+    flow_data: {
+        name: string,
+        scale: number,
+        x: number,
+        y: number,
+        revision: object | null,
+    }
+}
+
 export const PERMISSIONS = {
     FLOW_CREATE: "flow.create",
     FLOW_EDIT: "flow.edit",

@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 import ReactCountryFlag from "react-country-flag"
 import {PaginationControls} from "~/components/paginationControls";
 import useConfig from "~/components/config";
@@ -168,10 +169,7 @@ export default function Executions() {
         <Container>
             <div className={"header"}>Executions</div>
 
-            <div className={"search-section"}>
-                <input type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Execution by flow Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
 
             {isLoading && (
                 <div className={"loading-container"}>
@@ -203,14 +201,14 @@ export default function Executions() {
                                         return (
                                             <tr className={"flo-table-row"} key={exec.id}>
                                                 <td><Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link><span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span></td>
-                                                <td className={"table-column-hide-sm"}>#{exec.sequence}</td>
-                                                <td className={"table-column-hide-sm"}>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>#{exec.sequence}</td>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>
                                                         <span data-tooltip-id={"tooltip-time-" + exec.id} data-tooltip-content={formatDateString(exec.created_at)} data-tooltip-place={"bottom"}>
                                                             {formatDate(exec.created_at)}
                                                         </span>
                                                     <Tooltip id={"tooltip-time-" + exec.id} />
                                                 </td>
-                                                <td className={"table-column-hide-sm"}>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>
                                                     <ReactCountryFlag countryCode={"gb"} />
                                                 </td>
                                                 <td className={"table-column-hide-sm"}>
@@ -218,7 +216,7 @@ export default function Executions() {
                                                         <ExecuteState state={exec.execution_status} completionState={exec.completion_status} />
                                                     </Link>
                                                 </td>
-                                                <td className={"table-column-hide-sm"}>{friendlyDuration(exec.duration)}</td>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>{friendlyDuration(exec.duration)}</td>
                                                 {/*<td className={"table-column-hide-sm"}>{friendlyDuration(exec.billing_duration)}</td>*/}
                                                 <td>
                                                     {/*<button disabled={true || r.state != "active"} className={"table-button"}>

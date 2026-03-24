@@ -25,10 +25,29 @@
     gap: 10px;
     max-width: 500px;
     margin-bottom: 20px;
+    align-items: center;
 }
 
 .groups-create-form input {
     flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.groups-create-form input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.groups-create-form input:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
 }
 
 .groups-create-form button {
@@ -311,17 +330,25 @@
 .group-add-member {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
 .group-add-member select {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
+    height: 34px;
+    background-color: var(--primary-background);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     color: #e5e7eb;
-    padding: 6px 10px;
+    padding: 0 10px;
     font-size: 13px;
     font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.group-add-member select:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
 }
 
 .group-add-member button {

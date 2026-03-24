@@ -45,6 +45,23 @@ function PropertyValue({ value, depth = 0 }: { value: any; depth?: number }) {
         if (value.length > 300 && depth > 0) {
             return <span className="di-val di-val--string">"{value.slice(0, 297)}..."</span>;
         }
+
+        // Split on \n and <br> / <br /> tags to render actual line breaks
+        const hasBreaks = /\n|<br\s*\/?>/.test(value);
+        if (hasBreaks) {
+            const segments = value.split(/\n|<br\s*\/?>/);
+            return (
+                <span className="di-val di-val--string di-val--multiline">
+                    "{segments.map((seg, i) => (
+                        <React.Fragment key={i}>
+                            {i > 0 && <br />}
+                            {seg}
+                        </React.Fragment>
+                    ))}"
+                </span>
+            );
+        }
+
         if (value.length > 80) {
             return (
                 <span className="di-val di-val--string di-val--multiline">

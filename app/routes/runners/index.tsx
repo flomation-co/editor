@@ -7,6 +7,7 @@ import type {Runner} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPencil, faSpinner, faShield, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
+import SearchBar from "~/components/searchBar";
 import {useSearchParams} from "react-router";
 import dayjs from "dayjs";
 import { faCopy, faPause} from "@fortawesome/pro-solid-svg-icons";
@@ -88,10 +89,7 @@ export default function Runners() {
         <Container>
             <div className={"header"}>Runners</div>
 
-            <div className={"search-section"}>
-                <input disabled={true} type={"text"} className={"search-textbox"} placeholder={"Search..."} onChange={(e) => handleUpdateSearch(e.target.value)} value={search || ''} data-tooltip-id={"search"} data-tooltip-content={"Search for Runner by Name or ID"} data-tooltip-place={"bottom-start"}/>
-                <Tooltip id={"search"} />
-            </div>
+            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search runners..." disabled={true} />
 
             {loading && (
                 <div className={"loading-container"}>

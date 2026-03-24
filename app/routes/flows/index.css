@@ -1,6 +1,187 @@
-/* Favourites section */
+/* ═══════════════════════════════════════════════
+   Flows Action Bar (matches editor toolbar pattern)
+   ═══════════════════════════════════════════════ */
+.flows-action-bar {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 38px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.flows-action-bar-search {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.flows-action-bar-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+.flows-action-bar-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Action bar buttons — mirrors .flo-editor-action-button */
+.flows-action-btn {
+    height: 34px;
+    min-width: 34px;
+    padding: 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    color: var(--secondary-font-colour);
+    font-size: 13px;
+    transition: background 0.1s ease, border-color 0.1s ease, opacity 0.1s ease;
+    gap: 6px;
+}
+
+.flows-action-btn > span {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .flows-action-btn {
+        padding: 0 12px;
+    }
+
+    .flows-action-btn > span {
+        display: inline-block;
+        font-size: 12px;
+        color: var(--secondary-font-colour);
+        white-space: nowrap;
+    }
+}
+
+.flows-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.flows-action-btn--primary {
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #e5e7eb;
+}
+
+.flows-action-btn--primary > span {
+    color: #e5e7eb;
+}
+
+.flows-action-btn--primary:hover {
+    background: linear-gradient(135deg, #5b0092, #7c3aed);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.flows-action-btn--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
+
+/* Fix left-alignment: first-child is now the checkbox, name is second */
+.flo-table > thead > tr > th:nth-child(2) {
+    text-align: left;
+}
+
+.flo-table > tbody > tr > td:nth-child(2) {
+    text-align: left;
+}
+
+
+/* ═══════════════════════════════════════════════
+   Custom Checkbox (matches property-menu-checkbox)
+   ═══════════════════════════════════════════════ */
+.flo-checkbox-col {
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    text-align: center;
+    padding: 8px 8px 8px 16px !important;
+    vertical-align: middle;
+}
+
+.flo-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.flo-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.flo-checkbox-box {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 4px;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.flo-checkbox:hover .flo-checkbox-box {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.flo-checkbox input:checked ~ .flo-checkbox-box {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.flo-checkbox-box::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 4px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.flo-checkbox input:checked ~ .flo-checkbox-box::after {
+    display: block;
+}
+
+
+/* ═══════════════════════════════════════════════
+   Favourites section
+   ═══════════════════════════════════════════════ */
 .favourites-section {
     padding: 0 20px;
+    margin-top: 16px;
     margin-bottom: 20px;
 }
 
@@ -66,4 +247,117 @@
 
 .fav-toggle:hover .fav-inactive {
     color: rgba(255, 255, 255, 0.4);
+}
+
+
+/* ═══════════════════════════════════════════════
+   Row actions: Run button + overflow menu
+   ═══════════════════════════════════════════════ */
+.flo-actions-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* Green Run button — matches editor execute button */
+.flo-run-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 14px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 6px;
+    color: #4ade80;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    white-space: nowrap;
+}
+
+.flo-run-btn:hover {
+    background: rgba(34, 197, 94, 0.25);
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.flo-run-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Three-dot menu trigger */
+.flo-more-menu-wrap {
+    position: relative;
+}
+
+.flo-more-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--secondary-font-colour);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+.flo-more-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Dropdown */
+.flo-more-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 140px;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    padding: 4px 0;
+    animation: menuFadeIn 0.1s ease;
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.flo-more-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.1s ease;
+}
+
+.flo-more-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.flo-more-item--danger {
+    color: rgba(248, 113, 113, 0.8);
+}
+
+.flo-more-item--danger:hover {
+    background: rgba(248, 113, 113, 0.08);
+    color: #f87171;
 }

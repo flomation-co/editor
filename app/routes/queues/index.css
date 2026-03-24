@@ -2,9 +2,30 @@
     display: flex;
     gap: 10px;
     width: 100%;
+    align-items: center;
 }
 
-.queue-create input { flex: 1; }
+.queue-create input {
+    flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.queue-create input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.queue-create input:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
+}
 
 .queue-list {
     display: flex;
