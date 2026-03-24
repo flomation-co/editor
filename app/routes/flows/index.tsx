@@ -590,18 +590,19 @@ export default function Flows() {
 
             {deleteModalVisible && (
                 <Modal
-                    label={"Delete Flo"}
-                    // footerMessage={"This action can not be undone"}
+                    label={"Delete Flow"}
+                    footerMessage={"This action cannot be undone"}
                     visible={true}
                     canDismiss={true}
                     onDismiss={() => {setDeleteModalVisible(false)}}
                     actions={[{
                         label: "Delete",
-                        primary: true,
+                        primary: false,
+                        variant: 'danger',
                         onClick: () => {confirmDeleteFlo()},
                     }]}
                 >
-                    Are you sure you want to delete?
+                    Are you sure you want to delete this flow? All revisions, triggers and execution history will be permanently removed.
                 </Modal>
             )}
 
