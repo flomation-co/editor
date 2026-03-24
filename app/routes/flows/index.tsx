@@ -171,23 +171,16 @@ export default function Flows() {
 
     function confirmDeleteFlo() {
         if (deleteFloID) {
-            api.delete(API_URL + '/api/v1/flo/' + deleteFloID)
-                .then(response => {
-                    api.get(API_URL + '/api/v1/flo', {
-                        headers: {
-                            "Authorization": "Bearer " + token
-                        }
-                    })
-                        .then(response => {
-                            setTotalFloCount(+response.headers["x-total-items"]);
-                            setFlos(response.data);
-                        })
-                        .catch(error => {
-                            console.error(error);
-                        })
+            api.delete(API_URL + '/api/v1/flo/' + deleteFloID, {
+                headers: { Authorization: "Bearer " + token }
+            })
+                .then(() => {
+                    toast.success("Flow archived");
+                    refreshFlows();
                 })
                 .catch(error => {
                     console.error(error);
+                    toast.error("Failed to delete flow");
                 })
         }
         setDeleteModalVisible(false)
