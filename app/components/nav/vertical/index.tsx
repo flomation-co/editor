@@ -1,6 +1,6 @@
 import "./index.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleExclamation, faCubesStacked, faChartColumn, faLandmark, faPersonRunning, faBriefcase, faPeoplePulling, faHouse, faArrowsSplitUpAndLeft, faPlay, faBoltLightning, faPlug, faFeed, faPieChart, faLifeRing, faPeopleGroup, faCheckCircle, faBook } from '@fortawesome/free-solid-svg-icons'
+import { faCircleExclamation, faCubesStacked, faChartColumn, faLandmark, faPersonRunning, faBriefcase, faPeoplePulling, faHouse, faArrowsSplitUpAndLeft, faPlay, faBoltLightning, faPlug, faFeed, faPieChart, faLifeRing, faPeopleGroup, faCheckCircle, faBook, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 
 import {Link, NavLink, useNavigate} from "react-router";
 import {useEffect, useState} from "react";
@@ -34,6 +34,20 @@ export function VerticalNav(props: VerticalNavProps) {
     const [ currentlyActive, setCurrentlyActive ] = useState(props.active);
     const [ isStatusGood, setIsStatusGood ] = useState<boolean>(false);
     const [ isStatusPending, setIsStatusPending ] = useState<boolean>(true);
+    const [ collapsed, setCollapsed ] = useState<boolean>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('flomation-nav-collapsed') === 'true';
+        }
+        return false;
+    });
+
+    const toggleCollapsed = () => {
+        setCollapsed(prev => {
+            const next = !prev;
+            localStorage.setItem('flomation-nav-collapsed', String(next));
+            return next;
+        });
+    };
 
     useEffect(() => {
         setShowManage(true);
@@ -63,7 +77,7 @@ export function VerticalNav(props: VerticalNavProps) {
     }, []);
 
     return (
-        <div className={"vertical-nav"}>
+        <div className={`vertical-nav ${collapsed ? 'vertical-nav--collapsed' : ''}`}>
             <div className={"vertical-nav-container"}>
                 <div className={"vertical-nav-top-section"}>
                     <div className={"menu-section-list"}>
@@ -148,6 +162,11 @@ export function VerticalNav(props: VerticalNavProps) {
                             <span className={"menu-section-list-item-label"}>System Status</span>
                         </NavLink>
                     </div>
+
+                    <button className="nav-collapse-btn" onClick={toggleCollapsed}>
+                        <FontAwesomeIcon icon={collapsed ? faChevronRight : faChevronLeft} />
+                        <span className="nav-collapse-label">{collapsed ? '' : 'Collapse'}</span>
+                    </button>
                 </div>
             </div>
         </div>
