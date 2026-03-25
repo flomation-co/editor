@@ -56,3 +56,108 @@
     color: rgba(255,255,255,0.25);
     margin-top: 8px;
 }
+
+.text-expand-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.25);
+    font-size: 10px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: color 0.1s ease;
+}
+
+.text-expand-btn:hover {
+    color: rgba(255,255,255,0.6);
+}
+
+.text-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.text-popup {
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.text-popup-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.text-popup-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.text-popup-textarea {
+    flex: 1;
+    min-height: 300px;
+    margin: 16px 20px;
+    padding: 12px;
+    background: var(--primary-background);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: monospace;
+    resize: vertical;
+    outline: none;
+}
+
+.text-popup-textarea:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
+}
+
+.text-popup-footer {
+    padding: 12px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.text-popup-cancel {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.text-popup-save {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
