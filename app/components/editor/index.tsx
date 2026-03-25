@@ -541,10 +541,41 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        return nodes.some(node =>
-            node.data?.config?.inputs?.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')))
-        );
-    }, [nodes]);
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.'];
+
+        return nodes.some((node: any) => {
+            const inputs = node.data?.config?.inputs;
+            if (!inputs) return false;
+
+            // Check required fields
+            const hasRequiredEmpty = inputs.some((i: any) => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
+            if (hasRequiredEmpty) return true;
+
+            // Check for invalid variable substitutions
+            const parentIds = edges.filter((e: any) => e.target === node.id).map((e: any) => e.source);
+            const parentOutputNames = new Set<string>();
+            for (const pid of parentIds) {
+                const pn = nodes.find((n: any) => n.id === pid);
+                if (pn?.data?.config?.outputs) {
+                    for (const o of pn.data.config.outputs) {
+                        if (o.name) parentOutputNames.add(o.name);
+                    }
+                }
+            }
+
+            return inputs.some((i: any) => {
+                if (typeof i.value !== 'string') return false;
+                const refs = i.value.match(/\$\{([^{}]+)\}/g);
+                if (!refs) return false;
+                return refs.some((ref: string) => {
+                    const name = ref.slice(2, -1);
+                    if (validPrefixes.some(p => name.startsWith(p))) return false;
+                    if (parentOutputNames.has(name)) return false;
+                    return true; // unresolvable variable
+                });
+            });
+        });
+    }, [nodes, edges]);
 
     const defaultEdgeOptions = useMemo(() => {
         return {
