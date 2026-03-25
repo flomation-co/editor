@@ -96,6 +96,12 @@ export function Editor(props : EditorProps) {
     // Copy/Paste keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't intercept when a text field is focused
+            const tag = (document.activeElement?.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || (document.activeElement as HTMLElement)?.isContentEditable) {
+                return;
+            }
+
             if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
                 const selected = nodes.filter((n: any) => n.selected);
                 if (selected.length > 0) {
