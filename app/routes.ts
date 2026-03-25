@@ -15,6 +15,7 @@ export default [
     route("invite/:code", "routes/invite/index.tsx"),
     route("team", "routes/teams/index.tsx"),
     route("usage", "routes/usage/index.tsx"),
+    route("status", "routes/status/index.tsx"),
     
     ...prefix("environment", [
         index("routes/environments/index.tsx", {id: "list-envs"}),

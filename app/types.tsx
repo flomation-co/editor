@@ -76,6 +76,13 @@ export type Flo = {
     environment_id?: string,
     environment_name?: string,
     has_validation_errors?: boolean,
+    recent_executions?: ExecutionStatusDot[],
+}
+
+export type ExecutionStatusDot = {
+    id: string,
+    execution_status: string,
+    completion_status: string,
 }
 
 export type ParameterOption = {
@@ -242,6 +249,7 @@ export type Organisation = {
 export type OrganisationMember = {
     user_id: string,
     name: string,
+    email_address?: string,
     role: string,
     joined_at?: string
 }

@@ -1,7 +1,7 @@
 import "./index.css"
 import type {NavItem} from "~/types";
 import logo from "./flomation-wordtype-small-white.png";
-import {Link} from "react-router";
+import {Link, useNavigate} from "react-router";
 import {ProfileBall} from "~/components/profileBall";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowRightFromBracket, faChevronDown, faUser, faBriefcase} from "@fortawesome/pro-solid-svg-icons";
@@ -15,6 +15,7 @@ type HorizontalProps = {
 }
 
 export function HorizontalNav(props: HorizontalProps) {
+    const navigate = useNavigate();
     const config = useConfig()
     const [ logoutUrl, setLogoutUrl ] = useState<string>()
     const [ showOrgMenu, setShowOrgMenu ] = useState(false)
@@ -66,6 +67,17 @@ export function HorizontalNav(props: HorizontalProps) {
                                 <span className={"org-switcher-role"}>{org.role}</span>
                             </div>
                         ))}
+                        {!isOrgMode && (
+                            <>
+                                <div className={"org-switcher-divider"} />
+                                <div
+                                    className={"org-switcher-item org-switcher-item--create"}
+                                    onClick={() => { setShowOrgMenu(false); navigate("/organisation"); }}
+                                >
+                                    <span>Create New Organisation...</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

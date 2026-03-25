@@ -1,0 +1,241 @@
+.env-detail-back {
+    padding: 0 20px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+
+.env-detail-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    transition: color 0.1s ease;
+}
+
+.env-detail-back-link:hover {
+    color: #a78bfa;
+}
+
+.env-detail-page {
+    padding: 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.env-detail-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.env-detail-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.env-detail-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.env-detail-section-icon {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.env-detail-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 6px;
+    color: #a78bfa;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.env-detail-add-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.env-detail-empty {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.25);
+    padding: 8px 0;
+}
+
+/* Items list */
+.env-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.env-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    transition: background 0.1s ease;
+}
+
+.env-detail-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.env-detail-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.env-detail-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+.env-detail-item-value {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 2px;
+    word-break: break-all;
+}
+
+.env-detail-item-value--hidden {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.env-detail-item-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.env-detail-icon-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.env-detail-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+}
+
+.env-detail-icon-btn--danger:hover {
+    background: rgba(248, 113, 113, 0.08);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.2);
+}
+
+/* Add / Edit forms */
+.env-detail-add-form,
+.env-detail-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.env-detail-add-form input,
+.env-detail-add-form textarea,
+.env-detail-edit-form input,
+.env-detail-edit-form textarea {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    resize: vertical;
+    transition: box-shadow 0.15s ease;
+}
+
+.env-detail-add-form input:focus,
+.env-detail-add-form textarea:focus,
+.env-detail-edit-form input:focus,
+.env-detail-edit-form textarea:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
+}
+
+.env-detail-add-form input::placeholder,
+.env-detail-add-form textarea::placeholder,
+.env-detail-edit-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.env-detail-add-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.env-detail-btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.env-detail-btn-save:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.env-detail-btn-cancel {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.env-detail-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+}

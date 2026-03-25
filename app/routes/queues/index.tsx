@@ -7,7 +7,9 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTrash, faPlus, faCopy, faCheck, faUserPlus, faXmark} from "@fortawesome/pro-solid-svg-icons";
+import {faTrash, faPlus, faCopy, faCheck, faUserPlus, faXmark, faServer, faChevronDown, faChevronRight} from "@fortawesome/pro-solid-svg-icons";
+import Modal from "~/components/modal";
+import {toast} from "react-toastify";
 import "./index.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -28,6 +30,8 @@ export default function Queues() {
     const [queueRunners, setQueueRunners] = useState<Record<string, Runner[]>>({});
     const [allRunners, setAllRunners] = useState<Runner[]>([]);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [confirmDeleteQueue, setConfirmDeleteQueue] = useState<string | null>(null);
+    const [confirmRemoveRunner, setConfirmRemoveRunner] = useState<{ queueId: string; runnerId: string; name: string } | null>(null);
 
     const API_URL = config("AUTOMATE_API_URL");
     const isAdmin = currentOrg?.role === "admin";
@@ -84,8 +88,12 @@ export default function Queues() {
         api.delete(`${API_URL}/api/v1/queue/${id}`, {
             headers: { Authorization: "Bearer " + token }
         })
-            .then(() => fetchQueues())
-            .catch(err => console.error("Unable to delete queue", err));
+            .then(() => {
+                toast.success("Queue deleted");
+                if (expandedQueue === id) setExpandedQueue(null);
+                fetchQueues();
+            })
+            .catch(err => { console.error("Unable to delete queue", err); toast.error("Failed to delete queue"); });
     };
 
     const addRunner = (queueId: string, runnerId: string) => {
@@ -100,8 +108,8 @@ export default function Queues() {
         api.delete(`${API_URL}/api/v1/queue/${queueId}/runner/${runnerId}`, {
             headers: { Authorization: "Bearer " + token }
         })
-            .then(() => fetchQueueRunners(queueId))
-            .catch(err => console.error("Unable to remove runner", err));
+            .then(() => { toast.success("Runner removed"); fetchQueueRunners(queueId); })
+            .catch(err => { console.error("Unable to remove runner", err); toast.error("Failed to remove runner"); });
     };
 
     const copyCode = (code: string, id: string) => {
@@ -131,18 +139,17 @@ export default function Queues() {
             <div className={"header"}>Queues</div>
 
             {isAdmin && (
-                <div className={"search-section"}>
-                    <div className={"queue-create"}>
+                <div className="queue-create-section">
+                    <div className="queue-create">
                         <input
                             type="text"
-                            className={"search-textbox"}
                             placeholder="New queue name..."
                             value={newQueueName}
                             onChange={e => setNewQueueName(e.target.value)}
                             onKeyDown={e => e.key === "Enter" && createQueue()}
                         />
-                        <button className={"table-button"} onClick={createQueue} disabled={!newQueueName.trim()} style={{cursor: newQueueName.trim() ? "pointer" : "not-allowed", height: "auto", padding: "10px 16px"}}>
-                            <FontAwesomeIcon icon={faPlus} /> <span>Create Queue</span>
+                        <button className="queue-create-btn" onClick={createQueue} disabled={!newQueueName.trim()}>
+                            <FontAwesomeIcon icon={faPlus} /> Create Queue
                         </button>
                     </div>
                 </div>
@@ -150,18 +157,21 @@ export default function Queues() {
 
             <div className={"queue-list"}>
                 {queues.map(q => (
-                    <div key={q.id} className={"queue-card"}>
-                        <div className={"queue-card-header"} onClick={() => setExpandedQueue(expandedQueue === q.id ? null : q.id)}>
-                            <div className={"queue-card-name"}>{q.name}</div>
-                            <div className={"queue-card-meta"}>
-                                <span className={"queue-card-code"}>
+                    <div key={q.id} className="queue-card">
+                        <div className="queue-card-header" onClick={() => setExpandedQueue(expandedQueue === q.id ? null : q.id)}>
+                            <FontAwesomeIcon icon={expandedQueue === q.id ? faChevronDown : faChevronRight} className="queue-card-chevron" />
+                            <div className="queue-card-info">
+                                <div className="queue-card-name">{q.name}</div>
+                                <div className="queue-card-code">
                                     {q.registration_code}
-                                    <button className={"queue-code-copy"} onClick={(e) => { e.stopPropagation(); copyCode(q.registration_code, q.id); }}>
+                                    <button className="queue-code-copy" onClick={(e) => { e.stopPropagation(); copyCode(q.registration_code, q.id); }}>
                                         <FontAwesomeIcon icon={copiedId === q.id ? faCheck : faCopy} />
                                     </button>
-                                </span>
+                                </div>
+                            </div>
+                            <div className="queue-card-meta">
                                 {isAdmin && (
-                                    <button className={"queue-delete-btn"} onClick={(e) => { e.stopPropagation(); deleteQueue(q.id); }}>
+                                    <button className="queue-delete-btn" onClick={(e) => { e.stopPropagation(); setConfirmDeleteQueue(q.id); }}>
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
                                 )}
@@ -175,11 +185,13 @@ export default function Queues() {
                                     <div className={"queue-runners-empty"}>No runners assigned to this queue</div>
                                 )}
                                 {queueRunners[q.id]?.map(r => (
-                                    <div key={r.id} className={"queue-runner-row"}>
-                                        <span className={"queue-runner-name"}>{r.name}</span>
-                                        <span className={"queue-runner-id"}>{r.identifier?.substring(0, 8)}</span>
+                                    <div key={r.id} className="queue-runner-row">
+                                        <div className={`queue-runner-indicator ${r.state === 'active' ? 'queue-runner-indicator--active' : ''}`} />
+                                        <FontAwesomeIcon icon={faServer} className="queue-runner-icon" />
+                                        <span className="queue-runner-name">{r.name || 'Unnamed Runner'}</span>
+                                        <span className="queue-runner-id">{r.ip_address}</span>
                                         {isAdmin && (
-                                            <button className={"queue-runner-remove"} onClick={() => removeRunner(q.id, r.id)}>
+                                            <button className="queue-runner-remove" onClick={() => setConfirmRemoveRunner({ queueId: q.id, runnerId: r.id, name: r.name || 'this runner' })}>
                                                 <FontAwesomeIcon icon={faXmark} />
                                             </button>
                                         )}
@@ -207,6 +219,41 @@ export default function Queues() {
                     </div>
                 )}
             </div>
+
+            {confirmDeleteQueue && (
+                <Modal
+                    label="Delete Queue"
+                    footerMessage="This action cannot be undone"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setConfirmDeleteQueue(null)}
+                    actions={[{
+                        label: "Delete",
+                        primary: false,
+                        variant: 'danger',
+                        onClick: () => { deleteQueue(confirmDeleteQueue); setConfirmDeleteQueue(null); },
+                    }]}
+                >
+                    Are you sure you want to delete this queue? All runner assignments will be removed.
+                </Modal>
+            )}
+
+            {confirmRemoveRunner && (
+                <Modal
+                    label="Remove Runner"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setConfirmRemoveRunner(null)}
+                    actions={[{
+                        label: "Remove",
+                        primary: false,
+                        variant: 'danger',
+                        onClick: () => { removeRunner(confirmRemoveRunner.queueId, confirmRemoveRunner.runnerId); setConfirmRemoveRunner(null); },
+                    }]}
+                >
+                    Are you sure you want to remove <strong>{confirmRemoveRunner.name}</strong> from this queue?
+                </Modal>
+            )}
         </Container>
     );
 }

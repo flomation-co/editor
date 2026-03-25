@@ -43,6 +43,18 @@ export default function Executions() {
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
 
+    const REFRESH_OPTIONS = [
+        { label: "1s", value: 1000 },
+        { label: "5s", value: 5000 },
+        { label: "10s", value: 10000 },
+        { label: "30s", value: 30000 },
+        { label: "1m", value: 60000 },
+        { label: "5m", value: 300000 },
+        { label: "Off", value: 0 },
+    ];
+    const [ refreshInterval, setRefreshInterval ] = useState<number>(5000);
+    const [ refreshCycle, setRefreshCycle ] = useState<number>(0);
+
     const controller = new AbortController();
     const token = useCookieToken();
 
@@ -61,51 +73,54 @@ export default function Executions() {
         setIsMobile(width <= 768);
     }, [ width ]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const config = useConfig();
-            let url = config("AUTOMATE_API_URL") + '/api/v1/execution';
+    const fetchExecutions = () => {
+        const config = useConfig();
+        let url = config("AUTOMATE_API_URL") + '/api/v1/execution';
 
-            if (search && search.length > 2) {
-                url += "?search=" + search
-            }
+        if (search && search.length > 2) {
+            url += "?search=" + search;
+        }
 
-            // TODO: Wrap this in better pagination controls
-            if (url.indexOf('?') == -1) {
-                url += "?"
-            } else {
-                url += "&"
-            }
-            url += "offset=" + offset + "&limit=" + limit;
+        if (url.indexOf('?') == -1) {
+            url += "?";
+        } else {
+            url += "&";
+        }
+        url += "offset=" + offset + "&limit=" + limit;
 
-            api.get(url, {
-                signal: controller.signal,
-                headers: {
-                    "Authorization": "Bearer " + token,
+        api.get(url, {
+            signal: controller.signal,
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(response => {
+                if (response) {
+                    setTotalExecCount(+response.headers["x-total-items"]);
+                    setExecs(response.data);
+                    setDisableRightPagination(response.data.length < limit);
                 }
             })
-                .then(response => {
-                    if (response) {
-                        setTotalExecCount(+response.headers["x-total-items"]);
-                        setExecs(response.data);
+            .catch(error => console.error(error))
+            .finally(() => setIsLoading(false));
+    };
 
-                        if (response.data.length < limit) {
-                            setDisableRightPagination(true);
-                        } else {
-                            setDisableRightPagination(false);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error(error);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                })
-        }, 250);
-
-        return () => clearInterval(interval);
+    // Initial fetch + on filter change
+    useEffect(() => {
+        fetchExecutions();
     }, [search, offset, limit]);
+
+    // Auto-refresh interval
+    useEffect(() => {
+        if (refreshInterval === 0) return;
+
+        setRefreshCycle(c => c + 1);
+
+        const timer = setInterval(() => {
+            fetchExecutions();
+            setRefreshCycle(c => c + 1);
+        }, refreshInterval);
+
+        return () => clearInterval(timer);
+    }, [refreshInterval, search, offset, limit]);
 
     function handleUpdateSearch(term) {
         setSearch(term);
@@ -133,36 +148,17 @@ export default function Executions() {
         setLimit(limit);
     }
 
-    function friendlyDuration(duration?: number) : string {
-        if (!duration) {
-            return "";
-        }
-
-        if (duration === 0) {
-            return ""
-        }
-
-        // const newDate = new Date(duration);
-        // const hours = newDate.getUTCHours();
-        // const minutes = newDate.getUTCMinutes();
-        // const seconds = newDate.getUTCSeconds();
-        // const milliseconds = newDate.getUTCMilliseconds();
-        // console.log(hours, minutes, seconds, milliseconds);
-        //
-        // let friendlyDate = milliseconds + " ms";
-        // if (hours > 0) {
-        //     return hours + " h " + minutes + " m " + seconds + " s " + milliseconds + " ms";
-        // }
-        //
-        // if (minutes > 0) {
-        //     return minutes + " m " + seconds + " s " + milliseconds + " ms";
-        // }
-        //
-        // if (seconds > 0) {
-        //     return seconds + " s " + milliseconds + " ms";
-        // }
-
-        return duration + " ms";
+    function friendlyDuration(ms?: number): string {
+        if (!ms || ms === 0) return "";
+        if (ms < 1000) return ms + "ms";
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) return seconds + "s";
+        const minutes = Math.floor(seconds / 60);
+        const remainSec = seconds % 60;
+        if (minutes < 60) return remainSec > 0 ? `${minutes}m ${remainSec}s` : `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        const remainMin = minutes % 60;
+        return remainMin > 0 ? `${hours}h ${remainMin}m` : `${hours}h`;
     }
 
     return (
@@ -170,6 +166,25 @@ export default function Executions() {
             <div className={"header"}>Executions</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
+
+            <div className="exec-refresh-bar">
+                <div className="exec-refresh-bar-label">Auto-refresh</div>
+                <div
+                    key={refreshCycle}
+                    className={`exec-refresh-options ${refreshInterval === 0 ? 'exec-refresh-options--off' : ''}`}
+                    style={refreshInterval > 0 ? { '--refresh-duration': `${refreshInterval}ms` } as React.CSSProperties : undefined}
+                >
+                    {REFRESH_OPTIONS.map(opt => (
+                        <button
+                            key={opt.value}
+                            className={`exec-refresh-option ${refreshInterval === opt.value ? 'exec-refresh-option--active' : ''}`}
+                            onClick={() => setRefreshInterval(opt.value)}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
             {isLoading && (
                 <div className={"loading-container"}>

@@ -174,7 +174,12 @@ export default function Organisations() {
                 <div className={"org-members-list"}>
                     {members.map(member => (
                         <div key={member.user_id} className={"org-member-row"}>
-                            <div className={"org-member-name"}>{member.name}</div>
+                            <div className={"org-member-name"}>
+                                <span>{member.name && member.name !== "auto-generate" ? member.name : (member.email_address || "Unknown User")}</span>
+                                {member.email_address && member.name && member.name !== "auto-generate" && (
+                                    <span className={"org-member-email"}>{member.email_address}</span>
+                                )}
+                            </div>
                             <div className={`org-member-role ${member.role}`}>{member.role}</div>
                             {isAdmin && member.user_id !== auth.user?.id && (
                                 <button className={"org-action-button danger"} onClick={() => removeMember(member.user_id)}>
