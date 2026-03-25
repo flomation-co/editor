@@ -84,12 +84,49 @@ export function Editor(props : EditorProps) {
     const [ propertyMenuXLocation, setPropertyMenuXLocation ] = useState<number>(0);
     const [ propertyMenuYLocation, setPropertyMenuYLocation ] = useState<number>(0);
     const [ propertyNode, setPropertyNode ] = useState(null);
+    const [ propertyExpanded, setPropertyExpanded ] = useState(false);
+    const clipboardRef = useRef<any[]>([]);
 
     const token = useCookieToken();
 
     function handleWindowSizeChange() {
         setWidth(window.innerWidth);
     }
+
+    // Copy/Paste keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+                const selected = nodes.filter((n: any) => n.selected);
+                if (selected.length > 0) {
+                    clipboardRef.current = selected.map((n: any) => ({
+                        ...n,
+                        data: JSON.parse(JSON.stringify(n.data)),
+                    }));
+                    toast.success(`Copied ${selected.length} node${selected.length > 1 ? 's' : ''}`);
+                }
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
+                if (clipboardRef.current.length > 0) {
+                    const offset = 50;
+                    const newNodes = clipboardRef.current.map((n: any) => {
+                        const newId = '' + self.crypto.randomUUID() + '';
+                        return {
+                            ...n,
+                            id: newId,
+                            position: { x: n.position.x + offset, y: n.position.y + offset },
+                            data: { ...JSON.parse(JSON.stringify(n.data)), id: newId },
+                            selected: false,
+                        };
+                    });
+                    setNodes((nds: any[]) => nds.map(n => ({ ...n, selected: false })).concat(newNodes));
+                    toast.success(`Pasted ${newNodes.length} node${newNodes.length > 1 ? 's' : ''}`);
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [nodes]);
 
     useEffect(() => {
         if (isMobile) {
@@ -312,6 +349,21 @@ export function Editor(props : EditorProps) {
         (params) => setEdges((eds) => applyEdgeChanges(params, eds)),
         [setEdges],
     );
+
+    const onEdgeDoubleClick = useCallback((event: any, edge: any) => {
+        setEdges((eds: any[]) => eds.map(e => {
+            if (e.id === edge.id) {
+                const isDisabled = e.data?.disabled ?? false;
+                return {
+                    ...e,
+                    animated: !isDisabled ? false : undefined,
+                    style: !isDisabled ? { stroke: 'rgba(255,255,255,0.15)', strokeDasharray: '5 5' } : undefined,
+                    data: { ...e.data, disabled: !isDisabled },
+                };
+            }
+            return e;
+        }));
+    }, [setEdges]);
 
     const onInit = useCallback((rf) => {
         rf.setViewport(viewport);
@@ -712,6 +764,7 @@ export function Editor(props : EditorProps) {
                                         edges={edges}
                                         onNodesChange={onNodesChange}
                                         onEdgesChange={onEdgesChange}
+                                        onEdgeDoubleClick={onEdgeDoubleClick}
                                         onConnect={onConnect}
                                         onInit={onInit}
                                         onMove={() => {debouncedMove()}}
@@ -747,15 +800,19 @@ export function Editor(props : EditorProps) {
 
 
                                {propertyMenuVisible && (
-                                    <PropertyMenu
-                                        node={propertyNode}
-                                        variables={allVariables}
-                                        triggers={flo?.triggers}
-                                        onValueChange={onValueChange}
-                                        onNameChange={onNameChange}
-                                        onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}
-                                        onNodeDelete={onNodeDelete}
-                                    />
+                                    <div className={propertyExpanded ? "property-menu-expanded-wrap" : ""}>
+                                        <PropertyMenu
+                                            node={propertyNode}
+                                            variables={allVariables}
+                                            triggers={flo?.triggers}
+                                            onValueChange={onValueChange}
+                                            onNameChange={onNameChange}
+                                            onDismiss={() => {setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false); setPropertyExpanded(false);}}
+                                            onNodeDelete={onNodeDelete}
+                                            expanded={propertyExpanded}
+                                            onToggleExpand={() => setPropertyExpanded(prev => !prev)}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>

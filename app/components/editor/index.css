@@ -49,8 +49,9 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    z-index: 1000;
-    overflow-x: hidden;
+    z-index: 1100;
+    overflow: visible;
+    position: relative;
 }
 
 .flo-editor-property-property-section {
@@ -344,7 +345,7 @@
 }
 
 .flo-node--output {
-    border-color: rgba(232,96,76,0.25);
+    border-color: rgba(245,158,11,0.25);
 }
 
 .flo-node--conditional {
@@ -399,8 +400,33 @@
     translate: 0 -50%;
 }
 
+.loop-label {
+    position: absolute;
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(185,103,239,0.8);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.loop-label--body {
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.loop-label--done {
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .flo-node--loop {
     border-color: rgba(185,103,239,0.25);
+}
+
+.flo-node--error {
+    border-color: rgba(239,68,68,0.25);
 }
 
 /* ── Icon badge ── */
