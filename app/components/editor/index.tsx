@@ -7,6 +7,7 @@ import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import api from "~/lib/api";
+import {toast} from "react-toastify";
 
 import Container from "~/components/container";
 import ContextMenu from "~/components/contextMenu";
@@ -362,6 +363,15 @@ export function Editor(props : EditorProps) {
 
     const onNodeAdd = useCallback((nodeType: string) => {
         setMenuVisible(false);
+
+        // Enforce single Manual Trigger
+        if (nodeType === "trigger/manual") {
+            const hasManual = nodes.some(n => n.type === "trigger/manual");
+            if (hasManual) {
+                toast.warning("Only one Manual Trigger is allowed per flow");
+                return;
+            }
+        }
 
         const cfg = plugins[nodeType];
         console.log("New Node", nodeType, cfg);

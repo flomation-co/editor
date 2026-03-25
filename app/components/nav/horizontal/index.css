@@ -137,3 +137,18 @@
     color: rgba(255, 255, 255, 0.3);
     font-weight: 600;
 }
+
+.org-switcher-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 4px 0;
+}
+
+.org-switcher-item--create {
+    color: rgba(139, 92, 246, 0.7);
+    font-size: 12px;
+}
+
+.org-switcher-item--create:hover {
+    color: #a78bfa;
+}

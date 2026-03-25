@@ -249,6 +249,7 @@ export type Organisation = {
 export type OrganisationMember = {
     user_id: string,
     name: string,
+    email_address?: string,
     role: string,
     joined_at?: string
 }

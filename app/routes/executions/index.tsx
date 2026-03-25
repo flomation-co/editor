@@ -43,6 +43,18 @@ export default function Executions() {
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
 
+    const REFRESH_OPTIONS = [
+        { label: "1s", value: 1000 },
+        { label: "5s", value: 5000 },
+        { label: "10s", value: 10000 },
+        { label: "30s", value: 30000 },
+        { label: "1m", value: 60000 },
+        { label: "5m", value: 300000 },
+        { label: "Off", value: 0 },
+    ];
+    const [ refreshInterval, setRefreshInterval ] = useState<number>(5000);
+    const [ refreshCountdown, setRefreshCountdown ] = useState<number>(0);
+
     const controller = new AbortController();
     const token = useCookieToken();
 
@@ -61,51 +73,58 @@ export default function Executions() {
         setIsMobile(width <= 768);
     }, [ width ]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const config = useConfig();
-            let url = config("AUTOMATE_API_URL") + '/api/v1/execution';
+    const fetchExecutions = () => {
+        const config = useConfig();
+        let url = config("AUTOMATE_API_URL") + '/api/v1/execution';
 
-            if (search && search.length > 2) {
-                url += "?search=" + search
-            }
+        if (search && search.length > 2) {
+            url += "?search=" + search;
+        }
 
-            // TODO: Wrap this in better pagination controls
-            if (url.indexOf('?') == -1) {
-                url += "?"
-            } else {
-                url += "&"
-            }
-            url += "offset=" + offset + "&limit=" + limit;
+        if (url.indexOf('?') == -1) {
+            url += "?";
+        } else {
+            url += "&";
+        }
+        url += "offset=" + offset + "&limit=" + limit;
 
-            api.get(url, {
-                signal: controller.signal,
-                headers: {
-                    "Authorization": "Bearer " + token,
+        api.get(url, {
+            signal: controller.signal,
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(response => {
+                if (response) {
+                    setTotalExecCount(+response.headers["x-total-items"]);
+                    setExecs(response.data);
+                    setDisableRightPagination(response.data.length < limit);
                 }
             })
-                .then(response => {
-                    if (response) {
-                        setTotalExecCount(+response.headers["x-total-items"]);
-                        setExecs(response.data);
+            .catch(error => console.error(error))
+            .finally(() => setIsLoading(false));
+    };
 
-                        if (response.data.length < limit) {
-                            setDisableRightPagination(true);
-                        } else {
-                            setDisableRightPagination(false);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error(error);
-                })
-                .finally(() => {
-                    setIsLoading(false);
-                })
-        }, 250);
-
-        return () => clearInterval(interval);
+    // Initial fetch + on filter change
+    useEffect(() => {
+        fetchExecutions();
     }, [search, offset, limit]);
+
+    // Auto-refresh interval
+    useEffect(() => {
+        if (refreshInterval === 0) return;
+
+        setRefreshCountdown(refreshInterval);
+        const countdownTimer = setInterval(() => {
+            setRefreshCountdown(prev => {
+                if (prev <= 1000) {
+                    fetchExecutions();
+                    return refreshInterval;
+                }
+                return prev - 1000;
+            });
+        }, 1000);
+
+        return () => clearInterval(countdownTimer);
+    }, [refreshInterval, search, offset, limit]);
 
     function handleUpdateSearch(term) {
         setSearch(term);
@@ -151,6 +170,26 @@ export default function Executions() {
             <div className={"header"}>Executions</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
+
+            <div className="exec-refresh-bar">
+                <div className="exec-refresh-bar-label">Auto-refresh</div>
+                <div className="exec-refresh-options">
+                    {REFRESH_OPTIONS.map(opt => (
+                        <button
+                            key={opt.value}
+                            className={`exec-refresh-option ${refreshInterval === opt.value ? 'exec-refresh-option--active' : ''}`}
+                            onClick={() => setRefreshInterval(opt.value)}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+                {refreshInterval > 0 && (
+                    <div className="exec-refresh-countdown">
+                        {Math.ceil(refreshCountdown / 1000)}s
+                    </div>
+                )}
+            </div>
 
             {isLoading && (
                 <div className={"loading-container"}>
