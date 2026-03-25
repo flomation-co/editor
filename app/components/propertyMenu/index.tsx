@@ -137,6 +137,13 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 </div>
                                 {props.node.data.config.inputs && (
                                     props.node.data.config.inputs.map(i => {
+                                        // Conditional visibility via visible_when
+                                        if (i.visible_when) {
+                                            const refInput = props.node.data.config.inputs.find((x: any) => x.name === i.visible_when.field);
+                                            const refValue = refInput?.value ?? '';
+                                            if (!i.visible_when.values.includes(refValue)) return null;
+                                        }
+
                                         if (i.options && i.options.length > 0) {
                                             return (
                                                 <SelectProperty

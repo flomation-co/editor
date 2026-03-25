@@ -637,12 +637,19 @@ export function Editor(props : EditorProps) {
     const hasValidationErrors = useMemo(() => {
         const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.'];
 
+        const isInputVisible = (input: any, allInputs: any[]) => {
+            if (!input.visible_when) return true;
+            const ref = allInputs.find((x: any) => x.name === input.visible_when.field);
+            const refValue = ref?.value ?? '';
+            return input.visible_when.values.includes(refValue);
+        };
+
         return nodes.some((node: any) => {
             const inputs = node.data?.config?.inputs;
             if (!inputs) return false;
 
-            // Check required fields
-            const hasRequiredEmpty = inputs.some((i: any) => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
+            // Check required fields (only visible ones)
+            const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
             if (hasRequiredEmpty) return true;
 
             // Check for invalid variable substitutions
@@ -658,6 +665,7 @@ export function Editor(props : EditorProps) {
             }
 
             return inputs.some((i: any) => {
+                if (!isInputVisible(i, inputs)) return false;
                 if (typeof i.value !== 'string') return false;
                 const refs = i.value.match(/\$\{([^{}]+)\}/g);
                 if (!refs) return false;
