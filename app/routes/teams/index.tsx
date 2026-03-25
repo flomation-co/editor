@@ -164,7 +164,7 @@ export default function Groups() {
                 <div className={"header"}>Teams</div>
                 <div className={"groups-section"}>
                     <p className={"groups-description"}>
-                        Switch to an organisation to manage permission groups.
+                        Switch to an organisation to manage teams.
                     </p>
                 </div>
             </Container>
