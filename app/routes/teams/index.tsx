@@ -9,6 +9,8 @@ import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronDown, faChevronRight, faCheck, faPlus, faTrash, faXmark} from "@fortawesome/pro-solid-svg-icons";
+import Modal from "~/components/modal";
+import {toast} from "react-toastify";
 import "./index.css";
 
 export function meta({}: Route.MetaArgs) {
@@ -29,6 +31,7 @@ export default function Groups() {
     const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
     const [orgMembers, setOrgMembers] = useState<OrganisationMember[]>([]);
     const [selectedMemberId, setSelectedMemberId] = useState("");
+    const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<string | null>(null);
 
     const API_URL = config("AUTOMATE_API_URL");
 
@@ -93,9 +96,10 @@ export default function Groups() {
         })
             .then(() => {
                 if (expandedGroupId === groupId) setExpandedGroupId(null);
+                toast.success("Group deleted");
                 fetchGroups();
             })
-            .catch(err => console.error("Unable to delete group", err));
+            .catch(err => { console.error("Unable to delete group", err); toast.error("Failed to delete group"); });
     };
 
     const togglePermission = (group: Group, perm: string) => {
@@ -301,7 +305,7 @@ export default function Groups() {
                                                 Auto-assign new members to this group
                                             </label>
                                             <div style={{ flex: 1 }} />
-                                            <button className={"group-action-button danger"} onClick={() => deleteGroup(group.id)}>
+                                            <button className={"group-action-button danger"} onClick={() => setConfirmDeleteGroupId(group.id)}>
                                                 <FontAwesomeIcon icon={faTrash} /> Delete Group
                                             </button>
                                         </div>
@@ -312,6 +316,24 @@ export default function Groups() {
                     })}
                 </div>
             </div>
+
+            {confirmDeleteGroupId && (
+                <Modal
+                    label="Delete Group"
+                    footerMessage="This action cannot be undone"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setConfirmDeleteGroupId(null)}
+                    actions={[{
+                        label: "Delete",
+                        primary: false,
+                        variant: 'danger',
+                        onClick: () => { deleteGroup(confirmDeleteGroupId); setConfirmDeleteGroupId(null); },
+                    }]}
+                >
+                    Are you sure you want to delete this group? All members and permissions will be removed.
+                </Modal>
+            )}
         </Container>
     );
 }
