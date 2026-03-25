@@ -307,6 +307,26 @@ const VariableInput = (props: VariableInputProps) => {
 
     const InputElement = props.multiline ? "textarea" : "input";
 
+    const secretWarning = useMemo(() => {
+        if (!value || value.includes('${secrets.') || value.includes('${secret.')) return null;
+        const patterns = [
+            /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,          // Stripe/API keys
+            /^(ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/,  // GitHub tokens
+            /^xox[bpsa]-[a-zA-Z0-9-]+/,                  // Slack tokens
+            /^AKIA[A-Z0-9]{16}/,                          // AWS access keys
+            /^eyJ[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]+/,   // JWT tokens
+            /^glpat-[a-zA-Z0-9_-]{20,}/,                 // GitLab tokens
+            /^[a-f0-9]{40,64}$/,                          // Long hex strings (API keys/hashes)
+            /^-----BEGIN (RSA |EC )?PRIVATE KEY/,          // Private keys
+        ];
+        const trimmed = value.trim();
+        if (trimmed.length < 20) return null;
+        for (const p of patterns) {
+            if (p.test(trimmed)) return "This value looks like a secret or API key. Consider using ${secrets.name} instead.";
+        }
+        return null;
+    }, [value]);
+
     return (
         <div className="variable-input-container" ref={containerRef}>
             <div
@@ -329,6 +349,11 @@ const VariableInput = (props: VariableInputProps) => {
                 onClick={handleClick}
                 type={props.multiline ? undefined : "text"}
             />
+            {secretWarning && (
+                <div className="variable-secret-warning">
+                    &#x26A0; {secretWarning}
+                </div>
+            )}
             {autocomplete.visible && filteredVariables.length > 0 && (
                 <div
                     ref={autocompleteRef}

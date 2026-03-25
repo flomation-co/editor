@@ -247,3 +247,14 @@
     border-color: rgba(139, 0, 222, 0.6);
     color: #d4a3f9;
 }
+
+.variable-secret-warning {
+    font-size: 11px;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-top: 4px;
+    line-height: 1.4;
+}
