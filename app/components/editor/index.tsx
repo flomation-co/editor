@@ -182,8 +182,11 @@ export function Editor(props : EditorProps) {
                         y: response.data ? response.data.y : 0,
                         zoom: response.data ? response.data.scale : 1
                     });
-                    setEdges(response.data.revision ? response.data.revision.data.edges : initialEdges);
-                    setNodes(response.data.revision ? response.data.revision.data.nodes : initialNodes);
+                    const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
+                    const loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    setEdges(loadedEdges);
+                    setNodes(loadedNodes);
+                    lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });
                     setName(response.data ? response.data.name : "Untitled Flo");
                     setEnvironment(response.data ? response.data.environment_id : null);
                     setStatus("Up to date");
@@ -247,11 +250,19 @@ export function Editor(props : EditorProps) {
     }, [ name, viewport, environment ]);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastSavedHashRef = useRef<string>("");
 
     useEffect(() => {
         setNeedsUpdate(true);
 
         if (flo && !dragging) {
+            // Hash current state to avoid saving unchanged revisions
+            const currentHash = JSON.stringify({ nodes, edges });
+            if (currentHash === lastSavedHashRef.current) {
+                setStatus("Up to Date");
+                return;
+            }
+
             setStatus("Updating...");
 
             if (saveTimerRef.current) {
@@ -271,6 +282,7 @@ export function Editor(props : EditorProps) {
                     }
                 })
                     .then(() => {
+                        lastSavedHashRef.current = currentHash;
                         setStatus("Up to Date");
                         // Re-fetch flow to get updated triggers
                         api.get(API_URL + '/api/v1/flo/' + flo.id, {
