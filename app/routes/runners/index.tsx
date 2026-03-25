@@ -5,15 +5,15 @@ import api from "~/lib/api";
 import {useEffect, useState} from "react";
 import type {Runner} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPencil, faSpinner, faShield, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faShieldHalved, faTrash, faPause, faServer, faCopy, faCheck} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
 import SearchBar from "~/components/searchBar";
 import {useSearchParams} from "react-router";
 import dayjs from "dayjs";
-import { faCopy, faPause} from "@fortawesome/pro-solid-svg-icons";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import useCookieToken from "~/components/cookie";
+import "./index.css";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -27,63 +27,48 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Runners() {
     const [ searchParams, setSearchParams ] = useSearchParams();
-
     const controller = new AbortController();
     const token = useCookieToken();
-
     const config = useConfig();
-    let url = config("AUTOMATE_API_URL") + '/api/v1/runner';
+    const url = config("AUTOMATE_API_URL") + '/api/v1/runner';
 
     const [ runners, setRunners ] = useState<Runner[]>();
     const [ loading, setLoading ] = useState<boolean>(true);
-    const [ search, setSearch ] = useState<string>(searchParams.get("search"))
+    const [ search, setSearch ] = useState<string>(searchParams.get("search"));
+    const [ copiedId, setCopiedId ] = useState<string | null>(null);
 
     const queryRunners = () => {
         setLoading(true);
-
         api.get(url, {
             signal: controller.signal,
-            headers: {
-                "Authorization": "Bearer "+ token,
-            }
+            headers: { Authorization: "Bearer " + token }
         })
-            .then(response => {
-                if (response) {
-                    setRunners(response.data)
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-            .finally(() => {
-                setLoading(false);
-            })
-    }
+            .then(response => { if (response) setRunners(response.data); })
+            .catch(error => console.error(error))
+            .finally(() => setLoading(false));
+    };
 
-    useEffect(() => {
-        queryRunners();
-    }, []);
+    useEffect(() => { queryRunners(); }, []);
 
-    function handleUpdateSearch(term) {
+    function handleUpdateSearch(term: string) {
         setSearch(term);
     }
 
-    function formatDate(date) {
-        if (!date) {
-            return "";
-        }
-
+    function formatDate(date?: string) {
+        if (!date) return "";
         return dayjs.utc(date).fromNow();
-        // return date;
     }
 
-    function formatDateString(date) {
-        if (!date) {
-            return "Never Run";
-        }
-
+    function formatDateString(date?: string) {
+        if (!date) return "Never";
         return dayjs.utc(date).local().format("D MMM YYYY H:mm:ss");
     }
+
+    const copyRegCode = (id: string, code: string) => {
+        navigator.clipboard.writeText(code);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
 
     return (
         <Container>
@@ -97,64 +82,59 @@ export default function Runners() {
                 </div>
             )}
 
-            {!loading && runners && (
-                <>
-                    <table className={"flo-table"}>
-                        <thead className={"flo-table-head"}>
-                        <tr>
-                            <th>Name</th>
-                            <th className={"table-column-hide-sm"}>Registration Code</th>
-                            <th className={"table-column-hide-sm"}>IP Address</th>
-                            <th className={"table-column-hide-sm"}>Version</th>
-                            <th className={"table-column-hide-sm"}>Executor</th>
-                            <th className={"table-column-hide-sm"}>Verified</th>
-                            <th className={"table-column-hide-sm"}>Enrolled</th>
-                            <th className={"table-column-hide-sm"}>Last Contact</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {runners && runners?.map((r) => {
-                            return (
-                                <tr key={r.id} className={r.state == "active" ? "flo-table-row" : "flo-table-row disabled-row"}>
-                                    <td>{r.name}</td>
-                                    <td className={"table-column-hide-sm"}>{r.registration_code} <FontAwesomeIcon icon={faCopy}/></td>
-                                    <td className={"table-column-hide-sm"}>{r.ip_address}</td>
-                                    <td className={"table-column-hide-sm"}>{r.version}</td>
-                                    <td className={"table-column-hide-sm"}>{r.executor_version}</td>
-                                    <td className={"table-column-hide-sm"}>{r.verified && (
-                                        <FontAwesomeIcon icon={faShield}/>
-                                    )}</td>
-                                    <td className={"table-column-hide-sm"}>
-                                        <span data-tooltip-id={"tooltip-enrolled-" + r.id} data-tooltip-content={formatDateString(r.enrolled_at)} data-tooltip-place={"bottom"}>
-                                            {formatDate(r.enrolled_at)}
+            {!loading && runners && runners.length === 0 && (
+                <div className="runners-empty">No runners registered</div>
+            )}
+
+            {!loading && runners && runners.length > 0 && (
+                <div className="runners-list">
+                    {runners.map(r => (
+                        <div key={r.id} className={`runner-card ${r.state !== 'active' ? 'runner-card--inactive' : ''}`}>
+                            <div className={`runner-card-indicator runner-card-indicator--${r.state === 'active' ? 'active' : 'inactive'}`} />
+                            <div className="runner-card-info">
+                                <div className="runner-card-name">
+                                    <FontAwesomeIcon icon={faServer} className="runner-card-icon" />
+                                    {r.name || 'Unnamed Runner'}
+                                    {r.verified && (
+                                        <FontAwesomeIcon icon={faShieldHalved} className="runner-card-verified" data-tooltip-id={`verified-${r.id}`} data-tooltip-content="Verified" data-tooltip-place="right" />
+                                    )}
+                                    {r.verified && <Tooltip id={`verified-${r.id}`} />}
+                                </div>
+                                <div className="runner-card-details">
+                                    {r.ip_address && <span>{r.ip_address}</span>}
+                                    {r.version && <span>v{r.version}</span>}
+                                    {r.executor_version && <span>Executor v{r.executor_version}</span>}
+                                </div>
+                                <div className="runner-card-details">
+                                    {r.enrolled_at && (
+                                        <span data-tooltip-id={`enrolled-${r.id}`} data-tooltip-content={formatDateString(r.enrolled_at)} data-tooltip-place="bottom">
+                                            Enrolled {formatDate(r.enrolled_at)}
                                         </span>
-                                        <Tooltip id={"tooltip-enrolled-" + r.id} />
-                                    </td>
-                                    <td className={"table-column-hide-sm"}>
-                                        <span data-tooltip-id={"tooltip-contact-" + r.id} data-tooltip-content={formatDateString(r.last_contact_at)} data-tooltip-place={"bottom"}>
-                                            {formatDate(r.last_contact_at)}
+                                    )}
+                                    {r.last_contact_at && (
+                                        <span data-tooltip-id={`contact-${r.id}`} data-tooltip-content={formatDateString(r.last_contact_at)} data-tooltip-place="bottom">
+                                            Last seen {formatDate(r.last_contact_at)}
                                         </span>
-                                        <Tooltip id={"tooltip-contact-" + r.id} />
-                                    </td>
-                                    <td>
-                                        <button disabled={true || r.state != "active"} className={"table-button"}>
-                                            <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
-                                        </button>
-                                        <button disabled={true} className={"table-button"}>
-                                            <FontAwesomeIcon icon={faPause}/> <span>Pause</span>
-                                        </button>
-                                        <button disabled={true} className={"table-button table-button-danger"}>
-                                            <FontAwesomeIcon icon={faTrash}/> <span>Remove</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            )
-                        })}
-                        </tbody>
-                    </table>
-                </>
+                                    )}
+                                    <Tooltip id={`enrolled-${r.id}`} />
+                                    <Tooltip id={`contact-${r.id}`} />
+                                </div>
+                            </div>
+                            <div className="runner-card-meta">
+                                <span className={`runner-card-badge runner-card-badge--${r.state === 'active' ? 'active' : 'inactive'}`}>
+                                    {r.state === 'active' ? 'Active' : 'Inactive'}
+                                </span>
+                                {r.registration_code && (
+                                    <button className="runner-card-copy" onClick={() => copyRegCode(r.id, r.registration_code!)} data-tooltip-id={`copy-${r.id}`} data-tooltip-content="Copy registration code" data-tooltip-place="left">
+                                        <FontAwesomeIcon icon={copiedId === r.id ? faCheck : faCopy} />
+                                        <Tooltip id={`copy-${r.id}`} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             )}
         </Container>
-    )
+    );
 }

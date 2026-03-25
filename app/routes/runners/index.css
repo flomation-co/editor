@@ -1,0 +1,126 @@
+.runners-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 20px;
+}
+
+.runners-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}
+
+.runner-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: background 0.12s ease;
+}
+
+.runner-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.runner-card--inactive {
+    opacity: 0.5;
+}
+
+.runner-card-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.runner-card-indicator--active {
+    background: #4ade80;
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+}
+
+.runner-card-indicator--inactive {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.runner-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.runner-card-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.runner-card-icon {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 13px;
+}
+
+.runner-card-verified {
+    color: #4ade80;
+    font-size: 12px;
+}
+
+.runner-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.runner-card-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.runner-card-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.runner-card-badge--active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+}
+
+.runner-card-badge--inactive {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.runner-card-copy {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.runner-card-copy:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+}

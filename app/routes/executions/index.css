@@ -39,6 +39,11 @@
     animation: refresh-countdown var(--refresh-duration, 5000ms) linear forwards;
 }
 
+/* Hide bar when auto-refresh is off */
+.exec-refresh-options--off::after {
+    display: none;
+}
+
 @keyframes refresh-countdown {
     from { transform: scaleX(1); }
     to { transform: scaleX(0); }

@@ -171,7 +171,7 @@ export default function Executions() {
                 <div className="exec-refresh-bar-label">Auto-refresh</div>
                 <div
                     key={refreshCycle}
-                    className="exec-refresh-options"
+                    className={`exec-refresh-options ${refreshInterval === 0 ? 'exec-refresh-options--off' : ''}`}
                     style={refreshInterval > 0 ? { '--refresh-duration': `${refreshInterval}ms` } as React.CSSProperties : undefined}
                 >
                     {REFRESH_OPTIONS.map(opt => (
