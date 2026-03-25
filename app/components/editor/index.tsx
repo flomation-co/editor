@@ -349,6 +349,21 @@ export function Editor(props : EditorProps) {
         [setEdges],
     );
 
+    const onEdgeDoubleClick = useCallback((event: any, edge: any) => {
+        setEdges((eds: any[]) => eds.map(e => {
+            if (e.id === edge.id) {
+                const isDisabled = e.data?.disabled ?? false;
+                return {
+                    ...e,
+                    animated: !isDisabled ? false : undefined,
+                    style: !isDisabled ? { stroke: 'rgba(255,255,255,0.15)', strokeDasharray: '5 5' } : undefined,
+                    data: { ...e.data, disabled: !isDisabled },
+                };
+            }
+            return e;
+        }));
+    }, [setEdges]);
+
     const onInit = useCallback((rf) => {
         rf.setViewport(viewport);
         setRfInstance(rf);
@@ -748,6 +763,7 @@ export function Editor(props : EditorProps) {
                                         edges={edges}
                                         onNodesChange={onNodesChange}
                                         onEdgesChange={onEdgesChange}
+                                        onEdgeDoubleClick={onEdgeDoubleClick}
                                         onConnect={onConnect}
                                         onInit={onInit}
                                         onMove={() => {debouncedMove()}}
