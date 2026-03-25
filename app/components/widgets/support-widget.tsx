@@ -24,7 +24,7 @@ export default function SupportWidget() {
                     </div>
                 </a>
 
-                <a href={"https://github.com/flomation"} target={"_blank"} rel={"noopener noreferrer"} className="support-card">
+                <a href={"https://github.com/flomation-co"} target={"_blank"} rel={"noopener noreferrer"} className="support-card">
                     <div className="support-card-icon support-card-icon--github">
                         <FontAwesomeIcon icon={faGithub} />
                     </div>
