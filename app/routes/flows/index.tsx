@@ -432,134 +432,97 @@ export default function Flows() {
                     )}
 
                     {flos && flos.length > 0 && (
-                        <>
-                            <table className={"flo-table"} style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
-                                <thead className={"flo-table-head"}>
-                                <tr>
-                                    <th className="flo-checkbox-col">
-                                        <label className="flo-checkbox">
-                                            <input type="checkbox" checked={flos !== undefined && flos.length > 0 && selectedFlows.size === flos.length} onChange={toggleSelectAll} />
-                                            <span className="flo-checkbox-box" />
-                                        </label>
-                                    </th>
-                                    <th>Name</th>
-                                    <th className={"table-column-hide-sm"}>Environment</th>
-                                    <th className={"table-column-hide-sm"}>Status</th>
-                                    <th className={"table-column-hide-sm"}>Last Run</th>
-                                    <th className={"table-column-hide-sm"}>Duration</th>
-                                    <th className={"table-column-hide-sm"}>Executions</th>
-                                    <th className={"table-column-center"}>
-                                        <span className={"table-column-hide-sm"}>Actions</span>
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                        {flos?.map((flo, index) => {
-                                            return (
-                                                <tr key={flo.id} className={"flo-table-row"}>
-                                                    <td className="flo-checkbox-col">
-                                                        <label className="flo-checkbox">
-                                                            <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
-                                                            <span className="flo-checkbox-box" />
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <span className={"fav-toggle"} onClick={(e) => { e.stopPropagation(); toggleFavourite(flo.id); }}>
-                                                            <FontAwesomeIcon icon={favourites.has(flo.id) ? faStarSolid : faStarOutline} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
-                                                        </span>
-                                                        <Link to={"/flo/" + flo.id}>
-                                                            {flo.name}
-                                                        </Link>
-                                                        {flo.has_validation_errors && (
-                                                            <>
-                                                                <FontAwesomeIcon icon={faTriangleExclamation} style={{color: '#e6a817', marginLeft: '6px'}} data-tooltip-id={"validation-" + flo.id} data-tooltip-content={"Required fields are incomplete"} data-tooltip-place={"bottom"} />
-                                                                <Tooltip id={"validation-" + flo.id} />
-                                                            </>
-                                                        )}
-                                                        <span className={"flo-table-subtext table-column-hide-sm"}>{flo.id}</span>
-                                                    </td>
-                                                    <td className={"table-column-hide-sm"}>
-                                                        {flo.environment_id && (
-                                                            <Link to={"/environment/" + flo.environment_id}>
-                                                                <span className={"environment-label"}>{flo.environment_name}</span>
-                                                            </Link>
-                                                        )}
-                                                    </td>
-                                                    <td className={"table-column-hide-sm"}>
-                                                        {flo.recent_executions && flo.recent_executions.length > 0 && (
-                                                            <div className="flo-recent-dots">
-                                                                {flo.recent_executions.map((exec, i) => (
-                                                                    <Link key={exec.id} to={"/execution/" + exec.id} className={`flo-dot flo-dot--${exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status}`} data-tooltip-id={`dot-${flo.id}-${i}`} data-tooltip-content={exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status} data-tooltip-place="bottom" />
-                                                                ))}
-                                                                {flo.recent_executions.map((exec, i) => (
-                                                                    <Tooltip key={`tip-${i}`} id={`dot-${flo.id}-${i}`} />
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                    <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                        {flo.last_execution ? (
-                                                            <Link to={"/execution/" + flo.last_execution.id} data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place={"bottom"}>
-                                                                {formatDate(flo.last_run)}
-                                                            </Link>
-                                                        ) : (
-                                                            <span data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place={"bottom"}>
-                                                                {formatDate(flo.last_run)}
-                                                            </span>
-                                                        )}
-                                                        <Tooltip id={"tooltip-time-" + flo.id} />
-                                                    </td>
-                                                    <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                        {friendlyDuration(flo.last_execution?.duration)}
-                                                    </td>
-                                                    <td className={"table-column-hide-sm flo-table-subdued"}>{flo.execution_count > 0 && (
-                                                        <>{flo.execution_count}</>
-                                                    )}</td>
-                                                    <td>
-                                                        <div className="flo-actions-cell">
-                                                            <button
-                                                                className="flo-run-btn"
-                                                                disabled={flo.has_validation_errors}
-                                                                onClick={() => { if (!flo.has_validation_errors) triggerFlo(flo.id, 'default'); }}
-                                                                data-tooltip-id={"trigger-" + flo.id}
-                                                                data-tooltip-content={flo.has_validation_errors ? "Complete all required fields before executing" : "Execute Default Trigger"}
-                                                                data-tooltip-place="bottom"
-                                                            >
-                                                                {flo.triggers && flo.triggers.length > 0 && flo.triggers.some(e => e.name === "Default Trigger") && (
-                                                                    currentTrigger == flo.id
-                                                                        ? <><FontAwesomeIcon icon={faSpinner} spin /> Run</>
-                                                                        : <><FontAwesomeIcon icon={faPlay} /> Run</>
-                                                                )}
-                                                            </button>
-                                                            <Tooltip id={"trigger-" + flo.id} />
+                        <div className="flow-cards" style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
+                            {flos.map(flo => (
+                                <div key={flo.id} className="flow-card">
+                                    <label className="flo-checkbox flow-card-checkbox" onClick={e => e.stopPropagation()}>
+                                        <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
+                                        <span className="flo-checkbox-box" />
+                                    </label>
 
-                                                            <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
-                                                                <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
-                                                                    <FontAwesomeIcon icon={faEllipsisVertical} />
-                                                                </button>
-                                                                {openMenuId === flo.id && (
-                                                                    <div className="flo-more-dropdown">
-                                                                        <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
-                                                                            <FontAwesomeIcon icon={faPencil} /> Edit
-                                                                        </Link>
-                                                                        <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
-                                                                            <FontAwesomeIcon icon={faFileExport} /> Export
-                                                                        </button>
-                                                                        <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
-                                                                            <FontAwesomeIcon icon={faTrash} /> Delete
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                        </tbody>
-                                    </table>
+                                    <div className="flow-card-body" onClick={() => navigate("/flo/" + flo.id)}>
+                                        <div className="flow-card-header">
+                                            <span className="fav-toggle" onClick={e => { e.stopPropagation(); toggleFavourite(flo.id); }}>
+                                                <FontAwesomeIcon icon={favourites.has(flo.id) ? faStarSolid : faStarOutline} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
+                                            </span>
+                                            <span className="flow-card-name">{flo.name}</span>
+                                            {flo.has_validation_errors && (
+                                                <>
+                                                    <FontAwesomeIcon icon={faTriangleExclamation} className="flow-card-warning" data-tooltip-id={"validation-" + flo.id} data-tooltip-content="Required fields are incomplete" data-tooltip-place="right" />
+                                                    <Tooltip id={"validation-" + flo.id} />
+                                                </>
+                                            )}
+                                            {flo.environment_id && (
+                                                <span className="environment-label" onClick={e => e.stopPropagation()}><Link to={"/environment/" + flo.environment_id}>{flo.environment_name}</Link></span>
+                                            )}
+                                        </div>
+
+                                        <div className="flow-card-meta">
+                                            {flo.recent_executions && flo.recent_executions.length > 0 && (
+                                                <div className="flo-recent-dots" onClick={e => e.stopPropagation()}>
+                                                    {flo.recent_executions.map((exec, i) => (
+                                                        <Link key={exec.id} to={"/execution/" + exec.id} className={`flo-dot flo-dot--${exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status}`} data-tooltip-id={`dot-${flo.id}-${i}`} data-tooltip-content={exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status} data-tooltip-place="bottom" />
+                                                    ))}
+                                                    {flo.recent_executions.map((exec, i) => (
+                                                        <Tooltip key={`tip-${i}`} id={`dot-${flo.id}-${i}`} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {flo.last_run && (
+                                                <span className="flow-card-detail" data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place="bottom">
+                                                    {formatDate(flo.last_run)}
+                                                </span>
+                                            )}
+                                            <Tooltip id={"tooltip-time-" + flo.id} />
+                                            {flo.last_execution?.duration && (
+                                                <span className="flow-card-detail">{friendlyDuration(flo.last_execution.duration)}</span>
+                                            )}
+                                            {flo.execution_count > 0 && (
+                                                <span className="flow-card-detail">{flo.execution_count} run{flo.execution_count !== 1 ? 's' : ''}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flow-card-actions" onClick={e => e.stopPropagation()}>
+                                        <button
+                                            className="flo-run-btn"
+                                            disabled={flo.has_validation_errors}
+                                            onClick={() => { if (!flo.has_validation_errors) triggerFlo(flo.id, 'default'); }}
+                                            data-tooltip-id={"trigger-" + flo.id}
+                                            data-tooltip-content={flo.has_validation_errors ? "Complete all required fields" : "Run"}
+                                            data-tooltip-place="bottom"
+                                        >
+                                            {flo.triggers?.some(e => e.name === "Default Trigger") && (
+                                                currentTrigger == flo.id
+                                                    ? <FontAwesomeIcon icon={faSpinner} spin />
+                                                    : <FontAwesomeIcon icon={faPlay} />
+                                            )}
+                                        </button>
+                                        <Tooltip id={"trigger-" + flo.id} />
+
+                                        <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
+                                            <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
+                                                <FontAwesomeIcon icon={faEllipsisVertical} />
+                                            </button>
+                                            {openMenuId === flo.id && (
+                                                <div className="flo-more-dropdown">
+                                                    <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
+                                                        <FontAwesomeIcon icon={faPencil} /> Edit
+                                                    </Link>
+                                                    <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
+                                                        <FontAwesomeIcon icon={faFileExport} /> Export
+                                                    </button>
+                                                    <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
+                                                        <FontAwesomeIcon icon={faTrash} /> Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                             <PaginationControls onPageChange={handlePageChange} disableRightPagination={disableRightPagination} totalCount={totalFloCount}/>
-                        </>
+                        </div>
                     )}
                 </>
             </>
