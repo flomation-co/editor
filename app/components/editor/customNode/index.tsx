@@ -46,7 +46,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
         : (NODE_COLOURS[type] ?? NODE_COLOURS[2]);
     const nodeClass = isErrorNode ? 'flo-node flo-node--error' : (NODE_CLASS_MAP[type] ?? NODE_CLASS_MAP[2]);
     const isTrigger = type === 1;
-    const hasInputs = !isTrigger;
+    const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     const hasIncompleteRequired = useMemo(() => {
