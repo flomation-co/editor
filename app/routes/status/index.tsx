@@ -50,12 +50,7 @@ export default function Status() {
                     const controller = new AbortController();
                     const timeout = setTimeout(() => controller.abort(), 5000);
 
-                    let endpoint = svc.url;
-                    if (svc.name === "Identity (Sentinel)") {
-                        endpoint += "/health";
-                    } else {
-                        endpoint += "/version";
-                    }
+                    let endpoint = svc.url + "/version";
 
                     const res = await fetch(endpoint, { signal: controller.signal });
                     clearTimeout(timeout);

@@ -201,7 +201,7 @@ export default function Executions() {
                                     <th>Name</th>
                                     <th className={"table-column-hide-sm"}>Execution #</th>
                                     <th className={"table-column-hide-sm"}>Started</th>
-                                    <th className={"table-column-hide-sm"}>Location</th>
+                                    <th className={"table-column-hide-sm"}>Trigger</th>
                                     <th className={"table-column-hide-sm"}>Status</th>
                                     <th className={"table-column-hide-sm"}>Duration</th>
                                     {/*<th className={"table-column-hide-sm"}>Allocation</th>*/}
@@ -224,7 +224,7 @@ export default function Executions() {
                                                     <Tooltip id={"tooltip-time-" + exec.id} />
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    <ReactCountryFlag countryCode={"gb"} />
+                                                    {exec.trigger_type ? exec.trigger_type.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—'}
                                                 </td>
                                                 <td className={"table-column-hide-sm"}>
                                                     <Link to={{pathname: "/execution/" + exec.id}}>

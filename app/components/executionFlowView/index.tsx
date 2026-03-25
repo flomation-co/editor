@@ -104,7 +104,8 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 nodes={nodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
-                defaultViewport={defaultViewport}
+                fitView
+                fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}
                 nodesDraggable={false}
                 nodesConnectable={false}
                 elementsSelectable={false}

@@ -1,5 +1,6 @@
 import {HorizontalNav} from "~/components/nav/horizontal";
 import {VerticalNav} from "~/components/nav/vertical";
+import FeedbackButton from "~/components/feedback";
 import {useState} from "react";
 
 type ContainerProps = {
@@ -36,6 +37,7 @@ export default function Container(props: ContainerProps) {
                     )}
                 </div>
             </div>
+            <FeedbackButton />
         </div>
     )
 }

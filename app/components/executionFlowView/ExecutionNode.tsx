@@ -12,7 +12,7 @@ library.add(fab, fas);
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   iconColour: '#00aa9c' },
     2: { bg: '#8b00de', bgAlpha: 'rgba(70,0,112,0.3)',     glow: 'rgba(139,0,222,0.35)',   iconColour: '#b49eed' },
-    3: { bg: '#e8604c', bgAlpha: 'rgba(232,96,76,0.15)',    glow: 'rgba(232,96,76,0.35)',   iconColour: '#e8604c' },
+    3: { bg: '#f59e0b', bgAlpha: 'rgba(245,158,11,0.15)',   glow: 'rgba(245,158,11,0.35)',  iconColour: '#fbbf24' },
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', iconColour: '#efd467' },
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', iconColour: '#b967ef' },
 };
@@ -56,7 +56,8 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
     const nodeStatus = data?.nodeStatusData ?? null;
     const isTrigger = type === 1;
     const isConditional = type === 4;
-    const hasInputs = !isTrigger && data?.config?.inputs && data.config.inputs.length > 0;
+    const isErrorNode = data?.label?.startsWith('error/') || data?.config?.plugin?.startsWith('error/');
+    const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     const statusClass = `exec-node exec-node--${status}${isConditional ? ' exec-node--conditional' : ''}`;
@@ -110,8 +111,10 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     {data.config?.label || data.config?.name || ''}
                 </span>
 
-                {type !== 4 && type !== 5 && hasOutputs && (
-                    <Handle type="source" position={Position.Right} />
+                {type !== 4 && type !== 5 && (
+                    <Handle type="source" position={Position.Right}
+                        {...(type === 3 ? { id: "input" } : {})}
+                    />
                 )}
 
                 {type === 4 && hasOutputs && (
