@@ -54,6 +54,7 @@ export default function Executions() {
     ];
     const [ refreshInterval, setRefreshInterval ] = useState<number>(5000);
     const [ refreshCountdown, setRefreshCountdown ] = useState<number>(0);
+    const [ refreshSnap, setRefreshSnap ] = useState<boolean>(false);
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -112,11 +113,16 @@ export default function Executions() {
     useEffect(() => {
         if (refreshInterval === 0) return;
 
+        setRefreshSnap(true);
         setRefreshCountdown(refreshInterval);
+        requestAnimationFrame(() => requestAnimationFrame(() => setRefreshSnap(false)));
+
         const countdownTimer = setInterval(() => {
             setRefreshCountdown(prev => {
                 if (prev <= 1000) {
                     fetchExecutions();
+                    setRefreshSnap(true);
+                    requestAnimationFrame(() => requestAnimationFrame(() => setRefreshSnap(false)));
                     return refreshInterval;
                 }
                 return prev - 1000;
@@ -173,7 +179,10 @@ export default function Executions() {
 
             <div className="exec-refresh-bar">
                 <div className="exec-refresh-bar-label">Auto-refresh</div>
-                <div className="exec-refresh-options">
+                <div
+                    className={`exec-refresh-options ${refreshSnap ? 'exec-refresh-options--snap' : ''}`}
+                    style={refreshInterval > 0 ? { '--refresh-progress': `${(refreshCountdown / refreshInterval) * 100}%` } as React.CSSProperties : undefined}
+                >
                     {REFRESH_OPTIONS.map(opt => (
                         <button
                             key={opt.value}
@@ -184,11 +193,6 @@ export default function Executions() {
                         </button>
                     ))}
                 </div>
-                {refreshInterval > 0 && (
-                    <div className="exec-refresh-countdown">
-                        {Math.ceil(refreshCountdown / 1000)}s
-                    </div>
-                )}
             </div>
 
             {isLoading && (

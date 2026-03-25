@@ -175,8 +175,8 @@ export default function Organisations() {
                     {members.map(member => (
                         <div key={member.user_id} className={"org-member-row"}>
                             <div className={"org-member-name"}>
-                                {member.name}
-                                {member.email_address && (
+                                <span>{member.name && member.name !== "auto-generate" ? member.name : (member.email_address || "Unknown User")}</span>
+                                {member.email_address && member.name && member.name !== "auto-generate" && (
                                     <span className={"org-member-email"}>{member.email_address}</span>
                                 )}
                             </div>

@@ -67,13 +67,17 @@ export function HorizontalNav(props: HorizontalProps) {
                                 <span className={"org-switcher-role"}>{org.role}</span>
                             </div>
                         ))}
-                        <div className={"org-switcher-divider"} />
-                        <div
-                            className={"org-switcher-item org-switcher-item--create"}
-                            onClick={() => { setShowOrgMenu(false); navigate("/organisation"); }}
-                        >
-                            <span>Create New Organisation...</span>
-                        </div>
+                        {!isOrgMode && (
+                            <>
+                                <div className={"org-switcher-divider"} />
+                                <div
+                                    className={"org-switcher-item org-switcher-item--create"}
+                                    onClick={() => { setShowOrgMenu(false); navigate("/organisation"); }}
+                                >
+                                    <span>Create New Organisation...</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
