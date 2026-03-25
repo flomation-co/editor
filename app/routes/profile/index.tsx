@@ -6,10 +6,13 @@ import type {AuthUser} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {useToast} from "~/components/toast";
+import {toast} from "react-toastify";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faShieldHalved, faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
+import "./index.css";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -17,96 +20,101 @@ dayjs.extend(utc);
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Flomation - Profile" },
-        { name: "description", content: "Get in the Flo" },
+        { name: "description", content: "Manage your profile" },
     ];
 }
 
 export default function Profile() {
     const config = useConfig();
-
     const auth = useAuth();
     const token = useCookieToken();
-    const { showToast } = useToast();
 
-    const [ user, setUser ] = useState<AuthUser | null>()
-    const [ name, setName ] = useState<string | null>();
+    const [ user, setUser ] = useState<AuthUser | null>();
+    const [ name, setName ] = useState<string>("");
 
-    useEffect(() => {
-        setUser(auth.user);
-    }, [ auth ]);
-
-    useEffect(() => {
-        setName(user?.name);
-    }, [ user ]);
-
-    const onNameChange = (e) => {
-        setName(e.target.value);
-    }
-
-    const onEmailChange = (e) => {
-        console.log("Email", e.target.value);
-    }
+    useEffect(() => { setUser(auth.user); }, [ auth ]);
+    useEffect(() => { setName(user?.name || ""); }, [ user ]);
 
     const openMFA = () => {
-        const mfaManageURL = config("LOGIN_URL") + "/mfa";
-        window.location.replace(mfaManageURL)
-    }
+        window.location.replace(config("LOGIN_URL") + "/mfa");
+    };
 
     const saveProfile = () => {
+        if (!user) return;
         const url = config("AUTOMATE_API_URL");
-
-        let updatedUser = structuredClone(user);
-        if (!updatedUser) {
-            return;
-        }
-
-        updatedUser.name = name ? name : "";
+        const updatedUser = { ...user, name: name || "" };
 
         api.post(url + '/api/v1/user/' + updatedUser.id, updatedUser, {
-            headers: {
-                'Content-Type': 'application/json',
-                "Authorization": "Bearer " + token,
-            }
+            headers: { 'Content-Type': 'application/json', Authorization: "Bearer " + token }
         })
             .then(response => {
                 if (response) {
                     auth.setUser(response.data);
-                    showToast("Profile saved successfully");
+                    toast.success("Profile saved");
                 }
             })
-            .catch(error => {
-                console.error(error);
-                showToast("Failed to save profile", "error");
-            })
-    }
+            .catch(() => toast.error("Failed to save profile"));
+    };
 
     return (
         <Container>
             <div className={"header"}>Profile</div>
 
-            <div className={"form-container"}>
-                <div className={"form-inner-container"}>
-                    <div className={"form-row"} >
-                        <div className={"form-input-name"} >Display Name</div>
-                        <input type={"text"} id={"display_name"} placeholder={"Display Name"} value={name ? name : ""} onChange={onNameChange}/>
-                    </div>
-                    <div className={"form-row"} >
-                        <div className={"form-input-name"} >Email Address</div>
-                        <input type={"email"} id={"email_address"} disabled={true} placeholder={"Email Address"} value={user?.email_address ? user.email_address : ""} onChange={onEmailChange}/>
+            <div className="profile-page">
+                <div className="profile-card">
+                    <div className="profile-section-label">Account Details</div>
+
+                    <div className="profile-field">
+                        <label className="profile-label">Display Name</label>
+                        <input
+                            type="text"
+                            className="profile-input"
+                            placeholder="Display Name"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                        />
                     </div>
 
-                    <div className={"form-row"} >
-                        <div className={"flo-table-subtext"}>Registered {dayjs.utc(user?.created_at).fromNow()}</div>
+                    <div className="profile-field">
+                        <label className="profile-label">Email Address</label>
+                        <input
+                            type="email"
+                            className="profile-input profile-input--disabled"
+                            disabled
+                            placeholder="Email Address"
+                            value={user?.email_address || ""}
+                        />
                     </div>
-                    <div className={"form-row"} >
-                        <input type={"submit"} value={"Manage MFA"} disabled={!user} style={{cursor: user ? "pointer" : "not-allowed"}} onClick={openMFA}/>
+
+                    {user?.created_at && (
+                        <div className="profile-meta">
+                            Registered {dayjs.utc(user.created_at).fromNow()}
+                        </div>
+                    )}
+
+                    <div className="profile-actions">
+                        <button className="profile-btn profile-btn--primary" onClick={saveProfile} disabled={!user}>
+                            <FontAwesomeIcon icon={faFloppyDisk} /> Save
+                        </button>
                     </div>
-                    <div className={"form-row"} >
-                        <div className={`form-input-name`} ></div>
-                        <input type={"submit"} value={"Save"} disabled={!user} style={{cursor: user ? "pointer" : "not-allowed"}} onClick={saveProfile}/>
+                </div>
+
+                <div className="profile-card">
+                    <div className="profile-section-label">Security</div>
+
+                    <div className="profile-field">
+                        <div className="profile-security-row">
+                            <div className="profile-security-info">
+                                <div className="profile-security-title">Multi-Factor Authentication</div>
+                                <div className="profile-security-desc">Add an extra layer of security to your account with TOTP-based MFA</div>
+                            </div>
+                            <button className="profile-btn profile-btn--secondary" onClick={openMFA} disabled={!user}>
+                                <FontAwesomeIcon icon={faShieldHalved} /> Manage MFA
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </Container>
-    )
+    );
 }
