@@ -136,11 +136,13 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     </>
                 )}
 
-                {/* Loop (type 5): Bottom + Right handles */}
+                {/* Loop (type 5): Bottom = loop body, Right = done/exit */}
                 {type === 5 && hasOutputs && (
                     <>
                         <Handle type="source" position={Position.Bottom} id="loop" />
                         <Handle type="source" position={Position.Right} id="output" />
+                        <span className="loop-label loop-label--body">Loop</span>
+                        <span className="loop-label loop-label--done">Done</span>
                     </>
                 )}
             </div>
