@@ -26,21 +26,22 @@
     overflow: hidden;
 }
 
-/* Progress bar across the bottom of the whole selector */
+/* Progress bar: starts full, shrinks to zero over the interval */
 .exec-refresh-options::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     height: 2px;
-    width: var(--refresh-progress, 0%);
+    width: 100%;
     background: rgba(139, 92, 246, 0.5);
-    transition: width 0.9s linear;
+    transform-origin: left;
+    animation: refresh-countdown var(--refresh-duration, 5000ms) linear forwards;
 }
 
-/* Snap to full width instantly on reset */
-.exec-refresh-options--snap::after {
-    transition: none;
+@keyframes refresh-countdown {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }
 
 .exec-refresh-option {

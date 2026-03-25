@@ -53,8 +53,7 @@ export default function Executions() {
         { label: "Off", value: 0 },
     ];
     const [ refreshInterval, setRefreshInterval ] = useState<number>(5000);
-    const [ refreshCountdown, setRefreshCountdown ] = useState<number>(0);
-    const [ refreshSnap, setRefreshSnap ] = useState<boolean>(false);
+    const [ refreshCycle, setRefreshCycle ] = useState<number>(0);
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -113,24 +112,14 @@ export default function Executions() {
     useEffect(() => {
         if (refreshInterval === 0) return;
 
-        setRefreshSnap(true);
-        setRefreshCountdown(refreshInterval);
-        setTimeout(() => setRefreshSnap(false), 50);
+        setRefreshCycle(c => c + 1);
 
-        const countdownTimer = setInterval(() => {
-            setRefreshCountdown(prev => {
-                const next = prev - 1000;
-                if (next <= 0) {
-                    fetchExecutions();
-                    setRefreshSnap(true);
-                    setTimeout(() => setRefreshSnap(false), 50);
-                    return refreshInterval;
-                }
-                return next;
-            });
-        }, 1000);
+        const timer = setInterval(() => {
+            fetchExecutions();
+            setRefreshCycle(c => c + 1);
+        }, refreshInterval);
 
-        return () => clearInterval(countdownTimer);
+        return () => clearInterval(timer);
     }, [refreshInterval, search, offset, limit]);
 
     function handleUpdateSearch(term) {
@@ -181,8 +170,9 @@ export default function Executions() {
             <div className="exec-refresh-bar">
                 <div className="exec-refresh-bar-label">Auto-refresh</div>
                 <div
-                    className={`exec-refresh-options ${refreshSnap ? 'exec-refresh-options--snap' : ''}`}
-                    style={refreshInterval > 0 ? { '--refresh-progress': `${(refreshCountdown / refreshInterval) * 100}%` } as React.CSSProperties : undefined}
+                    key={refreshCycle}
+                    className="exec-refresh-options"
+                    style={refreshInterval > 0 ? { '--refresh-duration': `${refreshInterval}ms` } as React.CSSProperties : undefined}
                 >
                     {REFRESH_OPTIONS.map(opt => (
                         <button
