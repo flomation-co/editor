@@ -15,8 +15,8 @@ import "./index.css";
 
 export function meta({}: Route.MetaArgs) {
     return [
-        { title: "Flomation - Groups" },
-        { name: "description", content: "Manage permission groups" },
+        { title: "Flomation - Teams" },
+        { name: "description", content: "Manage permission teams" },
     ];
 }
 
@@ -96,10 +96,10 @@ export default function Groups() {
         })
             .then(() => {
                 if (expandedGroupId === groupId) setExpandedGroupId(null);
-                toast.success("Group deleted");
+                toast.success("Team deleted");
                 fetchGroups();
             })
-            .catch(err => { console.error("Unable to delete group", err); toast.error("Failed to delete group"); });
+            .catch(err => { console.error("Unable to delete group", err); toast.error("Failed to delete team"); });
     };
 
     const togglePermission = (group: Group, perm: string) => {
@@ -161,7 +161,7 @@ export default function Groups() {
     if (!currentOrg) {
         return (
             <Container>
-                <div className={"header"}>Groups</div>
+                <div className={"header"}>Teams</div>
                 <div className={"groups-section"}>
                     <p className={"groups-description"}>
                         Switch to an organisation to manage permission groups.
@@ -178,29 +178,29 @@ export default function Groups() {
 
     return (
         <Container>
-            <div className={"header"}>Groups</div>
+            <div className={"header"}>Teams</div>
 
             <div className={"groups-section"}>
                 <p className={"groups-description"}>
-                    Create groups to control what members can do within your organisation. Assign permissions and add members to each group.
+                    Create teams to control what members can do within your organisation. Assign permissions and add members to each team.
                 </p>
 
                 <div className={"groups-create-form"}>
                     <input
                         type="text"
-                        placeholder="New group name"
+                        placeholder="New team name"
                         value={newGroupName}
                         onChange={e => setNewGroupName(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && createGroup()}
                     />
                     <button onClick={createGroup} disabled={!newGroupName.trim()}>
-                        <FontAwesomeIcon icon={faPlus} /> Create Group
+                        <FontAwesomeIcon icon={faPlus} /> Create Team
                     </button>
                 </div>
             </div>
 
             <div className={"groups-section"}>
-                <div className={"groups-section-header"}>Permission Groups</div>
+                <div className={"groups-section-header"}>Permission Teams</div>
 
                 {groups.length === 0 && (
                     <div className={"groups-empty"}>
@@ -302,11 +302,11 @@ export default function Groups() {
                                                     checked={group.is_default}
                                                     onChange={() => toggleDefault(group)}
                                                 />
-                                                Auto-assign new members to this group
+                                                Auto-assign new members to this team
                                             </label>
                                             <div style={{ flex: 1 }} />
                                             <button className={"group-action-button danger"} onClick={() => setConfirmDeleteGroupId(group.id)}>
-                                                <FontAwesomeIcon icon={faTrash} /> Delete Group
+                                                <FontAwesomeIcon icon={faTrash} /> Delete Team
                                             </button>
                                         </div>
                                     </div>
@@ -319,7 +319,7 @@ export default function Groups() {
 
             {confirmDeleteGroupId && (
                 <Modal
-                    label="Delete Group"
+                    label="Delete Team"
                     footerMessage="This action cannot be undone"
                     visible={true}
                     canDismiss={true}
@@ -331,7 +331,7 @@ export default function Groups() {
                         onClick: () => { deleteGroup(confirmDeleteGroupId); setConfirmDeleteGroupId(null); },
                     }]}
                 >
-                    Are you sure you want to delete this group? All members and permissions will be removed.
+                    Are you sure you want to delete this team? All members and permissions will be removed.
                 </Modal>
             )}
         </Container>

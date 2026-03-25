@@ -120,7 +120,7 @@ export function VerticalNav(props: VerticalNavProps) {
                                     <NavLink to={"/organisation"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Organisation" data-tooltip-place="right"><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faBriefcase} /></div><span className={"menu-section-list-item-label"}>Organisation</span></NavLink>
                                 )}
                                 {isOrgMode && hasPermission(PERMISSIONS.ORGANISATION_MANAGE) && (
-                                    <NavLink to={"/team"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Groups" data-tooltip-place="right"><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Groups</span></NavLink>
+                                    <NavLink to={"/team"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Teams" data-tooltip-place="right"><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faPeoplePulling} /></div><span className={"menu-section-list-item-label"}>Teams</span></NavLink>
                                 )}
                             </div>
                         </>
