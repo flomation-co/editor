@@ -60,11 +60,15 @@ export default function EnvironmentDetail() {
     }, []);
 
     const updateProperties = () => {
-        api.get(getUrl('/property'), { signal: controller.signal, headers }).then(r => { if (r) setProperties(r.data); }).catch(console.error);
+        api.get(getUrl('/property'), { signal: controller.signal, headers })
+            .then(r => setProperties(Array.isArray(r?.data) ? r.data : []))
+            .catch(() => setProperties([]));
     };
 
     const updateSecrets = () => {
-        api.get(getUrl('/secret'), { signal: controller.signal, headers }).then(r => { if (r) setSecrets(r.data); }).catch(console.error);
+        api.get(getUrl('/secret'), { signal: controller.signal, headers })
+            .then(r => setSecrets(Array.isArray(r?.data) ? r.data : []))
+            .catch(() => setSecrets([]));
     };
 
     const saveProperty = () => {
