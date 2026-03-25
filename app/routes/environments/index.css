@@ -1,0 +1,195 @@
+.env-page {
+    padding: 0 20px;
+}
+
+/* Create button */
+.env-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.1s ease;
+    margin-bottom: 20px;
+}
+
+.env-create-btn:hover {
+    opacity: 0.85;
+}
+
+/* Create form */
+.env-create-form {
+    display: flex;
+    gap: 8px;
+    max-width: 500px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.env-create-form input {
+    flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.env-create-form input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.env-create-form input:focus {
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
+}
+
+.env-create-form-save {
+    height: 38px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, #460070, #6b21a8);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.env-create-form-save:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.env-create-form-cancel {
+    height: 38px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.env-create-form-cancel:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+}
+
+/* Empty state */
+.env-empty {
+    padding: 40px 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}
+
+/* Environment cards */
+.env-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.env-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.env-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.env-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    background: rgba(0, 170, 156, 0.12);
+    color: #2dd4bf;
+    flex-shrink: 0;
+}
+
+.env-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.env-card-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+.env-card-details {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.env-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.env-card-view,
+.env-card-delete {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    text-decoration: none;
+}
+
+.env-card-view:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+}
+
+.env-card-delete:hover {
+    background: rgba(248, 113, 113, 0.08);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.2);
+}
