@@ -539,6 +539,16 @@ export function Editor(props : EditorProps) {
     const allVariables = useMemo<VariableItem[]>(() => {
         const items: VariableItem[] = [...FLOW_VARIABLES, ...envVariables];
 
+        // Add ${var.X} variables from Set Variable nodes in the flow
+        for (const n of nodes as any[]) {
+            if (n.type === 'common/set_variable' || n.data?.label === 'common/set_variable') {
+                const nameInput = n.data?.config?.inputs?.find((i: any) => i.name === 'name');
+                if (nameInput?.value && typeof nameInput.value === 'string' && nameInput.value.trim()) {
+                    items.push({ name: nameInput.value.trim(), category: "var", source: "Variable" });
+                }
+            }
+        }
+
         if (!propertyNode || !plugins) return items;
 
         // Find parent nodes via edges

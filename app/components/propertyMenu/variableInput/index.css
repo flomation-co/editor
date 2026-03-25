@@ -182,6 +182,17 @@
     color: #f59e0b;
 }
 
+.variable-pill--var {
+    background: rgba(45, 212, 191, 0.15);
+    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
+    color: #2dd4bf;
+}
+
+.variable-autocomplete-badge--var {
+    background: rgba(45, 212, 191, 0.2);
+    color: #2dd4bf;
+}
+
 .variable-autocomplete-source {
     color: rgba(255, 255, 255, 0.3);
     font-size: 10px;
