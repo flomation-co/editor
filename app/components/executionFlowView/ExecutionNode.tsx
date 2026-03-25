@@ -111,8 +111,10 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     {data.config?.label || data.config?.name || ''}
                 </span>
 
-                {type !== 4 && type !== 5 && hasOutputs && (
-                    <Handle type="source" position={Position.Right} />
+                {type !== 4 && type !== 5 && (
+                    <Handle type="source" position={Position.Right}
+                        {...(type === 3 ? { id: "input" } : {})}
+                    />
                 )}
 
                 {type === 4 && hasOutputs && (
