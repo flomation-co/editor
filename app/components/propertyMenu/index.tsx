@@ -35,6 +35,7 @@ library.add(fab, fas);
 const PropertyMenu = (props: PropertyMenuProps) => {
     const [ loading, setLoading ] = useState<boolean>(false);
     const [ name, setName ] = useState<string>(props.node && props.node.data && props.node.data.config && props.node.data.config.label ? props.node.data.config.label : "");
+    const [ showHelp, setShowHelp ] = useState<boolean>(false);
 
     const onValueChange = (property: string, value: any) => {
         if (props.onValueChange) {
@@ -91,6 +92,41 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                     <FontAwesomeIcon icon={["fas", "xmark"]} />
                                 </button>
                             </div>
+
+                            {showHelp && (
+                                <div className={"property-menu-help"}>
+                                    {props.node.data.config.description && (
+                                        <div className={"property-menu-help-desc"}>{props.node.data.config.description}</div>
+                                    )}
+                                    {props.node.data.config.inputs?.length > 0 && (
+                                        <div className={"property-menu-help-section"}>
+                                            <div className={"property-menu-help-label"}>Inputs</div>
+                                            {props.node.data.config.inputs.map((i: any) => (
+                                                <div key={i.name} className={"property-menu-help-item"}>
+                                                    <span className={"property-menu-help-name"}>{i.name}</span>
+                                                    <span className={"property-menu-help-type"}>{i.type}</span>
+                                                    {i.required && <span className={"property-menu-help-required"}>required</span>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {props.node.data.config.outputs?.length > 0 && (
+                                        <div className={"property-menu-help-section"}>
+                                            <div className={"property-menu-help-label"}>Outputs</div>
+                                            {props.node.data.config.outputs.map((o: any) => (
+                                                <div key={o.name} className={"property-menu-help-item"}>
+                                                    <span className={"property-menu-help-name"}>{o.name}</span>
+                                                    <span className={"property-menu-help-type"}>{o.type}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {props.node.data.config.author && (
+                                        <div className={"property-menu-help-author"}>By {props.node.data.config.author}</div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className={"property-menu-content"}>
                                 <div className={"property-menu-input-row"} >
                                     <div className={"property-menu-input-name"} >Name</div>

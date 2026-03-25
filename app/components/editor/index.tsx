@@ -219,8 +219,11 @@ export function Editor(props : EditorProps) {
                         y: response.data ? response.data.y : 0,
                         zoom: response.data ? response.data.scale : 1
                     });
-                    setEdges(response.data.revision ? response.data.revision.data.edges : initialEdges);
-                    setNodes(response.data.revision ? response.data.revision.data.nodes : initialNodes);
+                    const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
+                    const loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    setEdges(loadedEdges);
+                    setNodes(loadedNodes);
+                    lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });
                     setName(response.data ? response.data.name : "Untitled Flo");
                     setEnvironment(response.data ? response.data.environment_id : null);
                     setStatus("Up to date");
@@ -284,11 +287,19 @@ export function Editor(props : EditorProps) {
     }, [ name, viewport, environment ]);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastSavedHashRef = useRef<string>("");
 
     useEffect(() => {
         setNeedsUpdate(true);
 
         if (flo && !dragging) {
+            // Hash current state to avoid saving unchanged revisions
+            const currentHash = JSON.stringify({ nodes, edges });
+            if (currentHash === lastSavedHashRef.current) {
+                setStatus("Up to Date");
+                return;
+            }
+
             setStatus("Updating...");
 
             if (saveTimerRef.current) {
@@ -308,6 +319,7 @@ export function Editor(props : EditorProps) {
                     }
                 })
                     .then(() => {
+                        lastSavedHashRef.current = currentHash;
                         setStatus("Up to Date");
                         // Re-fetch flow to get updated triggers
                         api.get(API_URL + '/api/v1/flo/' + flo.id, {
@@ -336,8 +348,34 @@ export function Editor(props : EditorProps) {
     }, [name]);
 
     const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges],
+        (params) => {
+            setEdges((eds) => addEdge(params, eds));
+
+            // Auto-populate empty inputs on target node when parent output names match
+            const sourceNode = nodes.find((n: any) => n.id === params.source);
+            if (!sourceNode?.data?.config?.outputs) return;
+
+            const parentOutputs = sourceNode.data.config.outputs;
+
+            setNodes((nds: any[]) => nds.map(n => {
+                if (n.id !== params.target || !n.data?.config?.inputs) return n;
+
+                let changed = false;
+                const updatedInputs = n.data.config.inputs.map((inp: any) => {
+                    if (inp.value && String(inp.value).trim() !== '') return inp;
+                    const match = parentOutputs.find((o: any) => o.name === inp.name);
+                    if (match) {
+                        changed = true;
+                        return { ...inp, value: '${' + match.name + '}' };
+                    }
+                    return inp;
+                });
+
+                if (!changed) return n;
+                return { ...n, data: { ...n.data, config: { ...n.data.config, inputs: updatedInputs } } };
+            }));
+        },
+        [setEdges, nodes, setNodes],
     );
 
     const onNodesChange = useCallback(
@@ -553,6 +591,16 @@ export function Editor(props : EditorProps) {
     const allVariables = useMemo<VariableItem[]>(() => {
         const items: VariableItem[] = [...FLOW_VARIABLES, ...envVariables];
 
+        // Add ${var.X} variables from Set Variable nodes in the flow
+        for (const n of nodes as any[]) {
+            if (n.type === 'common/set_variable' || n.data?.label === 'common/set_variable') {
+                const nameInput = n.data?.config?.inputs?.find((i: any) => i.name === 'name');
+                if (nameInput?.value && typeof nameInput.value === 'string' && nameInput.value.trim()) {
+                    items.push({ name: nameInput.value.trim(), category: "var", source: "Variable" });
+                }
+            }
+        }
+
         if (!propertyNode || !plugins) return items;
 
         // Find parent nodes via edges
@@ -581,10 +629,41 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        return nodes.some(node =>
-            node.data?.config?.inputs?.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')))
-        );
-    }, [nodes]);
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.'];
+
+        return nodes.some((node: any) => {
+            const inputs = node.data?.config?.inputs;
+            if (!inputs) return false;
+
+            // Check required fields
+            const hasRequiredEmpty = inputs.some((i: any) => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
+            if (hasRequiredEmpty) return true;
+
+            // Check for invalid variable substitutions
+            const parentIds = edges.filter((e: any) => e.target === node.id).map((e: any) => e.source);
+            const parentOutputNames = new Set<string>();
+            for (const pid of parentIds) {
+                const pn = nodes.find((n: any) => n.id === pid);
+                if (pn?.data?.config?.outputs) {
+                    for (const o of pn.data.config.outputs) {
+                        if (o.name) parentOutputNames.add(o.name);
+                    }
+                }
+            }
+
+            return inputs.some((i: any) => {
+                if (typeof i.value !== 'string') return false;
+                const refs = i.value.match(/\$\{([^{}]+)\}/g);
+                if (!refs) return false;
+                return refs.some((ref: string) => {
+                    const name = ref.slice(2, -1);
+                    if (validPrefixes.some(p => name.startsWith(p))) return false;
+                    if (parentOutputNames.has(name)) return false;
+                    return true; // unresolvable variable
+                });
+            });
+        });
+    }, [nodes, edges]);
 
     const defaultEdgeOptions = useMemo(() => {
         return {
