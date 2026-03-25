@@ -50,6 +50,7 @@
     align-items: center;
     gap: 8px;
     z-index: 1000;
+    overflow-x: hidden;
 }
 
 .flo-editor-property-property-section {
@@ -252,9 +253,24 @@
     color: #00aa9c;
 }
 
+.flo-editor-env-label {
+    display: none;
+}
+
 .flo-editor-env-chevron {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.3);
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .flo-editor-env-label {
+        display: inline;
+    }
+
+    .flo-editor-env-chevron {
+        display: inline;
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.3);
+    }
 }
 
 .flo-editor-env-menu {

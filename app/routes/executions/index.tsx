@@ -115,17 +115,18 @@ export default function Executions() {
 
         setRefreshSnap(true);
         setRefreshCountdown(refreshInterval);
-        requestAnimationFrame(() => requestAnimationFrame(() => setRefreshSnap(false)));
+        setTimeout(() => setRefreshSnap(false), 50);
 
         const countdownTimer = setInterval(() => {
             setRefreshCountdown(prev => {
-                if (prev <= 1000) {
+                const next = prev - 1000;
+                if (next <= 0) {
                     fetchExecutions();
                     setRefreshSnap(true);
-                    requestAnimationFrame(() => requestAnimationFrame(() => setRefreshSnap(false)));
+                    setTimeout(() => setRefreshSnap(false), 50);
                     return refreshInterval;
                 }
-                return prev - 1000;
+                return next;
             });
         }, 1000);
 

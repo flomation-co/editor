@@ -645,7 +645,7 @@ export function Editor(props : EditorProps) {
                                     <div className={"flo-editor-env-dropdown"} ref={envDropdownRef}>
                                         <button className={"flo-editor-env-button"} onClick={() => setEnvDropdownOpen(!envDropdownOpen)}>
                                             <FontAwesomeIcon icon={faWrench} className={"flo-editor-env-icon"} />
-                                            <span>{flo.environment_id ? environments.find(e => e.id === flo.environment_id)?.name || "Environment" : "No Environment"}</span>
+                                            <span className={"flo-editor-env-label"}>{flo.environment_id ? environments.find(e => e.id === flo.environment_id)?.name || "Environment" : "No Environment"}</span>
                                             <FontAwesomeIcon icon={faChevronDown} className={"flo-editor-env-chevron"} />
                                         </button>
                                         {envDropdownOpen && (
