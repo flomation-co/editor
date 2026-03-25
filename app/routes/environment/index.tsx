@@ -116,12 +116,12 @@ export default function EnvironmentDetail() {
 
     return (
         <Container>
+            <div className={"header"}>{environment?.name || "Environment"}</div>
             <div className="env-detail-back">
                 <Link to="/environment" className="env-detail-back-link">
                     <FontAwesomeIcon icon={faArrowLeft} /> All Environments
                 </Link>
             </div>
-            <div className={"header"}>{environment?.name || "Environment"}</div>
 
             <div className="env-detail-page">
                 {/* Properties */}
