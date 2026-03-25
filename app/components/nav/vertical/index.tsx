@@ -140,7 +140,7 @@ export function VerticalNav(props: VerticalNavProps) {
                 <div className={"vertical-nav-bottom-section"}>
                     <div className={"menu-section-list"}>
                         <Link to={"https://discord.gg/y3Td3kw5tA"} className={"menu-section-list-item"} target={"_blank"} data-tooltip-id="nav-tip" data-tooltip-content="Community" data-tooltip-place="right"><div className={"menu-section-list-icon"}><FontAwesomeIcon icon={faDiscord} /></div><span className={"menu-section-list-item-label"}>Community <FontAwesomeIcon icon={faArrowUpRightFromSquare} /></span></Link>
-                        <NavLink to={""} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="System Status" data-tooltip-place="right">
+                        <NavLink to={"/status"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="System Status" data-tooltip-place="right">
                             <div className={"menu-section-list-icon"}>
                                 {!isStatusPending && (
                                     <>
