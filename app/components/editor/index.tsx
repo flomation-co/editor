@@ -84,6 +84,7 @@ export function Editor(props : EditorProps) {
     const [ propertyMenuXLocation, setPropertyMenuXLocation ] = useState<number>(0);
     const [ propertyMenuYLocation, setPropertyMenuYLocation ] = useState<number>(0);
     const [ propertyNode, setPropertyNode ] = useState(null);
+    const [ propertyExpanded, setPropertyExpanded ] = useState(false);
     const clipboardRef = useRef<any[]>([]);
 
     const token = useCookieToken();
@@ -799,15 +800,19 @@ export function Editor(props : EditorProps) {
 
 
                                {propertyMenuVisible && (
-                                    <PropertyMenu
-                                        node={propertyNode}
-                                        variables={allVariables}
-                                        triggers={flo?.triggers}
-                                        onValueChange={onValueChange}
-                                        onNameChange={onNameChange}
-                                        onDismiss={() => {console.log("Dismiss"); setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false);}}
-                                        onNodeDelete={onNodeDelete}
-                                    />
+                                    <div className={propertyExpanded ? "property-menu-expanded-wrap" : ""}>
+                                        <PropertyMenu
+                                            node={propertyNode}
+                                            variables={allVariables}
+                                            triggers={flo?.triggers}
+                                            onValueChange={onValueChange}
+                                            onNameChange={onNameChange}
+                                            onDismiss={() => {setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false); setPropertyExpanded(false);}}
+                                            onNodeDelete={onNodeDelete}
+                                            expanded={propertyExpanded}
+                                            onToggleExpand={() => setPropertyExpanded(prev => !prev)}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>

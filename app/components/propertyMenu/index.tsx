@@ -25,6 +25,8 @@ type PropertyMenuProps = {
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
     onNodeDelete?: (node_id: string) => void;
+    expanded?: boolean;
+    onToggleExpand?: () => void;
 }
 
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
@@ -80,6 +82,11 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 <div className={"property-menu-header-title"}>
                                     {props.node.data.config.name}
                                 </div>
+                                {props.onToggleExpand && (
+                                    <button className={"property-menu-close"} onClick={props.onToggleExpand} style={{ marginRight: 4 }}>
+                                        <FontAwesomeIcon icon={["fas", props.expanded ? "compress" : "expand"]} />
+                                    </button>
+                                )}
                                 <button className={"property-menu-close"} onClick={handleDismiss}>
                                     <FontAwesomeIcon icon={["fas", "xmark"]} />
                                 </button>
