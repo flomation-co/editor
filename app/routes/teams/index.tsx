@@ -16,7 +16,7 @@ import "./index.css";
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Flomation - Teams" },
-        { name: "description", content: "Manage permission teams" },
+        { name: "description", content: "Manage teams" },
     ];
 }
 
@@ -200,7 +200,7 @@ export default function Groups() {
             </div>
 
             <div className={"groups-section"}>
-                <div className={"groups-section-header"}>Permission Teams</div>
+                <div className={"groups-section-header"}>Teams</div>
 
                 {groups.length === 0 && (
                     <div className={"groups-empty"}>
