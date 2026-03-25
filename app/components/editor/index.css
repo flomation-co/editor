@@ -50,7 +50,7 @@
     align-items: center;
     gap: 8px;
     z-index: 1100;
-    overflow-x: hidden;
+    overflow: visible;
     position: relative;
 }
 
