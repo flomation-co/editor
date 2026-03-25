@@ -84,12 +84,48 @@ export function Editor(props : EditorProps) {
     const [ propertyMenuXLocation, setPropertyMenuXLocation ] = useState<number>(0);
     const [ propertyMenuYLocation, setPropertyMenuYLocation ] = useState<number>(0);
     const [ propertyNode, setPropertyNode ] = useState(null);
+    const clipboardRef = useRef<any[]>([]);
 
     const token = useCookieToken();
 
     function handleWindowSizeChange() {
         setWidth(window.innerWidth);
     }
+
+    // Copy/Paste keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+                const selected = nodes.filter((n: any) => n.selected);
+                if (selected.length > 0) {
+                    clipboardRef.current = selected.map((n: any) => ({
+                        ...n,
+                        data: JSON.parse(JSON.stringify(n.data)),
+                    }));
+                    toast.success(`Copied ${selected.length} node${selected.length > 1 ? 's' : ''}`);
+                }
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
+                if (clipboardRef.current.length > 0) {
+                    const offset = 50;
+                    const newNodes = clipboardRef.current.map((n: any) => {
+                        const newId = '' + self.crypto.randomUUID() + '';
+                        return {
+                            ...n,
+                            id: newId,
+                            position: { x: n.position.x + offset, y: n.position.y + offset },
+                            data: { ...JSON.parse(JSON.stringify(n.data)), id: newId },
+                            selected: false,
+                        };
+                    });
+                    setNodes((nds: any[]) => nds.map(n => ({ ...n, selected: false })).concat(newNodes));
+                    toast.success(`Pasted ${newNodes.length} node${newNodes.length > 1 ? 's' : ''}`);
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [nodes]);
 
     useEffect(() => {
         if (isMobile) {
