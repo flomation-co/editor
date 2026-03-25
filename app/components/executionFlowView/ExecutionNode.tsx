@@ -56,7 +56,8 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
     const nodeStatus = data?.nodeStatusData ?? null;
     const isTrigger = type === 1;
     const isConditional = type === 4;
-    const hasInputs = !isTrigger && data?.config?.inputs && data.config.inputs.length > 0;
+    const isErrorNode = data?.label?.startsWith('error/') || data?.config?.plugin?.startsWith('error/');
+    const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     const statusClass = `exec-node exec-node--${status}${isConditional ? ' exec-node--conditional' : ''}`;
