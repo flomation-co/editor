@@ -2,469 +2,269 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import type {Environment, Property, Secret} from "~/types";
 import {useEffect, useState} from "react";
-import {Link, useParams, useSearchParams} from "react-router";
+import {Link, useParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {Tooltip} from "react-tooltip";
-import SearchBar from "~/components/searchBar";
-import ReactCountryFlag from "react-country-flag";
-import {ExecuteState} from "~/components/executionState";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleStop, faPencil, faTrash} from "@fortawesome/free-solid-svg-icons";
-import {faCancel, faCheck, faGlobe, faPlus} from "@fortawesome/pro-solid-svg-icons";
+import {faPencil, faTrash, faArrowLeft, faKey, faCubes} from "@fortawesome/free-solid-svg-icons";
+import {faCancel, faCheck, faPlus} from "@fortawesome/pro-solid-svg-icons";
+import {toast} from "react-toastify";
+import Modal from "~/components/modal";
+import "./index.css";
 
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Flomation - Environment" },
-        { name: "description", content: "Get in the Flo" },
+        { name: "description", content: "Manage environment" },
     ];
 }
 
-export default function Environment() {
-    const [ searchParams, setSearchParams ] = useSearchParams();
+export default function EnvironmentDetail() {
+    const environmentID = useParams().id;
+    const token = useCookieToken();
+    const controller = new AbortController();
 
-    const [ environmentID, setEnvironmentID ] = useState<string>(useParams().id)
     const [ environment, setEnvironment ] = useState<Environment>();
     const [ properties, setProperties ] = useState<Property[]>();
     const [ secrets, setSecrets ] = useState<Secret[]>();
-    const [ search, setSearch ] = useState<string>(searchParams.get("search"))
 
-    const [ hasInputRow, setHasInputRow ] = useState<boolean>(false);
-    const [ inputEnvironmentPropertyName, setInputEnvironmentPropertyName ] = useState<string>("");
-    const [ inputEnvironmentPropertyValue, setInputEnvironmentPropertyValue ] = useState<string>("");
+    const [ showAddProperty, setShowAddProperty ] = useState(false);
+    const [ newPropName, setNewPropName ] = useState("");
+    const [ newPropValue, setNewPropValue ] = useState("");
 
-    const [ hasSecretInputRow, setHasSecretInputRow ] = useState<boolean>(false);
-    const [ inputEnvironmentSecretName, setInputEnvironmentSecretName ] = useState<string>("");
-    const [ inputEnvironmentSecretValue, setInputEnvironmentSecretValue ] = useState<string>("");
-
-    const [ confirmDeletionID, setConfirmDeletionID ] = useState<string>(null);
+    const [ showAddSecret, setShowAddSecret ] = useState(false);
+    const [ newSecretName, setNewSecretName ] = useState("");
+    const [ newSecretValue, setNewSecretValue ] = useState("");
 
     const [ editingPropertyID, setEditingPropertyID ] = useState<string | null>(null);
-    const [ editingPropertyName, setEditingPropertyName ] = useState<string>("");
-    const [ editingPropertyValue, setEditingPropertyValue ] = useState<string>("");
+    const [ editingPropertyName, setEditingPropertyName ] = useState("");
+    const [ editingPropertyValue, setEditingPropertyValue ] = useState("");
 
     const [ editingSecretID, setEditingSecretID ] = useState<string | null>(null);
-    const [ editingSecretValue, setEditingSecretValue ] = useState<string>("");
+    const [ editingSecretValue, setEditingSecretValue ] = useState("");
 
-    const controller = new AbortController();
-    const token = useCookieToken();
+    const [ confirmDelete, setConfirmDelete ] = useState<{ type: 'property' | 'secret', id: string, name: string } | null>(null);
 
-    function handleUpdateSearch(term) {
-        setSearch(term);
-    }
+    const getUrl = (path: string) => {
+        const config = useConfig();
+        return config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + path;
+    };
 
-    const showInputRow = (value: boolean) => {
-        if (value) {
-            setInputEnvironmentPropertyName("");
-            setInputEnvironmentPropertyValue("");
-        }
-
-        setHasInputRow(value);
-    }
-
-    const changeEnvironmentPropertyName = (e) => {
-        setInputEnvironmentPropertyName(e.target.value);
-    }
-
-    const changeEnvironmentPropertyValue = (e) => {
-        setInputEnvironmentPropertyValue(e.target.value);
-    }
-
-    const showSecretInputRow = (value: boolean) => {
-        if (value) {
-            setInputEnvironmentSecretName("");
-            setInputEnvironmentSecretValue("");
-        }
-
-        setHasSecretInputRow(value);
-    }
-
-    const changeEnvironmentSecretName = (e) => {
-        setInputEnvironmentSecretName(e.target.value);
-    }
-
-    const changeEnvironmentSecretValue = (e) => {
-        setInputEnvironmentSecretValue(e.target.value);
-    }
+    const headers = { Authorization: "Bearer " + token };
 
     useEffect(() => {
-        const config = useConfig();
-        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID;
-
-        api.get(url, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    setEnvironment(response.data);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }, []);
-
-    const updateProperties = () => {
-        const config = useConfig();
-        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property';
-
-        api.get(url, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    setProperties(response.data);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
-    const updateSecrets = () => {
-        const config = useConfig();
-        let url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret';
-
-        api.get(url, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    setSecrets(response.data);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
-    useEffect(() => {
+        api.get(getUrl(''), { signal: controller.signal, headers }).then(r => { if (r) setEnvironment(r.data); }).catch(console.error);
         updateProperties();
-    }, []);
-
-    useEffect(() => {
         updateSecrets();
     }, []);
 
+    const updateProperties = () => {
+        api.get(getUrl('/property'), { signal: controller.signal, headers }).then(r => { if (r) setProperties(r.data); }).catch(console.error);
+    };
+
+    const updateSecrets = () => {
+        api.get(getUrl('/secret'), { signal: controller.signal, headers }).then(r => { if (r) setSecrets(r.data); }).catch(console.error);
+    };
+
     const saveProperty = () => {
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property';
-        const property = {
-            name: inputEnvironmentPropertyName,
-            value: inputEnvironmentPropertyValue,
-        }
+        if (!newPropName.trim()) return;
+        api.post(getUrl('/property'), { name: newPropName, value: newPropValue }, { headers })
+            .then(() => { setShowAddProperty(false); setNewPropName(""); setNewPropValue(""); toast.success("Property created"); updateProperties(); })
+            .catch(() => toast.error("Failed to create property"));
+    };
 
-        api.post(url, property, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    showInputRow(false);
-                    updateProperties();
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
     const saveSecret = () => {
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret';
-        const property = {
-            name: inputEnvironmentSecretName,
-            value: inputEnvironmentSecretValue,
-        }
+        if (!newSecretName.trim()) return;
+        api.post(getUrl('/secret'), { name: newSecretName, value: newSecretValue }, { headers })
+            .then(() => { setShowAddSecret(false); setNewSecretName(""); setNewSecretValue(""); toast.success("Secret created"); updateSecrets(); })
+            .catch(() => toast.error("Failed to create secret"));
+    };
 
-        api.post(url, property, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    showSecretInputRow(false);
-                    updateSecrets();
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
+    const deleteProperty = (id: string) => {
+        api.delete(getUrl('/property/' + id), { headers })
+            .then(() => { toast.success("Property deleted"); updateProperties(); })
+            .catch(() => toast.error("Failed to delete property"));
+    };
 
-    const deleteProperty = (id) => {
-        showInputRow(false);
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + id;
-
-        api.delete(url, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    updateProperties();
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
-    const deleteSecret = (id) => {
-        showSecretInputRow(false);
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret/' + id;
-
-        api.delete(url, {
-            signal: controller.signal,
-            headers: {
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    updateSecrets();
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
-
-    const startEditProperty = (prop) => {
-        setEditingPropertyID(prop.id);
-        setEditingPropertyName(prop.name);
-        setEditingPropertyValue(prop.value);
-    }
-
-    const cancelEditProperty = () => {
-        setEditingPropertyID(null);
-        setEditingPropertyName("");
-        setEditingPropertyValue("");
-    }
+    const deleteSecret = (id: string) => {
+        api.delete(getUrl('/secret/' + id), { headers })
+            .then(() => { toast.success("Secret deleted"); updateSecrets(); })
+            .catch(() => toast.error("Failed to delete secret"));
+    };
 
     const saveEditProperty = () => {
         if (!editingPropertyID) return;
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/property/' + editingPropertyID;
-
-        api.post(url, { name: editingPropertyName, value: editingPropertyValue }, {
-            headers: { Authorization: "Bearer " + token }
-        })
-            .then(() => { cancelEditProperty(); updateProperties(); })
-            .catch(error => console.error(error));
-    }
-
-    const startEditSecret = (secret) => {
-        setEditingSecretID(secret.id);
-        setEditingSecretValue("");
-    }
-
-    const cancelEditSecret = () => {
-        setEditingSecretID(null);
-        setEditingSecretValue("");
-    }
+        api.post(getUrl('/property/' + editingPropertyID), { name: editingPropertyName, value: editingPropertyValue }, { headers })
+            .then(() => { setEditingPropertyID(null); toast.success("Property updated"); updateProperties(); })
+            .catch(() => toast.error("Failed to update property"));
+    };
 
     const saveEditSecret = () => {
         if (!editingSecretID) return;
-        const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/environment/' + environmentID + '/secret/' + editingSecretID;
+        api.post(getUrl('/secret/' + editingSecretID), { value: editingSecretValue }, { headers })
+            .then(() => { setEditingSecretID(null); toast.success("Secret updated"); updateSecrets(); })
+            .catch(() => toast.error("Failed to update secret"));
+    };
 
-        api.post(url, { value: editingSecretValue }, {
-            headers: { Authorization: "Bearer " + token }
-        })
-            .then(() => { cancelEditSecret(); updateSecrets(); })
-            .catch(error => console.error(error));
-    }
+    const handleConfirmDelete = () => {
+        if (!confirmDelete) return;
+        if (confirmDelete.type === 'property') deleteProperty(confirmDelete.id);
+        else deleteSecret(confirmDelete.id);
+        setConfirmDelete(null);
+    };
 
     return (
         <Container>
-            <div className={"header"}>Environment</div>
+            <div className="env-detail-back">
+                <Link to="/environment" className="env-detail-back-link">
+                    <FontAwesomeIcon icon={faArrowLeft} /> All Environments
+                </Link>
+            </div>
+            <div className={"header"}>{environment?.name || "Environment"}</div>
 
-            <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search properties..." disabled={true} />
+            <div className="env-detail-page">
+                {/* Properties */}
+                <div className="env-detail-card">
+                    <div className="env-detail-card-header">
+                        <div className="env-detail-section-label">
+                            <FontAwesomeIcon icon={faCubes} className="env-detail-section-icon" /> Properties
+                        </div>
+                        {!showAddProperty && (
+                            <button className="env-detail-add-btn" onClick={() => setShowAddProperty(true)}>
+                                <FontAwesomeIcon icon={faPlus} /> Add
+                            </button>
+                        )}
+                    </div>
 
-            <div className={"table-spacer"}></div>
-            <div className={"header"}>Properties</div>
-
-            <div className={"table-spacer"}></div>
-            <table className={"flo-table"}>
-                <thead className={"flo-table-head"}>
-                <tr>
-                    <th>Name</th>
-                    <th className={"table-column-hide-sm"}>Value</th>
-                    <th>
-                        <span className={"table-column-hide-sm"}>Actions</span>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <>
-                    {properties && properties?.map((prop, index) => {
-                        const isEditing = editingPropertyID === prop.id;
-                        return (
-                            <tr className={"flo-table-row"} key={prop.id}>
-                                <td>{prop.name}<span className={"table-column-hide-sm flo-table-subtext"}>{prop.id}</span></td>
-                                <td className={"table-column-hide-sm"}>
-                                    {isEditing ? (
-                                        <textarea value={editingPropertyValue} onChange={(e) => setEditingPropertyValue(e.target.value)} rows={3} autoFocus />
-                                    ) : (
-                                        prop.value
-                                    )}
-                                </td>
-                                <td>
-                                    {isEditing ? (
-                                        <>
-                                            <button className={"table-button"} onClick={saveEditProperty}>
-                                                <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
-                                            </button>
-                                            <button className={"table-button"} onClick={cancelEditProperty}>
-                                                <FontAwesomeIcon icon={faCancel}/> <span>Cancel</span>
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button className={"table-button"} onClick={() => startEditProperty(prop)}>
-                                                <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
-                                            </button>
-                                            <button className={"table-button"} onClick={() => deleteProperty(prop.id)}>
-                                                <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
-                                            </button>
-                                        </>
-                                    )}
-                                </td>
-                            </tr>
-                        )
-                    })}
-                    {!hasInputRow && (
-                        <tr className={"flo-table-row"} >
-                            <td colSpan={3} className={"table-row-center"}>
-                                <button className={"table-button"} onClick={() => showInputRow(true)}>
-                                    <FontAwesomeIcon icon={faPlus} /> Create new Property
-
-                                </button>
-                            </td>
-                        </tr>
+                    {showAddProperty && (
+                        <div className="env-detail-add-form">
+                            <input type="text" placeholder="Name" autoFocus value={newPropName} onChange={e => setNewPropName(e.target.value)} />
+                            <textarea placeholder="Value" rows={2} value={newPropValue} onChange={e => setNewPropValue(e.target.value)} />
+                            <div className="env-detail-add-actions">
+                                <button className="env-detail-btn-save" onClick={saveProperty} disabled={!newPropName.trim()}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                <button className="env-detail-btn-cancel" onClick={() => setShowAddProperty(false)}>Cancel</button>
+                            </div>
+                        </div>
                     )}
-                    {hasInputRow && (
-                        <tr className={"flo-table-row"} >
-                            <td>
-                                <input type={"text"} placeholder={"Property name..."} autoFocus={true} value={inputEnvironmentPropertyName} onChange={changeEnvironmentPropertyName} />
-                            </td>
-                            <td>
-                                <textarea placeholder={"Property value..."} value={inputEnvironmentPropertyValue} onChange={changeEnvironmentPropertyValue} rows={3} />
-                            </td>
-                            <td className={"table-column-small-col"}>
-                                <button className={"table-button"} onClick={() => saveProperty()}>
-                                    <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
-                                </button>
-                                <button className={"table-button"} onClick={() => showInputRow(false)}>
-                                    <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
-                                </button>
-                            </td>
-                        </tr>
+
+                    {(!properties || properties.length === 0) && !showAddProperty && (
+                        <div className="env-detail-empty">No properties</div>
                     )}
-                </>
-                </tbody>
-            </table>
 
-            <div className={"table-spacer"}></div>
-            <div className={"header"}>Secrets</div>
-
-            <div className={"table-spacer"}></div>
-            <table className={"flo-table"}>
-                <thead className={"flo-table-head"}>
-                <tr>
-                    <th>Name</th>
-                    <th className={"table-column-hide-sm"}>Value</th>
-                    <th>
-                        <span className={"table-column-hide-sm"}>Actions</span>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <>
-                    {secrets && secrets?.map((secret, index) => {
-                        const isEditing = editingSecretID === secret.id;
-                        return (
-                            <tr className={"flo-table-row"} key={secret.id}>
-                                <td>{secret.name}<span className={"table-column-hide-sm flo-table-subtext"}>{secret.id}</span></td>
-                                <td className={"table-column-hide-sm"}>
+                    <div className="env-detail-items">
+                        {properties?.map(prop => {
+                            const isEditing = editingPropertyID === prop.id;
+                            return (
+                                <div key={prop.id} className="env-detail-item">
                                     {isEditing ? (
-                                        <textarea placeholder={"Enter new secret value..."} value={editingSecretValue} onChange={(e) => setEditingSecretValue(e.target.value)} rows={3} autoFocus />
-                                    ) : (
-                                        <small>Hidden</small>
-                                    )}
-                                </td>
-                                <td>
-                                    {isEditing ? (
-                                        <>
-                                            <button className={"table-button"} onClick={saveEditSecret}>
-                                                <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
-                                            </button>
-                                            <button className={"table-button"} onClick={cancelEditSecret}>
-                                                <FontAwesomeIcon icon={faCancel}/> <span>Cancel</span>
-                                            </button>
-                                        </>
+                                        <div className="env-detail-edit-form">
+                                            <input type="text" value={editingPropertyName} onChange={e => setEditingPropertyName(e.target.value)} />
+                                            <textarea rows={2} value={editingPropertyValue} onChange={e => setEditingPropertyValue(e.target.value)} autoFocus />
+                                            <div className="env-detail-add-actions">
+                                                <button className="env-detail-btn-save" onClick={saveEditProperty}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                                <button className="env-detail-btn-cancel" onClick={() => setEditingPropertyID(null)}>Cancel</button>
+                                            </div>
+                                        </div>
                                     ) : (
                                         <>
-                                            <button className={"table-button"} onClick={() => startEditSecret(secret)}>
-                                                <FontAwesomeIcon icon={faPencil}/> <span>Edit</span>
-                                            </button>
-                                            <button className={"table-button"} onClick={() => deleteSecret(secret.id)}>
-                                                <FontAwesomeIcon icon={faTrash}/> <span>Delete</span>
-                                            </button>
+                                            <div className="env-detail-item-info">
+                                                <div className="env-detail-item-name">{prop.name}</div>
+                                                <div className="env-detail-item-value">{prop.value}</div>
+                                            </div>
+                                            <div className="env-detail-item-actions">
+                                                <button className="env-detail-icon-btn" onClick={() => { setEditingPropertyID(prop.id); setEditingPropertyName(prop.name); setEditingPropertyValue(prop.value); }}>
+                                                    <FontAwesomeIcon icon={faPencil} />
+                                                </button>
+                                                <button className="env-detail-icon-btn env-detail-icon-btn--danger" onClick={() => setConfirmDelete({ type: 'property', id: prop.id, name: prop.name })}>
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </div>
                                         </>
                                     )}
-                                </td>
-                            </tr>
-                        )
-                    })}
-                    {!hasSecretInputRow && (
-                        <tr className={"flo-table-row"} >
-                            <td colSpan={3} className={"table-row-center"}>
-                                <button className={"table-button"} onClick={() => showSecretInputRow(true)}>
-                                    <FontAwesomeIcon icon={faPlus} /> Create new Secret
-                                </button>
-                            </td>
-                        </tr>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Secrets */}
+                <div className="env-detail-card">
+                    <div className="env-detail-card-header">
+                        <div className="env-detail-section-label">
+                            <FontAwesomeIcon icon={faKey} className="env-detail-section-icon" /> Secrets
+                        </div>
+                        {!showAddSecret && (
+                            <button className="env-detail-add-btn" onClick={() => setShowAddSecret(true)}>
+                                <FontAwesomeIcon icon={faPlus} /> Add
+                            </button>
+                        )}
+                    </div>
+
+                    {showAddSecret && (
+                        <div className="env-detail-add-form">
+                            <input type="text" placeholder="Name" autoFocus value={newSecretName} onChange={e => setNewSecretName(e.target.value)} />
+                            <textarea placeholder="Value (will be encrypted)" rows={2} value={newSecretValue} onChange={e => setNewSecretValue(e.target.value)} />
+                            <div className="env-detail-add-actions">
+                                <button className="env-detail-btn-save" onClick={saveSecret} disabled={!newSecretName.trim()}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                <button className="env-detail-btn-cancel" onClick={() => setShowAddSecret(false)}>Cancel</button>
+                            </div>
+                        </div>
                     )}
-                    {hasSecretInputRow && (
-                        <tr className={"flo-table-row"} >
-                            <td>
-                                <input type={"text"} placeholder={"Secret name..."} autoFocus={true} value={inputEnvironmentSecretName} onChange={changeEnvironmentSecretName} />
-                            </td>
-                            <td>
-                                <textarea placeholder={"Secret value..."} value={inputEnvironmentSecretValue} onChange={changeEnvironmentSecretValue} rows={3} />
-                            </td>
-                            <td className={"table-column-small-col"}>
-                                <button className={"table-button"} onClick={() => saveSecret()}>
-                                    <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
-                                </button>
-                                <button className={"table-button"} onClick={() => showSecretInputRow(false)}>
-                                    <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
-                                </button>
-                            </td>
-                        </tr>
+
+                    {(!secrets || secrets.length === 0) && !showAddSecret && (
+                        <div className="env-detail-empty">No secrets</div>
                     )}
-                </>
-                </tbody>
-            </table>
+
+                    <div className="env-detail-items">
+                        {secrets?.map(secret => {
+                            const isEditing = editingSecretID === secret.id;
+                            return (
+                                <div key={secret.id} className="env-detail-item">
+                                    {isEditing ? (
+                                        <div className="env-detail-edit-form">
+                                            <div className="env-detail-item-name" style={{ marginBottom: 8 }}>{secret.name}</div>
+                                            <textarea placeholder="Enter new secret value..." rows={2} value={editingSecretValue} onChange={e => setEditingSecretValue(e.target.value)} autoFocus />
+                                            <div className="env-detail-add-actions">
+                                                <button className="env-detail-btn-save" onClick={saveEditSecret}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                                <button className="env-detail-btn-cancel" onClick={() => setEditingSecretID(null)}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="env-detail-item-info">
+                                                <div className="env-detail-item-name">{secret.name}</div>
+                                                <div className="env-detail-item-value env-detail-item-value--hidden">Encrypted</div>
+                                            </div>
+                                            <div className="env-detail-item-actions">
+                                                <button className="env-detail-icon-btn" onClick={() => { setEditingSecretID(secret.id); setEditingSecretValue(""); }}>
+                                                    <FontAwesomeIcon icon={faPencil} />
+                                                </button>
+                                                <button className="env-detail-icon-btn env-detail-icon-btn--danger" onClick={() => setConfirmDelete({ type: 'secret', id: secret.id, name: secret.name })}>
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {confirmDelete && (
+                <Modal
+                    label={`Delete ${confirmDelete.type === 'property' ? 'Property' : 'Secret'}`}
+                    footerMessage="This action cannot be undone"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setConfirmDelete(null)}
+                    actions={[{ label: "Delete", primary: false, variant: 'danger', onClick: handleConfirmDelete }]}
+                >
+                    Are you sure you want to delete <strong>{confirmDelete.name}</strong>?
+                </Modal>
+            )}
         </Container>
-    )
+    );
 }
