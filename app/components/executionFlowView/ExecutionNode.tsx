@@ -12,7 +12,7 @@ library.add(fab, fas);
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   iconColour: '#00aa9c' },
     2: { bg: '#8b00de', bgAlpha: 'rgba(70,0,112,0.3)',     glow: 'rgba(139,0,222,0.35)',   iconColour: '#b49eed' },
-    3: { bg: '#e8604c', bgAlpha: 'rgba(232,96,76,0.15)',    glow: 'rgba(232,96,76,0.35)',   iconColour: '#e8604c' },
+    3: { bg: '#f59e0b', bgAlpha: 'rgba(245,158,11,0.15)',   glow: 'rgba(245,158,11,0.35)',  iconColour: '#fbbf24' },
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', iconColour: '#efd467' },
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', iconColour: '#b967ef' },
 };
