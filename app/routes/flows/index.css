@@ -155,27 +155,85 @@
 }
 
 
-/* Fix left-alignment: first-child is now the checkbox, name is second */
-.flo-table > thead > tr > th:nth-child(2) {
-    text-align: left;
+/* ═══════════════════════════════════════════════
+   Flow Cards
+   ═══════════════════════════════════════════════ */
+.flow-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 20px;
 }
 
-.flo-table > tbody > tr > td:nth-child(2) {
-    text-align: left;
+.flow-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: background 0.12s ease;
+}
+
+.flow-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.flow-card-checkbox {
+    flex-shrink: 0;
+}
+
+.flow-card-body {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.flow-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.flow-card-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+.flow-card-warning {
+    color: #e6a817;
+    font-size: 13px;
+}
+
+.flow-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.flow-card-detail {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.flow-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 
 /* ═══════════════════════════════════════════════
    Custom Checkbox (matches property-menu-checkbox)
    ═══════════════════════════════════════════════ */
-.flo-checkbox-col {
-    width: 52px;
-    min-width: 52px;
-    max-width: 52px;
-    text-align: center;
-    padding: 8px 8px 8px 16px !important;
-    vertical-align: middle;
-}
 
 .flo-checkbox {
     position: relative;
@@ -308,32 +366,23 @@
 
 
 /* ═══════════════════════════════════════════════
-   Row actions: Run button + overflow menu
+   Run button + overflow menu
    ═══════════════════════════════════════════════ */
-.flo-actions-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-}
 
 /* Green Run button — matches editor execute button */
 .flo-run-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    width: 30px;
     height: 30px;
-    padding: 0 14px;
     background: rgba(34, 197, 94, 0.12);
     border: 1px solid rgba(34, 197, 94, 0.25);
     border-radius: 6px;
     color: #4ade80;
     cursor: pointer;
     font-size: 12px;
-    font-weight: 500;
     transition: background 0.1s ease, border-color 0.1s ease;
-    white-space: nowrap;
 }
 
 .flo-run-btn:hover {
