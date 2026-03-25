@@ -54,7 +54,8 @@ export type Execution = {
     result?: object,
     runner_id?: string,
     duration?: number,
-    billing_duration?: number
+    billing_duration?: number,
+    trigger_type?: string
 }
 
 export type Flo = {
