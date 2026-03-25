@@ -311,8 +311,34 @@ export function Editor(props : EditorProps) {
     }, [name]);
 
     const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges],
+        (params) => {
+            setEdges((eds) => addEdge(params, eds));
+
+            // Auto-populate empty inputs on target node when parent output names match
+            const sourceNode = nodes.find((n: any) => n.id === params.source);
+            if (!sourceNode?.data?.config?.outputs) return;
+
+            const parentOutputs = sourceNode.data.config.outputs;
+
+            setNodes((nds: any[]) => nds.map(n => {
+                if (n.id !== params.target || !n.data?.config?.inputs) return n;
+
+                let changed = false;
+                const updatedInputs = n.data.config.inputs.map((inp: any) => {
+                    if (inp.value && String(inp.value).trim() !== '') return inp;
+                    const match = parentOutputs.find((o: any) => o.name === inp.name);
+                    if (match) {
+                        changed = true;
+                        return { ...inp, value: '${' + match.name + '}' };
+                    }
+                    return inp;
+                });
+
+                if (!changed) return n;
+                return { ...n, data: { ...n.data, config: { ...n.data.config, inputs: updatedInputs } } };
+            }));
+        },
+        [setEdges, nodes, setNodes],
     );
 
     const onNodesChange = useCallback(
