@@ -13,6 +13,7 @@ import StringProperty from "~/components/propertyMenu/stringProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
 import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
 import FormBuilder from "~/components/propertyMenu/formBuilder";
+import KeyValueProperty from "~/components/propertyMenu/keyValueProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
@@ -179,6 +180,18 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         }
 
                                         switch (i.type) {
+                                            case "key_value_array":
+                                                return (
+                                                    <KeyValueProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value || "[]"}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
                                             case "qr":
                                                 return (
                                                     <QRProperty
