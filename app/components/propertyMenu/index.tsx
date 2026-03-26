@@ -36,12 +36,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
     const [ loading, setLoading ] = useState<boolean>(false);
     const [ name, setName ] = useState<string>(props.node && props.node.data && props.node.data.config && props.node.data.config.label ? props.node.data.config.label : "");
     const [ showHelp, setShowHelp ] = useState<boolean>(false);
+    const [ localValues, setLocalValues ] = useState<Record<string, any>>({});
 
     const onValueChange = (property: string, value: any) => {
+        setLocalValues(prev => ({ ...prev, [property]: value }));
         if (props.onValueChange) {
             props.onValueChange(props.node.data.id, property, value);
         }
     }
+
+    // Reset local values when node changes
+    React.useEffect(() => {
+        setLocalValues({});
+    }, [props.node?.data?.id]);
 
     const handleDismiss = () => {
         if (props.onDismiss) {
@@ -140,7 +147,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         // Conditional visibility via visible_when
                                         if (i.visible_when) {
                                             const refInput = props.node.data.config.inputs.find((x: any) => x.name === i.visible_when.field);
-                                            const refValue = refInput?.value ?? '';
+                                            const refValue = localValues[i.visible_when.field] ?? refInput?.value ?? '';
                                             if (!i.visible_when.values.includes(refValue)) return null;
                                         }
 
