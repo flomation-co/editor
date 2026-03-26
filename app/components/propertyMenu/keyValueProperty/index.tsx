@@ -85,13 +85,17 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                     <div key={i} className="kv-item">
                         {editIndex === i ? (
                             <div className="kv-edit-row">
-                                <input
-                                    className="kv-input"
-                                    placeholder="Key"
-                                    value={editKey}
-                                    onChange={e => setEditKey(e.target.value)}
-                                    autoFocus
-                                />
+                                <div className="kv-variable-wrap">
+                                    <VariableInput
+                                        nodeId={props.nodeId}
+                                        name={`${props.name}_editkey_${i}`}
+                                        placeholder="Key"
+                                        label=""
+                                        value={editKey}
+                                        variables={props.variables ?? []}
+                                        onValueChange={(_, v) => setEditKey(v)}
+                                    />
+                                </div>
                                 <div className="kv-variable-wrap">
                                     <VariableInput
                                         nodeId={props.nodeId}
@@ -128,14 +132,17 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                 {addingNew && (
                     <div className="kv-item kv-item--new">
                         <div className="kv-edit-row">
-                            <input
-                                className="kv-input"
-                                placeholder="Key"
-                                value={newKey}
-                                onChange={e => setNewKey(e.target.value)}
-                                autoFocus
-                                onKeyDown={e => e.key === "Enter" && addPair()}
-                            />
+                            <div className="kv-variable-wrap">
+                                <VariableInput
+                                    nodeId={props.nodeId}
+                                    name={`${props.name}_newkey`}
+                                    placeholder="Key"
+                                    label=""
+                                    value={newKey}
+                                    variables={props.variables ?? []}
+                                    onValueChange={(_, v) => setNewKey(v)}
+                                />
+                            </div>
                             <div className="kv-variable-wrap">
                                 <VariableInput
                                     nodeId={props.nodeId}
