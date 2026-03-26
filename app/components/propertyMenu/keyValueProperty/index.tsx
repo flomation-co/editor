@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faXmark, faPencil, faCheck } from "@fortawesome/free-solid-svg-icons";
+import VariableInput, { type VariableItem } from "~/components/propertyMenu/variableInput";
 import "./index.css";
 
 type KeyValuePair = {
@@ -13,6 +14,7 @@ type KeyValuePropertyProps = {
     name: string;
     label: string;
     value: string;
+    variables?: VariableItem[];
     onValueChange?: (property: string, value: any) => void;
 };
 
@@ -90,12 +92,17 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                                     onChange={e => setEditKey(e.target.value)}
                                     autoFocus
                                 />
-                                <input
-                                    className="kv-input"
-                                    placeholder="Value"
-                                    value={editValue}
-                                    onChange={e => setEditValue(e.target.value)}
-                                />
+                                <div className="kv-variable-wrap">
+                                    <VariableInput
+                                        nodeId={props.nodeId}
+                                        name={`${props.name}_edit_${i}`}
+                                        placeholder="Value"
+                                        label=""
+                                        value={editValue}
+                                        variables={props.variables ?? []}
+                                        onValueChange={(_, v) => setEditValue(v)}
+                                    />
+                                </div>
                                 <button className="kv-icon-btn kv-icon-btn--save" onClick={saveEdit}>
                                     <FontAwesomeIcon icon={faCheck} />
                                 </button>
@@ -129,13 +136,17 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                                 autoFocus
                                 onKeyDown={e => e.key === "Enter" && addPair()}
                             />
-                            <input
-                                className="kv-input"
-                                placeholder="Value"
-                                value={newValue}
-                                onChange={e => setNewValue(e.target.value)}
-                                onKeyDown={e => e.key === "Enter" && addPair()}
-                            />
+                            <div className="kv-variable-wrap">
+                                <VariableInput
+                                    nodeId={props.nodeId}
+                                    name={`${props.name}_new`}
+                                    placeholder="Value (supports ${...})"
+                                    label=""
+                                    value={newValue}
+                                    variables={props.variables ?? []}
+                                    onValueChange={(_, v) => setNewValue(v)}
+                                />
+                            </div>
                             <button className="kv-icon-btn kv-icon-btn--save" onClick={addPair}>
                                 <FontAwesomeIcon icon={faCheck} />
                             </button>

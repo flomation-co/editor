@@ -188,6 +188,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={props.node.data.id + "-" + i.name}
                                                         value={i.value || "[]"}
+                                                        variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
