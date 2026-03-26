@@ -11,7 +11,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
-import {faLink, faSpinner, faRotateRight, faXmark, faClock, faArrowUpRightFromSquare, faChevronDown, faChevronUp} from "@fortawesome/pro-solid-svg-icons";
+import {faLink, faSpinner, faRotateRight, faXmark, faClock, faArrowUpRightFromSquare, faChevronDown, faChevronUp, faBan} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
@@ -36,6 +36,7 @@ export default function ExecutionDetail() {
     const { id: executionID } = useParams();
     const [ exec, setExec ] = useState<Execution>();
     const [ isRerunning, setIsRerunning ] = useState<boolean>(false);
+    const [ isCancelling, setIsCancelling ] = useState<boolean>(false);
     const { showToast } = useToast();
 
     const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
@@ -99,6 +100,27 @@ export default function ExecutionDetail() {
                 showToast("Failed to re-run flow", "error");
             })
             .finally(() => setIsRerunning(false));
+    };
+
+    const cancelExecution = () => {
+        if (!exec || isCancelling) return;
+        setIsCancelling(true);
+
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + `/api/v1/execution/${executionID}/cancel`;
+
+        api.post(url, null, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                showToast("Execution cancelled");
+                queryExecutionState();
+            })
+            .catch(error => {
+                console.error(error);
+                showToast("Failed to cancel execution", "error");
+            })
+            .finally(() => setIsCancelling(false));
     };
 
     // Initial fetch
@@ -196,6 +218,11 @@ export default function ExecutionDetail() {
                             <div className="exec-header-status"><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div>
                         </div>
                         <div className="exec-header-right">
+                            {exec.completion_status === "pending" && (
+                                <button className="cancel-button" onClick={cancelExecution} disabled={isCancelling}>
+                                    <FontAwesomeIcon icon={isCancelling ? faSpinner : faBan} spin={isCancelling} /> Cancel
+                                </button>
+                            )}
                             {exec.completion_status !== "pending" && (
                                 <button className="rerun-button" onClick={rerunExecution} disabled={isRerunning}>
                                     <FontAwesomeIcon icon={isRerunning ? faSpinner : faRotateRight} spin={isRerunning} /> Re-run

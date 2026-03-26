@@ -76,6 +76,31 @@
     cursor: not-allowed;
 }
 
+.cancel-button {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s ease;
+}
+
+.cancel-button:hover {
+    opacity: 0.85;
+}
+
+.cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ── Metadata chips ── */
 .exec-meta-bar {
     display: flex;
