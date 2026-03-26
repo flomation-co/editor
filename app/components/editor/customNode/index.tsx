@@ -51,7 +51,16 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
     const hasIncompleteRequired = useMemo(() => {
         if (!data?.config?.inputs) return false;
-        return data.config.inputs.some(i => i.required && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
+        return data.config.inputs.some(i => {
+            if (!i.required) return false;
+            // Skip hidden inputs (visible_when condition not met)
+            if (i.visible_when) {
+                const ref = data.config.inputs.find((x: any) => x.name === i.visible_when.field);
+                const refValue = ref?.value ?? '';
+                if (!i.visible_when.values.includes(refValue)) return false;
+            }
+            return !i.value || (typeof i.value === 'string' && i.value.trim() === '');
+        });
     }, [data?.config?.inputs]);
 
     const effectiveColours = hasIncompleteRequired
