@@ -5,6 +5,7 @@ include:
 
 stages:
   - prepare
+  - sync
   - test
   - build
   - rpm-publish
@@ -214,3 +215,11 @@ Deploy to Live:
     - aws s3 cp s3://${DEPLOY_BUCKET}/deploy-application-aws.sh .
     - chmod +x deploy-application-aws.sh
     - ENVIRONMENT=${ENVIRONMENT} APPLICATION=${NAME} ./deploy-application-aws.sh
+
+  sync-to-github:
+    extends: .sync-to-github-template
+    variables:
+      GIT_DEPTH: 0
+    only:
+      - main
+
