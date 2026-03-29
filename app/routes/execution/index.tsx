@@ -133,48 +133,65 @@ export default function ExecutionDetail() {
         if (!exec || exec.completion_status !== "pending") return;
 
         const config = useConfig();
-        const url = config("AUTOMATE_API_URL") + '/api/v1/execution/' + executionID + '/stream?token=' + encodeURIComponent(token);
+        let eventSource: EventSource | null = null;
 
-        const eventSource = new EventSource(url);
+        // Exchange JWT for a short-lived stream token before opening EventSource
+        fetch(config("AUTOMATE_API_URL") + '/api/v1/auth/stream-token', {
+            method: 'POST',
+            headers: { Authorization: "Bearer " + token },
+        })
+        .then(res => res.json())
+        .then(data => {
+            const streamToken = data.token || token;
+            const url = config("AUTOMATE_API_URL") + '/api/v1/execution/' + executionID + '/stream?token=' + encodeURIComponent(streamToken);
+            eventSource = new EventSource(url);
 
-        eventSource.onmessage = (event) => {
-            setStreamingLogs(prev => [...prev, event.data]);
-        };
+            eventSource.onmessage = (event) => {
+                setStreamingLogs(prev => [...prev, event.data]);
+            };
 
-        eventSource.addEventListener("status", (event) => {
-            setExec(prev => prev ? {...prev, execution_status: event.data} : prev);
-        });
+            eventSource.addEventListener("status", (event) => {
+                setExec(prev => prev ? {...prev, execution_status: event.data} : prev);
+            });
 
-        eventSource.addEventListener("node", (event) => {
-            try {
-                const nodeData = JSON.parse(event.data) as NodeStatus;
-                setNodeStatuses(prev => {
-                    const next = new Map(prev);
-                    const existing = next.get(nodeData.id);
-                    next.set(nodeData.id, { ...existing, ...nodeData });
-                    return next;
-                });
-            } catch (e) {
-                console.error("Failed to parse node event", e);
-            }
-        });
+            eventSource.addEventListener("node", (event) => {
+                try {
+                    const nodeData = JSON.parse(event.data) as NodeStatus;
+                    setNodeStatuses(prev => {
+                        const next = new Map(prev);
+                        const existing = next.get(nodeData.id);
+                        next.set(nodeData.id, { ...existing, ...nodeData });
+                        return next;
+                    });
+                } catch (e) {
+                    console.error("Failed to parse node event", e);
+                }
+            });
 
-        eventSource.addEventListener("complete", () => {
-            eventSource.close();
-            queryExecutionState();
-        });
+            eventSource.addEventListener("complete", () => {
+                eventSource?.close();
+                queryExecutionState();
+            });
 
-        eventSource.onerror = () => {
-            eventSource.close();
+            eventSource.onerror = () => {
+                eventSource?.close();
+                const interval = setInterval(() => {
+                    queryExecutionState();
+                }, 2000);
+
+                return () => clearInterval(interval);
+            };
+        })
+        .catch(() => {
+            // Fall back to polling if stream token exchange fails
             const interval = setInterval(() => {
                 queryExecutionState();
             }, 2000);
-
             return () => clearInterval(interval);
-        };
+        });
 
         return () => {
-            eventSource.close();
+            eventSource?.close();
         };
     }, [ exec?.completion_status, executionID ]);
 
