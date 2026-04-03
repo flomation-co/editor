@@ -303,3 +303,28 @@
     font-size: 13px;
     color: rgba(255, 255, 255, 0.45);
 }
+
+/* Channel cards */
+.agent-channel-card {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.agent-channel-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.agent-channel-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.create-agent-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}

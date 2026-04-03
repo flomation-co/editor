@@ -3,9 +3,10 @@ import Container from "~/components/container";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback} from "react";
-import type {Agent, AgentSession, AgentState} from "~/types";
+import type {Agent, AgentChannel, AgentSession, AgentState} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faTelegram} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
@@ -23,7 +24,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-type Tab = 'config' | 'sessions' | 'state';
+type Tab = 'config' | 'channels' | 'sessions' | 'state';
 
 export default function AgentDetail() {
     const { id } = useParams();
@@ -47,6 +48,7 @@ export default function AgentDetail() {
     const [idleTimeout, setIdleTimeout] = useState(3600);
     const [maxPerHour, setMaxPerHour] = useState(100);
     const [requiresApproval, setRequiresApproval] = useState(false);
+    const [channels, setChannels] = useState<AgentChannel[]>([]);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
 
@@ -64,6 +66,7 @@ export default function AgentDetail() {
                     setIdleTimeout(a.idle_timeout_seconds);
                     setMaxPerHour(a.max_executions_per_hour);
                     setRequiresApproval(a.requires_approval);
+                    setChannels(a.channels || []);
                 }
             })
             .catch(error => console.error(error))
@@ -99,7 +102,7 @@ export default function AgentDetail() {
             idle_timeout_seconds: idleTimeout,
             max_executions_per_hour: maxPerHour,
             requires_approval: requiresApproval,
-            channels: agent?.channels || [],
+            channels: channels,
         }, { headers })
             .then(() => loadAgent())
             .catch(error => console.error(error))
@@ -195,6 +198,7 @@ export default function AgentDetail() {
 
                 <div className="agent-tabs">
                     <button className={`agent-tab ${activeTab === 'config' ? 'active' : ''}`} onClick={() => setActiveTab('config')}>Configuration</button>
+                    <button className={`agent-tab ${activeTab === 'channels' ? 'active' : ''}`} onClick={() => setActiveTab('channels')}>Channels</button>
                     <button className={`agent-tab ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => setActiveTab('sessions')}>Sessions</button>
                     <button className={`agent-tab ${activeTab === 'state' ? 'active' : ''}`} onClick={() => setActiveTab('state')}>State</button>
                 </div>
@@ -249,6 +253,115 @@ export default function AgentDetail() {
                         <button className="agent-save-btn" onClick={handleSave} disabled={saving}>
                             {saving ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Save Changes'}
                         </button>
+                    </div>
+                )}
+
+                {activeTab === 'channels' && (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
+                                Communication channels for this agent
+                            </span>
+                            <button className="create-agent-btn" style={{ marginTop: 0, padding: '6px 14px', fontSize: 12 }}
+                                onClick={() => setChannels([...channels, { type: 'telegram', config: { bot_token: '' } }])}>
+                                <FontAwesomeIcon icon={faPlus} /> Add Channel
+                            </button>
+                        </div>
+
+                        {channels.length === 0 && (
+                            <div className="agent-empty-state">
+                                No channels configured. Add a channel to allow your agent to receive messages.
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            {channels.map((ch, idx) => (
+                                <div key={idx} className="agent-channel-card">
+                                    <div className="agent-channel-card-header">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <FontAwesomeIcon icon={faTelegram} style={{ color: '#229ED9', fontSize: 18 }} />
+                                            <select
+                                                className="agent-form-input"
+                                                style={{ width: 'auto', padding: '4px 10px' }}
+                                                value={ch.type}
+                                                onChange={e => {
+                                                    const updated = [...channels];
+                                                    updated[idx] = { type: e.target.value as AgentChannel['type'], config: {} };
+                                                    setChannels(updated);
+                                                }}
+                                            >
+                                                <option value="telegram">Telegram</option>
+                                                <option value="email">Email</option>
+                                                <option value="webhook">Webhook</option>
+                                            </select>
+                                        </div>
+                                        <button className="agent-action-btn delete" style={{ padding: '4px 8px' }}
+                                            onClick={() => setChannels(channels.filter((_, i) => i !== idx))}>
+                                            <FontAwesomeIcon icon={faTimes} />
+                                        </button>
+                                    </div>
+
+                                    {ch.type === 'telegram' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Bot Token</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.bot_token || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, bot_token: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label">Allowed Chat IDs (optional, comma-separated)</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.allowed_chat_ids?.join(', ') || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        const ids = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                                                        updated[idx] = { ...ch, config: { ...ch.config, allowed_chat_ids: ids } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="12345678, -100987654"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'email' && (
+                                        <div style={{ marginTop: 12, color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>
+                                            Email channel configuration will be available in a future update.
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'webhook' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label">Webhook URL</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    readOnly
+                                                    value={`${config("LAUNCH_URL") || 'https://launch.flomation.app'}/webhook/agent/${id}`}
+                                                    style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {channels.length > 0 && (
+                            <button className="agent-save-btn" onClick={handleSave} disabled={saving} style={{ marginTop: 16 }}>
+                                {saving ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Save Channels'}
+                            </button>
+                        )}
                     </div>
                 )}
 
