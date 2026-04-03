@@ -223,10 +223,16 @@ export default function AgentDetail() {
                                 <input className="agent-form-input" type="number" value={idleTimeout} onChange={e => setIdleTimeout(parseInt(e.target.value) || 0)} min={0} />
                             </div>
                             <div className="agent-form-group">
-                                <label className="agent-form-label">
-                                    <input type="checkbox" checked={requiresApproval} onChange={e => setRequiresApproval(e.target.checked)} style={{ marginRight: 8 }} />
-                                    Require Approval Before Executing
-                                </label>
+                                <label className="agent-form-label">Require Approval</label>
+                                <div className="agent-toggle-row">
+                                    <label className="agent-toggle">
+                                        <input type="checkbox" checked={requiresApproval} onChange={e => setRequiresApproval(e.target.checked)} />
+                                        <span className="agent-toggle-slider"></span>
+                                    </label>
+                                    <span className="agent-toggle-label">
+                                        {requiresApproval ? 'Executions require manual approval' : 'Executions dispatch automatically'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
