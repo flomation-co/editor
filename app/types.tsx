@@ -395,6 +395,11 @@ export const PERMISSIONS = {
     ENVIRONMENT_VIEW: "environment.view",
     BILLING_MANAGE: "billing.manage",
     BILLING_VIEW: "billing.view",
+    AGENT_VIEW: "agent.view",
+    AGENT_CREATE: "agent.create",
+    AGENT_EDIT: "agent.edit",
+    AGENT_DELETE: "agent.delete",
+    AGENT_START_STOP: "agent.start_stop",
 } as const;
 
 export const PERMISSION_CATEGORIES = [
@@ -433,6 +438,16 @@ export const PERMISSION_CATEGORIES = [
         permissions: [
             { key: PERMISSIONS.BILLING_VIEW, label: "View Billing" },
             { key: PERMISSIONS.BILLING_MANAGE, label: "Manage Billing" },
+        ]
+    },
+    {
+        name: "Agents",
+        permissions: [
+            { key: PERMISSIONS.AGENT_VIEW, label: "View Agents" },
+            { key: PERMISSIONS.AGENT_CREATE, label: "Create Agents" },
+            { key: PERMISSIONS.AGENT_EDIT, label: "Edit Agents" },
+            { key: PERMISSIONS.AGENT_DELETE, label: "Delete Agents" },
+            { key: PERMISSIONS.AGENT_START_STOP, label: "Start/Stop Agents" },
         ]
     },
 ] as const;
