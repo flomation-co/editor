@@ -76,7 +76,12 @@ export default function Executions() {
     const [ offset, setOffset ] = useState<number>(0);
     const [ limit, setLimit ] = useState<number>(10);
     const [ disableRightPagination, setDisableRightPagination ] = useState<boolean>(false);
-    const [ hideAgentChildren, setHideAgentChildren ] = useState<boolean>(true);
+    const [ hideAgentChildren, setHideAgentChildren ] = useState<boolean>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('flomation-hide-agent-execs') === 'true';
+        }
+        return false;
+    });
 
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
@@ -210,7 +215,10 @@ export default function Executions() {
 
             <div className="exec-controls-bar">
                 <label className="exec-agent-filter" title="Hide executions triggered by agents">
-                    <input type="checkbox" checked={hideAgentChildren} onChange={e => setHideAgentChildren(e.target.checked)} />
+                    <input type="checkbox" checked={hideAgentChildren} onChange={e => {
+                        setHideAgentChildren(e.target.checked);
+                        localStorage.setItem('flomation-hide-agent-execs', String(e.target.checked));
+                    }} />
                     <span className="exec-agent-filter-slider"></span>
                     <span className="exec-agent-filter-label">Hide agent executions</span>
                 </label>
