@@ -39,6 +39,7 @@ export default function Executions() {
     const [ offset, setOffset ] = useState<number>(0);
     const [ limit, setLimit ] = useState<number>(10);
     const [ disableRightPagination, setDisableRightPagination ] = useState<boolean>(false);
+    const [ hideAgentChildren, setHideAgentChildren ] = useState<boolean>(true);
 
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
@@ -87,6 +88,9 @@ export default function Executions() {
             url += "&";
         }
         url += "offset=" + offset + "&limit=" + limit;
+        if (hideAgentChildren) {
+            url += "&root_only=true";
+        }
 
         api.get(url, {
             signal: controller.signal,
@@ -106,7 +110,7 @@ export default function Executions() {
     // Initial fetch + on filter change
     useEffect(() => {
         fetchExecutions();
-    }, [search, offset, limit]);
+    }, [search, offset, limit, hideAgentChildren]);
 
     // Auto-refresh interval
     useEffect(() => {
@@ -166,6 +170,14 @@ export default function Executions() {
             <div className={"header"}>Executions</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
+
+            <div className="exec-controls-bar">
+                <label className="exec-agent-filter" title="Hide executions triggered by agents">
+                    <input type="checkbox" checked={hideAgentChildren} onChange={e => setHideAgentChildren(e.target.checked)} />
+                    <span className="exec-agent-filter-slider"></span>
+                    <span className="exec-agent-filter-label">Hide agent executions</span>
+                </label>
+            </div>
 
             <div className="exec-refresh-bar">
                 <div className="exec-refresh-bar-label">Auto-refresh</div>
