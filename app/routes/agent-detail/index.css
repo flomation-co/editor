@@ -304,6 +304,69 @@
     color: rgba(255, 255, 255, 0.45);
 }
 
+/* Flow autocomplete dropdown */
+.flow-autocomplete {
+    position: relative;
+}
+
+.flow-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: rgba(18, 18, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 4px;
+    z-index: 50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+}
+
+.flow-autocomplete-dropdown::-webkit-scrollbar { width: 4px; }
+.flow-autocomplete-dropdown::-webkit-scrollbar-track { background: transparent; }
+.flow-autocomplete-dropdown::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+
+.flow-autocomplete-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.flow-autocomplete-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.flow-autocomplete-option--selected {
+    background: rgba(0, 170, 156, 0.1);
+    color: #00aa9c;
+}
+
+.flow-autocomplete-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00aa9c;
+    flex-shrink: 0;
+}
+
+.flow-autocomplete-empty {
+    padding: 12px 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
 /* Channel cards */
 .agent-channel-card {
     padding: 16px;

@@ -2,7 +2,7 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState, useCallback, useRef} from "react";
 import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
@@ -51,6 +51,9 @@ export default function AgentDetail() {
     const [channels, setChannels] = useState<AgentChannel[]>([]);
     const [orchestratorFlowId, setOrchestratorFlowId] = useState<string>('');
     const [availableFlows, setAvailableFlows] = useState<Flo[]>([]);
+    const [flowSearch, setFlowSearch] = useState('');
+    const [showFlowDropdown, setShowFlowDropdown] = useState(false);
+    const flowDropdownRef = useRef<HTMLDivElement>(null);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
     const flowsUrl = config("AUTOMATE_API_URL") + '/api/v1/flo';
@@ -101,6 +104,23 @@ export default function AgentDetail() {
         if (activeTab === 'sessions') loadSessions();
         if (activeTab === 'state') loadState();
     }, [activeTab]);
+
+    // Close flow dropdown when clicking outside
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (flowDropdownRef.current && !flowDropdownRef.current.contains(e.target as Node)) {
+                setShowFlowDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const selectedFlow = availableFlows.find(f => f.id === orchestratorFlowId);
+    const sortedFlows = [...availableFlows].sort((a, b) => a.name.localeCompare(b.name));
+    const filteredFlows = sortedFlows.filter(f =>
+        f.name.toLowerCase().includes(flowSearch.toLowerCase())
+    );
 
     const handleSave = () => {
         setSaving(true);
@@ -226,23 +246,42 @@ export default function AgentDetail() {
                             <input className="agent-form-input" value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this agent do?" />
                         </div>
 
-                        <div className="agent-form-group">
+                        <div className="agent-form-group" ref={flowDropdownRef}>
                             <label className="agent-form-label">Orchestrator Flow</label>
-                            <select
-                                className="agent-form-input"
-                                value={orchestratorFlowId}
-                                onChange={e => setOrchestratorFlowId(e.target.value)}
-                            >
-                                <option value="">None — no flow triggered on messages</option>
-                                {availableFlows.map(f => (
-                                    <option key={f.id} value={f.id}>{f.name}</option>
-                                ))}
-                            </select>
+                            <div className="flow-autocomplete">
+                                <input
+                                    className="agent-form-input"
+                                    value={showFlowDropdown ? flowSearch : (selectedFlow?.name || '')}
+                                    onChange={e => { setFlowSearch(e.target.value); setShowFlowDropdown(true); }}
+                                    onFocus={() => { setFlowSearch(''); setShowFlowDropdown(true); }}
+                                    placeholder="Search flows..."
+                                />
+                                {showFlowDropdown && (
+                                    <div className="flow-autocomplete-dropdown">
+                                        <div
+                                            className={`flow-autocomplete-option ${!orchestratorFlowId ? 'flow-autocomplete-option--selected' : ''}`}
+                                            onClick={() => { setOrchestratorFlowId(''); setShowFlowDropdown(false); }}
+                                        >
+                                            <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>None — no flow triggered on messages</span>
+                                        </div>
+                                        {filteredFlows.map(f => (
+                                            <div
+                                                key={f.id}
+                                                className={`flow-autocomplete-option ${orchestratorFlowId === f.id ? 'flow-autocomplete-option--selected' : ''}`}
+                                                onClick={() => { setOrchestratorFlowId(f.id); setShowFlowDropdown(false); }}
+                                            >
+                                                <div className="flow-autocomplete-dot" />
+                                                {f.name}
+                                            </div>
+                                        ))}
+                                        {filteredFlows.length === 0 && (
+                                            <div className="flow-autocomplete-empty">No flows found</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 4, display: 'block' }}>
                                 This flow will be triggered each time the agent receives a message.
-                                {orchestratorFlowId && agent?.orchestrator_flow_name && (
-                                    <> Currently: <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{agent.orchestrator_flow_name}</strong></>
-                                )}
                             </span>
                         </div>
 
