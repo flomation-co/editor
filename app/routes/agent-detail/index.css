@@ -22,6 +22,36 @@
     margin: 0;
 }
 
+.agent-id-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.agent-id-value {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    font-family: monospace;
+    letter-spacing: 0.3px;
+}
+
+.agent-id-copy {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.agent-id-copy:hover {
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .agent-detail-actions {
     display: flex;
     gap: 8px;

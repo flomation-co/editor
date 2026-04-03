@@ -5,7 +5,7 @@ import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
 import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes, faCopy, faCheck} from "@fortawesome/free-solid-svg-icons";
 import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
@@ -53,6 +53,7 @@ export default function AgentDetail() {
     const [availableFlows, setAvailableFlows] = useState<Flo[]>([]);
     const [flowSearch, setFlowSearch] = useState('');
     const [showFlowDropdown, setShowFlowDropdown] = useState(false);
+    const [idCopied, setIdCopied] = useState(false);
     const flowDropdownRef = useRef<HTMLDivElement>(null);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
@@ -192,7 +193,23 @@ export default function AgentDetail() {
                             <FontAwesomeIcon icon={faArrowLeft} />
                         </button>
                         <FontAwesomeIcon icon={faRobot} style={{ color: '#c084fc', fontSize: 20 }} />
-                        <h1>{agent.name}</h1>
+                        <div>
+                            <h1>{agent.name}</h1>
+                            <div className="agent-id-row">
+                                <span className="agent-id-value">{agent.id}</span>
+                                <button
+                                    className="agent-id-copy"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(agent.id);
+                                        setIdCopied(true);
+                                        setTimeout(() => setIdCopied(false), 2000);
+                                    }}
+                                    title="Copy Agent ID"
+                                >
+                                    <FontAwesomeIcon icon={idCopied ? faCheck : faCopy} />
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="agent-detail-actions">
