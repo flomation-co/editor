@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
 import type {Agent, AgentChannel} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpinner, faRobot, faPlus, faEnvelope, faComment, faGlobe} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram} from "@fortawesome/free-brands-svg-icons";
+import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useNavigate} from "react-router";
 import dayjs from "dayjs";
@@ -26,6 +26,7 @@ export function meta({}: Route.MetaArgs) {
 
 const CHANNEL_ICONS: Record<string, any> = {
     telegram: faTelegram,
+    slack: faSlack,
     email: faEnvelope,
     webhook: faGlobe,
 };

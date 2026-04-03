@@ -6,7 +6,7 @@ import {useEffect, useState, useCallback, useRef} from "react";
 import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram} from "@fortawesome/free-brands-svg-icons";
+import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
@@ -349,7 +349,9 @@ export default function AgentDetail() {
                                 <div key={idx} className="agent-channel-card">
                                     <div className="agent-channel-card-header">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <FontAwesomeIcon icon={faTelegram} style={{ color: '#229ED9', fontSize: 18 }} />
+                                            {ch.type === 'telegram' && <FontAwesomeIcon icon={faTelegram} style={{ color: '#229ED9', fontSize: 18 }} />}
+                                            {ch.type === 'slack' && <FontAwesomeIcon icon={faSlack} style={{ color: '#E01E5A', fontSize: 18 }} />}
+                                            {(ch.type === 'webhook' || ch.type === 'email') && <FontAwesomeIcon icon={faRobot} style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
                                             <select
                                                 className="agent-form-input"
                                                 style={{ width: 'auto', padding: '4px 10px' }}
@@ -361,6 +363,7 @@ export default function AgentDetail() {
                                                 }}
                                             >
                                                 <option value="telegram">Telegram</option>
+                                                <option value="slack">Slack</option>
                                                 <option value="email">Email</option>
                                                 <option value="webhook">Webhook</option>
                                             </select>
@@ -400,6 +403,51 @@ export default function AgentDetail() {
                                                     }}
                                                     placeholder="12345678, -100987654"
                                                 />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'slack' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Bot Token</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.bot_token || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, bot_token: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="xoxb-..."
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Signing Secret (optional, for request verification)</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.signing_secret || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, signing_secret: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Slack App signing secret"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label">Events API Request URL</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    readOnly
+                                                    value={`${config("LAUNCH_URL") || 'https://launch.flomation.app'}/webhook/slack/${id}`}
+                                                    style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text' }}
+                                                />
+                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                    Paste this URL in your Slack App's Event Subscriptions settings.
+                                                </span>
                                             </div>
                                         </div>
                                     )}
