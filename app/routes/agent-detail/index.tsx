@@ -5,7 +5,7 @@ import api from "~/lib/api";
 import {useEffect, useState, useCallback} from "react";
 import type {Agent, AgentSession, AgentState} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash} from "@fortawesome/free-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
@@ -124,6 +124,13 @@ export default function AgentDetail() {
             .catch(error => console.error(error));
     };
 
+    const handleDelete = () => {
+        if (!confirm(`Are you sure you want to delete "${agent?.name}"? This cannot be undone.`)) return;
+        api.delete(baseUrl, { headers })
+            .then(() => navigate('/agent'))
+            .catch(error => console.error(error));
+    };
+
     if (loading) {
         return (
             <Container>
@@ -180,6 +187,9 @@ export default function AgentDetail() {
                                 </button>
                             </>
                         )}
+                        <button className="agent-action-btn delete" onClick={handleDelete} title="Delete agent">
+                            <FontAwesomeIcon icon={faTrash} />
+                        </button>
                     </div>
                 </div>
 
