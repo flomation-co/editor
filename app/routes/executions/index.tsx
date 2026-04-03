@@ -166,7 +166,7 @@ export default function Executions() {
         }, refreshInterval);
 
         return () => clearInterval(timer);
-    }, [refreshInterval, search, offset, limit]);
+    }, [refreshInterval, search, offset, limit, hideAgentChildren]);
 
     function handleUpdateSearch(term) {
         setSearch(term);
