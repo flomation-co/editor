@@ -3,7 +3,7 @@ import Container from "~/components/container";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback} from "react";
-import type {Agent, AgentChannel, AgentSession, AgentState} from "~/types";
+import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {faTelegram} from "@fortawesome/free-brands-svg-icons";
@@ -49,8 +49,11 @@ export default function AgentDetail() {
     const [maxPerHour, setMaxPerHour] = useState(100);
     const [requiresApproval, setRequiresApproval] = useState(false);
     const [channels, setChannels] = useState<AgentChannel[]>([]);
+    const [orchestratorFlowId, setOrchestratorFlowId] = useState<string>('');
+    const [availableFlows, setAvailableFlows] = useState<Flo[]>([]);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
+    const flowsUrl = config("AUTOMATE_API_URL") + '/api/v1/flo';
 
     const loadAgent = useCallback(() => {
         setLoading(true);
@@ -67,11 +70,18 @@ export default function AgentDetail() {
                     setMaxPerHour(a.max_executions_per_hour);
                     setRequiresApproval(a.requires_approval);
                     setChannels(a.channels || []);
+                    setOrchestratorFlowId(a.orchestrator_flow_id || '');
                 }
             })
             .catch(error => console.error(error))
             .finally(() => setLoading(false));
     }, [id]);
+
+    const loadFlows = useCallback(() => {
+        api.get(flowsUrl, { headers })
+            .then(response => { if (response?.data) setAvailableFlows(response.data); })
+            .catch(() => {});
+    }, []);
 
     const loadSessions = useCallback(() => {
         api.get(baseUrl + '/session?limit=20', { headers })
@@ -85,7 +95,7 @@ export default function AgentDetail() {
             .catch(() => {});
     }, [id]);
 
-    useEffect(() => { loadAgent(); }, [loadAgent]);
+    useEffect(() => { loadAgent(); loadFlows(); }, [loadAgent]);
 
     useEffect(() => {
         if (activeTab === 'sessions') loadSessions();
@@ -103,6 +113,7 @@ export default function AgentDetail() {
             max_executions_per_hour: maxPerHour,
             requires_approval: requiresApproval,
             channels: channels,
+            orchestrator_flow_id: orchestratorFlowId || null,
         }, { headers })
             .then(() => loadAgent())
             .catch(error => console.error(error))
@@ -213,6 +224,26 @@ export default function AgentDetail() {
                         <div className="agent-form-group">
                             <label className="agent-form-label">Description</label>
                             <input className="agent-form-input" value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this agent do?" />
+                        </div>
+
+                        <div className="agent-form-group">
+                            <label className="agent-form-label">Orchestrator Flow</label>
+                            <select
+                                className="agent-form-input"
+                                value={orchestratorFlowId}
+                                onChange={e => setOrchestratorFlowId(e.target.value)}
+                            >
+                                <option value="">None — no flow triggered on messages</option>
+                                {availableFlows.map(f => (
+                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                ))}
+                            </select>
+                            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 4, display: 'block' }}>
+                                This flow will be triggered each time the agent receives a message.
+                                {orchestratorFlowId && agent?.orchestrator_flow_name && (
+                                    <> Currently: <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{agent.orchestrator_flow_name}</strong></>
+                                )}
+                            </span>
                         </div>
 
                         <div className="agent-form-group">
