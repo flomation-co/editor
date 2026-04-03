@@ -1,0 +1,78 @@
+.agent-session-view {
+    max-width: 900px;
+}
+
+.agent-session-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.agent-session-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.message-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.message-bubble.inbound {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    border-bottom-left-radius: 4px;
+}
+
+.message-bubble.outbound {
+    align-self: flex-end;
+    background: rgba(70, 0, 112, 0.2);
+    border: 1px solid rgba(70, 0, 112, 0.3);
+    color: #e0c8ff;
+    border-bottom-right-radius: 4px;
+}
+
+.message-bubble.system {
+    align-self: center;
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.15);
+    color: rgba(255, 193, 7, 0.7);
+    font-size: 12px;
+    max-width: 90%;
+    text-align: center;
+}
+
+.message-meta {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 4px;
+    display: flex;
+    gap: 8px;
+}
+
+.message-sender {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.session-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}

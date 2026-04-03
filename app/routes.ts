@@ -27,6 +27,12 @@ export default [
         route(":id", "routes/editor/index.tsx", {id: "edit-flo"})
     ]),
 
+    ...prefix("agent", [
+        index("routes/agents/index.tsx", {id: "list-agents"}),
+        route(":id", "routes/agent-detail/index.tsx", {id: "view-agent"}),
+        route(":id/session/:sessionId", "routes/agent-session/index.tsx", {id: "view-agent-session"})
+    ]),
+
     ...prefix("execution", [
         index("routes/executions/index.tsx", {id: "list-executions"}),
         route(":id", "routes/execution/index.tsx", {id: "view-execution"})

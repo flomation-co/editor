@@ -312,6 +312,76 @@ export type FlomationExport = {
     }
 }
 
+// Agent types
+
+export type Agent = {
+    id: string,
+    name: string,
+    description?: string,
+    owner_id: string,
+    organisation_id?: string,
+    environment_id?: string,
+    queue_id?: string,
+    system_prompt?: string,
+    orchestrator_flow_id?: string,
+    max_concurrent_executions: number,
+    idle_timeout_seconds: number,
+    channels: AgentChannel[],
+    allowed_flow_ids?: string[],
+    requires_approval: boolean,
+    max_executions_per_hour: number,
+    status: 'stopped' | 'running' | 'paused' | 'error',
+    started_at?: string,
+    stopped_at?: string,
+    created_at: string,
+    updated_at: string,
+    archived_at?: string,
+    active_session_id?: string,
+    message_count: number,
+    execution_count: number,
+    last_active_at?: string,
+    orchestrator_flow_name?: string,
+    environment_name?: string,
+}
+
+export type AgentChannel = {
+    type: 'telegram' | 'email' | 'webhook',
+    config: Record<string, any>
+}
+
+export type AgentSession = {
+    id: string,
+    agent_id: string,
+    started_at: string,
+    ended_at?: string,
+    status: 'active' | 'ended' | 'crashed',
+    heartbeat_at: string,
+    summary?: Record<string, any>,
+    error_message?: string,
+    message_count: number,
+    execution_count: number,
+}
+
+export type AgentMessage = {
+    id: string,
+    agent_id: string,
+    session_id?: string,
+    direction: 'inbound' | 'outbound' | 'system',
+    channel_type: string,
+    sender?: string,
+    content: string,
+    metadata?: Record<string, any>,
+    execution_id?: string,
+    created_at: string,
+}
+
+export type AgentState = {
+    agent_id: string,
+    state_key: string,
+    state_value: any,
+    updated_at: string,
+}
+
 export const PERMISSIONS = {
     FLOW_CREATE: "flow.create",
     FLOW_EDIT: "flow.edit",
