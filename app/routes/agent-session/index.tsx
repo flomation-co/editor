@@ -36,17 +36,19 @@ type TimelineItem = {
     isOutbound?: boolean; // true for actions that send messages (messaging/*)
     outboundContent?: string; // the message text sent by outbound actions
     executionId?: string;
+    sortKey?: number; // for stable ordering within an execution
 };
 
 function buildTimeline(messages: AgentMessage[], executions: Execution[]): TimelineItem[] {
     const items: TimelineItem[] = [];
 
-    // Add messages
+    // Add messages — sort key is their timestamp
     for (const msg of messages) {
         items.push({
             type: 'message',
             timestamp: msg.created_at,
             message: msg,
+            sortKey: new Date(msg.created_at).getTime(),
         });
     }
 
@@ -61,6 +63,10 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
 
         const nodeResults = result?.node_results;
         if (!nodeResults || typeof nodeResults !== 'object') continue;
+
+        // Use execution start time + small increments to preserve node execution order
+        const execStartMs = new Date(exec.created_at).getTime();
+        let stepIndex = 0;
 
         for (const [, node] of Object.entries(nodeResults) as [string, any][]) {
             if (!node || !node.action) continue;
@@ -79,12 +85,11 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 outboundContent = node.inputs['message'] || node.inputs['content'] || node.inputs['text'];
             }
 
-            // Estimate action time from execution start + duration offset
-            const actionTime = exec.created_at;
+            stepIndex++;
 
             items.push({
                 type: 'action',
-                timestamp: actionTime,
+                timestamp: exec.created_at,
                 actionLabel: node.label || node.action,
                 actionType: node.action,
                 actionStatus: node.status,
@@ -92,12 +97,13 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 isOutbound,
                 outboundContent,
                 executionId: exec.id,
+                sortKey: execStartMs + stepIndex, // +1ms per step to preserve order
             });
         }
     }
 
-    // Sort chronologically
-    items.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    // Sort by sortKey — messages by timestamp, actions by execution order
+    items.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
 
     return items;
 }
