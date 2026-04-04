@@ -425,6 +425,64 @@
     border-color: rgba(185,103,239,0.25);
 }
 
+/* Switch node (type 6) */
+.flo-node--switch {
+    border-color: rgba(6,182,212,0.25);
+    min-width: 180px;
+}
+
+.switch-handles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 6px;
+}
+
+.switch-handle-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 2px 0;
+    position: relative;
+}
+
+.switch-handle-row .react-flow__handle {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    background: #06b6d4;
+    border: 1px solid rgba(6,182,212,0.5);
+}
+
+.switch-handle-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    text-align: right;
+}
+
+.switch-handle-default .react-flow__handle {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.15);
+}
+
+.switch-handle-default .switch-handle-label {
+    color: rgba(255,255,255,0.25);
+    font-style: italic;
+}
+
 .flo-node--error {
     border-color: rgba(239,68,68,0.25);
 }
