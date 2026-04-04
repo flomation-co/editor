@@ -114,6 +114,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
+                    ...(type === 6 && switchCases.length > 0 ? {
+                        minHeight: (switchCases.length + 1) * 20 + 20
+                    } : {}),
                 } as React.CSSProperties}
             >
                 {hasInputs && (
@@ -177,30 +180,40 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 )}
 
                 {/* Switch (type 6): Dynamic handles — one per case + default */}
-                {type === 6 && (
-                    <div className="switch-handles">
-                        {switchCases.map((label: string, i: number) => (
-                            <div key={`case_${i}`} className="switch-handle-row">
+                {type === 6 && (() => {
+                    const totalHandles = switchCases.length + 1; // cases + default
+                    const handleSpacing = 20;
+                    const startOffset = 8;
+                    return (
+                        <>
+                            <div className="switch-labels">
+                                {switchCases.map((label: string, i: number) => (
+                                    <span key={`label_${i}`} className="switch-handle-label" style={{ top: startOffset + i * handleSpacing }}>
+                                        {label}
+                                    </span>
+                                ))}
+                                <span className="switch-handle-label switch-handle-label--default" style={{ top: startOffset + switchCases.length * handleSpacing }}>
+                                    Default
+                                </span>
+                            </div>
+                            {switchCases.map((_: string, i: number) => (
                                 <Handle
+                                    key={`case_${i}`}
                                     type="source"
                                     position={Position.Right}
                                     id={`case_${i}`}
-                                    style={{ position: 'relative', top: 'auto', right: 'auto', transform: 'none' }}
+                                    style={{ top: startOffset + i * handleSpacing + 4 }}
                                 />
-                                <span className="switch-handle-label">{label}</span>
-                            </div>
-                        ))}
-                        <div className="switch-handle-row switch-handle-default">
+                            ))}
                             <Handle
                                 type="source"
                                 position={Position.Right}
                                 id="default"
-                                style={{ position: 'relative', top: 'auto', right: 'auto', transform: 'none' }}
+                                style={{ top: startOffset + switchCases.length * handleSpacing + 4 }}
                             />
-                            <span className="switch-handle-label">Default</span>
-                        </div>
-                    </div>
-                )}
+                        </>
+                    );
+                })()}
             </div>
         </>
     );
