@@ -1,6 +1,6 @@
 import "./index.css"
 
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useCallback} from "react";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 
 import {library} from '@fortawesome/fontawesome-svg-core'
@@ -32,6 +32,106 @@ type PropertyMenuProps = {
 
 // RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
 library.add(fab, fas);
+
+const INPUT_TYPES = [
+    {value: "string", label: "Text"},
+    {value: "integer", label: "Number"},
+    {value: "boolean", label: "Checkbox"},
+    {value: "text", label: "Multiline Text"},
+];
+
+function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string; inputs: any[]; onInputsChange: (inputs: any[]) => void}) {
+    // Local state so changes render immediately without waiting for parent re-render
+    const [localInputs, setLocalInputs] = useState<any[]>(inputs || []);
+
+    // Sync from props when the node changes
+    useEffect(() => {
+        setLocalInputs(inputs || []);
+    }, [nodeId]);
+
+    const commit = (updated: any[]) => {
+        setLocalInputs(updated);
+        onInputsChange(updated);
+    };
+
+    const addInput = () => {
+        commit([...localInputs, {name: "", label: "", type: "string", required: false, placeholder: "", value: ""}]);
+    };
+
+    const removeInput = (idx: number) => {
+        commit(localInputs.filter((_, i) => i !== idx));
+    };
+
+    const updateInput = (idx: number, field: string, value: any) => {
+        commit(localInputs.map((inp, i) => i === idx ? {...inp, [field]: value} : inp));
+    };
+
+    return (
+        <div className="trigger-inputs-builder">
+            <div className="trigger-inputs-header">
+                <span className="trigger-inputs-title">Trigger Inputs</span>
+                <button type="button" className="trigger-inputs-add-btn" onClick={addInput}>
+                    <FontAwesomeIcon icon="plus"/> Add Input
+                </button>
+            </div>
+            <div className="trigger-inputs-hint">
+                Define inputs that are required when this flow is triggered. These are available downstream as outputs.
+            </div>
+            {localInputs.map((inp, idx) => (
+                <div key={idx} className="trigger-input-def">
+                    <div className="trigger-input-def-row">
+                        <input
+                            className="trigger-input-def-field"
+                            value={inp.name || ""}
+                            onChange={(e) => updateInput(idx, "name", e.target.value.replace(/\s+/g, "_").toLowerCase())}
+                            placeholder="field_name"
+                        />
+                        <select
+                            className="trigger-input-def-select"
+                            value={inp.type || "string"}
+                            onChange={(e) => updateInput(idx, "type", e.target.value)}
+                        >
+                            {INPUT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        <button type="button" className="trigger-input-def-remove" onClick={() => removeInput(idx)}>
+                            <FontAwesomeIcon icon="trash"/>
+                        </button>
+                    </div>
+                    <div className="trigger-input-def-row">
+                        <input
+                            className="trigger-input-def-field"
+                            value={inp.label || ""}
+                            onChange={(e) => updateInput(idx, "label", e.target.value)}
+                            placeholder="Display Label"
+                        />
+                        <input
+                            className="trigger-input-def-field"
+                            value={inp.placeholder || ""}
+                            onChange={(e) => updateInput(idx, "placeholder", e.target.value)}
+                            placeholder="Placeholder"
+                        />
+                    </div>
+                    <div className="trigger-input-def-row">
+                        <input
+                            className="trigger-input-def-field"
+                            value={inp.value || ""}
+                            onChange={(e) => updateInput(idx, "value", e.target.value)}
+                            placeholder="Default value"
+                        />
+                        <label className="trigger-input-def-required">
+                            <input
+                                type="checkbox"
+                                checked={inp.required || false}
+                                onChange={(e) => updateInput(idx, "required", e.target.checked)}
+                            />
+                            Required
+                        </label>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 const PropertyMenu = (props: PropertyMenuProps) => {
     const [ loading, setLoading ] = useState<boolean>(false);
@@ -143,6 +243,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         setName(e.target.value);
                                     }}/>
                                 </div>
+                                {/* Dynamic trigger inputs builder for manual triggers */}
+                                {(props.node.data.label === "trigger/manual" || props.node.type === "trigger/manual") && (
+                                    <TriggerInputsBuilder
+                                        nodeId={props.node.data.id}
+                                        inputs={props.node.data.config.trigger_inputs || []}
+                                        onInputsChange={(inputs) => {
+                                            if (props.onValueChange) {
+                                                props.onValueChange(props.node.data.id, "__trigger_inputs__", inputs);
+                                            }
+                                        }}
+                                    />
+                                )}
+
                                 {props.node.data.config.inputs && (
                                     props.node.data.config.inputs.map(i => {
                                         // Conditional visibility via visible_when

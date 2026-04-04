@@ -1,6 +1,6 @@
 import "./index.css"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleExclamation, faCubesStacked, faChartColumn, faLandmark, faPersonRunning, faBriefcase, faPeoplePulling, faHouse, faArrowsSplitUpAndLeft, faPlay, faBoltLightning, faPlug, faFeed, faPieChart, faLifeRing, faPeopleGroup, faCheckCircle, faBook, faChevronLeft, faChevronRight, faRobot } from '@fortawesome/free-solid-svg-icons'
+import { faCircleExclamation, faCubesStacked, faChartColumn, faChartLine, faLandmark, faPersonRunning, faBriefcase, faPeoplePulling, faHouse, faArrowsSplitUpAndLeft, faPlay, faBoltLightning, faPlug, faFeed, faPieChart, faLifeRing, faPeopleGroup, faCheckCircle, faBook, faChevronLeft, faChevronRight, faRobot } from '@fortawesome/free-solid-svg-icons'
 
 import {Link, NavLink, useNavigate} from "react-router";
 import {useEffect, useState} from "react";

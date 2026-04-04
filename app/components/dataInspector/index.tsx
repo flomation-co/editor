@@ -42,6 +42,19 @@ function PropertyValue({ value, depth = 0 }: { value: any; depth?: number }) {
     }
 
     if (typeof value === 'string') {
+        // Try to detect JSON strings and render as structured data
+        if (depth === 0) {
+            const trimmed = value.trim();
+            if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return <PropertyValue value={parsed} depth={depth} />;
+                    }
+                } catch { /* not JSON, render as string */ }
+            }
+        }
+
         if (value.length > 300 && depth > 0) {
             return <span className="di-val di-val--string">"{value.slice(0, 297)}..."</span>;
         }

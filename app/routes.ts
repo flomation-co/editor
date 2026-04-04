@@ -22,6 +22,15 @@ export default [
         route(":id", "routes/environment/index.tsx", {id: "view-env"})
     ]),
 
+    ...prefix("board", [
+        index("routes/boards/index.tsx", {id: "list-boards"}),
+        route("new", "routes/board-editor/index.tsx", {id: "create-board"}),
+        route(":id", "routes/board-view/index.tsx", {id: "view-board"}),
+        route(":id/edit", "routes/board-editor/index.tsx", {id: "edit-board"})
+    ]),
+
+    route("public/board/:slug", "routes/board-public/index.tsx"),
+
     ...prefix("flo", [
         index("routes/editor/index.tsx", {id: "create-flo"}),
         route(":id", "routes/editor/index.tsx", {id: "edit-flo"})

@@ -1,7 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faCheck, faSpinner, faClock } from "@fortawesome/pro-solid-svg-icons";
+import { faXmark, faCheck, faSpinner, faClock, faChevronRight, faChevronDown } from "@fortawesome/pro-solid-svg-icons";
 import type { NodeStatus } from "~/types";
+import { useState } from "react";
 
 type NodeInspectorProps = {
     nodeId: string;
@@ -11,35 +12,93 @@ type NodeInspectorProps = {
 
 const SENSITIVE_KEYS = /secret|password|key|token|credential|auth/i;
 
-function renderWithBreaks(str: string): React.ReactNode {
-    const segments = str.split(/\n|<br\s*\/?>/);
-    if (segments.length <= 1) return str;
-    return segments.map((seg, i) => (
-        <React.Fragment key={i}>
-            {i > 0 && <br />}
-            {seg}
-        </React.Fragment>
-    ));
+// Try to parse JSON strings into objects for proper rendering.
+// Handles values that were stringified by the old executor.
+function maybeParseJson(value: any): any {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+        try { return JSON.parse(trimmed); } catch { /* not JSON */ }
+    }
+    return value;
 }
 
-function obfuscateValue(key: string, value: any): React.ReactNode {
-    if (typeof value === 'string' && value === '********') {
-        return '********';
-    }
-    if (SENSITIVE_KEYS.test(key)) {
-        return '********';
-    }
-    if (typeof value === 'object' && value !== null) {
-        return renderWithBreaks(JSON.stringify(value, null, 2));
-    }
-    return renderWithBreaks(String(value ?? ''));
-}
+function InspectorValue({ value, depth = 0 }: { value: any; depth?: number }) {
+    const [expanded, setExpanded] = useState(depth < 1);
+    const parsed = depth === 0 ? maybeParseJson(value) : value;
 
-function formatOutputValue(key: string, value: any): React.ReactNode {
-    if (typeof value === 'object' && value !== null) {
-        return renderWithBreaks(JSON.stringify(value, null, 2));
+    if (parsed === null || parsed === undefined) {
+        return <span className="ni-val ni-val--null">null</span>;
     }
-    return renderWithBreaks(String(value ?? ''));
+
+    if (typeof parsed === 'boolean') {
+        return <span className="ni-val ni-val--bool">{parsed.toString()}</span>;
+    }
+
+    if (typeof parsed === 'number') {
+        return <span className="ni-val ni-val--number">{parsed}</span>;
+    }
+
+    if (typeof parsed === 'string') {
+        if (parsed === '********') return <span className="ni-val ni-val--obfuscated">********</span>;
+        if (parsed.length > 200 && depth > 1) {
+            return <span className="ni-val ni-val--string">{parsed.slice(0, 197)}...</span>;
+        }
+        return <span className="ni-val ni-val--string">{parsed}</span>;
+    }
+
+    if (Array.isArray(parsed)) {
+        if (parsed.length === 0) {
+            return <span className="ni-val ni-val--empty">[] <span className="ni-hint">empty array</span></span>;
+        }
+        return (
+            <div className="ni-tree">
+                <div className="ni-tree-toggle" onClick={() => setExpanded(!expanded)}>
+                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="ni-chevron" />
+                    <span className="ni-type-badge ni-type-badge--array">Array</span>
+                    <span className="ni-hint">{parsed.length} {parsed.length === 1 ? 'item' : 'items'}</span>
+                </div>
+                {expanded && (
+                    <div className="ni-tree-children">
+                        {parsed.map((item: any, i: number) => (
+                            <div key={i} className="ni-tree-row">
+                                <span className="ni-tree-key ni-tree-key--index">{i}</span>
+                                <InspectorValue value={item} depth={depth + 1} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (typeof parsed === 'object') {
+        const keys = Object.keys(parsed);
+        if (keys.length === 0) {
+            return <span className="ni-val ni-val--empty">{'{}'} <span className="ni-hint">empty object</span></span>;
+        }
+        return (
+            <div className="ni-tree">
+                <div className="ni-tree-toggle" onClick={() => setExpanded(!expanded)}>
+                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="ni-chevron" />
+                    <span className="ni-type-badge ni-type-badge--object">Object</span>
+                    <span className="ni-hint">{keys.length} {keys.length === 1 ? 'property' : 'properties'}</span>
+                </div>
+                {expanded && (
+                    <div className="ni-tree-children">
+                        {keys.map(k => (
+                            <div key={k} className="ni-tree-row">
+                                <span className="ni-tree-key">{k}</span>
+                                <InspectorValue value={parsed[k]} depth={depth + 1} />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return <span className="ni-val">{String(parsed)}</span>;
 }
 
 export default function NodeInspector({ nodeId, status, onClose }: NodeInspectorProps) {
@@ -90,16 +149,18 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                 <div className="node-inspector-section">
                     <div className="node-inspector-section-title">Inputs</div>
                     {status.inputs && Object.keys(status.inputs).length > 0 ? (
-                        <table className="node-inspector-table">
-                            <tbody>
-                                {Object.entries(status.inputs).map(([key, value]) => (
-                                    <tr key={key}>
-                                        <td>{key}</td>
-                                        <td>{obfuscateValue(key, value)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="ni-entries">
+                            {Object.entries(status.inputs).map(([key, value]) => (
+                                <div key={key} className="ni-entry">
+                                    <div className="ni-entry-key">{key}</div>
+                                    <div className="ni-entry-value">
+                                        {SENSITIVE_KEYS.test(key) || value === '********'
+                                            ? <span className="ni-val ni-val--obfuscated">********</span>
+                                            : <InspectorValue value={value} />}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : (
                         <div className="node-inspector-empty">No inputs</div>
                     )}
@@ -108,16 +169,16 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                 <div className="node-inspector-section">
                     <div className="node-inspector-section-title">Outputs</div>
                     {status.outputs && Object.keys(status.outputs).length > 0 ? (
-                        <table className="node-inspector-table">
-                            <tbody>
-                                {Object.entries(status.outputs).map(([key, value]) => (
-                                    <tr key={key}>
-                                        <td>{key}</td>
-                                        <td>{formatOutputValue(key, value)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="ni-entries">
+                            {Object.entries(status.outputs).map(([key, value]) => (
+                                <div key={key} className="ni-entry">
+                                    <div className="ni-entry-key">{key}</div>
+                                    <div className="ni-entry-value">
+                                        <InspectorValue value={value} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : (
                         <div className="node-inspector-empty">No outputs</div>
                     )}

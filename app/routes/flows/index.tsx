@@ -6,7 +6,7 @@ import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faPlus, faEllipsisVertical} from '@fortawesome/free-solid-svg-icons'
+import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faPlus, faEllipsisVertical, faCopy} from '@fortawesome/free-solid-svg-icons'
 import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
@@ -297,6 +297,39 @@ export default function Flows() {
         }
     };
 
+    const duplicateFlow = async (flo: Flo) => {
+        try {
+            // Fetch the full flow with revision data
+            const response = await api.get(API_URL + "/api/v1/flo/" + flo.id, {
+                headers: { Authorization: "Bearer " + token },
+            });
+            const fullFlo = response.data;
+
+            // Create a new flow with "(Copy)" suffix
+            const createRes = await api.post(API_URL + "/api/v1/flo", {
+                name: fullFlo.name + " (Copy)",
+            }, {
+                headers: { Authorization: "Bearer " + token },
+            });
+            const newFlo = createRes.data;
+
+            // Copy the revision data to the new flow
+            if (fullFlo.revision?.data) {
+                await api.post(API_URL + "/api/v1/flo/" + newFlo.id + "/revision", {
+                    data: fullFlo.revision.data,
+                }, {
+                    headers: { Authorization: "Bearer " + token },
+                });
+            }
+
+            // Navigate to the editor for the new flow
+            navigate("/flo/" + newFlo.id);
+        } catch (err) {
+            console.error("Duplicate failed:", err);
+            toast.error("Failed to duplicate flow");
+        }
+    };
+
     const exportSelectedFlows = async () => {
         if (selectedFlows.size === 0) return;
         try {
@@ -509,6 +542,9 @@ export default function Flows() {
                                                     <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
                                                         <FontAwesomeIcon icon={faPencil} /> Edit
                                                     </Link>
+                                                    <button className="flo-more-item" onClick={() => { duplicateFlow(flo); setOpenMenuId(null); }}>
+                                                        <FontAwesomeIcon icon={faCopy} /> Duplicate
+                                                    </button>
                                                     <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
                                                         <FontAwesomeIcon icon={faFileExport} /> Export
                                                     </button>
