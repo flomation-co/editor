@@ -2,12 +2,12 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
-import {useEffect, useState, useCallback} from "react";
-import type {AgentSession, AgentMessage} from "~/types";
+import {useEffect, useState, useCallback, useMemo} from "react";
+import type {AgentSession, AgentMessage, Execution} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faArrowLeft, faRobot} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock} from "@fortawesome/free-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
-import {useParams, useNavigate} from "react-router";
+import {useParams, useNavigate, Link} from "react-router";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
@@ -17,8 +17,87 @@ dayjs.extend(utc);
 export function meta({}: Route.MetaArgs) {
     return [
         { title: "Flomation - Agent Session" },
-        { name: "description", content: "Agent session messages" },
+        { name: "description", content: "Agent session activity" },
     ];
+}
+
+// Unified timeline item — either a message or an execution action step
+type TimelineItem = {
+    type: 'message' | 'action' | 'execution-start' | 'execution-end';
+    timestamp: string;
+    // Message fields
+    message?: AgentMessage;
+    // Action fields
+    actionLabel?: string;
+    actionType?: string;
+    actionStatus?: string;
+    actionDuration?: number;
+    isOutbound?: boolean; // true for actions that send messages (messaging/*)
+    executionId?: string;
+};
+
+function buildTimeline(messages: AgentMessage[], executions: Execution[]): TimelineItem[] {
+    const items: TimelineItem[] = [];
+
+    // Add messages
+    for (const msg of messages) {
+        items.push({
+            type: 'message',
+            timestamp: msg.created_at,
+            message: msg,
+        });
+    }
+
+    // Add execution action steps from node_results
+    for (const exec of executions) {
+        if (!exec.result) return items;
+
+        let result: any = exec.result;
+        if (typeof result === 'string') {
+            try { result = JSON.parse(result); } catch { continue; }
+        }
+
+        const nodeResults = result?.node_results;
+        if (!nodeResults || typeof nodeResults !== 'object') continue;
+
+        for (const [, node] of Object.entries(nodeResults) as [string, any][]) {
+            if (!node || !node.action) continue;
+
+            // Skip trigger nodes — they're implicit from the message
+            if (node.action.startsWith('trigger/')) continue;
+
+            const isOutbound = node.action.startsWith('messaging/') ||
+                node.action === 'agent/send_message' ||
+                node.action.startsWith('output/slack') ||
+                node.action.startsWith('output/discord');
+
+            // Estimate action time from execution start + duration offset
+            const actionTime = exec.created_at;
+
+            items.push({
+                type: 'action',
+                timestamp: actionTime,
+                actionLabel: node.label || node.action,
+                actionType: node.action,
+                actionStatus: node.status,
+                actionDuration: node.duration_ms,
+                isOutbound,
+                executionId: exec.id,
+            });
+        }
+    }
+
+    // Sort chronologically
+    items.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    return items;
+}
+
+function formatActionName(action: string): string {
+    // "messaging/telegram" → "Telegram", "common/sleep" → "Sleep"
+    const parts = action.split('/');
+    const last = parts[parts.length - 1];
+    return last.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 export default function AgentSessionView() {
@@ -30,6 +109,7 @@ export default function AgentSessionView() {
 
     const [session, setSession] = useState<AgentSession | null>(null);
     const [messages, setMessages] = useState<AgentMessage[]>([]);
+    const [executions, setExecutions] = useState<Execution[]>([]);
     const [loading, setLoading] = useState(true);
 
     const headers = { Authorization: "Bearer " + token };
@@ -41,6 +121,7 @@ export default function AgentSessionView() {
                 if (response?.data) {
                     setSession(response.data.session);
                     setMessages(response.data.messages || []);
+                    setExecutions(response.data.executions || []);
                 }
             })
             .catch(error => console.error(error))
@@ -49,7 +130,7 @@ export default function AgentSessionView() {
 
     useEffect(() => { loadSession(); }, [loadSession]);
 
-    // TODO: Phase 3 — add SSE connection for live message updates when session is active
+    const timeline = useMemo(() => buildTimeline(messages, executions), [messages, executions]);
 
     if (loading) {
         return (
@@ -84,21 +165,56 @@ export default function AgentSessionView() {
                     )}
                 </div>
 
-                {messages.length === 0 && (
-                    <div className="session-empty">No messages in this session yet.</div>
+                {timeline.length === 0 && (
+                    <div className="session-empty">No activity in this session yet.</div>
                 )}
 
                 <div className="message-timeline">
-                    {messages.map(msg => (
-                        <div key={msg.id} className={`message-bubble ${msg.direction}`}>
-                            <div>{msg.content}</div>
-                            <div className="message-meta">
-                                {msg.sender && <span className="message-sender">{msg.sender}</span>}
-                                <span>{msg.channel_type}</span>
-                                <span>{dayjs.utc(msg.created_at).local().format("HH:mm:ss")}</span>
-                            </div>
-                        </div>
-                    ))}
+                    {timeline.map((item, idx) => {
+                        if (item.type === 'message' && item.message) {
+                            const msg = item.message;
+                            return (
+                                <div key={`msg-${msg.id}`} className={`message-bubble ${msg.direction}`}>
+                                    <div>{msg.content}</div>
+                                    <div className="message-meta">
+                                        {msg.sender && <span className="message-sender">{msg.sender}</span>}
+                                        <span>{msg.channel_type}</span>
+                                        <span>{dayjs.utc(msg.created_at).local().format("HH:mm:ss")}</span>
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        if (item.type === 'action') {
+                            const statusIcon = item.actionStatus === 'success' ? faCheck
+                                : item.actionStatus === 'failed' ? faXmark
+                                : faClock;
+                            const statusClass = item.actionStatus === 'success' ? 'action-success'
+                                : item.actionStatus === 'failed' ? 'action-failed'
+                                : 'action-pending';
+
+                            return (
+                                <div key={`action-${idx}`} className={`action-step ${statusClass} ${item.isOutbound ? 'action-outbound' : ''}`}>
+                                    <div className="action-step-icon">
+                                        <FontAwesomeIcon icon={item.isOutbound ? faPaperPlane : faGear} />
+                                    </div>
+                                    <div className="action-step-content">
+                                        <span className="action-step-label">
+                                            {formatActionName(item.actionType || item.actionLabel || '')}
+                                        </span>
+                                        {item.actionDuration != null && item.actionDuration > 0 && (
+                                            <span className="action-step-duration">{item.actionDuration}ms</span>
+                                        )}
+                                    </div>
+                                    <div className="action-step-status">
+                                        <FontAwesomeIcon icon={statusIcon} />
+                                    </div>
+                                </div>
+                            );
+                        }
+
+                        return null;
+                    })}
                 </div>
             </div>
         </Container>
