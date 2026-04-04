@@ -64,11 +64,34 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
         const nodeResults = result?.node_results;
         if (!nodeResults || typeof nodeResults !== 'object') continue;
 
+        // Determine execution order from log __NODE__ events
+        const logs = result?.logs || '';
+        const nodeOrder: string[] = [];
+        const nodeRegex = /__NODE__:\{.*?"id":"([^"]+)".*?"status":"(success|failed)"/g;
+        let logMatch;
+        while ((logMatch = nodeRegex.exec(logs)) !== null) {
+            const nodeId = logMatch[1];
+            // Only take the first completion event per node (skip running events)
+            if (!nodeOrder.includes(nodeId)) {
+                nodeOrder.push(nodeId);
+            }
+        }
+
+        // Sort node entries by log order, falling back to map order
+        const sortedEntries = Object.entries(nodeResults).sort(([idA], [idB]) => {
+            const orderA = nodeOrder.indexOf(idA);
+            const orderB = nodeOrder.indexOf(idB);
+            if (orderA === -1 && orderB === -1) return 0;
+            if (orderA === -1) return 1;
+            if (orderB === -1) return -1;
+            return orderA - orderB;
+        });
+
         // Use execution start time + small increments to preserve node execution order
         const execStartMs = new Date(exec.created_at).getTime();
         let stepIndex = 0;
 
-        for (const [, node] of Object.entries(nodeResults) as [string, any][]) {
+        for (const [, node] of sortedEntries as [string, any][]) {
             if (!node || !node.action) continue;
 
             // Skip trigger nodes — they're implicit from the message

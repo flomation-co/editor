@@ -91,9 +91,9 @@
     font-size: 14px;
 }
 
-/* Action steps — inline indicators between messages */
+/* Action steps — right-aligned to show agent activity */
 .action-step {
-    align-self: center;
+    align-self: flex-end;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -190,7 +190,7 @@
 }
 
 .action-reply-group .action-step {
-    align-self: center;
+    align-self: flex-end;
 }
 
 .action-reply-group .message-bubble {
