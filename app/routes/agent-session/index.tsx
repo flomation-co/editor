@@ -2,13 +2,13 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
-import {useEffect, useState, useCallback, useMemo} from "react";
+import {useEffect, useState, useCallback, useMemo, useRef} from "react";
 import type {AgentSession, AgentMessage, Execution} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock, faEnvelope, faGlobe} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock, faEnvelope, faGlobe, faArrowDown, faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
-import {useParams, useNavigate, Link} from "react-router";
+import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
@@ -22,27 +22,23 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-// Unified timeline item — either a message or an execution action step
 type TimelineItem = {
-    type: 'message' | 'action' | 'execution-start' | 'execution-end';
+    type: 'message' | 'action';
     timestamp: string;
-    // Message fields
     message?: AgentMessage;
-    // Action fields
     actionLabel?: string;
     actionType?: string;
     actionStatus?: string;
     actionDuration?: number;
-    isOutbound?: boolean; // true for actions that send messages (messaging/*)
-    outboundContent?: string; // the message text sent by outbound actions
+    isOutbound?: boolean;
+    outboundContent?: string;
     executionId?: string;
-    sortKey?: number; // for stable ordering within an execution
+    sortKey?: number;
 };
 
 function buildTimeline(messages: AgentMessage[], executions: Execution[]): TimelineItem[] {
     const items: TimelineItem[] = [];
 
-    // Add messages — sort key is their timestamp
     for (const msg of messages) {
         items.push({
             type: 'message',
@@ -52,9 +48,8 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
         });
     }
 
-    // Add execution action steps from node_results
     for (const exec of executions) {
-        if (!exec.result) return items;
+        if (!exec.result) continue;
 
         let result: any = exec.result;
         if (typeof result === 'string') {
@@ -64,20 +59,14 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
         const nodeResults = result?.node_results;
         if (!nodeResults || typeof nodeResults !== 'object') continue;
 
-        // Determine execution order from log __NODE__ events
         const logs = result?.logs || '';
         const nodeOrder: string[] = [];
         const nodeRegex = /__NODE__:\{.*?"id":"([^"]+)".*?"status":"(success|failed)"/g;
         let logMatch;
         while ((logMatch = nodeRegex.exec(logs)) !== null) {
-            const nodeId = logMatch[1];
-            // Only take the first completion event per node (skip running events)
-            if (!nodeOrder.includes(nodeId)) {
-                nodeOrder.push(nodeId);
-            }
+            if (!nodeOrder.includes(logMatch[1])) nodeOrder.push(logMatch[1]);
         }
 
-        // Sort node entries by log order, falling back to map order
         const sortedEntries = Object.entries(nodeResults).sort(([idA], [idB]) => {
             const orderA = nodeOrder.indexOf(idA);
             const orderB = nodeOrder.indexOf(idB);
@@ -87,14 +76,11 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
             return orderA - orderB;
         });
 
-        // Use execution start time + small increments to preserve node execution order
         const execStartMs = new Date(exec.created_at).getTime();
         let stepIndex = 0;
 
         for (const [, node] of sortedEntries as [string, any][]) {
             if (!node || !node.action) continue;
-
-            // Skip trigger nodes — they're implicit from the message
             if (node.action.startsWith('trigger/')) continue;
 
             const isOutbound = node.action.startsWith('messaging/') ||
@@ -102,14 +88,12 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 node.action.startsWith('output/slack') ||
                 node.action.startsWith('output/discord');
 
-            // Extract outbound message content from inputs
             let outboundContent: string | undefined;
             if (isOutbound && node.inputs) {
                 outboundContent = node.inputs['message'] || node.inputs['content'] || node.inputs['text'];
             }
 
             stepIndex++;
-
             items.push({
                 type: 'action',
                 timestamp: exec.created_at,
@@ -120,19 +104,16 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 isOutbound,
                 outboundContent,
                 executionId: exec.id,
-                sortKey: execStartMs + stepIndex, // +1ms per step to preserve order
+                sortKey: execStartMs + stepIndex,
             });
         }
     }
 
-    // Sort by sortKey — messages by timestamp, actions by execution order
     items.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
-
     return items;
 }
 
 function formatActionName(action: string): string {
-    // "messaging/telegram" → "Telegram", "common/sleep" → "Sleep"
     const parts = action.split('/');
     const last = parts[parts.length - 1];
     return last.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -163,26 +144,89 @@ export default function AgentSessionView() {
     const [messages, setMessages] = useState<AgentMessage[]>([]);
     const [executions, setExecutions] = useState<Execution[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasRunningExecution, setHasRunningExecution] = useState(false);
+    const [userScrolledUp, setUserScrolledUp] = useState(false);
+
+    const timelineRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const prevItemCount = useRef(0);
 
     const headers = { Authorization: "Bearer " + token };
 
     const loadSession = useCallback(() => {
-        setLoading(true);
-        api.get(`${baseUrl}/session/${sessionId}?limit=200`, { headers })
+        api.get(`${baseUrl}/session/${sessionId}?limit=500`, { headers })
             .then(response => {
                 if (response?.data) {
                     setSession(response.data.session);
                     setMessages(response.data.messages || []);
                     setExecutions(response.data.executions || []);
+
+                    // Check for running executions
+                    const execs = response.data.executions || [];
+                    const running = execs.some((e: Execution) =>
+                        e.execution_status !== 'executed'
+                    );
+                    setHasRunningExecution(running);
                 }
             })
             .catch(error => console.error(error))
             .finally(() => setLoading(false));
     }, [id, sessionId]);
 
+    // Initial load
     useEffect(() => { loadSession(); }, [loadSession]);
 
+    // Auto-refresh every 2s for active sessions
+    useEffect(() => {
+        if (!session || session.status !== 'active') return;
+
+        const interval = setInterval(loadSession, 2000);
+        return () => clearInterval(interval);
+    }, [session?.status, loadSession]);
+
+    // Auto-scroll to bottom when new items appear (unless user scrolled up)
     const timeline = useMemo(() => buildTimeline(messages, executions), [messages, executions]);
+
+    useEffect(() => {
+        if (timeline.length > prevItemCount.current && !userScrolledUp) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+        prevItemCount.current = timeline.length;
+    }, [timeline.length, userScrolledUp]);
+
+    // Detect user scroll position
+    const handleScroll = useCallback(() => {
+        const el = timelineRef.current;
+        if (!el) return;
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+        setUserScrolledUp(!atBottom);
+    }, []);
+
+    const scrollToBottom = () => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setUserScrolledUp(false);
+    };
+
+    // Check if the latest execution failed
+    const latestError = useMemo(() => {
+        const failed = executions.filter(e => e.completion_status === 'fail');
+        if (failed.length === 0) return null;
+        const last = failed[failed.length - 1];
+        let result: any = last.result;
+        if (typeof result === 'string') {
+            try { result = JSON.parse(result); } catch { return 'Execution failed'; }
+        }
+        // Try to extract error from node results
+        const nodeResults = result?.node_results;
+        if (nodeResults) {
+            for (const node of Object.values(nodeResults) as any[]) {
+                if (node?.status === 'failed' && node?.error) {
+                    return `${node.action}: ${node.error}`;
+                }
+            }
+        }
+        return 'Execution failed';
+    }, [executions]);
 
     if (loading) {
         return (
@@ -217,11 +261,11 @@ export default function AgentSessionView() {
                     )}
                 </div>
 
-                {timeline.length === 0 && (
+                {timeline.length === 0 && !hasRunningExecution && (
                     <div className="session-empty">No activity in this session yet.</div>
                 )}
 
-                <div className="message-timeline">
+                <div className="message-timeline" ref={timelineRef} onScroll={handleScroll}>
                     {timeline.map((item, idx) => {
                         if (item.type === 'message' && item.message) {
                             const msg = item.message;
@@ -245,7 +289,6 @@ export default function AgentSessionView() {
                                 : item.actionStatus === 'failed' ? 'action-failed'
                                 : 'action-pending';
 
-                            // Outbound messaging actions with content → show as reply bubble with channel info
                             if (item.isOutbound && item.outboundContent) {
                                 const channelIcon = getChannelIcon(item.actionType || '');
                                 const channelName = getChannelName(item.actionType || '');
@@ -268,11 +311,10 @@ export default function AgentSessionView() {
                                 );
                             }
 
-                            // Non-messaging actions → centred pill
                             return (
-                                <div key={`action-${idx}`} className={`action-step ${statusClass} ${item.isOutbound ? 'action-outbound' : ''}`}>
+                                <div key={`action-${idx}`} className={`action-step ${statusClass}`}>
                                     <div className="action-step-icon">
-                                        <FontAwesomeIcon icon={item.isOutbound ? faPaperPlane : faGear} />
+                                        <FontAwesomeIcon icon={faGear} />
                                     </div>
                                     <div className="action-step-content">
                                         <span className="action-step-label">
@@ -291,7 +333,36 @@ export default function AgentSessionView() {
 
                         return null;
                     })}
+
+                    {/* Running execution spinner */}
+                    {hasRunningExecution && (
+                        <div className="action-step action-running">
+                            <div className="action-step-icon">
+                                <FontAwesomeIcon icon={faSpinner} spin />
+                            </div>
+                            <div className="action-step-content">
+                                <span className="action-step-label">Processing...</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Latest error banner */}
+                    {latestError && (
+                        <div className="session-error">
+                            <FontAwesomeIcon icon={faExclamationTriangle} />
+                            <span>{latestError}</span>
+                        </div>
+                    )}
+
+                    <div ref={bottomRef} />
                 </div>
+
+                {/* Scroll to bottom button */}
+                {userScrolledUp && (
+                    <button className="scroll-to-bottom" onClick={scrollToBottom}>
+                        <FontAwesomeIcon icon={faArrowDown} />
+                    </button>
+                )}
             </div>
         </Container>
     );
