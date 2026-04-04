@@ -137,7 +137,8 @@ export enum NodeCategoryType {
     Processing,
     Output,
     Conditional,
-    Loop
+    Loop,
+    Switch
 }
 
 export type PluginCategory = {
