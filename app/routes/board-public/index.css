@@ -1,0 +1,116 @@
+/* ═══════════════════════════════════════════════
+   Public Board Page
+   ═══════════════════════════════════════════════ */
+
+.public-board {
+    min-height: 100vh;
+    background: #0a0a10;
+    display: flex;
+    flex-direction: column;
+}
+
+.public-board-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.public-board-logo {
+    height: 28px;
+    opacity: 0.8;
+}
+
+.public-board-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.public-board-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    flex: 1;
+}
+
+.public-board-refresh-btn {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.1s ease;
+}
+
+.public-board-refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.public-board-countdown {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.public-board-body {
+    flex: 1;
+    padding: 20px 24px;
+}
+
+.public-board-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.2);
+    gap: 6px;
+}
+
+.public-board-footer a {
+    color: #00aa9c;
+    text-decoration: none;
+}
+
+.public-board-footer a:hover {
+    text-decoration: underline;
+}
+
+.public-board-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 20px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 13px;
+    gap: 8px;
+}
+
+.public-board-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.public-board-error-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.public-board-error-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.3);
+}

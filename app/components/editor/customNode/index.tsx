@@ -19,6 +19,7 @@ const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; 
     3: { bg: '#f59e0b', bgAlpha: 'rgba(245,158,11,0.15)',   glow: 'rgba(245,158,11,0.35)',  text: '#f59e0b', iconColour: '#fbbf24' },   // Output
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', text: '#efd467', iconColour: '#efd467' },  // Conditional
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', text: '#b967ef', iconColour: '#b967ef' },  // Loop
+    6: { bg: '#06b6d4', bgAlpha: 'rgba(6,182,212,0.15)',  glow: 'rgba(6,182,212,0.35)',  text: '#06b6d4', iconColour: '#22d3ee' },  // Switch
 };
 
 const NODE_CLASS_MAP: Record<number, string> = {
@@ -27,6 +28,7 @@ const NODE_CLASS_MAP: Record<number, string> = {
     3: 'flo-node flo-node--output',
     4: 'flo-node flo-node--conditional',
     5: 'flo-node flo-node--loop',
+    6: 'flo-node flo-node--switch',
 };
 
 const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
@@ -48,6 +50,22 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const isTrigger = type === 1;
     const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
+
+    // Extract switch cases from the 'cases' input for dynamic handle rendering
+    const switchCases = useMemo(() => {
+        if (type !== 6 || !data?.config?.inputs) return [];
+        const casesInput = data.config.inputs.find((i: any) => i.name === 'cases');
+        if (!casesInput?.value) return [];
+        try {
+            const parsed = typeof casesInput.value === 'string'
+                ? JSON.parse(casesInput.value)
+                : casesInput.value;
+            if (Array.isArray(parsed)) {
+                return parsed.map((c: any) => c.key || c.label || 'Case');
+            }
+        } catch {}
+        return [];
+    }, [type, data?.config?.inputs]);
 
     const hasIncompleteRequired = useMemo(() => {
         if (!data?.config?.inputs) return false;
@@ -96,6 +114,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
+                    ...(type === 6 && switchCases.length > 0 ? {
+                        minHeight: (switchCases.length + 1) * 20 + 20
+                    } : {}),
                 } as React.CSSProperties}
             >
                 {hasInputs && (
@@ -126,7 +147,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 </span>
 
                 {/* Standard source handle for types 1, 2, 3 */}
-                {type !== 4 && type !== 5 && hasOutputs && (
+                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && (
                     <Handle
                         type="source"
                         position={Position.Right}
@@ -157,6 +178,42 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                         <span className="loop-label loop-label--done">Done</span>
                     </>
                 )}
+
+                {/* Switch (type 6): Dynamic handles — one per case + default */}
+                {type === 6 && (() => {
+                    const totalHandles = switchCases.length + 1; // cases + default
+                    const handleSpacing = 20;
+                    const startOffset = 8;
+                    return (
+                        <>
+                            <div className="switch-labels">
+                                {switchCases.map((label: string, i: number) => (
+                                    <span key={`label_${i}`} className="switch-handle-label" style={{ top: startOffset + i * handleSpacing }}>
+                                        {label}
+                                    </span>
+                                ))}
+                                <span className="switch-handle-label switch-handle-label--default" style={{ top: startOffset + switchCases.length * handleSpacing }}>
+                                    Default
+                                </span>
+                            </div>
+                            {switchCases.map((_: string, i: number) => (
+                                <Handle
+                                    key={`case_${i}`}
+                                    type="source"
+                                    position={Position.Right}
+                                    id={`case_${i}`}
+                                    style={{ top: startOffset + i * handleSpacing + 4 }}
+                                />
+                            ))}
+                            <Handle
+                                type="source"
+                                position={Position.Right}
+                                id="default"
+                                style={{ top: startOffset + switchCases.length * handleSpacing + 4 }}
+                            />
+                        </>
+                    );
+                })()}
             </div>
         </>
     );

@@ -412,29 +412,121 @@
     font-weight: 600;
 }
 
-.node-inspector-table {
-    width: 100%;
-    border-collapse: collapse;
+/* Node Inspector — structured entries */
+.ni-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.node-inspector-table td {
+.ni-entry {
+    display: flex;
+    gap: 8px;
     padding: 5px 8px;
-    font-size: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    vertical-align: top;
+    align-items: flex-start;
 }
 
-.node-inspector-table td:first-child {
+.ni-entry-key {
     color: rgba(255, 255, 255, 0.5);
     white-space: nowrap;
-    width: 120px;
+    min-width: 100px;
+    max-width: 140px;
+    font-size: 12px;
     font-weight: 500;
+    flex-shrink: 0;
+    padding-top: 1px;
 }
 
-.node-inspector-table td:last-child {
+.ni-entry-value {
+    flex: 1;
+    min-width: 0;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+/* Value types */
+.ni-val { color: #e5e7eb; word-break: break-all; }
+.ni-val--string { color: #a5d6a7; }
+.ni-val--number { color: #90caf9; }
+.ni-val--bool { color: #ce93d8; }
+.ni-val--null { color: rgba(255, 255, 255, 0.25); font-style: italic; }
+.ni-val--obfuscated { color: rgba(255, 255, 255, 0.2); letter-spacing: 2px; }
+.ni-val--empty { color: rgba(255, 255, 255, 0.2); }
+.ni-hint { color: rgba(255, 255, 255, 0.2); font-size: 11px; margin-left: 4px; }
+
+/* Collapsible tree for arrays/objects */
+.ni-tree { width: 100%; }
+
+.ni-tree-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 0;
+    user-select: none;
+}
+
+.ni-tree-toggle:hover { opacity: 0.8; }
+
+.ni-chevron {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.3);
+    width: 10px;
+    flex-shrink: 0;
+}
+
+.ni-type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.ni-type-badge--array {
+    background: rgba(239, 212, 103, 0.12);
+    color: #efd467;
+}
+
+.ni-type-badge--object {
+    background: rgba(0, 170, 156, 0.12);
+    color: #00aa9c;
+}
+
+.ni-tree-children {
+    margin-left: 12px;
+    padding-left: 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ni-tree-row {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+    align-items: flex-start;
+}
+
+.ni-tree-key {
     color: #e5e7eb;
-    word-break: break-all;
-    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ni-tree-key::after {
+    content: ':';
+    color: rgba(255, 255, 255, 0.2);
+    margin-left: 2px;
+}
+
+.ni-tree-key--index {
+    color: rgba(255, 255, 255, 0.3);
+    min-width: 20px;
 }
 
 .node-inspector-error {

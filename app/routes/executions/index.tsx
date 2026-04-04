@@ -2,7 +2,8 @@ import type {Route} from "../+types/home";
 import "./index.css"
 import Container from "~/components/container";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleStop, faEye, faSpinner} from "@fortawesome/free-solid-svg-icons";
+import {faCircleStop, faEye, faSpinner, faRobot, faHand, faClock, faCodeBranch, faGlobe, faEnvelope, faBox, faFile, faQrcode, faImage, faBolt} from "@fortawesome/free-solid-svg-icons";
+import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import {Link, useSearchParams} from "react-router";
 import {ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
@@ -28,6 +29,42 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
+const TRIGGER_ICONS: Record<string, any> = {
+    manual: faHand,
+    schedule: faClock,
+    'git-poll': faCodeBranch,
+    webhook: faGlobe,
+    telegram: faTelegram,
+    slack: faSlack,
+    email: faEnvelope,
+    s3: faBox,
+    form: faFile,
+    qr: faQrcode,
+    image: faImage,
+};
+
+const TRIGGER_LABELS: Record<string, string> = {
+    manual: 'Manual',
+    schedule: 'Schedule',
+    'git-poll': 'Git Poll',
+    webhook: 'Webhook',
+    telegram: 'Telegram',
+    slack: 'Slack',
+    email: 'Email',
+    s3: 'S3',
+    form: 'Form',
+    qr: 'QR Code',
+    image: 'Tracking Pixel',
+};
+
+function triggerIcon(type?: string): any {
+    return TRIGGER_ICONS[type || ''] || faBolt;
+}
+
+function triggerLabel(type?: string): string {
+    return TRIGGER_LABELS[type || ''] || type || 'Unknown';
+}
+
 export default function Executions() {
     const [ searchParams, setSearchParams ] = useSearchParams();
     const [ execs, setExecs ] = useState<Execution[]>();
@@ -39,6 +76,12 @@ export default function Executions() {
     const [ offset, setOffset ] = useState<number>(0);
     const [ limit, setLimit ] = useState<number>(10);
     const [ disableRightPagination, setDisableRightPagination ] = useState<boolean>(false);
+    const [ hideAgentChildren, setHideAgentChildren ] = useState<boolean>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('flomation-hide-agent-execs') === 'true';
+        }
+        return false;
+    });
 
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
@@ -87,6 +130,9 @@ export default function Executions() {
             url += "&";
         }
         url += "offset=" + offset + "&limit=" + limit;
+        if (hideAgentChildren) {
+            url += "&root_only=true";
+        }
 
         api.get(url, {
             signal: controller.signal,
@@ -106,7 +152,7 @@ export default function Executions() {
     // Initial fetch + on filter change
     useEffect(() => {
         fetchExecutions();
-    }, [search, offset, limit]);
+    }, [search, offset, limit, hideAgentChildren]);
 
     // Auto-refresh interval
     useEffect(() => {
@@ -120,7 +166,7 @@ export default function Executions() {
         }, refreshInterval);
 
         return () => clearInterval(timer);
-    }, [refreshInterval, search, offset, limit]);
+    }, [refreshInterval, search, offset, limit, hideAgentChildren]);
 
     function handleUpdateSearch(term) {
         setSearch(term);
@@ -166,6 +212,17 @@ export default function Executions() {
             <div className={"header"}>Executions</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
+
+            <div className="exec-controls-bar">
+                <label className="exec-agent-filter" title="Hide executions triggered by agents">
+                    <input type="checkbox" checked={hideAgentChildren} onChange={e => {
+                        setHideAgentChildren(e.target.checked);
+                        localStorage.setItem('flomation-hide-agent-execs', String(e.target.checked));
+                    }} />
+                    <span className="exec-agent-filter-slider"></span>
+                    <span className="exec-agent-filter-label">Hide agent executions</span>
+                </label>
+            </div>
 
             <div className="exec-refresh-bar">
                 <div className="exec-refresh-bar-label">Auto-refresh</div>
@@ -215,7 +272,14 @@ export default function Executions() {
                                     {execs?.map((exec, index) => {
                                         return (
                                             <tr className={"flo-table-row"} key={exec.id}>
-                                                <td><Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link><span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span></td>
+                                                <td>
+                                                    {exec.agent_id && (
+                                                        <FontAwesomeIcon icon={faRobot} style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + exec.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
+                                                    )}
+                                                    <Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link>
+                                                    <span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span>
+                                                    {exec.agent_id && <Tooltip id={"tooltip-agent-" + exec.id} />}
+                                                </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>#{exec.sequence}</td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
                                                         <span data-tooltip-id={"tooltip-time-" + exec.id} data-tooltip-content={formatDateString(exec.created_at)} data-tooltip-place={"bottom"}>
@@ -223,8 +287,11 @@ export default function Executions() {
                                                         </span>
                                                     <Tooltip id={"tooltip-time-" + exec.id} />
                                                 </td>
-                                                <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    {exec.trigger_type ? exec.trigger_type.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—'}
+                                                <td className={"table-column-hide-sm flo-table-subdued"} style={{ textAlign: 'center' }}>
+                                                    <span data-tooltip-id={"tooltip-trigger-" + exec.id} data-tooltip-content={triggerLabel(exec.trigger_type)} data-tooltip-place="bottom">
+                                                        <FontAwesomeIcon icon={triggerIcon(exec.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
+                                                    </span>
+                                                    <Tooltip id={"tooltip-trigger-" + exec.id} />
                                                 </td>
                                                 <td className={"table-column-hide-sm"}>
                                                     <Link to={{pathname: "/execution/" + exec.id}}>

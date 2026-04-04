@@ -528,6 +528,169 @@
     /*margin-right: -10px;*/
 }
 
+/* ═══════════════════════════════════════════════
+   Trigger Input Modal
+   ═══════════════════════════════════════════════ */
+
+.trigger-input-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trigger-input-modal {
+    width: 440px;
+    max-width: 90vw;
+    max-height: 80vh;
+    background: rgba(16, 16, 28, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.trigger-input-header {
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trigger-input-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.trigger-input-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 4px;
+}
+
+.trigger-input-body {
+    padding: 16px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.trigger-input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.trigger-input-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.trigger-input-required {
+    color: #ef4444;
+    margin-left: 3px;
+}
+
+.trigger-input-text,
+.trigger-input-textarea,
+.trigger-input-select {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #e5e7eb;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+}
+
+.trigger-input-text:focus,
+.trigger-input-textarea:focus,
+.trigger-input-select:focus {
+    border-color: rgba(0, 170, 156, 0.5);
+}
+
+.trigger-input-text::placeholder,
+.trigger-input-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.trigger-input-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.trigger-input-select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.trigger-input-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+}
+
+.trigger-input-checkbox-row input[type="checkbox"] {
+    accent-color: #00aa9c;
+}
+
+.trigger-input-footer {
+    padding: 12px 24px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.trigger-input-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.trigger-input-btn--cancel {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.trigger-input-btn--cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.trigger-input-btn--execute {
+    background: linear-gradient(135deg, #00aa9c, #009688);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.trigger-input-btn--execute:hover {
+    opacity: 0.9;
+}
+
+.trigger-input-btn--execute:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .handle-wrapper {
     position: absolute;
     right: 0;

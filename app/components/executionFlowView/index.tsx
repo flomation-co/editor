@@ -98,11 +98,79 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
         }));
     }, [baseNodes, nodeStatuses, onNodeClick]);
 
+    // Style edges: mute untaken branches + all downstream, animate active edges
+    const styledEdges = useMemo(() => {
+        const mutedStyle = { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 };
+
+        // Step 1: find directly untaken edges (from conditional/switch outputs)
+        const untakenTargets = new Set<string>();
+        for (const edge of edges) {
+            const sourceStatus = nodeStatuses.get(edge.source);
+            if (!sourceStatus?.outputs || !edge.sourceHandle) continue;
+
+            const sourceType = baseNodes.find(n => n.id === edge.source)?.data?.config?.type;
+
+            if (sourceType === 4) {
+                const result = sourceStatus.outputs['result'];
+                if (result === true && edge.sourceHandle === 'false-branch') untakenTargets.add(edge.target);
+                if (result === false && edge.sourceHandle === 'true-branch') untakenTargets.add(edge.target);
+            }
+
+            if (sourceType === 6) {
+                const matched = sourceStatus.outputs['matched_case'];
+                if (matched && edge.sourceHandle !== matched) untakenTargets.add(edge.target);
+            }
+        }
+
+        // Step 2: flood-fill to find all nodes downstream of untaken branches
+        const mutedNodes = new Set<string>(untakenTargets);
+        let changed = true;
+        while (changed) {
+            changed = false;
+            for (const edge of edges) {
+                if (mutedNodes.has(edge.source) && !mutedNodes.has(edge.target)) {
+                    // Don't mute if the target is also reachable via a non-muted path
+                    const hasLivePath = edges.some(e =>
+                        e.target === edge.target && !mutedNodes.has(e.source)
+                    );
+                    if (!hasLivePath) {
+                        mutedNodes.add(edge.target);
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        // Step 3: style each edge
+        return edges.map(edge => {
+            const targetStatus = nodeStatuses.get(edge.target);
+            const sourceStatus = nodeStatuses.get(edge.source);
+
+            // Mute if source or target is in the untaken subgraph
+            if (mutedNodes.has(edge.target) || (mutedNodes.has(edge.source) && mutedNodes.has(edge.target))) {
+                return { ...edge, style: mutedStyle, animated: false };
+            }
+
+            // Active: target is running → marching ants
+            if (targetStatus?.status === 'running') {
+                return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
+            }
+
+            // Completed: both source and target have executed
+            const sourceCompleted = sourceStatus?.status === 'success' || sourceStatus?.status === 'failed';
+            if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
+                return { ...edge, style: { stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1.5 } };
+            }
+
+            return edge;
+        });
+    }, [edges, nodeStatuses, baseNodes]);
+
     return (
         <div className="execution-flow-container">
             <ReactFlow
                 nodes={nodes}
-                edges={edges}
+                edges={styledEdges}
                 nodeTypes={nodeTypes}
                 fitView
                 fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}

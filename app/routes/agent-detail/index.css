@@ -1,0 +1,423 @@
+.agent-detail {
+    max-width: 900px;
+}
+
+.agent-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.agent-detail-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.agent-detail-title h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.agent-id-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.agent-id-value {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    font-family: monospace;
+    letter-spacing: 0.3px;
+}
+
+.agent-id-copy {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.agent-id-copy:hover {
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.agent-detail-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.agent-action-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.agent-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.agent-action-btn.start {
+    border-color: rgba(0, 170, 156, 0.4);
+    color: #00aa9c;
+}
+
+.agent-action-btn.start:hover {
+    background: rgba(0, 170, 156, 0.15);
+}
+
+.agent-action-btn.stop {
+    border-color: rgba(244, 67, 54, 0.4);
+    color: #f44336;
+}
+
+.agent-action-btn.stop:hover {
+    background: rgba(244, 67, 54, 0.15);
+}
+
+.agent-action-btn.pause {
+    border-color: rgba(255, 193, 7, 0.4);
+    color: #ffc107;
+}
+
+.agent-action-btn.pause:hover {
+    background: rgba(255, 193, 7, 0.15);
+}
+
+.agent-action-btn.delete {
+    border-color: rgba(244, 67, 54, 0.2);
+    color: rgba(244, 67, 54, 0.5);
+}
+
+.agent-action-btn.delete:hover {
+    background: rgba(244, 67, 54, 0.15);
+    border-color: rgba(244, 67, 54, 0.4);
+    color: #f44336;
+}
+
+.agent-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 24px;
+}
+
+.agent-tab {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.agent-tab:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.agent-tab.active {
+    color: #c084fc;
+    border-bottom-color: #c084fc;
+}
+
+.agent-form-group {
+    margin-bottom: 20px;
+}
+
+.agent-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 6px;
+}
+
+.agent-form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.agent-form-input:focus {
+    border-color: rgba(192, 132, 252, 0.5);
+}
+
+.agent-form-input.textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.agent-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.agent-save-btn {
+    padding: 10px 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(70, 0, 112, 0.5);
+    background: rgba(70, 0, 112, 0.25);
+    color: #c084fc;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.agent-save-btn:hover {
+    background: rgba(70, 0, 112, 0.4);
+}
+
+.agent-state-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-state-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.agent-state-key {
+    font-size: 14px;
+    font-weight: 500;
+    color: #c084fc;
+    font-family: monospace;
+}
+
+.agent-state-updated {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.agent-sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-session-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.agent-session-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.agent-session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agent-session-time {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.agent-session-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.agent-empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+}
+
+/* Toggle switch — matches organisation settings styling */
+.agent-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.agent-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.agent-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.agent-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    transition: background 0.2s ease;
+}
+
+.agent-toggle-slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.agent-toggle input:checked + .agent-toggle-slider {
+    background: #8b5cf6;
+}
+
+.agent-toggle input:checked + .agent-toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.agent-toggle-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* Flow autocomplete dropdown */
+.flow-autocomplete {
+    position: relative;
+}
+
+.flow-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: rgba(18, 18, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 4px;
+    z-index: 50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+}
+
+.flow-autocomplete-dropdown::-webkit-scrollbar { width: 4px; }
+.flow-autocomplete-dropdown::-webkit-scrollbar-track { background: transparent; }
+.flow-autocomplete-dropdown::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+
+.flow-autocomplete-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.flow-autocomplete-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.flow-autocomplete-option--selected {
+    background: rgba(0, 170, 156, 0.1);
+    color: #00aa9c;
+}
+
+.flow-autocomplete-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00aa9c;
+    flex-shrink: 0;
+}
+
+.flow-autocomplete-empty {
+    padding: 12px 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+/* Channel cards */
+.agent-channel-card {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.agent-channel-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.agent-channel-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.create-agent-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}

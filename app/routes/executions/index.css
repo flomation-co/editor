@@ -1,3 +1,62 @@
+.exec-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    margin-bottom: 8px;
+}
+
+.exec-agent-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+}
+
+.exec-agent-filter input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.exec-agent-filter-slider {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.exec-agent-filter-slider::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 2px;
+    bottom: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.exec-agent-filter input:checked + .exec-agent-filter-slider {
+    background: #8b5cf6;
+}
+
+.exec-agent-filter input:checked + .exec-agent-filter-slider::before {
+    transform: translateX(14px);
+}
+
+.exec-agent-filter-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
 .exec-refresh-bar {
     display: flex;
     align-items: center;

@@ -1,4 +1,142 @@
 
+/* ═══════════════════════════════════════════════
+   Trigger Inputs Builder
+   ═══════════════════════════════════════════════ */
+
+.trigger-inputs-builder {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trigger-inputs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.trigger-inputs-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trigger-inputs-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.trigger-inputs-add-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    background: rgba(0, 170, 156, 0.15);
+    border: 1px solid rgba(0, 170, 156, 0.3);
+    border-radius: 6px;
+    color: #00aa9c;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+}
+
+.trigger-inputs-add-btn:hover {
+    background: rgba(0, 170, 156, 0.25);
+}
+
+.trigger-input-def {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trigger-input-def-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.trigger-input-def-field {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #e5e7eb;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+}
+
+.trigger-input-def-field::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.trigger-input-def-field:focus {
+    border-color: rgba(0, 170, 156, 0.4);
+}
+
+.trigger-input-def-select {
+    height: 28px;
+    padding: 0 6px;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #e5e7eb;
+    outline: none;
+    cursor: pointer;
+    min-width: 80px;
+}
+
+.trigger-input-def-remove {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 6px;
+    color: rgba(239, 68, 68, 0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.trigger-input-def-remove:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.trigger-input-def-required {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.trigger-input-def-required input[type="checkbox"] {
+    accent-color: #00aa9c;
+}
+
 .property-menu-help {
     padding: 12px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.06);

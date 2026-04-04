@@ -79,6 +79,8 @@ export function Editor(props : EditorProps) {
 
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
+    const [ triggerInputModal, setTriggerInputModal ] = useState<{floId: string; triggerId: string; inputs: any[]} | null>(null);
+    const [ triggerInputValues, setTriggerInputValues ] = useState<Record<string, string>>({});
 
     const [ propertyMenuVisible, setPropertyMenuVisible ] = useState<boolean>(false);
     const [ propertyMenuXLocation, setPropertyMenuXLocation ] = useState<number>(0);
@@ -547,7 +549,23 @@ export function Editor(props : EditorProps) {
 
     const onValueChange = useCallback((id: string, property: string, value: any) => {
         setNodes((prev) => prev.map((node) => {
-            if (node.id !== id || !node.data.config.inputs) return node;
+            if (node.id !== id) return node;
+
+            // Special case: store trigger input definitions separately from action inputs
+            if (property === "__trigger_inputs__") {
+                return {
+                    ...node,
+                    data: {
+                        ...node.data,
+                        config: {
+                            ...node.data.config,
+                            trigger_inputs: value,
+                        },
+                    },
+                };
+            }
+
+            if (!node.data.config.inputs) return node;
             return {
                 ...node,
                 data: {
@@ -605,6 +623,18 @@ export function Editor(props : EditorProps) {
                     items.push({ name: nameInput.value.trim(), category: "var", source: "Variable" });
                 }
             }
+
+            // Add trigger_inputs from Manual Trigger as ${trigger.X} variables
+            if (n.type === 'trigger/manual' || n.data?.label === 'trigger/manual') {
+                const triggerInputs = n.data?.config?.trigger_inputs;
+                if (Array.isArray(triggerInputs)) {
+                    for (const ti of triggerInputs) {
+                        if (ti.name && ti.name.trim()) {
+                            items.push({ name: ti.name.trim(), category: "trigger", source: "Manual Trigger" });
+                        }
+                    }
+                }
+            }
         }
 
         if (!propertyNode || !plugins) return items;
@@ -635,7 +665,7 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.'];
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
@@ -647,6 +677,10 @@ export function Editor(props : EditorProps) {
         return nodes.some((node: any) => {
             const inputs = node.data?.config?.inputs;
             if (!inputs) return false;
+
+            // Skip required-field validation for trigger nodes — their inputs are provided at execution time
+            const isTrigger = node.type?.startsWith("trigger/") || node.data?.label?.startsWith("trigger/");
+            if (isTrigger) return false;
 
             // Check required fields (only visible ones)
             const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
@@ -660,6 +694,12 @@ export function Editor(props : EditorProps) {
                 if (pn?.data?.config?.outputs) {
                     for (const o of pn.data.config.outputs) {
                         if (o.name) parentOutputNames.add(o.name);
+                    }
+                }
+                // Manual trigger's trigger_inputs are also valid output names
+                if (pn?.data?.config?.trigger_inputs) {
+                    for (const ti of pn.data.config.trigger_inputs) {
+                        if (ti.name) parentOutputNames.add(ti.name);
                     }
                 }
             }
@@ -739,7 +779,41 @@ export function Editor(props : EditorProps) {
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    function triggerFlo(flo_id: string, trigger_id: string) {
+    function getManualTriggerInputs(): any[] {
+        const manualNode = nodes.find(n => n.type === "trigger/manual");
+        if (!manualNode?.data) return [];
+        const config = (manualNode.data as any).config;
+        if (!config?.trigger_inputs) return [];
+        return (config.trigger_inputs as any[]).filter((i: any) => i.name && i.name !== "");
+    }
+
+    function handleExecuteClick() {
+        if (!id || isTriggering || hasValidationErrors) return;
+        const inputs = getManualTriggerInputs();
+        if (inputs.length > 0) {
+            // Pre-fill with default values
+            const defaults: Record<string, string> = {};
+            inputs.forEach((i: any) => { if (i.value) defaults[i.name] = String(i.value); });
+            setTriggerInputValues(defaults);
+            setTriggerInputModal({floId: id, triggerId: "default", inputs});
+        } else {
+            triggerFlo(id, "default", null);
+        }
+    }
+
+    function handleTriggerInputSubmit() {
+        if (!triggerInputModal) return;
+        // Validate required fields
+        const missing = triggerInputModal.inputs.filter((i: any) => i.required && !triggerInputValues[i.name]?.trim());
+        if (missing.length > 0) {
+            toast.error(`Please fill in: ${missing.map((i: any) => i.label || i.name).join(", ")}`);
+            return;
+        }
+        triggerFlo(triggerInputModal.floId, triggerInputModal.triggerId, triggerInputValues);
+        setTriggerInputModal(null);
+    }
+
+    function triggerFlo(flo_id: string, trigger_id: string, data: Record<string, string> | null) {
         if (isTriggering) {
             return
         }
@@ -747,7 +821,7 @@ export function Editor(props : EditorProps) {
         setIsTriggering(true)
         setCurrentTrigger(flo_id)
 
-        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
+        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", data, {
             headers: {
                 "Authorization": "Bearer " + token,
             }
@@ -834,7 +908,7 @@ export function Editor(props : EditorProps) {
                             <div className={"flo-editor-property-action-section"}>
                                 {id && (
                                     <a
-                                        onClick={() => { if (!hasValidationErrors) triggerFlo(id, 'default') }}
+                                        onClick={handleExecuteClick}
                                         className={`flo-editor-property-action-button${hasValidationErrors ? ' flo-editor-property-action-button--disabled' : ''}`}
                                         data-tooltip-id={"tooltip-action-execute"}
                                         data-tooltip-content={hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo"}
@@ -915,6 +989,69 @@ export function Editor(props : EditorProps) {
                         </div>
                     </div>
                 )}
+            {triggerInputModal && (
+                <div className="trigger-input-overlay" onClick={(e) => { if (e.target === e.currentTarget) setTriggerInputModal(null); }}>
+                    <div className="trigger-input-modal">
+                        <div className="trigger-input-header">
+                            <div className="trigger-input-title">Execute Flow</div>
+                            <div className="trigger-input-subtitle">Provide values for the trigger inputs below</div>
+                        </div>
+                        <div className="trigger-input-body">
+                            {triggerInputModal.inputs.map((input: any) => (
+                                <div key={input.name} className="trigger-input-field">
+                                    <label className="trigger-input-label">
+                                        {input.label || input.name}
+                                        {input.required && <span className="trigger-input-required">*</span>}
+                                    </label>
+                                    {input.type === "text" ? (
+                                        <textarea
+                                            className="trigger-input-textarea"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                            placeholder={input.placeholder || ""}
+                                            rows={3}
+                                        />
+                                    ) : input.type === "boolean" ? (
+                                        <label className="trigger-input-checkbox-row">
+                                            <input
+                                                type="checkbox"
+                                                checked={triggerInputValues[input.name] === "true"}
+                                                onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.checked ? "true" : "false"}))}
+                                            />
+                                            <span>{input.placeholder || "Enabled"}</span>
+                                        </label>
+                                    ) : input.options && input.options.length > 0 ? (
+                                        <select
+                                            className="trigger-input-select"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                        >
+                                            <option value="">Select...</option>
+                                            {input.options.map((opt: any) => (
+                                                <option key={opt.value || opt.name} value={opt.value || opt.name}>{opt.name || opt.value}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            className="trigger-input-text"
+                                            type={input.type === "integer" ? "number" : "text"}
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                            placeholder={input.placeholder || ""}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="trigger-input-footer">
+                            <button className="trigger-input-btn trigger-input-btn--cancel" onClick={() => setTriggerInputModal(null)}>Cancel</button>
+                            <button className="trigger-input-btn trigger-input-btn--execute" onClick={handleTriggerInputSubmit} disabled={isTriggering}>
+                                <FontAwesomeIcon icon={faPlay}/> {isTriggering ? "Executing..." : "Execute"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             </Container>
     )
 }
