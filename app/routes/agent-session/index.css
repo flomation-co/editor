@@ -166,3 +166,19 @@
 .action-step.action-outbound .action-step-label {
     color: rgba(192, 132, 252, 0.7);
 }
+
+/* Reply group — action pill + message bubble together */
+.action-reply-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.action-reply-group .action-step {
+    align-self: center;
+}
+
+.action-reply-group .message-bubble {
+    max-width: 75%;
+}

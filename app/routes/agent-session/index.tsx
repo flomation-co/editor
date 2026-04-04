@@ -33,6 +33,7 @@ type TimelineItem = {
     actionStatus?: string;
     actionDuration?: number;
     isOutbound?: boolean; // true for actions that send messages (messaging/*)
+    outboundContent?: string; // the message text sent by outbound actions
     executionId?: string;
 };
 
@@ -71,6 +72,12 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 node.action.startsWith('output/slack') ||
                 node.action.startsWith('output/discord');
 
+            // Extract outbound message content from inputs
+            let outboundContent: string | undefined;
+            if (isOutbound && node.inputs) {
+                outboundContent = node.inputs['message'] || node.inputs['content'] || node.inputs['text'];
+            }
+
             // Estimate action time from execution start + duration offset
             const actionTime = exec.created_at;
 
@@ -82,6 +89,7 @@ function buildTimeline(messages: AgentMessage[], executions: Execution[]): Timel
                 actionStatus: node.status,
                 actionDuration: node.duration_ms,
                 isOutbound,
+                outboundContent,
                 executionId: exec.id,
             });
         }
@@ -193,6 +201,38 @@ export default function AgentSessionView() {
                                 : item.actionStatus === 'failed' ? 'action-failed'
                                 : 'action-pending';
 
+                            // Outbound messaging actions with content → show as reply bubble
+                            if (item.isOutbound && item.outboundContent) {
+                                return (
+                                    <div key={`action-${idx}`} className="action-reply-group">
+                                        <div className={`action-step ${statusClass} action-outbound`}>
+                                            <div className="action-step-icon">
+                                                <FontAwesomeIcon icon={faPaperPlane} />
+                                            </div>
+                                            <div className="action-step-content">
+                                                <span className="action-step-label">
+                                                    {formatActionName(item.actionType || '')}
+                                                </span>
+                                                {item.actionDuration != null && item.actionDuration > 0 && (
+                                                    <span className="action-step-duration">{item.actionDuration}ms</span>
+                                                )}
+                                            </div>
+                                            <div className="action-step-status">
+                                                <FontAwesomeIcon icon={statusIcon} />
+                                            </div>
+                                        </div>
+                                        <div className="message-bubble outbound">
+                                            <div>{item.outboundContent}</div>
+                                            <div className="message-meta">
+                                                <span className="message-sender">Agent</span>
+                                                <span>{dayjs.utc(item.timestamp).local().format("HH:mm:ss")}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // Non-messaging actions → centred pill
                             return (
                                 <div key={`action-${idx}`} className={`action-step ${statusClass} ${item.isOutbound ? 'action-outbound' : ''}`}>
                                     <div className="action-step-icon">
