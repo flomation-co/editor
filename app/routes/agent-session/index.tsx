@@ -146,6 +146,7 @@ export default function AgentSessionView() {
     const [loading, setLoading] = useState(true);
     const [hasRunningExecution, setHasRunningExecution] = useState(false);
     const [userScrolledUp, setUserScrolledUp] = useState(false);
+    const [streamingItems, setStreamingItems] = useState<TimelineItem[]>([]);
 
     const timelineRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -197,6 +198,45 @@ export default function AgentSessionView() {
             } catch {}
         });
 
+        eventSource.addEventListener('node', (e) => {
+            try {
+                const node = JSON.parse(e.data);
+                if (!node || !node.action || node.action.startsWith('trigger/')) return;
+                if (node.status === 'running') {
+                    // Show as in-progress action
+                    return;
+                }
+
+                const isOutbound = node.action.startsWith('messaging/') ||
+                    node.action === 'agent/send_message' ||
+                    node.action.startsWith('output/slack') ||
+                    node.action.startsWith('output/discord');
+
+                let outboundContent: string | undefined;
+                if (isOutbound && node.inputs) {
+                    outboundContent = node.inputs['message'] || node.inputs['content'] || node.inputs['text'];
+                }
+
+                const newItem: TimelineItem = {
+                    type: 'action',
+                    timestamp: new Date().toISOString(),
+                    actionLabel: node.label || node.action,
+                    actionType: node.action,
+                    actionStatus: node.status,
+                    actionDuration: node.duration_ms,
+                    isOutbound,
+                    outboundContent,
+                    sortKey: Date.now(),
+                };
+
+                // Append directly to timeline via a streaming items state
+                setStreamingItems(prev => [...prev, newItem]);
+                if (node.status === 'failed') {
+                    setHasRunningExecution(false);
+                }
+            } catch {}
+        });
+
         eventSource.addEventListener('execution', (e) => {
             try {
                 const exec = JSON.parse(e.data) as Execution;
@@ -210,6 +250,8 @@ export default function AgentSessionView() {
                     return [...prev, exec];
                 });
                 setHasRunningExecution(false);
+                // Clear streaming items — the full execution result replaces them
+                setStreamingItems([]);
             } catch {}
         });
 
@@ -225,7 +267,9 @@ export default function AgentSessionView() {
     }, [session?.status, id, sessionId]);
 
     // Auto-scroll to bottom when new items appear (unless user scrolled up)
-    const timeline = useMemo(() => buildTimeline(messages, executions), [messages, executions]);
+    const baseTimeline = useMemo(() => buildTimeline(messages, executions), [messages, executions]);
+    // Merge streaming items (real-time node events) into the timeline
+    const timeline = useMemo(() => [...baseTimeline, ...streamingItems], [baseTimeline, streamingItems]);
 
     useEffect(() => {
         if (timeline.length > prevItemCount.current && !userScrolledUp) {
