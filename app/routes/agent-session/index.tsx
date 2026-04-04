@@ -5,7 +5,8 @@ import api from "~/lib/api";
 import {useEffect, useState, useCallback, useMemo} from "react";
 import type {AgentSession, AgentMessage, Execution} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock, faEnvelope, faGlobe} from "@fortawesome/free-solid-svg-icons";
+import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate, Link} from "react-router";
 import dayjs from "dayjs";
@@ -108,6 +109,20 @@ function formatActionName(action: string): string {
     return last.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function getChannelIcon(actionType: string): any {
+    if (actionType.includes('telegram')) return faTelegram;
+    if (actionType.includes('slack')) return faSlack;
+    if (actionType.includes('email')) return faEnvelope;
+    return faPaperPlane;
+}
+
+function getChannelName(actionType: string): string {
+    if (actionType.includes('telegram')) return 'Telegram';
+    if (actionType.includes('slack')) return 'Slack';
+    if (actionType.includes('email')) return 'Email';
+    return 'Message';
+}
+
 export default function AgentSessionView() {
     const { id, sessionId } = useParams();
     const token = useCookieToken();
@@ -201,32 +216,24 @@ export default function AgentSessionView() {
                                 : item.actionStatus === 'failed' ? 'action-failed'
                                 : 'action-pending';
 
-                            // Outbound messaging actions with content → show as reply bubble
+                            // Outbound messaging actions with content → show as reply bubble with channel info
                             if (item.isOutbound && item.outboundContent) {
+                                const channelIcon = getChannelIcon(item.actionType || '');
+                                const channelName = getChannelName(item.actionType || '');
+
                                 return (
-                                    <div key={`action-${idx}`} className="action-reply-group">
-                                        <div className={`action-step ${statusClass} action-outbound`}>
-                                            <div className="action-step-icon">
-                                                <FontAwesomeIcon icon={faPaperPlane} />
-                                            </div>
-                                            <div className="action-step-content">
-                                                <span className="action-step-label">
-                                                    {formatActionName(item.actionType || '')}
-                                                </span>
-                                                {item.actionDuration != null && item.actionDuration > 0 && (
-                                                    <span className="action-step-duration">{item.actionDuration}ms</span>
-                                                )}
-                                            </div>
-                                            <div className="action-step-status">
-                                                <FontAwesomeIcon icon={statusIcon} />
-                                            </div>
-                                        </div>
-                                        <div className="message-bubble outbound">
-                                            <div>{item.outboundContent}</div>
-                                            <div className="message-meta">
-                                                <span className="message-sender">Agent</span>
-                                                <span>{dayjs.utc(item.timestamp).local().format("HH:mm:ss")}</span>
-                                            </div>
+                                    <div key={`action-${idx}`} className="message-bubble outbound">
+                                        <div>{item.outboundContent}</div>
+                                        <div className="message-meta">
+                                            <span className="message-sender">
+                                                <FontAwesomeIcon icon={channelIcon} style={{ marginRight: 4 }} />
+                                                {channelName}
+                                            </span>
+                                            {item.actionDuration != null && item.actionDuration > 0 && (
+                                                <span className="message-duration">{item.actionDuration}ms</span>
+                                            )}
+                                            <span>{dayjs.utc(item.timestamp).local().format("HH:mm:ss")}</span>
+                                            <FontAwesomeIcon icon={statusIcon} style={{ fontSize: 10 }} className={statusClass === 'action-success' ? 'meta-success' : statusClass === 'action-failed' ? 'meta-failed' : ''} />
                                         </div>
                                     </div>
                                 );

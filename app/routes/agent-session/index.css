@@ -70,6 +70,20 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
+.message-duration {
+    font-family: monospace;
+    font-size: 10px;
+    opacity: 0.5;
+}
+
+.meta-success {
+    color: #00aa9c;
+}
+
+.meta-failed {
+    color: #f44336;
+}
+
 .session-empty {
     padding: 60px 20px;
     text-align: center;
