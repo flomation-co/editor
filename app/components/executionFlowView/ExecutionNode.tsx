@@ -15,6 +15,7 @@ const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; 
     3: { bg: '#f59e0b', bgAlpha: 'rgba(245,158,11,0.15)',   glow: 'rgba(245,158,11,0.35)',  iconColour: '#fbbf24' },
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', iconColour: '#efd467' },
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', iconColour: '#b967ef' },
+    6: { bg: '#06b6d4', bgAlpha: 'rgba(6,182,212,0.15)',  glow: 'rgba(6,182,212,0.35)',  iconColour: '#22d3ee' },
 };
 
 const SENSITIVE_KEYS = /secret|password|key|token|credential|auth/i;
@@ -60,6 +61,19 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
     const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
+    // Switch: extract cases for dynamic handles
+    const switchCases = useMemo(() => {
+        if (type !== 6 || !data?.config?.inputs) return [];
+        const casesInput = (data.config.inputs as any[]).find((i: any) => i.name === 'cases');
+        if (!casesInput?.value) return [];
+        try {
+            const parsed = typeof casesInput.value === 'string'
+                ? JSON.parse(casesInput.value) : casesInput.value;
+            if (Array.isArray(parsed)) return parsed.map((c: any) => c.key || 'Case');
+        } catch {}
+        return [];
+    }, [type, data?.config?.inputs]);
+
     const statusClass = `exec-node exec-node--${status}${isConditional ? ' exec-node--conditional' : ''}`;
 
     const handleClick = () => {
@@ -83,7 +97,9 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                 )}
             </div>
 
-            <div className={statusClass} onClick={handleClick}>
+            <div className={statusClass} onClick={handleClick}
+                style={type === 6 && switchCases.length > 0 ? { minHeight: (switchCases.length + 1) * 20 + 20 } : undefined}
+            >
                 {hasInputs && (
                     <Handle
                         type="target"
@@ -111,7 +127,7 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     {data.config?.label || data.config?.name || ''}
                 </span>
 
-                {type !== 4 && type !== 5 && (
+                {type !== 4 && type !== 5 && type !== 6 && (
                     <Handle type="source" position={Position.Right}
                         {...(type === 3 ? { id: "input" } : {})}
                     />
@@ -132,6 +148,30 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                         <Handle type="source" position={Position.Right} id="output" />
                     </>
                 )}
+
+                {type === 6 && (() => {
+                    const handleSpacing = 20;
+                    const startOffset = 8;
+                    return (
+                        <>
+                            {switchCases.map((_: string, i: number) => (
+                                <Handle
+                                    key={`case_${i}`}
+                                    type="source"
+                                    position={Position.Right}
+                                    id={`case_${i}`}
+                                    style={{ top: startOffset + i * handleSpacing + 4 }}
+                                />
+                            ))}
+                            <Handle
+                                type="source"
+                                position={Position.Right}
+                                id="default"
+                                style={{ top: startOffset + switchCases.length * handleSpacing + 4 }}
+                            />
+                        </>
+                    );
+                })()}
 
                 {status === 'running' && (
                     <div className="exec-node-status-badge exec-node-status-badge--running">
