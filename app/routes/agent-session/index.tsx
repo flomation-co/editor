@@ -176,13 +176,53 @@ export default function AgentSessionView() {
     // Initial load
     useEffect(() => { loadSession(); }, [loadSession]);
 
-    // Auto-refresh every 2s for active sessions
+    // SSE for real-time updates on active sessions
     useEffect(() => {
         if (!session || session.status !== 'active') return;
 
-        const interval = setInterval(loadSession, 2000);
-        return () => clearInterval(interval);
-    }, [session?.status, loadSession]);
+        const sseUrl = `${config("AUTOMATE_API_URL")}/api/v1/internal/agent/${id}/session/${sessionId}/stream`;
+        const eventSource = new EventSource(sseUrl);
+
+        eventSource.addEventListener('message', (e) => {
+            try {
+                const msg = JSON.parse(e.data) as AgentMessage;
+                setMessages(prev => {
+                    if (prev.some(m => m.id === msg.id)) return prev;
+                    return [...prev, msg];
+                });
+                // An inbound message means an execution is likely starting
+                if (msg.direction === 'inbound') {
+                    setHasRunningExecution(true);
+                }
+            } catch {}
+        });
+
+        eventSource.addEventListener('execution', (e) => {
+            try {
+                const exec = JSON.parse(e.data) as Execution;
+                setExecutions(prev => {
+                    const existing = prev.findIndex(ex => ex.id === exec.id);
+                    if (existing >= 0) {
+                        const updated = [...prev];
+                        updated[existing] = exec;
+                        return updated;
+                    }
+                    return [...prev, exec];
+                });
+                setHasRunningExecution(false);
+            } catch {}
+        });
+
+        eventSource.addEventListener('connected', () => {
+            // SSE connected
+        });
+
+        eventSource.onerror = () => {
+            // Reconnect handled automatically by EventSource
+        };
+
+        return () => eventSource.close();
+    }, [session?.status, id, sessionId]);
 
     // Auto-scroll to bottom when new items appear (unless user scrolled up)
     const timeline = useMemo(() => buildTimeline(messages, executions), [messages, executions]);
