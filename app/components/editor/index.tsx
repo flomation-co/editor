@@ -609,6 +609,7 @@ export function Editor(props : EditorProps) {
         { name: "trigger_type", category: "flow", source: "Execution" },
         { name: "author_email", category: "flow", source: "Execution" },
         { name: "triggerer_email", category: "flow", source: "Execution" },
+        { name: "system_prompt", category: "flow", source: "Agent / Flow Settings" },
     ];
 
     // Derive parent node outputs for the selected property node
