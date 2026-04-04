@@ -98,33 +98,55 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
         }));
     }, [baseNodes, nodeStatuses, onNodeClick]);
 
-    // Style edges: mute branches that weren't taken based on source node outputs
+    // Style edges: mute untaken branches, animate active processing edges
     const styledEdges = useMemo(() => {
         return edges.map(edge => {
             const sourceStatus = nodeStatuses.get(edge.source);
-            if (!sourceStatus || !sourceStatus.outputs) return edge;
+            const targetStatus = nodeStatuses.get(edge.target);
 
-            const sourceType = baseNodes.find(n => n.id === edge.source)?.data?.config?.type;
-            let taken = true;
+            // Animate edge if target node is currently running (marching ants)
+            const targetRunning = targetStatus?.status === 'running';
+            // Also animate if source completed and target is about to run
+            const sourceCompleted = sourceStatus?.status === 'success' || sourceStatus?.status === 'failed';
 
-            // Conditional (If): check which branch the result indicates
-            if (sourceType === 4 && edge.sourceHandle) {
-                const result = sourceStatus.outputs['result'];
-                if (result === true && edge.sourceHandle === 'false-branch') taken = false;
-                if (result === false && edge.sourceHandle === 'true-branch') taken = false;
+            // Check for untaken branches
+            if (sourceStatus?.outputs) {
+                const sourceType = baseNodes.find(n => n.id === edge.source)?.data?.config?.type;
+
+                // Conditional (If)
+                if (sourceType === 4 && edge.sourceHandle) {
+                    const result = sourceStatus.outputs['result'];
+                    if (result === true && edge.sourceHandle === 'false-branch') {
+                        return { ...edge, style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 }, animated: false };
+                    }
+                    if (result === false && edge.sourceHandle === 'true-branch') {
+                        return { ...edge, style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 }, animated: false };
+                    }
+                }
+
+                // Switch
+                if (sourceType === 6 && edge.sourceHandle) {
+                    const matched = sourceStatus.outputs['matched_case'];
+                    if (matched && edge.sourceHandle !== matched) {
+                        return { ...edge, style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 }, animated: false };
+                    }
+                }
             }
 
-            // Switch: check matched_case against handle ID
-            if (sourceType === 6 && edge.sourceHandle) {
-                const matched = sourceStatus.outputs['matched_case'];
-                if (matched && edge.sourceHandle !== matched) taken = false;
-            }
-
-            if (!taken) {
+            // Active processing: animate the edge leading to a running node
+            if (targetRunning) {
                 return {
                     ...edge,
-                    style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 },
-                    animated: false,
+                    animated: true,
+                    style: { stroke: '#00aa9c', strokeWidth: 2 },
+                };
+            }
+
+            // Completed edge: source ran successfully
+            if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
+                return {
+                    ...edge,
+                    style: { stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1.5 },
                 };
             }
 
