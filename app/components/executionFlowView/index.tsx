@@ -98,11 +98,45 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
         }));
     }, [baseNodes, nodeStatuses, onNodeClick]);
 
+    // Style edges: mute branches that weren't taken based on source node outputs
+    const styledEdges = useMemo(() => {
+        return edges.map(edge => {
+            const sourceStatus = nodeStatuses.get(edge.source);
+            if (!sourceStatus || !sourceStatus.outputs) return edge;
+
+            const sourceType = baseNodes.find(n => n.id === edge.source)?.data?.config?.type;
+            let taken = true;
+
+            // Conditional (If): check which branch the result indicates
+            if (sourceType === 4 && edge.sourceHandle) {
+                const result = sourceStatus.outputs['result'];
+                if (result === true && edge.sourceHandle === 'false-branch') taken = false;
+                if (result === false && edge.sourceHandle === 'true-branch') taken = false;
+            }
+
+            // Switch: check matched_case against handle ID
+            if (sourceType === 6 && edge.sourceHandle) {
+                const matched = sourceStatus.outputs['matched_case'];
+                if (matched && edge.sourceHandle !== matched) taken = false;
+            }
+
+            if (!taken) {
+                return {
+                    ...edge,
+                    style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 },
+                    animated: false,
+                };
+            }
+
+            return edge;
+        });
+    }, [edges, nodeStatuses, baseNodes]);
+
     return (
         <div className="execution-flow-container">
             <ReactFlow
                 nodes={nodes}
-                edges={edges}
+                edges={styledEdges}
                 nodeTypes={nodeTypes}
                 fitView
                 fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}
