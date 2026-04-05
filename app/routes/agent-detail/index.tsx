@@ -54,6 +54,7 @@ export default function AgentDetail() {
     const [flowSearch, setFlowSearch] = useState('');
     const [showFlowDropdown, setShowFlowDropdown] = useState(false);
     const [idCopied, setIdCopied] = useState(false);
+    const [urlCopied, setUrlCopied] = useState(false);
     const flowDropdownRef = useRef<HTMLDivElement>(null);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
@@ -454,17 +455,72 @@ export default function AgentDetail() {
                                                     placeholder="Slack App signing secret"
                                                 />
                                             </div>
-                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
                                                 <label className="agent-form-label">Events API Request URL</label>
-                                                <input
-                                                    className="agent-form-input"
-                                                    readOnly
-                                                    value={`${config("LAUNCH_URL") || 'https://launch.flomation.app'}/webhook/slack/${id}`}
-                                                    style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text' }}
-                                                />
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        readOnly
+                                                        value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`}
+                                                        style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.06)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            borderRadius: 6,
+                                                            padding: '8px 10px',
+                                                            cursor: 'pointer',
+                                                            color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
+                                                            fontSize: 13,
+                                                            transition: 'color 0.2s',
+                                                        }}
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`
+                                                            );
+                                                            setUrlCopied(true);
+                                                            setTimeout(() => setUrlCopied(false), 2000);
+                                                        }}
+                                                    >
+                                                        <FontAwesomeIcon icon={urlCopied ? faCheck : faCopy} />
+                                                    </button>
+                                                </div>
                                                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
-                                                    Paste this URL in your Slack App's Event Subscriptions settings.
+                                                    Paste this URL in your Slack App's <strong>Event Subscriptions → Request URL</strong>.
                                                 </span>
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label" style={{ marginBottom: 6 }}>Slack App Setup Guide</label>
+                                                <div style={{
+                                                    fontSize: 12,
+                                                    color: 'rgba(255,255,255,0.4)',
+                                                    lineHeight: 1.6,
+                                                    background: 'rgba(255,255,255,0.02)',
+                                                    border: '1px solid rgba(255,255,255,0.06)',
+                                                    borderRadius: 8,
+                                                    padding: '10px 14px',
+                                                }}>
+                                                    <div style={{ marginBottom: 8 }}>
+                                                        <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Event Subscriptions</strong>
+                                                        <div style={{ marginTop: 4 }}>
+                                                            Subscribe to these bot events:
+                                                        </div>
+                                                        <div style={{ marginTop: 2, fontFamily: "'Courier New', monospace", fontSize: 11 }}>
+                                                            message.channels · message.groups · message.im · message.mpim · app_mention
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Bot Token Scopes</strong>
+                                                        <div style={{ marginTop: 4 }}>
+                                                            Required OAuth scopes under <em>OAuth &amp; Permissions</em>:
+                                                        </div>
+                                                        <div style={{ marginTop: 2, fontFamily: "'Courier New', monospace", fontSize: 11 }}>
+                                                            chat:write · users:read · app_mentions:read · channels:history · groups:history · im:history · mpim:history
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -482,7 +538,7 @@ export default function AgentDetail() {
                                                 <input
                                                     className="agent-form-input"
                                                     readOnly
-                                                    value={`${config("LAUNCH_URL") || 'https://launch.flomation.app'}/webhook/agent/${id}`}
+                                                    value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/agent/${id}`}
                                                     style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text' }}
                                                 />
                                             </div>
