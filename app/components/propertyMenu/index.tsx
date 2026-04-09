@@ -17,6 +17,7 @@ import KeyValueProperty from "~/components/propertyMenu/keyValueProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
+import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 
 type PropertyMenuProps = {
     node: object;
@@ -389,6 +390,14 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 )
                                         }
                                     })
+                                )}
+                                {/* Google account management for email triggers */}
+                                {props.node.data.label === "trigger/email" && (
+                                    <GoogleAccountsProperty
+                                        nodeId={props.node.data.id}
+                                        triggers={props.triggers}
+                                        nodeLabel={props.node.data.label}
+                                    />
                                 )}
                                 <TriggerURLProperty
                                     node={props.node}
