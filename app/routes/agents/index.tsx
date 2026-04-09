@@ -69,7 +69,10 @@ export default function Agents() {
             headers: { Authorization: "Bearer " + token }
         })
             .then(response => {
-                if (response?.data) setAgents(response.data);
+                if (response?.data) {
+                    const sorted = [...response.data].sort((a: Agent, b: Agent) => a.name.localeCompare(b.name));
+                    setAgents(sorted);
+                }
             })
             .catch(error => console.error(error))
             .finally(() => setLoading(false));

@@ -51,6 +51,18 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const hasInputs = !isTrigger && !isErrorNode;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
+    // Detect AI nodes that support tool use and no-response handles
+    const isAINode = useMemo(() => {
+        const label = data?.config?.label || data?.label || '';
+        return label.startsWith('ai/');
+    }, [data?.config?.label, data?.label]);
+
+    const hasToolDefinitions = useMemo(() => {
+        if (!isAINode || !data?.config?.inputs) return false;
+        const toolDefs = data.config.inputs.find((i: any) => i.name === 'tool_definitions');
+        return toolDefs?.value && typeof toolDefs.value === 'string' && toolDefs.value.trim().length > 2;
+    }, [isAINode, data?.config?.inputs]);
+
     // Extract switch cases from the 'cases' input for dynamic handle rendering
     const switchCases = useMemo(() => {
         if (type !== 6 || !data?.config?.inputs) return [];
@@ -115,8 +127,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
                     ...(type === 6 && switchCases.length > 0 ? {
-                        minHeight: (switchCases.length + 1) * 20 + 20
+                        minHeight: (switchCases.length + 1) * 28 + 16
                     } : {}),
+                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 220, paddingRight: 70 } : {}),
                 } as React.CSSProperties}
             >
                 {hasInputs && (
@@ -147,13 +160,53 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 </span>
 
                 {/* Standard source handle for types 1, 2, 3 */}
-                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && (
+                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && !isAINode && (
                     <Handle
                         type="source"
                         position={Position.Right}
                         {...(type === 3 ? { id: "input" } : {})}
                     />
                 )}
+
+                {/* AI nodes: Response + Tools + Finished handles (same pattern as Switch) */}
+                {isAINode && hasOutputs && (() => {
+                    const handleSpacing = 28;
+                    const startOffset = 14;
+                    const handles = [
+                        { id: 'output', label: 'Response', color: 'rgba(255,255,255,0.4)' },
+                        { id: 'tools', label: 'Tools', color: 'rgba(245,158,11,0.6)' },
+                        { id: 'no_response', label: 'Finished', color: 'rgba(255,255,255,0.25)', italic: true },
+                    ];
+                    return (
+                        <>
+                            {handles.map((h, i) => {
+                                const y = startOffset + i * handleSpacing;
+                                return (
+                                    <React.Fragment key={h.id}>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id={h.id}
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: y,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 8,
+                                            color: h.color,
+                                            fontStyle: h.italic ? 'italic' : 'normal',
+                                            pointerEvents: 'none',
+                                        }}>
+                                            {h.label}
+                                        </span>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </>
+                    );
+                })()}
 
                 {/* Conditional (type 4): True/False handles at diamond edges.
                      Position sets edge path direction; style overrides set visual placement
@@ -181,36 +234,64 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                 {/* Switch (type 6): Dynamic handles — one per case + default */}
                 {type === 6 && (() => {
-                    const totalHandles = switchCases.length + 1; // cases + default
-                    const handleSpacing = 20;
-                    const startOffset = 8;
+                    const handleSpacing = 28;
+                    const startOffset = 14;
                     return (
                         <>
-                            <div className="switch-labels">
-                                {switchCases.map((label: string, i: number) => (
-                                    <span key={`label_${i}`} className="switch-handle-label" style={{ top: startOffset + i * handleSpacing }}>
-                                        {label}
-                                    </span>
-                                ))}
-                                <span className="switch-handle-label switch-handle-label--default" style={{ top: startOffset + switchCases.length * handleSpacing }}>
-                                    Default
-                                </span>
-                            </div>
-                            {switchCases.map((_: string, i: number) => (
-                                <Handle
-                                    key={`case_${i}`}
-                                    type="source"
-                                    position={Position.Right}
-                                    id={`case_${i}`}
-                                    style={{ top: startOffset + i * handleSpacing + 4 }}
-                                />
-                            ))}
-                            <Handle
-                                type="source"
-                                position={Position.Right}
-                                id="default"
-                                style={{ top: startOffset + switchCases.length * handleSpacing + 4 }}
-                            />
+                            {switchCases.map((label: string, i: number) => {
+                                const y = startOffset + i * handleSpacing;
+                                return (
+                                    <React.Fragment key={`case_${i}`}>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id={`case_${i}`}
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: y,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 8,
+                                            color: 'rgba(255,255,255,0.4)',
+                                            pointerEvents: 'none',
+                                            whiteSpace: 'nowrap',
+                                            maxWidth: 60,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            textAlign: 'right',
+                                        }}>
+                                            {label}
+                                        </span>
+                                    </React.Fragment>
+                                );
+                            })}
+                            {(() => {
+                                const y = startOffset + switchCases.length * handleSpacing;
+                                return (
+                                    <>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id="default"
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: y,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 8,
+                                            color: 'rgba(6,182,212,0.45)',
+                                            fontStyle: 'italic',
+                                            pointerEvents: 'none',
+                                        }}>
+                                            Default
+                                        </span>
+                                    </>
+                                );
+                            })()}
                         </>
                     );
                 })()}
