@@ -5,7 +5,7 @@ import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
 import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes, faCopy, faCheck} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes, faCopy, faCheck, faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
@@ -44,6 +44,7 @@ export default function AgentDetail() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [systemPrompt, setSystemPrompt] = useState('');
+    const [aiApiKey, setAiApiKey] = useState('');
     const [maxConcurrent, setMaxConcurrent] = useState(3);
     const [idleTimeout, setIdleTimeout] = useState(3600);
     const [maxPerHour, setMaxPerHour] = useState(100);
@@ -53,6 +54,7 @@ export default function AgentDetail() {
     const [availableFlows, setAvailableFlows] = useState<Flo[]>([]);
     const [flowSearch, setFlowSearch] = useState('');
     const [showFlowDropdown, setShowFlowDropdown] = useState(false);
+    const [needsRestart, setNeedsRestart] = useState(false);
     const [idCopied, setIdCopied] = useState(false);
     const [urlCopied, setUrlCopied] = useState(false);
     const flowDropdownRef = useRef<HTMLDivElement>(null);
@@ -70,6 +72,7 @@ export default function AgentDetail() {
                     setName(a.name);
                     setDescription(a.description || '');
                     setSystemPrompt(a.system_prompt || '');
+                    setAiApiKey(a.ai_api_key || '');
                     setMaxConcurrent(a.max_concurrent_executions);
                     setIdleTimeout(a.idle_timeout_seconds);
                     setMaxPerHour(a.max_executions_per_hour);
@@ -130,6 +133,7 @@ export default function AgentDetail() {
             name,
             description: description || null,
             system_prompt: systemPrompt || null,
+            ai_api_key: aiApiKey || null,
             max_concurrent_executions: maxConcurrent,
             idle_timeout_seconds: idleTimeout,
             max_executions_per_hour: maxPerHour,
@@ -137,20 +141,25 @@ export default function AgentDetail() {
             channels: channels,
             orchestrator_flow_id: orchestratorFlowId || null,
         }, { headers })
-            .then(() => loadAgent())
+            .then(() => {
+                loadAgent();
+                if (agent?.status === 'running') {
+                    setNeedsRestart(true);
+                }
+            })
             .catch(error => console.error(error))
             .finally(() => setSaving(false));
     };
 
     const handleStart = () => {
         api.post(baseUrl + '/start', {}, { headers })
-            .then(() => loadAgent())
+            .then(() => { loadAgent(); setNeedsRestart(false); })
             .catch(error => console.error(error));
     };
 
     const handleStop = () => {
         api.post(baseUrl + '/stop', {}, { headers })
-            .then(() => loadAgent())
+            .then(() => { loadAgent(); setNeedsRestart(false); })
             .catch(error => console.error(error));
     };
 
@@ -245,6 +254,40 @@ export default function AgentDetail() {
                     </div>
                 </div>
 
+                {needsRestart && (
+                    <div style={{
+                        background: 'rgba(245,158,11,0.1)',
+                        border: '1px solid rgba(245,158,11,0.3)',
+                        borderRadius: 8,
+                        padding: '10px 16px',
+                        marginBottom: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: 13,
+                        color: 'rgba(245,158,11,0.9)',
+                    }}>
+                        <span>
+                            <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: 8 }} />
+                            Agent must be restarted for changes to take effect.
+                        </span>
+                        <button
+                            style={{
+                                background: 'rgba(245,158,11,0.15)',
+                                border: '1px solid rgba(245,158,11,0.3)',
+                                borderRadius: 6,
+                                padding: '4px 12px',
+                                cursor: 'pointer',
+                                color: 'rgba(245,158,11,0.9)',
+                                fontSize: 12,
+                            }}
+                            onClick={() => { handleStop(); setTimeout(handleStart, 2000); }}
+                        >
+                            Restart now
+                        </button>
+                    </div>
+                )}
+
                 <div className="agent-tabs">
                     <button className={`agent-tab ${activeTab === 'config' ? 'active' : ''}`} onClick={() => setActiveTab('config')}>Configuration</button>
                     <button className={`agent-tab ${activeTab === 'channels' ? 'active' : ''}`} onClick={() => setActiveTab('channels')}>Channels</button>
@@ -306,6 +349,20 @@ export default function AgentDetail() {
                         <div className="agent-form-group">
                             <label className="agent-form-label">System Prompt</label>
                             <textarea className="agent-form-input textarea" value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} placeholder="Instructions for the agent..." />
+                        </div>
+
+                        <div className="agent-form-group">
+                            <label className="agent-form-label">AI API Key</label>
+                            <input
+                                className="agent-form-input"
+                                type="password"
+                                value={aiApiKey}
+                                onChange={e => setAiApiKey(e.target.value)}
+                                placeholder="sk-ant-..."
+                            />
+                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                Anthropic API key used by the agent's memory extraction pipeline. Required for automatic memory, commitment, and preference detection.
+                            </span>
                         </div>
 
                         <div className="agent-form-row">

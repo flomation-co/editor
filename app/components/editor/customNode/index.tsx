@@ -115,7 +115,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
                     ...(type === 6 && switchCases.length > 0 ? {
-                        minHeight: (switchCases.length + 1) * 20 + 20
+                        minHeight: (switchCases.length + 1) * 28 + 16
                     } : {}),
                 } as React.CSSProperties}
             >
@@ -181,36 +181,64 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                 {/* Switch (type 6): Dynamic handles — one per case + default */}
                 {type === 6 && (() => {
-                    const totalHandles = switchCases.length + 1; // cases + default
-                    const handleSpacing = 20;
-                    const startOffset = 8;
+                    const handleSpacing = 28;
+                    const startOffset = 14;
                     return (
                         <>
-                            <div className="switch-labels">
-                                {switchCases.map((label: string, i: number) => (
-                                    <span key={`label_${i}`} className="switch-handle-label" style={{ top: startOffset + i * handleSpacing }}>
-                                        {label}
-                                    </span>
-                                ))}
-                                <span className="switch-handle-label switch-handle-label--default" style={{ top: startOffset + switchCases.length * handleSpacing }}>
-                                    Default
-                                </span>
-                            </div>
-                            {switchCases.map((_: string, i: number) => (
-                                <Handle
-                                    key={`case_${i}`}
-                                    type="source"
-                                    position={Position.Right}
-                                    id={`case_${i}`}
-                                    style={{ top: startOffset + i * handleSpacing + 4 }}
-                                />
-                            ))}
-                            <Handle
-                                type="source"
-                                position={Position.Right}
-                                id="default"
-                                style={{ top: startOffset + switchCases.length * handleSpacing + 4 }}
-                            />
+                            {switchCases.map((label: string, i: number) => {
+                                const y = startOffset + i * handleSpacing;
+                                return (
+                                    <React.Fragment key={`case_${i}`}>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id={`case_${i}`}
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: y,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 8,
+                                            color: 'rgba(255,255,255,0.4)',
+                                            pointerEvents: 'none',
+                                            whiteSpace: 'nowrap',
+                                            maxWidth: 60,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            textAlign: 'right',
+                                        }}>
+                                            {label}
+                                        </span>
+                                    </React.Fragment>
+                                );
+                            })}
+                            {(() => {
+                                const y = startOffset + switchCases.length * handleSpacing;
+                                return (
+                                    <>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id="default"
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: 10,
+                                            top: y,
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 8,
+                                            color: 'rgba(6,182,212,0.45)',
+                                            fontStyle: 'italic',
+                                            pointerEvents: 'none',
+                                        }}>
+                                            Default
+                                        </span>
+                                    </>
+                                );
+                            })()}
                         </>
                     );
                 })()}

@@ -610,11 +610,34 @@ export function Editor(props : EditorProps) {
         { name: "author_email", category: "flow", source: "Execution" },
         { name: "triggerer_email", category: "flow", source: "Execution" },
         { name: "system_prompt", category: "flow", source: "Agent / Flow Settings" },
+        { name: "agent_id", category: "flow", source: "Agent" },
+        { name: "agent_user_id", category: "flow", source: "Agent" },
+        { name: "conversation_id", category: "flow", source: "Agent" },
+        { name: "trigger_source", category: "flow", source: "Agent" },
+        { name: "channel_type", category: "flow", source: "Agent Channel" },
+        { name: "channel_id", category: "flow", source: "Agent Channel" },
+        { name: "thread_id", category: "flow", source: "Agent Channel" },
+    ];
+
+    // Canonical trigger data variables injected by Launch when an agent
+    // receives a message via any channel (Slack, Telegram, webhook, or
+    // commitment wake-up). These are auto-wired from trigger node outputs.
+    const AGENT_TRIGGER_VARIABLES: VariableItem[] = [
+        { name: "content", category: "input", source: "Agent Channel" },
+        { name: "sender", category: "input", source: "Agent Channel" },
+        { name: "channel_type", category: "input", source: "Agent Channel" },
+        { name: "channel_id", category: "input", source: "Agent Channel" },
+        { name: "thread_id", category: "input", source: "Agent Channel" },
+        { name: "user_id", category: "input", source: "Agent Channel" },
+        { name: "user_name", category: "input", source: "Agent Channel" },
+        { name: "message_id", category: "input", source: "Agent Channel" },
+        { name: "trigger_source", category: "input", source: "Agent Channel" },
+        { name: "commitment_id", category: "input", source: "Commitment" },
     ];
 
     // Derive parent node outputs for the selected property node
     const allVariables = useMemo<VariableItem[]>(() => {
-        const items: VariableItem[] = [...FLOW_VARIABLES, ...envVariables];
+        const items: VariableItem[] = [...FLOW_VARIABLES, ...AGENT_TRIGGER_VARIABLES, ...envVariables];
 
         // Add ${var.X} variables from Set Variable nodes in the flow
         for (const n of nodes as any[]) {
@@ -640,27 +663,52 @@ export function Editor(props : EditorProps) {
 
         if (!propertyNode || !plugins) return items;
 
-        // Find parent nodes via edges
-        const parentNodeIds = edges
-            .filter((e) => e.target === propertyNode.id)
-            .map((e) => e.source);
+        // Conditional node types that pass through their parent outputs
+        // to child branches (if, switch, loop). The editor mirrors the
+        // executor's pass-through behaviour by walking up through these
+        // nodes to find upstream outputs for autocomplete.
+        const passThroughTypes = new Set([4, 5, 6]); // conditional, loop, switch
 
-        for (const parentId of parentNodeIds) {
-            const parentNode = nodes.find((n) => n.id === parentId);
-            if (!parentNode?.data?.config?.outputs) continue;
+        // Collect outputs from parent nodes, walking through conditionals
+        // to find grandparent outputs that pass through.
+        const seen = new Set<string>();
+        const collectParentOutputs = (nodeId: string) => {
+            if (seen.has(nodeId)) return;
+            seen.add(nodeId);
 
-            const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+            const parentIds = edges
+                .filter((e) => e.target === nodeId)
+                .map((e) => e.source);
 
-            for (const output of parentNode.data.config.outputs) {
-                if (output.name) {
-                    items.push({
-                        name: output.name,
-                        category: "input",
-                        source: parentLabel,
-                    });
+            for (const parentId of parentIds) {
+                const parentNode = nodes.find((n: any) => n.id === parentId) as any;
+                if (!parentNode?.data?.config) continue;
+
+                const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+                const parentType = parentNode.data?.config?.type;
+
+                // Add this parent's outputs
+                if (parentNode.data.config.outputs) {
+                    for (const output of parentNode.data.config.outputs) {
+                        if (output.name) {
+                            items.push({
+                                name: output.name,
+                                category: "input",
+                                source: parentLabel,
+                            });
+                        }
+                    }
+                }
+
+                // If this parent is a conditional/switch/loop, also walk
+                // up to its parents since it passes their outputs through
+                if (passThroughTypes.has(parentType)) {
+                    collectParentOutputs(parentId);
                 }
             }
-        }
+        };
+
+        collectParentOutputs(propertyNode.id);
 
         return items;
     }, [envVariables, propertyNode, edges, nodes, plugins]);
