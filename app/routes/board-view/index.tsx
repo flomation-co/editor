@@ -5,11 +5,10 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSync, faPencil, faGrip, faSpinner, faCopy} from "@fortawesome/free-solid-svg-icons";
 import type {Dashboard, DashboardWidget, DashboardWidgetData} from "~/types";
 import {WidgetRenderer} from "~/components/widgets";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 const config = useConfig();
 const API_URL = config("AUTOMATE_API_URL");
@@ -58,7 +57,7 @@ function BoardGrid({widgets, widgetDataMap, columns}: {widgets: DashboardWidget[
                         <div className="widget-card-header">
                             <div className="widget-card-title">{w.title}</div>
                             {isRefreshing && (
-                                <FontAwesomeIcon icon={faSpinner} spin className="widget-refresh-indicator"/>
+                                <Icon name="spinner" spin className="widget-refresh-indicator" />
                             )}
                         </div>
                         <div className="widget-card-body">
@@ -214,7 +213,7 @@ export default function BoardView() {
     const widgets = board?.widgets || [];
 
     if (isLoading) {
-        return <Container><div className="widget-loading" style={{padding: 80}}><FontAwesomeIcon icon={faSpinner} className="widget-loading-spinner" style={{marginRight: 8}}/>Loading dashboard...</div></Container>;
+        return <Container><div className="widget-loading" style={{padding: 80}}><Icon name="spinner" className="widget-loading-spinner" style={{marginRight: 8}} />Loading dashboard...</div></Container>;
     }
 
     if (!board) {
@@ -231,13 +230,13 @@ export default function BoardView() {
                         {TIME_RANGES.map(tr => <option key={tr.value} value={tr.value}>{tr.label}</option>)}
                     </select>
                     <button className="board-view-btn" onClick={handleRefresh} disabled={isRefreshing}>
-                        <FontAwesomeIcon icon={faSync} spin={isRefreshing}/> Refresh
+                        <Icon name="sync" spin={isRefreshing} /> Refresh
                     </button>
                     {board.is_public && board.public_slug && (
-                        <button className="board-view-btn" onClick={handleCopyPublicLink} title="Copy public link"><FontAwesomeIcon icon={faCopy}/> Share</button>
+                        <button className="board-view-btn" onClick={handleCopyPublicLink} title="Copy public link"><Icon name="copy" /> Share</button>
                     )}
                     <button className="board-view-btn board-view-btn--primary" onClick={() => navigate("/board/" + id + "/edit")}>
-                        <FontAwesomeIcon icon={faPencil}/> Edit
+                        <Icon name="pencil" /> Edit
                     </button>
                 </div>
             </div>
@@ -248,11 +247,11 @@ export default function BoardView() {
 
             {widgets.length === 0 && (
                 <div className="board-empty">
-                    <div className="board-empty-icon"><FontAwesomeIcon icon={faGrip}/></div>
+                    <div className="board-empty-icon"><Icon name="grip" /></div>
                     <div className="board-empty-title">No widgets yet</div>
                     <div className="board-empty-description">Edit this dashboard to add widgets and visualise your flow data.</div>
                     <button className="board-view-btn board-view-btn--primary" onClick={() => navigate("/board/" + id + "/edit")}>
-                        <FontAwesomeIcon icon={faPencil}/> Add Widgets
+                        <Icon name="pencil" /> Add Widgets
                     </button>
                 </div>
             )}

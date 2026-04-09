@@ -1,9 +1,6 @@
 import React from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faEnvelope, faHeadset} from "@fortawesome/free-solid-svg-icons";
-import {faGithub, faDiscord} from "@fortawesome/free-brands-svg-icons";
 import "./support-widget.css";
-
+import { Icon } from "~/components/icons/Icon";
 
 export default function SupportWidget() {
 
@@ -16,7 +13,7 @@ export default function SupportWidget() {
             <div className="support-channels">
                 <a href={"mailto:support@flomation.co"} className="support-card">
                     <div className="support-card-icon support-card-icon--email">
-                        <FontAwesomeIcon icon={faEnvelope} />
+                        <Icon name="envelope" />
                     </div>
                     <div className="support-card-content">
                         <span className="support-card-title">Email Support</span>
@@ -26,7 +23,7 @@ export default function SupportWidget() {
 
                 <a href={"https://github.com/flomation-co"} target={"_blank"} rel={"noopener noreferrer"} className="support-card">
                     <div className="support-card-icon support-card-icon--github">
-                        <FontAwesomeIcon icon={faGithub} />
+                        <Icon name="github" />
                     </div>
                     <div className="support-card-content">
                         <span className="support-card-title">GitHub</span>
@@ -36,7 +33,7 @@ export default function SupportWidget() {
 
                 <a href={"https://discord.gg/flomation"} target={"_blank"} rel={"noopener noreferrer"} className="support-card">
                     <div className="support-card-icon support-card-icon--discord">
-                        <FontAwesomeIcon icon={faDiscord} />
+                        <Icon name="discord" />
                     </div>
                     <div className="support-card-content">
                         <span className="support-card-title">Discord Community</span>
@@ -46,7 +43,7 @@ export default function SupportWidget() {
             </div>
 
             <div className="support-footer">
-                <FontAwesomeIcon icon={faHeadset} className="support-footer-icon" />
+                <Icon name="headset" className="support-footer-icon" />
                 <span>Visit <a href="https://www.flomation.co" target="_blank" rel="noopener noreferrer">www.flomation.co</a> for documentation &amp; guides</span>
             </div>
         </div>

@@ -1,11 +1,7 @@
 import "./index.css"
 
 import React, {useEffect, useMemo, useState} from "react";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-
-import {library} from '@fortawesome/fontawesome-svg-core'
-import {fas} from '@fortawesome/free-solid-svg-icons'
-import {fab} from '@fortawesome/free-brands-svg-icons'
+import { Icon } from "~/components/icons/Icon";
 import type { PluginDefinition, PluginCategory } from "~/types";
 import { NodeCategoryType } from "~/types";
 
@@ -27,9 +23,6 @@ enum Page {
     Conditional,
     Loop
 }
-
-// RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
-library.add(fab, fas);
 
 type SubGroup = {
     key: string;
@@ -141,7 +134,7 @@ const ContextMenu = (props: ContextMenuProps) => {
     const renderActionItem = (nt: PluginDefinition) => (
         <div className={"context-node-type context-node-action"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
             <div className={"node-type-icon-column"}>
-                <FontAwesomeIcon icon={["fa-solid" as any, ("fa-" + nt.icon) as any]} size={"lg"}/>
+                <Icon name={nt.icon} size="1.25em" />
             </div>
             <div className={"node-type-text-column"}>
                 <div className={"node-type-title"}>
@@ -166,7 +159,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                 >
                     <div className={"node-type-icon-column"}>
                         {subGroup.icon && (
-                            <FontAwesomeIcon icon={["fas", ("fa-" + subGroup.icon) as any]} size={"lg"}/>
+                            <Icon name={subGroup.icon} size="1.25em" />
                         )}
                     </div>
                     <div className={"node-type-text-column"}>
@@ -181,7 +174,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                         )}
                     </div>
                     <div className={"category-chevron"}>
-                        <FontAwesomeIcon icon={["fas", isExpanded ? "chevron-down" : "chevron-right"]} size={"sm"}/>
+                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
                     </div>
                 </div>
                 {isExpanded && (
@@ -207,7 +200,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                     }}
                 >
                     <div className={"node-type-icon-column"}>
-                        <FontAwesomeIcon icon={["fas", ("fa-" + group.category.icon) as any]} size={"xl"}/>
+                        <Icon name={group.category.icon} size="1.5em" />
                     </div>
                     <div className={"node-type-text-column"}>
                         <div className={"node-type-title"}>
@@ -219,7 +212,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                         </div>
                     </div>
                     <div className={"category-chevron"}>
-                        <FontAwesomeIcon icon={["fas", isExpanded ? "chevron-down" : "chevron-right"]} size={"sm"}/>
+                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
                     </div>
                 </div>
                 {isExpanded && (
@@ -255,13 +248,13 @@ const ContextMenu = (props: ContextMenuProps) => {
                     <div className={"context-menu-header"}>
                         <input placeholder={"Search for Trigger, Action or Output..."} onChange={onSearchChange} autoFocus />
                         <button className={"context-menu-close"} onClick={props.onClose}>
-                            <FontAwesomeIcon icon={["fas", "xmark"]} />
+                            <Icon name="xmark" />
                         </button>
                     </div>
                     {currentPage != Page.Root && !searchTerm && (
                         <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Root)} key={"back"}>
                             <div className={"node-type-icon-column"}>
-                                <FontAwesomeIcon icon={["fas", "arrow-left"]} size={"2xl"}/>
+                                <Icon name="arrow-left" size="1.5em" />
                             </div>
                             <div className={"node-type-text-column"}>
                                 <div className={"node-type-description"}>
@@ -288,7 +281,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                             <>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Triggers)} key={"triggers"}>
                                     <div className={"node-type-icon-column"}>
-                                        <FontAwesomeIcon icon={["fas", "bolt-lightning"]} size={"2xl"}/>
+                                        <Icon name="bolt-lightning" size="1.5em" />
                                     </div>
                                     <div className={"node-type-text-column"}>
                                         <div className={"node-type-title"}>
@@ -301,7 +294,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                 </div>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Processing)} key={"actions"}>
                                     <div className={"node-type-icon-column"}>
-                                        <FontAwesomeIcon icon={["fas", "microchip"]} size={"2xl"}/>
+                                        <Icon name="microchip" size="1.5em" />
                                     </div>
                                     <div className={"node-type-text-column"}>
                                         <div className={"node-type-title"}>
@@ -314,7 +307,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                 </div>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Outputs)} key={"outputs"}>
                                     <div className={"node-type-icon-column"}>
-                                        <FontAwesomeIcon icon={["fas", "location-arrow"]} size={"2xl"}/>
+                                        <Icon name="location-arrow" size="1.5em" />
                                     </div>
                                     <div className={"node-type-text-column"}>
                                         <div className={"node-type-title"}>
@@ -327,7 +320,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                 </div>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Conditional)} key={"conditionals"}>
                                     <div className={"node-type-icon-column"}>
-                                        <FontAwesomeIcon icon={["fas", "code-branch"]} size={"2xl"}/>
+                                        <Icon name="code-branch" size="1.5em" />
                                     </div>
                                     <div className={"node-type-text-column"}>
                                         <div className={"node-type-title"}>
@@ -340,7 +333,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                                 </div>
                                 <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Loop)} key={"looping"}>
                                     <div className={"node-type-icon-column"}>
-                                        <FontAwesomeIcon icon={["fas", "recycle"]} size={"2xl"}/>
+                                        <Icon name="recycle" size="1.5em" />
                                     </div>
                                     <div className={"node-type-text-column"}>
                                         <div className={"node-type-title"}>

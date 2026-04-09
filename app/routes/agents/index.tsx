@@ -4,15 +4,13 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState} from "react";
 import type {Agent, AgentChannel} from "~/types";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faRobot, faPlus, faEnvelope, faComment, faGlobe} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useNavigate} from "react-router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -25,16 +23,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 const CHANNEL_ICONS: Record<string, any> = {
-    telegram: faTelegram,
-    slack: faSlack,
-    email: faEnvelope,
-    webhook: faGlobe,
+    telegram: "telegram",
+    slack: "slack",
+    email: "envelope",
+    webhook: "globe",
 };
 
 function ChannelIcon({ type }: { type: string }) {
     return (
         <div className="agent-channel-icon" title={type}>
-            <FontAwesomeIcon icon={CHANNEL_ICONS[type] || faComment} />
+            <Icon name={CHANNEL_ICONS[type] || "comment"} />
         </div>
     );
 }
@@ -98,28 +96,28 @@ export default function Agents() {
                 <span>Agents</span>
                 <div className="agents-header-actions">
                     <button className="create-agent-btn" onClick={handleCreateAgent}>
-                        <FontAwesomeIcon icon={faPlus} /> New Agent
+                        <Icon name="plus" /> New Agent
                     </button>
                 </div>
             </div>
 
             {loading && (
                 <div className="loading-container">
-                    <FontAwesomeIcon icon={faSpinner} spin size="2x" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
                 </div>
             )}
 
             {!loading && agents.length === 0 && (
                 <div className="agents-empty">
                     <div className="agents-empty-icon">
-                        <FontAwesomeIcon icon={faRobot} />
+                        <Icon name="robot" />
                     </div>
                     <div className="agents-empty-title">No Agents Yet</div>
                     <div className="agents-empty-subtitle">
                         Create an agent to autonomously receive messages, process tasks, and interact with your flows.
                     </div>
                     <button className="create-agent-btn" onClick={handleCreateAgent}>
-                        <FontAwesomeIcon icon={faPlus} /> Create Your First Agent
+                        <Icon name="plus" /> Create Your First Agent
                     </button>
                 </div>
             )}
@@ -153,11 +151,11 @@ export default function Agents() {
 
                                 <div className="agent-card-stats">
                                     <span className="agent-card-stat">
-                                        <FontAwesomeIcon icon={faComment} />
+                                        <Icon name="comment" />
                                         {agent.message_count || 0}
                                     </span>
                                     <span className="agent-card-stat">
-                                        <FontAwesomeIcon icon={faRobot} />
+                                        <Icon name="robot" />
                                         {agent.execution_count || 0}
                                     </span>
                                 </div>

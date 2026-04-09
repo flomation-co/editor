@@ -2,13 +2,12 @@ import {useEffect, useState, useCallback} from "react";
 import {useParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSync, faSpinner} from "@fortawesome/free-solid-svg-icons";
 import type {Dashboard, DashboardWidget, DashboardWidgetData} from "~/types";
 import {WidgetRenderer} from "~/components/widgets";
 
 import "../board-view/index.css";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 const cfgFn = useConfig();
 const API_URL = cfgFn("AUTOMATE_API_URL");
@@ -100,7 +99,7 @@ export default function PublicBoard() {
     const widgets = board?.widgets || [];
 
     if (isLoading) {
-        return <div className="public-board"><div className="public-board-loading"><FontAwesomeIcon icon={faSpinner} spin/> Loading dashboard...</div></div>;
+        return <div className="public-board"><div className="public-board-loading"><Icon name="spinner" spin /> Loading dashboard...</div></div>;
     }
 
     if (error || !board) {
@@ -123,7 +122,7 @@ export default function PublicBoard() {
                 <div className="public-board-divider"/>
                 <div className="public-board-title">{board.name}</div>
                 <button className="public-board-refresh-btn" onClick={handleRefresh} disabled={isRefreshing}>
-                    <FontAwesomeIcon icon={faSync} spin={isRefreshing}/> Refresh
+                    <Icon name="sync" spin={isRefreshing} /> Refresh
                 </button>
                 {board.refresh_interval > 0 && countdown > 0 && <span className="public-board-countdown">{countdown}s</span>}
             </div>

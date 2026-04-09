@@ -1,9 +1,6 @@
 import type {Route} from "../+types/home";
 import "./index.css"
 import Container from "~/components/container";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleStop, faEye, faSpinner, faRobot, faHand, faClock, faCodeBranch, faGlobe, faEnvelope, faBox, faFile, faQrcode, faImage, faBolt} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import {Link, useSearchParams} from "react-router";
 import {ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
@@ -18,6 +15,7 @@ import ReactCountryFlag from "react-country-flag"
 import {PaginationControls} from "~/components/paginationControls";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -30,17 +28,17 @@ export function meta({}: Route.MetaArgs) {
 }
 
 const TRIGGER_ICONS: Record<string, any> = {
-    manual: faHand,
-    schedule: faClock,
-    'git-poll': faCodeBranch,
-    webhook: faGlobe,
-    telegram: faTelegram,
-    slack: faSlack,
-    email: faEnvelope,
-    s3: faBox,
-    form: faFile,
-    qr: faQrcode,
-    image: faImage,
+    manual: "hand",
+    schedule: "clock",
+    'git-poll': "code-branch",
+    webhook: "globe",
+    telegram: "telegram",
+    slack: "slack",
+    email: "envelope",
+    s3: "box",
+    form: "file",
+    qr: "qrcode",
+    image: "image",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -58,7 +56,7 @@ const TRIGGER_LABELS: Record<string, string> = {
 };
 
 function triggerIcon(type?: string): any {
-    return TRIGGER_ICONS[type || ''] || faBolt;
+    return TRIGGER_ICONS[type || ''] || "bolt";
 }
 
 function triggerLabel(type?: string): string {
@@ -245,7 +243,7 @@ export default function Executions() {
 
             {isLoading && (
                 <div className={"loading-container"}>
-                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <Icon name="spinner" spin />
                 </div>
             )}
             {!isLoading && (
@@ -274,7 +272,7 @@ export default function Executions() {
                                             <tr className={"flo-table-row"} key={exec.id}>
                                                 <td>
                                                     {exec.agent_id && (
-                                                        <FontAwesomeIcon icon={faRobot} style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + exec.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
+                                                        <Icon name="robot" style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + exec.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
                                                     )}
                                                     <Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link>
                                                     <span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span>
@@ -289,7 +287,7 @@ export default function Executions() {
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"} style={{ textAlign: 'center' }}>
                                                     <span data-tooltip-id={"tooltip-trigger-" + exec.id} data-tooltip-content={triggerLabel(exec.trigger_type)} data-tooltip-place="bottom">
-                                                        <FontAwesomeIcon icon={triggerIcon(exec.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
+                                                        <Icon name={triggerIcon(exec.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
                                                     </span>
                                                     <Tooltip id={"tooltip-trigger-" + exec.id} />
                                                 </td>
@@ -302,13 +300,13 @@ export default function Executions() {
                                                 {/*<td className={"table-column-hide-sm"}>{friendlyDuration(exec.billing_duration)}</td>*/}
                                                 <td>
                                                     {/*<button disabled={true || r.state != "active"} className={"table-button"}>
-                                            <FontAwesomeIcon icon={faPencil}/> Edit
+                                            <Icon name="pencil" /> Edit
                                         </button>*/}
                                                     <Link className={"table-button"} to={{pathname: "/execution/" + exec.id}}>
-                                                        <FontAwesomeIcon icon={faEye}/> <span>View</span>
+                                                        <Icon name="eye" /> <span>View</span>
                                                     </Link>
                                                     <button className={"table-button"} disabled={true}>
-                                                        <FontAwesomeIcon icon={faCircleStop}/> <span>Stop</span>
+                                                        <Icon name="circle-stop" /> <span>Stop</span>
                                                     </button>
                                                 </td>
                                             </tr>

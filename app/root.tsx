@@ -12,8 +12,6 @@ import stylesheet from "./app.css?url";
 import useCookieToken from "~/components/cookie";
 import '@xyflow/react/dist/style.css';
 
-import '@fortawesome/fontawesome-svg-core/styles.css';
-import { config } from '@fortawesome/fontawesome-svg-core';
 import AuthContext from "~/context/auth/context";
 import AuthProvider from "~/context/auth/provider";
 import OrganisationProvider from "~/context/organisation/provider";
@@ -36,7 +34,6 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   let jwt = useCookieToken();
-  config.autoAddCss = false;
 
   return (
     <html lang="en">

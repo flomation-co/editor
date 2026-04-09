@@ -1,10 +1,9 @@
 import React, {useState} from "react";
 import QRCode from "react-qr-code";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCopy, faCheck} from "@fortawesome/pro-solid-svg-icons";
 import useConfig from "~/components/config";
 import type {Trigger} from "~/types";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type Props = {
     node: any;
@@ -79,7 +78,7 @@ const TriggerURLProperty = (props: Props) => {
             <div className="trigger-url-box">
                 <code className="trigger-url-text">{triggerUrl}</code>
                 <button className="trigger-url-copy" onClick={() => copyToClipboard(triggerUrl)}>
-                    <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+                    <Icon name={copied? "check" : "copy"} />
                 </button>
             </div>
 
@@ -99,7 +98,7 @@ const TriggerURLProperty = (props: Props) => {
                     <div className="trigger-url-box">
                         <code className="trigger-url-text">{snippetCode}</code>
                         <button className="trigger-url-copy" onClick={() => copyToClipboard(snippetCode)}>
-                            <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+                            <Icon name={copied? "check" : "copy"} />
                         </button>
                     </div>
                 </>

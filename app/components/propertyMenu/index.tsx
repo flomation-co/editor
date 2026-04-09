@@ -1,11 +1,6 @@
 import "./index.css"
 
 import React, {useEffect, useState, useCallback} from "react";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-
-import {library} from '@fortawesome/fontawesome-svg-core'
-import {fas} from '@fortawesome/free-solid-svg-icons'
-import {fab} from '@fortawesome/free-brands-svg-icons'
 import type {NodeDefinition, Trigger} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import TextProperty from "~/components/propertyMenu/textProperty";
@@ -18,6 +13,7 @@ import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
+import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
     node: object;
@@ -30,9 +26,6 @@ type PropertyMenuProps = {
     expanded?: boolean;
     onToggleExpand?: () => void;
 }
-
-// RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
-library.add(fab, fas);
 
 const INPUT_TYPES = [
     {value: "string", label: "Text"},
@@ -72,7 +65,7 @@ function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string;
             <div className="trigger-inputs-header">
                 <span className="trigger-inputs-title">Trigger Inputs</span>
                 <button type="button" className="trigger-inputs-add-btn" onClick={addInput}>
-                    <FontAwesomeIcon icon="plus"/> Add Input
+                    <Icon name="plus" /> Add Input
                 </button>
             </div>
             <div className="trigger-inputs-hint">
@@ -95,7 +88,7 @@ function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string;
                             {INPUT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                         <button type="button" className="trigger-input-def-remove" onClick={() => removeInput(idx)}>
-                            <FontAwesomeIcon icon="trash"/>
+                            <Icon name="trash" />
                         </button>
                     </div>
                     <div className="trigger-input-def-row">
@@ -194,11 +187,11 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 </div>
                                 {props.onToggleExpand && (
                                     <button className={"property-menu-close"} onClick={props.onToggleExpand} style={{ marginRight: 4 }}>
-                                        <FontAwesomeIcon icon={["fas", props.expanded ? "compress" : "expand"]} />
+                                        <Icon name={props.expanded ? "compress" : "expand"} />
                                     </button>
                                 )}
                                 <button className={"property-menu-close"} onClick={handleDismiss}>
-                                    <FontAwesomeIcon icon={["fas", "xmark"]} />
+                                    <Icon name={"xmark"} />
                                 </button>
                             </div>
 
@@ -406,7 +399,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 {props.onNodeDelete && (
                                     <div className={"property-menu-delete"}>
                                         <button onClick={() => props.onNodeDelete(props.node.data.id)}>
-                                            <FontAwesomeIcon icon={["fas", "trash"]} /> Delete Node
+                                            <Icon name={"trash"} /> Delete Node
                                         </button>
                                     </div>
                                 )}

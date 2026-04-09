@@ -1,7 +1,6 @@
 import "./index.css"
 import {useEffect, useState} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowLeft, faArrowRight} from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "~/components/icons/Icon";
 
 export type PaginationControlsProps = {
     pageSize?: number,
@@ -68,7 +67,7 @@ export function PaginationControls(props : PaginationControlsProps) {
     return (
         <div className={"pagination-container"}>
             <div className={"pagination-controls"}>
-                <button className={props.disableLeftPagination || currentPage < 2 ? "pagination-button-disabled" : "pagination-button"} disabled={props.disableLeftPagination || currentPage < 2} onClick={() => {handlePageLeft()}}><FontAwesomeIcon icon={faArrowLeft} /></button>
+                <button className={props.disableLeftPagination || currentPage < 2 ? "pagination-button-disabled" : "pagination-button"} disabled={props.disableLeftPagination || currentPage < 2} onClick={() => {handlePageLeft()}}><Icon name="arrow-left" /></button>
 
                 {totalPages > 0 && (
                     <>
@@ -89,7 +88,7 @@ export function PaginationControls(props : PaginationControlsProps) {
                     </>
                 )}
 
-                <button className={props.disableRightPagination || currentPage >= totalPages ? "pagination-button-disabled" : "pagination-button"} disabled={props.disableRightPagination || currentPage >= totalPages} onClick={() => {handlePageRight()}}><FontAwesomeIcon icon={faArrowRight} /></button>
+                <button className={props.disableRightPagination || currentPage >= totalPages ? "pagination-button-disabled" : "pagination-button"} disabled={props.disableRightPagination || currentPage >= totalPages} onClick={() => {handlePageRight()}}><Icon name="arrow-right" /></button>
             </div>
         </div>
     )

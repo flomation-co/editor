@@ -4,15 +4,13 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
 import type {Agent, AgentChannel, AgentSession, AgentState, Flo} from "~/types";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faPlay, faStop, faPause, faRobot, faArrowLeft, faTrash, faPlus, faTimes, faCopy, faCheck, faExclamationTriangle, faEnvelope, faRefresh} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram, faSlack, faGoogle} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -84,7 +82,7 @@ function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key:
                     style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: 4 }}
                     title="Refresh"
                 >
-                    <FontAwesomeIcon icon={faRefresh} />
+                    <Icon name="refresh" />
                 </button>
             </div>
 
@@ -127,7 +125,7 @@ function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key:
                                 }}
                                 title="Remove"
                             >
-                                <FontAwesomeIcon icon={faTrash} />
+                                <Icon name="trash" />
                             </button>
                         </div>
                     ))}
@@ -145,7 +143,7 @@ function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key:
                         color: '#00aa9c', fontSize: 12, cursor: 'pointer',
                     }}
                 >
-                    <FontAwesomeIcon icon={faPlus} /> Read Access
+                    <Icon name="plus" /> Read Access
                 </button>
                 <button
                     type="button"
@@ -157,7 +155,7 @@ function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key:
                         color: '#00aa9c', fontSize: 12, cursor: 'pointer',
                     }}
                 >
-                    <FontAwesomeIcon icon={faPlus} /> Send Access
+                    <Icon name="plus" /> Send Access
                 </button>
             </div>
 
@@ -330,7 +328,7 @@ export default function AgentDetail() {
         return (
             <Container>
                 <div className="loading-container">
-                    <FontAwesomeIcon icon={faSpinner} spin size="2x" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
                 </div>
             </Container>
         );
@@ -350,9 +348,9 @@ export default function AgentDetail() {
                 <div className="agent-detail-header">
                     <div className="agent-detail-title">
                         <button className="agent-action-btn" onClick={() => navigate('/agent')} title="Back to agents">
-                            <FontAwesomeIcon icon={faArrowLeft} />
+                            <Icon name="arrow-left" />
                         </button>
-                        <FontAwesomeIcon icon={faRobot} style={{ color: '#c084fc', fontSize: 20 }} />
+                        <Icon name="robot" style={{ color: '#c084fc', fontSize: 20 }} />
                         <div>
                             <h1>{agent.name}</h1>
                             <div className="agent-id-row">
@@ -366,7 +364,7 @@ export default function AgentDetail() {
                                     }}
                                     title="Copy Agent ID"
                                 >
-                                    <FontAwesomeIcon icon={idCopied ? faCheck : faCopy} />
+                                    <Icon name={idCopied? "check" : "copy"} />
                                 </button>
                             </div>
                         </div>
@@ -375,31 +373,31 @@ export default function AgentDetail() {
                     <div className="agent-detail-actions">
                         {(agent.status === 'stopped' || agent.status === 'error') && (
                             <button className="agent-action-btn start" onClick={handleStart}>
-                                <FontAwesomeIcon icon={faPlay} /> Start
+                                <Icon name="play" /> Start
                             </button>
                         )}
                         {agent.status === 'running' && (
                             <>
                                 <button className="agent-action-btn pause" onClick={handlePause}>
-                                    <FontAwesomeIcon icon={faPause} /> Pause
+                                    <Icon name="pause" /> Pause
                                 </button>
                                 <button className="agent-action-btn stop" onClick={handleStop}>
-                                    <FontAwesomeIcon icon={faStop} /> Stop
+                                    <Icon name="stop" /> Stop
                                 </button>
                             </>
                         )}
                         {agent.status === 'paused' && (
                             <>
                                 <button className="agent-action-btn start" onClick={handleStart}>
-                                    <FontAwesomeIcon icon={faPlay} /> Resume
+                                    <Icon name="play" /> Resume
                                 </button>
                                 <button className="agent-action-btn stop" onClick={handleStop}>
-                                    <FontAwesomeIcon icon={faStop} /> Stop
+                                    <Icon name="stop" /> Stop
                                 </button>
                             </>
                         )}
                         <button className="agent-action-btn delete" onClick={handleDelete} title="Delete agent">
-                            <FontAwesomeIcon icon={faTrash} />
+                            <Icon name="trash" />
                         </button>
                     </div>
                 </div>
@@ -418,7 +416,7 @@ export default function AgentDetail() {
                         color: 'rgba(245,158,11,0.9)',
                     }}>
                         <span>
-                            <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: 8 }} />
+                            <Icon name="exclamation-triangle" style={{ marginRight: 8 }} />
                             Agent must be restarted for changes to take effect.
                         </span>
                         <button
@@ -546,7 +544,7 @@ export default function AgentDetail() {
                         </div>
 
                         <button className="agent-save-btn" onClick={handleSave} disabled={saving}>
-                            {saving ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Save Changes'}
+                            {saving ? <Icon name="spinner" spin /> : 'Save Changes'}
                         </button>
                     </div>
                 )}
@@ -559,7 +557,7 @@ export default function AgentDetail() {
                             </span>
                             <button className="create-agent-btn" style={{ marginTop: 0, padding: '6px 14px', fontSize: 12 }}
                                 onClick={() => setChannels([...channels, { type: 'telegram', config: { bot_token: '' } }])}>
-                                <FontAwesomeIcon icon={faPlus} /> Add Channel
+                                <Icon name="plus" /> Add Channel
                             </button>
                         </div>
 
@@ -574,10 +572,10 @@ export default function AgentDetail() {
                                 <div key={idx} className="agent-channel-card">
                                     <div className="agent-channel-card-header">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            {ch.type === 'telegram' && <FontAwesomeIcon icon={faTelegram} style={{ color: '#229ED9', fontSize: 18 }} />}
-                                            {ch.type === 'slack' && <FontAwesomeIcon icon={faSlack} style={{ color: '#E01E5A', fontSize: 18 }} />}
-                                            {ch.type === 'email' && <FontAwesomeIcon icon={faEnvelope} style={{ color: '#EA4335', fontSize: 16 }} />}
-                                            {ch.type === 'webhook' && <FontAwesomeIcon icon={faRobot} style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
+                                            {ch.type === 'telegram' && <Icon name="telegram" style={{ color: '#229ED9', fontSize: 18 }} />}
+                                            {ch.type === 'slack' && <Icon name="slack" style={{ color: '#E01E5A', fontSize: 18 }} />}
+                                            {ch.type === 'email' && <Icon name="envelope" style={{ color: '#EA4335', fontSize: 16 }} />}
+                                            {ch.type === 'webhook' && <Icon name="robot" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
                                             <select
                                                 className="agent-form-input"
                                                 style={{ width: 'auto', padding: '4px 10px' }}
@@ -596,7 +594,7 @@ export default function AgentDetail() {
                                         </div>
                                         <button className="agent-action-btn delete" style={{ padding: '4px 8px' }}
                                             onClick={() => setChannels(channels.filter((_, i) => i !== idx))}>
-                                            <FontAwesomeIcon icon={faTimes} />
+                                            <Icon name="times" />
                                         </button>
                                     </div>
 
@@ -692,7 +690,7 @@ export default function AgentDetail() {
                                                             setTimeout(() => setUrlCopied(false), 2000);
                                                         }}
                                                     >
-                                                        <FontAwesomeIcon icon={urlCopied ? faCheck : faCopy} />
+                                                        <Icon name={urlCopied? "check" : "copy"} />
                                                     </button>
                                                 </div>
                                                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
@@ -756,7 +754,7 @@ export default function AgentDetail() {
 
                         {channels.length > 0 && (
                             <button className="agent-save-btn" onClick={handleSave} disabled={saving} style={{ marginTop: 16 }}>
-                                {saving ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Save Channels'}
+                                {saving ? <Icon name="spinner" spin /> : 'Save Channels'}
                             </button>
                         )}
                     </div>

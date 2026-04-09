@@ -4,8 +4,6 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState} from "react";
 import type {Runner} from "~/types";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faShieldHalved, faTrash, faPause, faServer, faCopy, faCheck} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-tooltip";
 import SearchBar from "~/components/searchBar";
 import {useSearchParams} from "react-router";
@@ -14,6 +12,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import useCookieToken from "~/components/cookie";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -78,7 +77,7 @@ export default function Runners() {
 
             {loading && (
                 <div className={"loading-container"}>
-                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <Icon name="spinner" spin />
                 </div>
             )}
 
@@ -93,10 +92,10 @@ export default function Runners() {
                             <div className={`runner-card-indicator runner-card-indicator--${r.state === 'active' ? 'active' : 'inactive'}`} />
                             <div className="runner-card-info">
                                 <div className="runner-card-name">
-                                    <FontAwesomeIcon icon={faServer} className="runner-card-icon" />
+                                    <Icon name="server" className="runner-card-icon" />
                                     {r.name || 'Unnamed Runner'}
                                     {r.verified && (
-                                        <FontAwesomeIcon icon={faShieldHalved} className="runner-card-verified" data-tooltip-id={`verified-${r.id}`} data-tooltip-content="Verified" data-tooltip-place="right" />
+                                        <Icon name="shield-halved" className="runner-card-verified" data-tooltip-id={`verified-${r.id}`} data-tooltip-content="Verified" data-tooltip-place="right" />
                                     )}
                                     {r.verified && <Tooltip id={`verified-${r.id}`} />}
                                 </div>
@@ -126,7 +125,7 @@ export default function Runners() {
                                 </span>
                                 {r.registration_code && (
                                     <button className="runner-card-copy" onClick={() => copyRegCode(r.id, r.registration_code!)} data-tooltip-id={`copy-${r.id}`} data-tooltip-content="Copy registration code" data-tooltip-place="left">
-                                        <FontAwesomeIcon icon={copiedId === r.id ? faCheck : faCopy} />
+                                        <Icon name={copiedId === r.id? "check" : "copy"} />
                                         <Tooltip id={`copy-${r.id}`} />
                                     </button>
                                 )}

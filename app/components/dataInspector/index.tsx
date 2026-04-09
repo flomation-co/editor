@@ -1,7 +1,6 @@
 import "./index.css"
 import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faChevronDown, faCopy, faCheck } from "@fortawesome/pro-solid-svg-icons";
+import { Icon } from "~/components/icons/Icon";
 
 type DataInspectorProps = {
     data: any;
@@ -92,7 +91,7 @@ function PropertyValue({ value, depth = 0 }: { value: any; depth?: number }) {
         return (
             <div className="di-tree">
                 <div className="di-tree-header" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="di-chevron" />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} className="di-chevron" />
                     <span className="di-type-badge di-type-badge--array">Array</span>
                     <span className="di-count">{value.length} {value.length === 1 ? 'item' : 'items'}</span>
                 </div>
@@ -115,7 +114,7 @@ function PropertyValue({ value, depth = 0 }: { value: any; depth?: number }) {
         return (
             <div className="di-tree">
                 <div className="di-tree-header" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="di-chevron" />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} className="di-chevron" />
                     <span className="di-type-badge di-type-badge--object">Object</span>
                     <span className="di-count">{keys.length} {keys.length === 1 ? 'property' : 'properties'}</span>
                 </div>
@@ -176,7 +175,7 @@ export default function DataInspector({ data, emptyMessage }: DataInspectorProps
                 <div className="di-toolbar">
                     <span className="di-toolbar-count">{keys.length} {keys.length === 1 ? 'property' : 'properties'}</span>
                     <button className="di-toolbar-copy" onClick={handleCopy}>
-                        <FontAwesomeIcon icon={copied ? faCheck : faCopy} /> {copied ? 'Copied' : 'Copy JSON'}
+                        <Icon name={copied? "check" : "copy"} /> {copied ? 'Copied' : 'Copy JSON'}
                     </button>
                 </div>
                 <div className="di-entries">
@@ -194,7 +193,7 @@ export default function DataInspector({ data, emptyMessage }: DataInspectorProps
             <div className="di-toolbar">
                 <span className="di-toolbar-count">{getTypeName(data)}</span>
                 <button className="di-toolbar-copy" onClick={handleCopy}>
-                    <FontAwesomeIcon icon={copied ? faCheck : faCopy} /> {copied ? 'Copied' : 'Copy JSON'}
+                    <Icon name={copied? "check" : "copy"} /> {copied ? 'Copied' : 'Copy JSON'}
                 </button>
             </div>
             <div className="di-entries">

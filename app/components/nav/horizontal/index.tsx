@@ -3,12 +3,11 @@ import type {NavItem} from "~/types";
 import logo from "./flomation-wordtype-small-white.png";
 import {Link, useNavigate} from "react-router";
 import {ProfileBall} from "~/components/profileBall";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowRightFromBracket, faChevronDown, faUser, faBriefcase} from "@fortawesome/pro-solid-svg-icons";
 import useConfig from "~/components/config";
 import {useEffect, useRef, useState} from "react";
 import {Tooltip} from "react-tooltip";
 import {useOrganisation} from "~/context/organisation/use";
+import { Icon } from "~/components/icons/Icon";
 
 type HorizontalProps = {
     items?: NavItem[]
@@ -42,9 +41,9 @@ export function HorizontalNav(props: HorizontalProps) {
 
             <div className={"org-switcher"} ref={orgMenuRef}>
                 <button className={"org-switcher-button"} onClick={() => setShowOrgMenu(!showOrgMenu)}>
-                    <FontAwesomeIcon icon={isOrgMode ? faBriefcase : faUser} className={"org-switcher-icon"} />
+                    <Icon name={isOrgMode? "briefcase" : "user"} className={"org-switcher-icon"} />
                     <span className={"org-switcher-label"}>{currentOrg ? currentOrg.name : "Personal"}</span>
-                    <FontAwesomeIcon icon={faChevronDown} className={"org-switcher-chevron"} />
+                    <Icon name="chevron-down" className={"org-switcher-chevron"} />
                 </button>
 
                 {showOrgMenu && (
@@ -53,7 +52,7 @@ export function HorizontalNav(props: HorizontalProps) {
                             className={`org-switcher-item ${!isOrgMode ? "active" : ""}`}
                             onClick={() => { setCurrentOrg(null); setShowOrgMenu(false); }}
                         >
-                            <FontAwesomeIcon icon={faUser} className={"org-switcher-item-icon"} />
+                            <Icon name="user" className={"org-switcher-item-icon"} />
                             <span>Personal</span>
                         </div>
                         {organisations.map(org => (
@@ -62,7 +61,7 @@ export function HorizontalNav(props: HorizontalProps) {
                                 className={`org-switcher-item ${currentOrg?.id === org.id ? "active" : ""}`}
                                 onClick={() => { setCurrentOrg(org); setShowOrgMenu(false); }}
                             >
-                                <FontAwesomeIcon icon={faBriefcase} className={"org-switcher-item-icon"} />
+                                <Icon name="briefcase" className={"org-switcher-item-icon"} />
                                 <span>{org.name}</span>
                                 <span className={"org-switcher-role"}>{org.role}</span>
                             </div>
@@ -98,7 +97,7 @@ export function HorizontalNav(props: HorizontalProps) {
                 <div className={"profile-ball"}>
                     <div className={"profile-pic"}>
                         <div className={"profile-pic-name"}>
-                            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+                            <Icon name="arrow-right-from-bracket" />
                             <Tooltip id={"tooltip-nav-logout"}/>
                         </div>
                     </div>

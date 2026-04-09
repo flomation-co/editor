@@ -5,30 +5,24 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {
-    faPlus, faSave, faXmark, faTrash, faArrowLeft, faSpinner,
-    faChartLine, faChartBar, faChartPie, faHashtag, faTable,
-    faAlignLeft, faGauge, faCircleDot, faChartArea, faEllipsisVertical,
-    faClock, faGlobe, faLock, faGripVertical
-} from "@fortawesome/free-solid-svg-icons";
 import type {Dashboard, DashboardWidget, Flo} from "~/types";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 const cfgFn = useConfig();
 const API_URL = cfgFn("AUTOMATE_API_URL");
 
 const WIDGET_TYPES = [
-    {type: "stat", label: "Stat", icon: faHashtag},
-    {type: "chart_line", label: "Line", icon: faChartLine},
-    {type: "chart_area", label: "Area", icon: faChartArea},
-    {type: "chart_bar", label: "Bar", icon: faChartBar},
-    {type: "chart_pie", label: "Pie", icon: faChartPie},
-    {type: "chart_doughnut", label: "Doughnut", icon: faCircleDot},
-    {type: "table", label: "Table", icon: faTable},
-    {type: "text", label: "Text", icon: faAlignLeft},
-    {type: "gauge", label: "Gauge", icon: faGauge},
-    {type: "status", label: "Status", icon: faCircleDot},
+    {type: "stat", label: "Stat", icon: "hashtag"},
+    {type: "chart_line", label: "Line", icon: "chart-line"},
+    {type: "chart_area", label: "Area", icon: "chart-area"},
+    {type: "chart_bar", label: "Bar", icon: "chart-bar"},
+    {type: "chart_pie", label: "Pie", icon: "chart-pie"},
+    {type: "chart_doughnut", label: "Doughnut", icon: "circle-dot"},
+    {type: "table", label: "Table", icon: "table"},
+    {type: "text", label: "Text", icon: "align-left"},
+    {type: "gauge", label: "Gauge", icon: "gauge"},
+    {type: "status", label: "Status", icon: "circle-dot"},
 ];
 
 export function meta() {
@@ -147,7 +141,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
         <div className="panel-config-section">
             <div className="panel-config-section-label">
                 {label}
-                {isLoadingColumns && keys.length === 0 && <FontAwesomeIcon icon={faSpinner} spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}}/>}
+                {isLoadingColumns && keys.length === 0 && <Icon name="spinner" spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}} />}
             </div>
             {keys.length > 0 ? (
                 <select className="panel-config-select" value={value} onChange={(e) => onChange(e.target.value)}>
@@ -191,7 +185,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
             <div className="panel-config-section">
                 <div className="panel-config-section-label">
                     {label}
-                    {isLoadingColumns && keys.length === 0 && <FontAwesomeIcon icon={faSpinner} spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}}/>}
+                    {isLoadingColumns && keys.length === 0 && <Icon name="spinner" spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}} />}
                 </div>
                 {keys.length > 0 ? (
                     <div className="table-column-config">
@@ -202,7 +196,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                                 onDragOver={onDragOverMulti} onDragEnter={onDragEnterMulti} onDragLeave={onDragLeaveMulti}
                                 onDrop={(e) => onDropMulti(e, idx)}
                             >
-                                <FontAwesomeIcon icon={faGripVertical} className="table-column-grip"/>
+                                <Icon name="grip-vertical" className="table-column-grip" />
                                 <input type="checkbox" className="table-column-checkbox" checked onChange={() => onChange(value.filter(v => v !== k))}/>
                                 <div className="table-column-info">
                                     <span className="table-column-name">{k}</span>
@@ -364,7 +358,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                         <div className="panel-config-section">
                             <div className="panel-config-section-label">
                                 Columns
-                                {isLoadingColumns && <FontAwesomeIcon icon={faSpinner} spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}}/>}
+                                {isLoadingColumns && <Icon name="spinner" spin style={{marginLeft: 6, fontSize: 10, opacity: 0.4}} />}
                             </div>
 
                             {allCols.length > 0 ? (
@@ -387,7 +381,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                                             onDragLeave={handleDragLeave}
                                             onDrop={(e) => handleDrop(e, idx)}
                                         >
-                                            <FontAwesomeIcon icon={faGripVertical} className="table-column-grip"/>
+                                            <Icon name="grip-vertical" className="table-column-grip" />
                                             <input type="checkbox" className="table-column-checkbox" checked onChange={() => toggleColumn(col, false)}/>
                                             <div className="table-column-info">
                                                 <span className="table-column-name">{col}</span>
@@ -591,7 +585,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                                 className={`panel-type-option ${widgetType === t.type ? "panel-type-option--selected" : ""}`}
                                 onClick={() => setWidgetType(t.type)}
                             >
-                                <FontAwesomeIcon icon={t.icon} className="panel-type-icon"/>
+                                <Icon name={t.icon} className="panel-type-icon" />
                                 {t.label}
                             </button>
                         ))}
@@ -669,14 +663,14 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                 {renderTypeConfig()}
 
                 <button className="panel-apply-btn" onClick={handleApply}>
-                    <FontAwesomeIcon icon={faSave}/>
+                    <Icon name="save" />
                     Apply Changes
                 </button>
             </div>
 
             <div className="panel-config-footer">
                 <button className="panel-config-footer-btn panel-config-footer-btn--danger" onClick={onDelete}>
-                    <FontAwesomeIcon icon={faTrash}/>
+                    <Icon name="trash" />
                     Delete Panel
                 </button>
             </div>
@@ -745,7 +739,7 @@ function EditorGrid({widgets, selectedWidgetId, onSelect, onAddWidget, onReorder
                     style={{gridColumn: `span ${Math.min(w.grid_w || 4, 12)}`, gridRow: `span ${w.grid_h || 3}`}}
                 >
                     <div className="widget-card-header">
-                        <FontAwesomeIcon icon={faGripVertical} className="widget-card-drag-handle"/>
+                        <Icon name="grip-vertical" className="widget-card-drag-handle" />
                         <div className="widget-card-title">{w.title || "Untitled"}</div>
                     </div>
                     <div className="widget-card-body">
@@ -758,16 +752,14 @@ function EditorGrid({widgets, selectedWidgetId, onSelect, onAddWidget, onReorder
                             fontSize: 12,
                             gap: 6,
                         }}>
-                            <FontAwesomeIcon icon={
-                                WIDGET_TYPES.find(t => t.type === w.widget_type)?.icon || faHashtag
-                            }/>
+                            <Icon name={WIDGET_TYPES.find(t => t.type === w.widget_type)?.icon || "hashtag"} />
                             {w.widget_type || "stat"}
                         </div>
                     </div>
                 </div>
             ))}
             <div className="ghost-add-panel" onClick={onAddWidget}>
-                <FontAwesomeIcon icon={faPlus}/>
+                <Icon name="plus" />
                 <span>Add Panel</span>
             </div>
         </div>
@@ -1085,7 +1077,7 @@ export default function BoardEditor() {
         return (
             <Container>
                 <div style={{display: "flex", alignItems: "center", justifyContent: "center", padding: 80, color: "rgba(255,255,255,0.3)", fontSize: 13}}>
-                    <FontAwesomeIcon icon={faSpinner} spin style={{marginRight: 8}}/>
+                    <Icon name="spinner" spin style={{marginRight: 8}} />
                     Loading dashboard...
                 </div>
             </Container>
@@ -1107,7 +1099,7 @@ export default function BoardEditor() {
                 <div className="board-editor-topbar">
                     <div className="board-editor-title-wrap">
                         <button className="board-editor-btn" onClick={() => navigate(id ? "/board/" + id : "/board")} title="Back">
-                            <FontAwesomeIcon icon={faArrowLeft}/>
+                            <Icon name="arrow-left" />
                         </button>
                         <input
                             className="board-editor-title-input"
@@ -1120,13 +1112,13 @@ export default function BoardEditor() {
                         {/* Actions dropdown for refresh interval + visibility */}
                         <div className="board-editor-actions-wrap" ref={actionsMenuRef}>
                             <button className="board-editor-btn" onClick={() => setShowActionsMenu(!showActionsMenu)}>
-                                <FontAwesomeIcon icon={faEllipsisVertical}/>
+                                <Icon name="ellipsis-vertical" />
                             </button>
                             {showActionsMenu && (
                                 <div className="board-editor-actions-menu">
                                     <div className="actions-menu-section">
                                         <div className="actions-menu-label">
-                                            <FontAwesomeIcon icon={faClock} style={{marginRight: 6}}/>
+                                            <Icon name="clock" style={{marginRight: 6}} />
                                             Auto-Refresh
                                         </div>
                                         {REFRESH_OPTIONS.map(opt => (
@@ -1142,20 +1134,20 @@ export default function BoardEditor() {
                                     <div className="actions-menu-divider"/>
                                     <div className="actions-menu-section">
                                         <div className="actions-menu-label">
-                                            <FontAwesomeIcon icon={boardIsPublic ? faGlobe : faLock} style={{marginRight: 6}}/>
+                                            <Icon name={boardIsPublic? "globe" : "lock"} style={{marginRight: 6}} />
                                             Visibility
                                         </div>
                                         <button
                                             className={`actions-menu-item ${!boardIsPublic ? "actions-menu-item--active" : ""}`}
                                             onClick={() => setBoardIsPublic(false)}
                                         >
-                                            <FontAwesomeIcon icon={faLock} style={{marginRight: 6, opacity: 0.5}}/> Private
+                                            <Icon name="lock" style={{marginRight: 6, opacity: 0.5}} /> Private
                                         </button>
                                         <button
                                             className={`actions-menu-item ${boardIsPublic ? "actions-menu-item--active" : ""}`}
                                             onClick={() => setBoardIsPublic(true)}
                                         >
-                                            <FontAwesomeIcon icon={faGlobe} style={{marginRight: 6, opacity: 0.5}}/> Public
+                                            <Icon name="globe" style={{marginRight: 6, opacity: 0.5}} /> Public
                                         </button>
                                     </div>
                                 </div>
@@ -1165,7 +1157,7 @@ export default function BoardEditor() {
                             Discard
                         </button>
                         <button className="board-editor-btn board-editor-btn--save" onClick={handleSave} disabled={isSaving}>
-                            <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} spin={isSaving}/>
+                            <Icon name={isSaving? "spinner" : "save"} spin={isSaving} />
                             Save
                         </button>
                     </div>

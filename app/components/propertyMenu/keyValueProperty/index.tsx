@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faXmark, faPencil, faCheck } from "@fortawesome/free-solid-svg-icons";
 import VariableInput, { type VariableItem } from "~/components/propertyMenu/variableInput";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type KeyValuePair = {
     key: string;
@@ -76,7 +75,7 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
             <div className="property-menu-input-name kv-header">
                 <span>{props.label}</span>
                 <button className="kv-add-btn" onClick={() => setAddingNew(true)} title="Add variable">
-                    <FontAwesomeIcon icon={faPlus} />
+                    <Icon name="plus" />
                 </button>
             </div>
 
@@ -108,10 +107,10 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                                     />
                                 </div>
                                 <button className="kv-icon-btn kv-icon-btn--save" onClick={saveEdit}>
-                                    <FontAwesomeIcon icon={faCheck} />
+                                    <Icon name="check" />
                                 </button>
                                 <button className="kv-icon-btn" onClick={() => setEditIndex(null)}>
-                                    <FontAwesomeIcon icon={faXmark} />
+                                    <Icon name="xmark" />
                                 </button>
                             </div>
                         ) : (
@@ -119,10 +118,10 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                                 <span className="kv-key">{pair.key}</span>
                                 <span className="kv-value">{pair.value || <em className="kv-empty">empty</em>}</span>
                                 <button className="kv-icon-btn" onClick={() => startEdit(i)} title="Edit">
-                                    <FontAwesomeIcon icon={faPencil} />
+                                    <Icon name="pencil" />
                                 </button>
                                 <button className="kv-icon-btn kv-icon-btn--danger" onClick={() => removePair(i)} title="Remove">
-                                    <FontAwesomeIcon icon={faXmark} />
+                                    <Icon name="xmark" />
                                 </button>
                             </div>
                         )}
@@ -155,10 +154,10 @@ const KeyValueProperty = (props: KeyValuePropertyProps) => {
                                 />
                             </div>
                             <button className="kv-icon-btn kv-icon-btn--save" onClick={addPair}>
-                                <FontAwesomeIcon icon={faCheck} />
+                                <Icon name="check" />
                             </button>
                             <button className="kv-icon-btn" onClick={() => { setAddingNew(false); setNewKey(""); setNewValue(""); }}>
-                                <FontAwesomeIcon icon={faXmark} />
+                                <Icon name="xmark" />
                             </button>
                         </div>
                     </div>

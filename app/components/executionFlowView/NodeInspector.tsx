@@ -1,8 +1,7 @@
 import React from 'react';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faCheck, faSpinner, faClock, faChevronRight, faChevronDown } from "@fortawesome/pro-solid-svg-icons";
 import type { NodeStatus } from "~/types";
 import { useState } from "react";
+import { Icon } from "~/components/icons/Icon";
 
 type NodeInspectorProps = {
     nodeId: string;
@@ -54,7 +53,7 @@ function InspectorValue({ value, depth = 0 }: { value: any; depth?: number }) {
         return (
             <div className="ni-tree">
                 <div className="ni-tree-toggle" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="ni-chevron" />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} className="ni-chevron" />
                     <span className="ni-type-badge ni-type-badge--array">Array</span>
                     <span className="ni-hint">{parsed.length} {parsed.length === 1 ? 'item' : 'items'}</span>
                 </div>
@@ -80,7 +79,7 @@ function InspectorValue({ value, depth = 0 }: { value: any; depth?: number }) {
         return (
             <div className="ni-tree">
                 <div className="ni-tree-toggle" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} className="ni-chevron" />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} className="ni-chevron" />
                     <span className="ni-type-badge ni-type-badge--object">Object</span>
                     <span className="ni-hint">{keys.length} {keys.length === 1 ? 'property' : 'properties'}</span>
                 </div>
@@ -120,20 +119,20 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                         <div className="node-inspector-subtitle">{status.action}</div>
                     </div>
                     <button className="node-inspector-close" onClick={onClose}>
-                        <FontAwesomeIcon icon={faXmark} />
+                        <Icon name="xmark" />
                     </button>
                 </div>
 
                 <div className="node-inspector-meta">
                     <span className={badgeClass}>
-                        {status.status === 'success' && <FontAwesomeIcon icon={faCheck} />}
-                        {status.status === 'failed' && <FontAwesomeIcon icon={faXmark} />}
-                        {status.status === 'running' && <FontAwesomeIcon icon={faSpinner} spin />}
+                        {status.status === 'success' && <Icon name="check" />}
+                        {status.status === 'failed' && <Icon name="xmark" />}
+                        {status.status === 'running' && <Icon name="spinner" spin />}
                         {statusLabel}
                     </span>
                     {status.duration_ms !== undefined && status.duration_ms > 0 && (
                         <span className="node-inspector-badge node-inspector-badge--duration">
-                            <FontAwesomeIcon icon={faClock} />
+                            <Icon name="clock" />
                             {status.duration_ms}ms
                         </span>
                     )}

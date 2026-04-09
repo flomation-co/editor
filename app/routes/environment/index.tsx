@@ -6,12 +6,10 @@ import {Link, useParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPencil, faTrash, faArrowLeft, faKey, faCubes} from "@fortawesome/free-solid-svg-icons";
-import {faCancel, faCheck, faPlus} from "@fortawesome/pro-solid-svg-icons";
 import {toast} from "react-toastify";
 import Modal from "~/components/modal";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -123,7 +121,7 @@ export default function EnvironmentDetail() {
             <div className={"header"}>{environment?.name || "Environment"}</div>
             <div className="env-detail-back">
                 <Link to="/environment" className="env-detail-back-link">
-                    <FontAwesomeIcon icon={faArrowLeft} /> All Environments
+                    <Icon name="arrow-left" /> All Environments
                 </Link>
             </div>
 
@@ -132,11 +130,11 @@ export default function EnvironmentDetail() {
                 <div className="env-detail-card">
                     <div className="env-detail-card-header">
                         <div className="env-detail-section-label">
-                            <FontAwesomeIcon icon={faCubes} className="env-detail-section-icon" /> Properties
+                            <Icon name="cubes" className="env-detail-section-icon" /> Properties
                         </div>
                         {!showAddProperty && (
                             <button className="env-detail-add-btn" onClick={() => setShowAddProperty(true)}>
-                                <FontAwesomeIcon icon={faPlus} /> Add
+                                <Icon name="plus" /> Add
                             </button>
                         )}
                     </div>
@@ -146,7 +144,7 @@ export default function EnvironmentDetail() {
                             <input type="text" placeholder="Name" autoFocus value={newPropName} onChange={e => setNewPropName(e.target.value)} />
                             <textarea placeholder="Value" rows={2} value={newPropValue} onChange={e => setNewPropValue(e.target.value)} />
                             <div className="env-detail-add-actions">
-                                <button className="env-detail-btn-save" onClick={saveProperty} disabled={!newPropName.trim()}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                <button className="env-detail-btn-save" onClick={saveProperty} disabled={!newPropName.trim()}><Icon name="check" /> Save</button>
                                 <button className="env-detail-btn-cancel" onClick={() => setShowAddProperty(false)}>Cancel</button>
                             </div>
                         </div>
@@ -166,7 +164,7 @@ export default function EnvironmentDetail() {
                                             <input type="text" value={editingPropertyName} onChange={e => setEditingPropertyName(e.target.value)} />
                                             <textarea rows={2} value={editingPropertyValue} onChange={e => setEditingPropertyValue(e.target.value)} autoFocus />
                                             <div className="env-detail-add-actions">
-                                                <button className="env-detail-btn-save" onClick={saveEditProperty}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                                <button className="env-detail-btn-save" onClick={saveEditProperty}><Icon name="check" /> Save</button>
                                                 <button className="env-detail-btn-cancel" onClick={() => setEditingPropertyID(null)}>Cancel</button>
                                             </div>
                                         </div>
@@ -178,10 +176,10 @@ export default function EnvironmentDetail() {
                                             </div>
                                             <div className="env-detail-item-actions">
                                                 <button className="env-detail-icon-btn" onClick={() => { setEditingPropertyID(prop.id); setEditingPropertyName(prop.name); setEditingPropertyValue(prop.value); }}>
-                                                    <FontAwesomeIcon icon={faPencil} />
+                                                    <Icon name="pencil" />
                                                 </button>
                                                 <button className="env-detail-icon-btn env-detail-icon-btn--danger" onClick={() => setConfirmDelete({ type: 'property', id: prop.id, name: prop.name })}>
-                                                    <FontAwesomeIcon icon={faTrash} />
+                                                    <Icon name="trash" />
                                                 </button>
                                             </div>
                                         </>
@@ -196,11 +194,11 @@ export default function EnvironmentDetail() {
                 <div className="env-detail-card">
                     <div className="env-detail-card-header">
                         <div className="env-detail-section-label">
-                            <FontAwesomeIcon icon={faKey} className="env-detail-section-icon" /> Secrets
+                            <Icon name="key" className="env-detail-section-icon" /> Secrets
                         </div>
                         {!showAddSecret && (
                             <button className="env-detail-add-btn" onClick={() => setShowAddSecret(true)}>
-                                <FontAwesomeIcon icon={faPlus} /> Add
+                                <Icon name="plus" /> Add
                             </button>
                         )}
                     </div>
@@ -210,7 +208,7 @@ export default function EnvironmentDetail() {
                             <input type="text" placeholder="Name" autoFocus value={newSecretName} onChange={e => setNewSecretName(e.target.value)} />
                             <textarea placeholder="Value (will be encrypted)" rows={2} value={newSecretValue} onChange={e => setNewSecretValue(e.target.value)} />
                             <div className="env-detail-add-actions">
-                                <button className="env-detail-btn-save" onClick={saveSecret} disabled={!newSecretName.trim()}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                <button className="env-detail-btn-save" onClick={saveSecret} disabled={!newSecretName.trim()}><Icon name="check" /> Save</button>
                                 <button className="env-detail-btn-cancel" onClick={() => setShowAddSecret(false)}>Cancel</button>
                             </div>
                         </div>
@@ -230,7 +228,7 @@ export default function EnvironmentDetail() {
                                             <div className="env-detail-item-name" style={{ marginBottom: 8 }}>{secret.name}</div>
                                             <textarea placeholder="Enter new secret value..." rows={2} value={editingSecretValue} onChange={e => setEditingSecretValue(e.target.value)} autoFocus />
                                             <div className="env-detail-add-actions">
-                                                <button className="env-detail-btn-save" onClick={saveEditSecret}><FontAwesomeIcon icon={faCheck} /> Save</button>
+                                                <button className="env-detail-btn-save" onClick={saveEditSecret}><Icon name="check" /> Save</button>
                                                 <button className="env-detail-btn-cancel" onClick={() => setEditingSecretID(null)}>Cancel</button>
                                             </div>
                                         </div>
@@ -242,10 +240,10 @@ export default function EnvironmentDetail() {
                                             </div>
                                             <div className="env-detail-item-actions">
                                                 <button className="env-detail-icon-btn" onClick={() => { setEditingSecretID(secret.id); setEditingSecretValue(""); }}>
-                                                    <FontAwesomeIcon icon={faPencil} />
+                                                    <Icon name="pencil" />
                                                 </button>
                                                 <button className="env-detail-icon-btn env-detail-icon-btn--danger" onClick={() => setConfirmDelete({ type: 'secret', id: secret.id, name: secret.name })}>
-                                                    <FontAwesomeIcon icon={faTrash} />
+                                                    <Icon name="trash" />
                                                 </button>
                                             </div>
                                         </>

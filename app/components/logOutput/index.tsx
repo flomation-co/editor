@@ -1,7 +1,6 @@
 import "./index.css"
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight, faChevronDown } from "@fortawesome/pro-solid-svg-icons";
+import { Icon } from "~/components/icons/Icon";
 
 type LogEntry = {
     time?: string;
@@ -89,7 +88,7 @@ function ObjectTree({ data, depth = 0 }: { data: any; depth?: number }) {
         return (
             <span className="log-object-tree">
                 <span className="log-toggle-icon" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} />
                 </span>
                 <span className="log-val log-val--bracket" onClick={() => setExpanded(!expanded)}>
                     Array[{data.length}]
@@ -115,7 +114,7 @@ function ObjectTree({ data, depth = 0 }: { data: any; depth?: number }) {
         return (
             <span className="log-object-tree">
                 <span className="log-toggle-icon" onClick={() => setExpanded(!expanded)}>
-                    <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
+                    <Icon name={expanded? "chevron-down" : "chevron-right"} />
                 </span>
                 <span className="log-val log-val--bracket" onClick={() => setExpanded(!expanded)}>
                     {'{'}...{'}'}  <span className="log-object-count">{keys.length} keys</span>
@@ -156,7 +155,7 @@ function LogEntryRow({ entry }: { entry: LogEntry }) {
                 )}
                 {hasExtra && (
                     <span className="log-entry-expand">
-                        <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
+                        <Icon name={expanded? "chevron-down" : "chevron-right"} />
                     </span>
                 )}
             </div>

@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExpand} from "@fortawesome/free-solid-svg-icons";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
+import { Icon } from "~/components/icons/Icon";
 
 type PropertyProps = {
     nodeId: string;
@@ -44,7 +43,7 @@ const TextProperty = (props: PropertyProps) => {
             <div className={"property-menu-input-name"} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span>{props.label ? props.label : props.name}{props.required && <span className="property-menu-required"> *</span>}</span>
                 <button className="text-expand-btn" onClick={openPopup} title="Expand">
-                    <FontAwesomeIcon icon={faExpand} />
+                    <Icon name="expand" />
                 </button>
             </div>
             <VariableInput

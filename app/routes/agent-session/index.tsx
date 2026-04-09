@@ -4,14 +4,12 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useMemo, useRef} from "react";
 import type {AgentSession, AgentMessage, Execution} from "~/types";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faArrowLeft, faRobot, faGear, faPaperPlane, faCheck, faXmark, faClock, faEnvelope, faGlobe, faArrowDown, faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
-import {faTelegram, faSlack} from "@fortawesome/free-brands-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(utc);
 
@@ -120,10 +118,10 @@ function formatActionName(action: string): string {
 }
 
 function getChannelIcon(actionType: string): any {
-    if (actionType.includes('telegram')) return faTelegram;
-    if (actionType.includes('slack')) return faSlack;
-    if (actionType.includes('email')) return faEnvelope;
-    return faPaperPlane;
+    if (actionType.includes('telegram')) return "telegram";
+    if (actionType.includes('slack')) return "slack";
+    if (actionType.includes('email')) return "envelope";
+    return "paper-plane";
 }
 
 function getChannelName(actionType: string): string {
@@ -316,7 +314,7 @@ export default function AgentSessionView() {
         return (
             <Container>
                 <div className="loading-container">
-                    <FontAwesomeIcon icon={faSpinner} spin size="2x" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
                 </div>
             </Container>
         );
@@ -331,9 +329,9 @@ export default function AgentSessionView() {
                         onClick={() => navigate(`/agent/${id}`)}
                         style={{ padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", borderRadius: 8, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}
                     >
-                        <FontAwesomeIcon icon={faArrowLeft} />
+                        <Icon name="arrow-left" />
                     </button>
-                    <FontAwesomeIcon icon={faRobot} style={{ color: '#c084fc' }} />
+                    <Icon name="robot" style={{ color: '#c084fc' }} />
                     <h1>Session</h1>
                     {session && (
                         <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
@@ -366,9 +364,9 @@ export default function AgentSessionView() {
                         }
 
                         if (item.type === 'action') {
-                            const statusIcon = item.actionStatus === 'success' ? faCheck
-                                : item.actionStatus === 'failed' ? faXmark
-                                : faClock;
+                            const statusIcon = item.actionStatus === 'success' ? "check"
+                                : item.actionStatus === 'failed' ? "xmark"
+                                : "clock";
                             const statusClass = item.actionStatus === 'success' ? 'action-success'
                                 : item.actionStatus === 'failed' ? 'action-failed'
                                 : 'action-pending';
@@ -382,14 +380,14 @@ export default function AgentSessionView() {
                                         <div>{item.outboundContent}</div>
                                         <div className="message-meta">
                                             <span className="message-sender">
-                                                <FontAwesomeIcon icon={channelIcon} style={{ marginRight: 4 }} />
+                                                <Icon name={channelIcon} style={{ marginRight: 4 }} />
                                                 {channelName}
                                             </span>
                                             {item.actionDuration != null && item.actionDuration > 0 && (
                                                 <span className="message-duration">{item.actionDuration}ms</span>
                                             )}
                                             <span>{dayjs.utc(item.timestamp).local().format("HH:mm:ss")}</span>
-                                            <FontAwesomeIcon icon={statusIcon} style={{ fontSize: 10 }} className={statusClass === 'action-success' ? 'meta-success' : statusClass === 'action-failed' ? 'meta-failed' : ''} />
+                                            <Icon name={statusIcon} style={{ fontSize: 10 }} className={statusClass === 'action-success' ? 'meta-success' : statusClass === 'action-failed' ? 'meta-failed' : ''} />
                                         </div>
                                     </div>
                                 );
@@ -398,7 +396,7 @@ export default function AgentSessionView() {
                             return (
                                 <div key={`action-${idx}`} className={`action-step ${statusClass}`}>
                                     <div className="action-step-icon">
-                                        <FontAwesomeIcon icon={faGear} />
+                                        <Icon name="gear" />
                                     </div>
                                     <div className="action-step-content">
                                         <span className="action-step-label">
@@ -409,7 +407,7 @@ export default function AgentSessionView() {
                                         )}
                                     </div>
                                     <div className="action-step-status">
-                                        <FontAwesomeIcon icon={statusIcon} />
+                                        <Icon name={statusIcon} />
                                     </div>
                                 </div>
                             );
@@ -422,7 +420,7 @@ export default function AgentSessionView() {
                     {hasRunningExecution && (
                         <div className="action-step action-running">
                             <div className="action-step-icon">
-                                <FontAwesomeIcon icon={faSpinner} spin />
+                                <Icon name="spinner" spin />
                             </div>
                             <div className="action-step-content">
                                 <span className="action-step-label">Processing...</span>
@@ -433,7 +431,7 @@ export default function AgentSessionView() {
                     {/* Latest error banner */}
                     {latestError && (
                         <div className="session-error">
-                            <FontAwesomeIcon icon={faExclamationTriangle} />
+                            <Icon name="exclamation-triangle" />
                             <span>{latestError}</span>
                         </div>
                     )}
@@ -444,7 +442,7 @@ export default function AgentSessionView() {
                 {/* Scroll to bottom button */}
                 {userScrolledUp && (
                     <button className="scroll-to-bottom" onClick={scrollToBottom}>
-                        <FontAwesomeIcon icon={faArrowDown} />
+                        <Icon name="arrow-down" />
                     </button>
                 )}
             </div>
