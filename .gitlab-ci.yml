@@ -5,7 +5,7 @@ include:
 
 stages:
   - prepare
-#  - sync
+  - sync
   - test
   - build
   - rpm-publish
@@ -216,9 +216,9 @@ Deploy to Live:
     - chmod +x deploy-application-aws.sh
     - ENVIRONMENT=${ENVIRONMENT} APPLICATION=${NAME} ./deploy-application-aws.sh
 
-#sync-to-github:
-#  extends: .sync-to-github-template
-#  variables:
-#    GIT_DEPTH: 0
-#  only:
-#    - main
+sync-to-github:
+  extends: .sync-to-github-template
+  variables:
+    GIT_DEPTH: 0
+  only:
+    - main
