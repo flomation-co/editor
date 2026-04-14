@@ -7,12 +7,11 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {toast} from "react-toastify";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faShieldHalved, faFloppyDisk} from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -94,7 +93,7 @@ export default function Profile() {
 
                     <div className="profile-actions">
                         <button className="profile-btn profile-btn--primary" onClick={saveProfile} disabled={!user}>
-                            <FontAwesomeIcon icon={faFloppyDisk} /> Save
+                            <Icon name="floppy-disk" /> Save
                         </button>
                     </div>
                 </div>
@@ -109,7 +108,7 @@ export default function Profile() {
                                 <div className="profile-security-desc">Add an extra layer of security to your account with TOTP-based MFA</div>
                             </div>
                             <button className="profile-btn profile-btn--secondary" onClick={openMFA} disabled={!user}>
-                                <FontAwesomeIcon icon={faShieldHalved} /> Manage MFA
+                                <Icon name="shield-halved" /> Manage MFA
                             </button>
                         </div>
                     </div>

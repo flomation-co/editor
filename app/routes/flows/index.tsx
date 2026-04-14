@@ -5,9 +5,6 @@ import type {Flo} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import "./index.css"
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faPencil, faPlay, faTrash, faSpinner, faTriangleExclamation, faStar as faStarSolid, faFileExport, faFileImport, faPlus, faEllipsisVertical, faCopy} from '@fortawesome/free-solid-svg-icons'
-import {faStar as faStarOutline} from '@fortawesome/free-regular-svg-icons'
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
 import SearchBar from "~/components/searchBar";
@@ -23,6 +20,7 @@ import {useAuth} from "~/context/auth/use";
 import useCookieToken from "~/components/cookie";
 import {useOrganisation} from "~/context/organisation/use";
 import {generateExportWrapper, downloadAsJson, downloadAsZip} from "~/lib/export";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -413,12 +411,12 @@ export default function Flows() {
 
                             <div className="flows-action-bar-actions">
                                 <button className="flows-action-btn flows-action-btn--primary" onClick={createNewFlo} data-tooltip-id="new-tip" data-tooltip-content="Create new flow" data-tooltip-place="bottom">
-                                    <FontAwesomeIcon icon={faPlus} /><span>New</span>
+                                    <Icon name="plus" /><span>New</span>
                                 </button>
                                 <Tooltip id="new-tip" />
 
                                 <button className="flows-action-btn" onClick={() => setImportModalVisible(true)} data-tooltip-id="import-tip" data-tooltip-content="Import flow from file" data-tooltip-place="bottom">
-                                    <FontAwesomeIcon icon={faFileImport} /><span>Import</span>
+                                    <Icon name="file-import" /><span>Import</span>
                                 </button>
                                 <Tooltip id="import-tip" />
 
@@ -430,7 +428,7 @@ export default function Flows() {
                                     data-tooltip-content={selectedFlows.size > 0 ? `Export ${selectedFlows.size} flow${selectedFlows.size > 1 ? 's' : ''}` : 'Select flows to export'}
                                     data-tooltip-place="bottom"
                                 >
-                                    {isExporting ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faFileExport} />}
+                                    {isExporting ? <Icon name="spinner" spin /> : <Icon name="file-export" />}
                                     <span>Export{selectedFlows.size > 0 ? ` (${selectedFlows.size})` : ''}</span>
                                 </button>
                                 <Tooltip id="export-tip" />
@@ -447,7 +445,7 @@ export default function Flows() {
                             <div className={"favourites-list"}>
                                 {flos.filter(f => favourites.has(f.id)).map(flo => (
                                     <Link key={flo.id} to={"/flo/" + flo.id} className={"favourite-card"}>
-                                        <FontAwesomeIcon icon={faStarSolid} className={"favourite-star"} />
+                                        <Icon name="star-solid" className={"favourite-star"} />
                                         <div className={"favourite-name"}>{flo.name}</div>
                                         {flo.last_execution && (
                                             <ExecuteState state={flo.last_execution.execution_status || ExecutionStateValue.created} completionState={flo.last_execution.completion_status || CompletionStateValue.unknown} />
@@ -460,7 +458,7 @@ export default function Flows() {
 
                     {isLoading && !flos && (
                         <div className={"loading-container"}>
-                            <FontAwesomeIcon icon={faSpinner} spin />
+                            <Icon name="spinner" spin />
                         </div>
                     )}
 
@@ -476,12 +474,12 @@ export default function Flows() {
                                     <div className="flow-card-body" onClick={() => navigate("/flo/" + flo.id)}>
                                         <div className="flow-card-header">
                                             <span className="fav-toggle" onClick={e => { e.stopPropagation(); toggleFavourite(flo.id); }}>
-                                                <FontAwesomeIcon icon={favourites.has(flo.id) ? faStarSolid : faStarOutline} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
+                                                <Icon name={favourites.has(flo.id)? "star-solid" : "star-outline"} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
                                             </span>
                                             <span className="flow-card-name">{flo.name}</span>
                                             {flo.has_validation_errors && (
                                                 <>
-                                                    <FontAwesomeIcon icon={faTriangleExclamation} className="flow-card-warning" data-tooltip-id={"validation-" + flo.id} data-tooltip-content="Required fields are incomplete" data-tooltip-place="right" />
+                                                    <Icon name="triangle-exclamation" className="flow-card-warning" data-tooltip-id={"validation-" + flo.id} data-tooltip-content="Required fields are incomplete" data-tooltip-place="right" />
                                                     <Tooltip id={"validation-" + flo.id} />
                                                 </>
                                             )}
@@ -527,29 +525,29 @@ export default function Flows() {
                                         >
                                             {flo.triggers?.some(e => e.name === "Default Trigger") && (
                                                 currentTrigger == flo.id
-                                                    ? <FontAwesomeIcon icon={faSpinner} spin />
-                                                    : <FontAwesomeIcon icon={faPlay} />
+                                                    ? <Icon name="spinner" spin />
+                                                    : <Icon name="play" />
                                             )}
                                         </button>
                                         <Tooltip id={"trigger-" + flo.id} />
 
                                         <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
                                             <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
-                                                <FontAwesomeIcon icon={faEllipsisVertical} />
+                                                <Icon name="ellipsis-vertical" />
                                             </button>
                                             {openMenuId === flo.id && (
                                                 <div className="flo-more-dropdown">
                                                     <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
-                                                        <FontAwesomeIcon icon={faPencil} /> Edit
+                                                        <Icon name="pencil" /> Edit
                                                     </Link>
                                                     <button className="flo-more-item" onClick={() => { duplicateFlow(flo); setOpenMenuId(null); }}>
-                                                        <FontAwesomeIcon icon={faCopy} /> Duplicate
+                                                        <Icon name="copy" /> Duplicate
                                                     </button>
                                                     <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
-                                                        <FontAwesomeIcon icon={faFileExport} /> Export
+                                                        <Icon name="file-export" /> Export
                                                     </button>
                                                     <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
-                                                        <FontAwesomeIcon icon={faTrash} /> Delete
+                                                        <Icon name="trash" /> Delete
                                                     </button>
                                                 </div>
                                             )}

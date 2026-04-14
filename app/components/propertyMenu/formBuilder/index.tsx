@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPlus, faTrash, faChevronUp, faChevronDown, faGripVertical, faFileLines} from "@fortawesome/pro-solid-svg-icons";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type FormComponent = {
     name: string;
@@ -172,19 +171,19 @@ const FormBuilder = (props: Props) => {
                 <div key={pageIndex} className="fb-page">
                     <div className="fb-page-header">
                         <span className="fb-page-title">
-                            <FontAwesomeIcon icon={faFileLines} /> Page {pageIndex + 1}
+                            <Icon name="file-lines" /> Page {pageIndex + 1}
                         </span>
                         <div className="fb-page-actions">
                             {form.pages.length > 1 && (
                                 <>
                                     <button className="fb-icon-btn" onClick={() => movePage(pageIndex, -1)} disabled={pageIndex === 0}>
-                                        <FontAwesomeIcon icon={faChevronUp} />
+                                        <Icon name="chevron-up" />
                                     </button>
                                     <button className="fb-icon-btn" onClick={() => movePage(pageIndex, 1)} disabled={pageIndex === form.pages.length - 1}>
-                                        <FontAwesomeIcon icon={faChevronDown} />
+                                        <Icon name="chevron-down" />
                                     </button>
                                     <button className="fb-icon-btn fb-danger" onClick={() => removePage(pageIndex)}>
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <Icon name="trash" />
                                     </button>
                                 </>
                             )}
@@ -194,7 +193,7 @@ const FormBuilder = (props: Props) => {
                     {page.components.map((comp, fieldIndex) => (
                         <div key={fieldIndex} className="fb-component">
                             <div className="fb-component-header">
-                                <FontAwesomeIcon icon={faGripVertical} className="fb-grip" />
+                                <Icon name="grip-vertical" className="fb-grip" />
                                 <div className="fb-component-fields">
                                     <div className="fb-row">
                                         <input
@@ -238,13 +237,13 @@ const FormBuilder = (props: Props) => {
                                 </div>
                                 <div className="fb-component-actions">
                                     <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, -1)} disabled={fieldIndex === 0}>
-                                        <FontAwesomeIcon icon={faChevronUp} />
+                                        <Icon name="chevron-up" />
                                     </button>
                                     <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, 1)} disabled={fieldIndex === page.components.length - 1}>
-                                        <FontAwesomeIcon icon={faChevronDown} />
+                                        <Icon name="chevron-down" />
                                     </button>
                                     <button className="fb-icon-btn fb-danger" onClick={() => removeField(pageIndex, fieldIndex)}>
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <Icon name="trash" />
                                     </button>
                                 </div>
                             </div>
@@ -252,13 +251,13 @@ const FormBuilder = (props: Props) => {
                     ))}
 
                     <button className="fb-add-field" onClick={() => addField(pageIndex)}>
-                        <FontAwesomeIcon icon={faPlus} /> Add Field
+                        <Icon name="plus" /> Add Field
                     </button>
                 </div>
             ))}
 
             <button className="fb-add-page" onClick={addPage}>
-                <FontAwesomeIcon icon={faPlus} /> Add Page
+                <Icon name="plus" /> Add Page
             </button>
         </div>
     );

@@ -2,16 +2,9 @@ import React, { memo, useCallback, useMemo, type ChangeEvent } from 'react';
 import {Handle, Position} from '@xyflow/react';
 
 import type { NodeDefinition}  from "~/types";
-import {library} from '@fortawesome/fontawesome-svg-core'
-import {fas} from '@fortawesome/pro-solid-svg-icons'
-import {fab} from '@fortawesome/free-brands-svg-icons'
-
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {LabeledHandle} from "~/components/labeled-handle";
 import { BaseNode } from "~/components/base-node";
-
-// RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
-library.add(fab, fas);
+import { Icon } from "~/components/icons/Icon";
 
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
@@ -106,10 +99,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 {data.config?.name && (
                     <>
                         {hasIncompleteRequired && (
-                            <FontAwesomeIcon
-                                icon={["fa-solid", "fa-triangle-exclamation"]}
-                                className="node-name-warning"
-                            />
+                            <Icon name={["fa-solid", "fa-triangle-exclamation"]} className="node-name-warning" />
                         )}
                         {data.config.name}
                     </>
@@ -148,10 +138,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                             boxShadow: `0 0 14px ${colours.glow}`,
                         }}
                     >
-                        <FontAwesomeIcon
-                            icon={["fa-solid", "fa-" + icon]}
-                            style={{ fontSize: '16px', color: colours.iconColour }}
-                        />
+                        <Icon name={icon} style={{ fontSize: '16px', color: colours.iconColour }} />
                     </div>
                 )}
 

@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCommentDots, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 const CATEGORIES = [
     { value: "", label: "Select a category..." },
@@ -59,7 +58,7 @@ export default function FeedbackButton() {
     return (
         <>
             <button className="feedback-trigger" onClick={() => setOpen(true)}>
-                <FontAwesomeIcon icon={faCommentDots} style={{ marginBottom: 6 }} /> Feedback
+                <Icon name="comment-dots" style={{ marginBottom: 6 }} /> Feedback
             </button>
 
             {open && (
@@ -96,7 +95,7 @@ export default function FeedbackButton() {
                         </div>
                         <div className="feedback-footer">
                             <button className="feedback-submit" onClick={handleSubmit} disabled={!canSubmit || sending}>
-                                {sending ? <><FontAwesomeIcon icon={faSpinner} spin /> Sending...</> : "Submit Feedback"}
+                                {sending ? <><Icon name="spinner" spin /> Sending...</> : "Submit Feedback"}
                             </button>
                         </div>
                     </div>

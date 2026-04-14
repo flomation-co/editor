@@ -1,10 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import {library} from '@fortawesome/fontawesome-svg-core'
-import {fas} from '@fortawesome/pro-solid-svg-icons'
-import {fab} from '@fortawesome/free-brands-svg-icons'
-
-// RG: PERFORMANCE IMPROVEMENT: add the fontawesome icons to the library outside of the node so not to re-add on every render
-library.add(fab, fas);
+import { Icon } from "~/components/icons/Icon";
 
 export default memo(({ data, isConnectable }) => {
     return (

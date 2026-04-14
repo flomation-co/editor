@@ -6,11 +6,10 @@ import type {Queue, Runner} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTrash, faPlus, faCopy, faCheck, faUserPlus, faXmark, faServer, faChevronDown, faChevronRight} from "@fortawesome/pro-solid-svg-icons";
 import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -149,7 +148,7 @@ export default function Queues() {
                             onKeyDown={e => e.key === "Enter" && createQueue()}
                         />
                         <button className="queue-create-btn" onClick={createQueue} disabled={!newQueueName.trim()}>
-                            <FontAwesomeIcon icon={faPlus} /> Create Queue
+                            <Icon name="plus" /> Create Queue
                         </button>
                     </div>
                 </div>
@@ -159,20 +158,20 @@ export default function Queues() {
                 {queues.map(q => (
                     <div key={q.id} className="queue-card">
                         <div className="queue-card-header" onClick={() => setExpandedQueue(expandedQueue === q.id ? null : q.id)}>
-                            <FontAwesomeIcon icon={expandedQueue === q.id ? faChevronDown : faChevronRight} className="queue-card-chevron" />
+                            <Icon name={expandedQueue === q.id? "chevron-down" : "chevron-right"} className="queue-card-chevron" />
                             <div className="queue-card-info">
                                 <div className="queue-card-name">{q.name}</div>
                                 <div className="queue-card-code">
                                     {q.registration_code}
                                     <button className="queue-code-copy" onClick={(e) => { e.stopPropagation(); copyCode(q.registration_code, q.id); }}>
-                                        <FontAwesomeIcon icon={copiedId === q.id ? faCheck : faCopy} />
+                                        <Icon name={copiedId === q.id? "check" : "copy"} />
                                     </button>
                                 </div>
                             </div>
                             <div className="queue-card-meta">
                                 {isAdmin && (
                                     <button className="queue-delete-btn" onClick={(e) => { e.stopPropagation(); setConfirmDeleteQueue(q.id); }}>
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <Icon name="trash" />
                                     </button>
                                 )}
                             </div>
@@ -187,12 +186,12 @@ export default function Queues() {
                                 {queueRunners[q.id]?.map(r => (
                                     <div key={r.id} className="queue-runner-row">
                                         <div className={`queue-runner-indicator ${r.state === 'active' ? 'queue-runner-indicator--active' : ''}`} />
-                                        <FontAwesomeIcon icon={faServer} className="queue-runner-icon" />
+                                        <Icon name="server" className="queue-runner-icon" />
                                         <span className="queue-runner-name">{r.name || 'Unnamed Runner'}</span>
                                         <span className="queue-runner-id">{r.ip_address}</span>
                                         {isAdmin && (
                                             <button className="queue-runner-remove" onClick={() => setConfirmRemoveRunner({ queueId: q.id, runnerId: r.id, name: r.name || 'this runner' })}>
-                                                <FontAwesomeIcon icon={faXmark} />
+                                                <Icon name="xmark" />
                                             </button>
                                         )}
                                     </div>

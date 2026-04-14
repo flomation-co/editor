@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faEnvelope, faCalendar, faPaperPlane, faRefresh } from "@fortawesome/pro-solid-svg-icons";
 import useConfig from "~/components/config";
 import type { Trigger } from "~/types";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type Account = {
     email: string;
@@ -18,9 +17,9 @@ type Props = {
 };
 
 const PURPOSE_LABELS: Record<string, { label: string; icon: any }> = {
-    email_read: { label: "Email read", icon: faEnvelope },
-    email_send: { label: "Email send", icon: faPaperPlane },
-    calendar: { label: "Calendar", icon: faCalendar },
+    email_read: { label: "Email read", icon: "envelope" },
+    email_send: { label: "Email send", icon: "paper-plane" },
+    calendar: { label: "Calendar", icon: "calendar" },
 };
 
 const GoogleAccountsProperty = (props: Props) => {
@@ -120,7 +119,7 @@ const GoogleAccountsProperty = (props: Props) => {
                         title="Refresh"
                         style={{ color: "rgba(255,255,255,0.4)" }}
                     >
-                        <FontAwesomeIcon icon={faRefresh} />
+                        <Icon name="refresh" />
                     </button>
                 </div>
 
@@ -150,7 +149,7 @@ const GoogleAccountsProperty = (props: Props) => {
                                     onClick={() => removeAccount(acct.email, acct.purpose)}
                                     title="Remove"
                                 >
-                                    <FontAwesomeIcon icon={faTrash} />
+                                    <Icon name="trash" />
                                 </button>
                             </div>
                         ))}
@@ -165,8 +164,8 @@ const GoogleAccountsProperty = (props: Props) => {
                             onClick={() => openOAuth(purpose)}
                             disabled={!authURLs[purpose]}
                         >
-                            <FontAwesomeIcon icon={faPlus} />
-                            <FontAwesomeIcon icon={icon} />
+                            <Icon name="plus" />
+                            <Icon name={icon} />
                             Add {label} Account
                         </button>
                     ))}

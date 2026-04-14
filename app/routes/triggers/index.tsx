@@ -1,9 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import "./index.css"
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faTrash} from "@fortawesome/free-solid-svg-icons";
-import {faCancel, faCheck, faWarning, faWifi} from "@fortawesome/pro-solid-svg-icons";
 import {useEffect, useState} from "react";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
@@ -12,6 +9,7 @@ import type {Trigger} from "~/types";
 import {useSearchParams} from "react-router";
 import {Tooltip} from "react-tooltip";
 import SearchBar from "~/components/searchBar";
+import { Icon } from "~/components/icons/Icon";
 
 const TRIGGER_TYPES = [
     {value: "manual", label: "Manual"},
@@ -181,7 +179,7 @@ export default function Triggers() {
 
             {isLoading && (
                 <div className={"loading-container"}>
-                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <Icon name="spinner" spin />
                 </div>
             )}
 
@@ -203,7 +201,7 @@ export default function Triggers() {
                             {!hasInputRow && (
                                 <tr className={"flo-table-row"} >
                                     <td colSpan={4} className={"table-row-center"}>
-                                        <button className={"table-button"} onClick={() => showInputRow(true)}><FontAwesomeIcon icon={faWifi} /> Create your first Trigger</button>
+                                        <button className={"table-button"} onClick={() => showInputRow(true)}><Icon name="wifi" /> Create your first Trigger</button>
                                     </td>
                                 </tr>
                             )}
@@ -222,10 +220,10 @@ export default function Triggers() {
                                     <td></td>
                                     <td className={"table-column-small-col"}>
                                         <button className={"table-button"} onClick={() => saveTrigger()}>
-                                            <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                            <Icon name="check" /> <span>Save</span>
                                         </button>
                                         <button className={"table-button"} onClick={() => showInputRow(false)}>
-                                            <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
+                                            <Icon name="cancel" /> <span>Cancel</span>
                                         </button>
                                     </td>
                                 </tr>
@@ -243,10 +241,10 @@ export default function Triggers() {
                                             <td className={"table-column-hide-sm"}>{formatDate(trigger.created_at)}</td>
                                             <td>
                                                 <button className={(confirmDeletionID != null && confirmDeletionID == trigger.id) ? "hidden" : "table-button"} onClick={() => {confirmDeleteTrigger(trigger.id)}}>
-                                                    <FontAwesomeIcon icon={faTrash} /> <span>Delete</span>
+                                                    <Icon name="trash" /> <span>Delete</span>
                                                 </button>
                                                 <button className={confirmDeletionID == trigger.id ? "table-button table-button-red" : "hidden"} autoFocus={true} onClick={() => deleteTrigger(trigger.id)}>
-                                                    <FontAwesomeIcon icon={faWarning} /> <span>Confirm</span>
+                                                    <Icon name="warning" /> <span>Confirm</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -256,7 +254,7 @@ export default function Triggers() {
                                     <tr className={"flo-table-row"} >
                                         <td colSpan={4} className={"table-row-center"}>
                                             <button className={"table-button"} onClick={() => showInputRow(true)}>
-                                                <FontAwesomeIcon icon={faWifi} /> Create new Trigger
+                                                <Icon name="wifi" /> Create new Trigger
                                             </button>
                                         </td>
                                     </tr>
@@ -276,10 +274,10 @@ export default function Triggers() {
                                         <td></td>
                                         <td className={"table-column-small-col"}>
                                             <button className={"table-button"} onClick={() => saveTrigger()}>
-                                                <FontAwesomeIcon icon={faCheck}/> <span>Save</span>
+                                                <Icon name="check" /> <span>Save</span>
                                             </button>
                                             <button className={"table-button"} onClick={() => showInputRow(false)}>
-                                                <FontAwesomeIcon icon={faCancel} /> <span>Cancel</span>
+                                                <Icon name="cancel" /> <span>Cancel</span>
                                             </button>
                                         </td>
                                     </tr>

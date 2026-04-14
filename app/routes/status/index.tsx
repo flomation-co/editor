@@ -2,11 +2,10 @@ import type { Route } from "../+types/home";
 import { useEffect, useState, useCallback } from "react";
 import Container from "~/components/container";
 import SupportWidget from "~/components/widgets/support-widget";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faTriangleExclamation, faCircleXmark, faRotate } from "@fortawesome/free-solid-svg-icons";
 import useConfig from "~/components/config";
 import dayjs from "dayjs";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -99,9 +98,9 @@ export default function Status() {
         : overallStatus === "down" ? "status-banner--down"
         : "status-banner--degraded";
 
-    const bannerIcon = overallStatus === "healthy" ? faCircleCheck
-        : overallStatus === "down" ? faCircleXmark
-        : faTriangleExclamation;
+    const bannerIcon = overallStatus === "healthy" ? "circle-check"
+        : overallStatus === "down" ? "circle-xmark"
+        : "triangle-exclamation";
 
     const bannerTitle = overallStatus === "healthy" ? "All Systems Operational"
         : overallStatus === "degraded" ? "Partial Service Disruption"
@@ -123,7 +122,7 @@ export default function Status() {
             <div className="status-page">
                 <div className={`status-banner ${bannerClass}`}>
                     <div className="status-banner-icon">
-                        <FontAwesomeIcon icon={bannerIcon} />
+                        <Icon name={bannerIcon} />
                     </div>
                     <div className="status-banner-text">
                         <h3>{bannerTitle}</h3>
@@ -159,7 +158,7 @@ export default function Status() {
                     <div className="status-last-checked">
                         Last checked {dayjs(lastChecked).format("HH:mm:ss")}
                         <button className="status-refresh-btn" onClick={checkServices}>
-                            <FontAwesomeIcon icon={faRotate} /> Refresh
+                            <Icon name="rotate" /> Refresh
                         </button>
                     </div>
                 )}

@@ -1,10 +1,9 @@
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import type {DashboardWidget, DashboardWidgetData} from "~/types";
 
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler} from "chart.js";
 import {Line, Bar, Pie, Doughnut} from "react-chartjs-2";
 import ReactMarkdown from "react-markdown";
+import { Icon } from "~/components/icons/Icon";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -305,7 +304,7 @@ function StatusWidget({widget, data}: {widget: DashboardWidget; data?: Dashboard
 export function WidgetRenderer({widget, widgetData}: {widget: DashboardWidget; widgetData?: DashboardWidgetData}) {
     const d = widgetData;
     if (d && (d.status === "pending" || d.status === "running") && !d.data) {
-        return <div className="widget-loading"><FontAwesomeIcon icon={faSpinner} className="widget-loading-spinner" style={{marginRight: 6}}/>Loading...</div>;
+        return <div className="widget-loading"><Icon name="spinner" className="widget-loading-spinner" style={{marginRight: 6}} />Loading...</div>;
     }
     if (d && d.status === "error" && !d.data) {
         return <div className="widget-error">Failed to load data</div>;

@@ -1,7 +1,5 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner, faTrash, faEye, faPlus, faGlobe, faKey} from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "~/components/searchBar";
 import {Link, useNavigate, useSearchParams} from "react-router";
 import {useEffect, useState} from "react";
@@ -13,6 +11,7 @@ import {useAuth} from "~/context/auth/use";
 import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -88,7 +87,7 @@ export default function Environments() {
 
             {isLoading && (
                 <div className={"loading-container"}>
-                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <Icon name="spinner" spin />
                 </div>
             )}
 
@@ -97,7 +96,7 @@ export default function Environments() {
                     {/* Create section */}
                     {!showCreate && (
                         <button className="env-create-btn" onClick={() => setShowCreate(true)}>
-                            <FontAwesomeIcon icon={faPlus} /> Create Environment
+                            <Icon name="plus" /> Create Environment
                         </button>
                     )}
 
@@ -112,7 +111,7 @@ export default function Environments() {
                                 onKeyDown={e => e.key === "Enter" && createEnvironment()}
                             />
                             <button className="env-create-form-save" onClick={createEnvironment} disabled={newEnvName.trim().length < 3}>
-                                <FontAwesomeIcon icon={faPlus} /> Create
+                                <Icon name="plus" /> Create
                             </button>
                             <button className="env-create-form-cancel" onClick={() => { setShowCreate(false); setNewEnvName(""); }}>
                                 Cancel
@@ -131,7 +130,7 @@ export default function Environments() {
                             {environments.map(env => (
                                 <div key={env.id} className="env-card" onClick={() => navigate("/environment/" + env.id)}>
                                     <div className="env-card-icon">
-                                        <FontAwesomeIcon icon={faGlobe} />
+                                        <Icon name="globe" />
                                     </div>
                                     <div className="env-card-info">
                                         <div className="env-card-name">{env.name}</div>
@@ -142,10 +141,10 @@ export default function Environments() {
                                     </div>
                                     <div className="env-card-actions">
                                         <Link to={"/environment/" + env.id} className="env-card-view" onClick={e => e.stopPropagation()}>
-                                            <FontAwesomeIcon icon={faEye} />
+                                            <Icon name="eye" />
                                         </Link>
                                         <button className="env-card-delete" onClick={e => { e.stopPropagation(); setConfirmDeleteId(env.id); }}>
-                                            <FontAwesomeIcon icon={faTrash} />
+                                            <Icon name="trash" />
                                         </button>
                                     </div>
                                 </div>

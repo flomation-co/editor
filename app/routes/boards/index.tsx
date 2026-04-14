@@ -7,12 +7,11 @@ import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import SearchBar from "~/components/searchBar";
 import Modal from "~/components/modal";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPlus, faChartLine, faGrip, faClock, faPencil, faTrash, faGlobe, faLock, faCopy} from "@fortawesome/free-solid-svg-icons";
 import type {Dashboard} from "~/types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 
@@ -125,7 +124,7 @@ export default function BoardsList() {
                         className="boards-action-btn boards-action-btn--primary"
                         onClick={() => setCreateModalVisible(true)}
                     >
-                        <FontAwesomeIcon icon={faPlus}/>
+                        <Icon name="plus" />
                         <span>New Dashboard</span>
                     </button>
                 </div>
@@ -134,7 +133,7 @@ export default function BoardsList() {
             {!isLoading && filteredBoards.length === 0 && (
                 <div className="boards-empty">
                     <div className="boards-empty-icon">
-                        <FontAwesomeIcon icon={faChartLine}/>
+                        <Icon name="chart-line" />
                     </div>
                     <div className="boards-empty-title">
                         {search ? "No dashboards found" : "No dashboards yet"}
@@ -146,7 +145,7 @@ export default function BoardsList() {
                     </div>
                     {!search && (
                         <button className="boards-empty-btn" onClick={() => setCreateModalVisible(true)}>
-                            <FontAwesomeIcon icon={faPlus}/>
+                            <Icon name="plus" />
                             Create Dashboard
                         </button>
                     )}
@@ -165,7 +164,7 @@ export default function BoardsList() {
                                 <div className="board-card-name">{board.name}</div>
                                 <div className="board-card-badges">
                                     <span className={`board-card-badge ${board.is_public ? "board-card-badge--public" : "board-card-badge--private"}`}>
-                                        <FontAwesomeIcon icon={board.is_public ? faGlobe : faLock} style={{marginRight: 4}}/>
+                                        <Icon name={board.is_public? "globe" : "lock"} style={{marginRight: 4}} />
                                         {board.is_public ? "Public" : "Private"}
                                     </span>
                                 </div>
@@ -177,11 +176,11 @@ export default function BoardsList() {
 
                             <div className="board-card-footer">
                                 <div className="board-card-stat">
-                                    <FontAwesomeIcon icon={faGrip} className="board-card-stat-icon"/>
+                                    <Icon name="grip" className="board-card-stat-icon" />
                                     {board.widget_count || 0} widget{(board.widget_count || 0) !== 1 ? "s" : ""}
                                 </div>
                                 <div className="board-card-stat">
-                                    <FontAwesomeIcon icon={faClock} className="board-card-stat-icon"/>
+                                    <Icon name="clock" className="board-card-stat-icon" />
                                     {dayjs(board.updated_at).fromNow()}
                                 </div>
                                 <div className="board-card-actions">
@@ -195,7 +194,7 @@ export default function BoardsList() {
                                                     .then(() => showToast("Public link copied to clipboard", "success"));
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faCopy}/>
+                                            <Icon name="copy" />
                                         </button>
                                     )}
                                     <button
@@ -206,7 +205,7 @@ export default function BoardsList() {
                                             navigate("/board/" + board.id + "/edit");
                                         }}
                                     >
-                                        <FontAwesomeIcon icon={faPencil}/>
+                                        <Icon name="pencil" />
                                     </button>
                                     <button
                                         className="board-card-action-btn board-card-action-btn--danger"
@@ -217,7 +216,7 @@ export default function BoardsList() {
                                             setDeleteModalVisible(true);
                                         }}
                                     >
-                                        <FontAwesomeIcon icon={faTrash}/>
+                                        <Icon name="trash" />
                                     </button>
                                 </div>
                             </div>

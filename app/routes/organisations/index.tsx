@@ -7,9 +7,8 @@ import type {OrganisationMember, OrganisationInvite} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTrash, faCopy, faPlus, faCheck} from "@fortawesome/pro-solid-svg-icons";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -183,7 +182,7 @@ export default function Organisations() {
                             <div className={`org-member-role ${member.role}`}>{member.role}</div>
                             {isAdmin && member.user_id !== auth.user?.id && (
                                 <button className={"org-action-button danger"} onClick={() => removeMember(member.user_id)}>
-                                    <FontAwesomeIcon icon={faTrash} />
+                                    <Icon name="trash" />
                                 </button>
                             )}
                         </div>
@@ -202,7 +201,7 @@ export default function Organisations() {
                             onChange={e => setInviteEmail(e.target.value)}
                         />
                         <button onClick={createInvite} style={{cursor: "pointer"}}>
-                            <FontAwesomeIcon icon={faPlus} /> Create Invite
+                            <Icon name="plus" /> Create Invite
                         </button>
                     </div>
 
@@ -221,10 +220,10 @@ export default function Organisations() {
                                         onClick={() => copyInviteLink(invite.invite_code, invite.id)}
                                         style={{cursor: "pointer"}}
                                     >
-                                        <FontAwesomeIcon icon={copiedId === invite.id ? faCheck : faCopy} />
+                                        <Icon name={copiedId === invite.id? "check" : "copy"} />
                                     </button>
                                     <button className={"org-action-button danger"} onClick={() => revokeInvite(invite.id)} style={{cursor: "pointer"}}>
-                                        <FontAwesomeIcon icon={faTrash} />
+                                        <Icon name="trash" />
                                     </button>
                                 </div>
                             ))}

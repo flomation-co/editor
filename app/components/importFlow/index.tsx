@@ -1,6 +1,4 @@
 import { useState, useRef, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileImport, faSpinner, faCircleCheck, faCircleXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
@@ -9,6 +7,7 @@ import { parseImportFile } from "~/lib/export";
 import type { FlomationExport } from "~/types";
 import dayjs from "dayjs";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type ImportFlowModalProps = {
     visible: boolean;
@@ -103,7 +102,7 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
                         onDrop={handleDrop}
                     >
                         <div className="import-drop-zone-icon">
-                            <FontAwesomeIcon icon={faFileImport} />
+                            <Icon name="file-import" />
                         </div>
                         <div className="import-drop-zone-text">
                             Drop a file here or click to browse
@@ -122,7 +121,7 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
 
                     {loading && (
                         <div className="import-loading">
-                            <FontAwesomeIcon icon={faSpinner} spin />
+                            <Icon name="spinner" spin />
                             Validating file...
                         </div>
                     )}
@@ -134,12 +133,12 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
                                     <div className="import-preview-item-header">
                                         <div className="import-preview-name">{w.flomation_export.source_flow_name}</div>
                                         <button className="import-preview-remove" onClick={() => setParsedWrappers(prev => prev.filter((_, idx) => idx !== i))}>
-                                            <FontAwesomeIcon icon={faXmark} />
+                                            <Icon name="xmark" />
                                         </button>
                                     </div>
                                     <div className="import-preview-meta">
                                         <span>
-                                            <FontAwesomeIcon icon={faCircleCheck} className="import-hash-valid" />
+                                            <Icon name="circle-check" className="import-hash-valid" />
                                             Integrity verified
                                         </span>
                                         {w.flomation_export.author_email && (
@@ -158,7 +157,7 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
                         <div className="import-errors">
                             {errors.map((err, i) => (
                                 <div key={i} className="import-error-item">
-                                    <FontAwesomeIcon icon={faCircleXmark} style={{ marginRight: 6 }} />
+                                    <Icon name="circle-xmark" style={{ marginRight: 6 }} />
                                     {err}
                                 </div>
                             ))}
@@ -177,7 +176,7 @@ export default function ImportFlowModal({ visible, onDismiss, onImported }: Impo
                         onClick={handleImport}
                     >
                         {importing ? (
-                            <><FontAwesomeIcon icon={faSpinner} spin /> Importing...</>
+                            <><Icon name="spinner" spin /> Importing...</>
                         ) : (
                             <>Import {parsedWrappers.length > 0 ? `${parsedWrappers.length} Flow${parsedWrappers.length > 1 ? "s" : ""}` : ""}</>
                         )}

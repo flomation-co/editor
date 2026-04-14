@@ -7,11 +7,10 @@ import {PERMISSION_CATEGORIES} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChevronDown, faChevronRight, faCheck, faPlus, faTrash, faXmark} from "@fortawesome/pro-solid-svg-icons";
 import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -194,7 +193,7 @@ export default function Groups() {
                         onKeyDown={e => e.key === "Enter" && createGroup()}
                     />
                     <button onClick={createGroup} disabled={!newGroupName.trim()}>
-                        <FontAwesomeIcon icon={faPlus} /> Create Team
+                        <Icon name="plus" /> Create Team
                     </button>
                 </div>
             </div>
@@ -230,7 +229,7 @@ export default function Groups() {
                                         {group.member_count || 0} {(group.member_count || 0) === 1 ? "member" : "members"}
                                     </div>
                                     <div className={"group-card-chevron"}>
-                                        <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} />
+                                        <Icon name={isExpanded? "chevron-down" : "chevron-right"} />
                                     </div>
                                 </div>
 
@@ -250,7 +249,7 @@ export default function Groups() {
                                                                 onClick={() => togglePermission(group, perm.key)}
                                                             >
                                                                 <div className={"perm-check"}>
-                                                                    {isActive && <FontAwesomeIcon icon={faCheck} />}
+                                                                    {isActive && <Icon name="check" />}
                                                                 </div>
                                                                 {perm.label}
                                                             </label>
@@ -269,7 +268,7 @@ export default function Groups() {
                                                         <div key={member.user_id} className={"group-member-row"}>
                                                             <span className={"member-name"}>{member.name}</span>
                                                             <button className={"remove-btn"} onClick={() => removeMember(group.id, member.user_id)}>
-                                                                <FontAwesomeIcon icon={faXmark} />
+                                                                <Icon name="xmark" />
                                                             </button>
                                                         </div>
                                                     ))}
@@ -288,7 +287,7 @@ export default function Groups() {
                                                         ))}
                                                     </select>
                                                     <button onClick={() => addMember(group.id)} disabled={!selectedMemberId}>
-                                                        <FontAwesomeIcon icon={faPlus} /> Add
+                                                        <Icon name="plus" /> Add
                                                     </button>
                                                 </div>
                                             )}
@@ -306,7 +305,7 @@ export default function Groups() {
                                             </label>
                                             <div style={{ flex: 1 }} />
                                             <button className={"group-action-button danger"} onClick={() => setConfirmDeleteGroupId(group.id)}>
-                                                <FontAwesomeIcon icon={faTrash} /> Delete Team
+                                                <Icon name="trash" /> Delete Team
                                             </button>
                                         </div>
                                     </div>

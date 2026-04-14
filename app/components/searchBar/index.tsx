@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faXmark } from "@fortawesome/free-solid-svg-icons";
 import "./index.css";
+import { Icon } from "~/components/icons/Icon";
 
 type SearchBarProps = {
     value: string | null;
@@ -30,7 +29,7 @@ export default function SearchBar({ value, onChange, placeholder = "Search...", 
         <div className="search-bar-wrap">
             {expanded ? (
                 <div className="search-bar-input-wrap">
-                    <FontAwesomeIcon icon={faMagnifyingGlass} className="search-bar-icon" />
+                    <Icon name="magnifying-glass" className="search-bar-icon" />
                     <input
                         type="text"
                         className="search-bar-input"
@@ -41,12 +40,12 @@ export default function SearchBar({ value, onChange, placeholder = "Search...", 
                         onBlur={() => { if (!value) updateExpanded(false); }}
                     />
                     <button className="search-bar-close" onClick={handleClear}>
-                        <FontAwesomeIcon icon={faXmark} />
+                        <Icon name="xmark" />
                     </button>
                 </div>
             ) : (
                 <button className="search-bar-btn" onClick={() => updateExpanded(true)}>
-                    <FontAwesomeIcon icon={faMagnifyingGlass} /><span>Search</span>
+                    <Icon name="magnifying-glass" /><span>Search</span>
                 </button>
             )}
         </div>

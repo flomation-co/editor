@@ -4,7 +4,7 @@ import type {Flo, Environment, Property, Secret} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Icon } from "~/components/icons/Icon";
 
 import api from "~/lib/api";
 import {toast} from "react-toastify";
@@ -29,10 +29,8 @@ import {
 
 import CustomNode from "~/components/editor/customNode";
 import {NodeCategoryType, useDebounce} from "~/types";
-import {faPlay, faTruckRampBox} from "@fortawesome/free-solid-svg-icons";
 import PropertyMenu from "~/components/propertyMenu";
 import useConfig from "~/components/config";
-import {faChevronDown, faGrid, faMap, faPlus, faWrench} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useNavigate} from "react-router";
 import {Tooltip} from "react-tooltip";
@@ -894,7 +892,7 @@ export function Editor(props : EditorProps) {
             <Container noPadding={true}>
                 {(!flo || !plugins) && (
                     <div className={"loading-container"}>
-                        <FontAwesomeIcon icon={faTruckRampBox}/>&nbsp;<span>Loading...</span>
+                        <Icon name="truck-ramp-box" />&nbsp;<span>Loading...</span>
                     </div>
                 )}
 
@@ -912,9 +910,9 @@ export function Editor(props : EditorProps) {
                                 <div className={"flo-editor-property-action-section"}>
                                     <div className={"flo-editor-env-dropdown"} ref={envDropdownRef}>
                                         <button className={"flo-editor-env-button"} onClick={() => setEnvDropdownOpen(!envDropdownOpen)}>
-                                            <FontAwesomeIcon icon={faWrench} className={"flo-editor-env-icon"} />
+                                            <Icon name="wrench" className={"flo-editor-env-icon"} />
                                             <span className={"flo-editor-env-label"}>{flo.environment_id ? environments.find(e => e.id === flo.environment_id)?.name || "Environment" : "No Environment"}</span>
-                                            <FontAwesomeIcon icon={faChevronDown} className={"flo-editor-env-chevron"} />
+                                            <Icon name="chevron-down" className={"flo-editor-env-chevron"} />
                                         </button>
                                         {envDropdownOpen && (
                                             <div className={"flo-editor-env-menu"}>
@@ -940,16 +938,16 @@ export function Editor(props : EditorProps) {
                             )}
                             <div className={"flo-editor-property-action-section"}>
                                 <div className={"flo-editor-action-button"} onClick={showAddNode} data-tooltip-id={"tooltip-action-add-node"} data-tooltip-content={"Add Node"} data-tooltip-place={"bottom"}>
-                                    <FontAwesomeIcon icon={faPlus}/> <span>Add Node</span>
+                                    <Icon name="plus" /> <span>Add Node</span>
                                     <Tooltip id={"tooltip-action-add-node"} />
                                 </div>
                                 <div className={"flo-editor-action-divider"}></div>
                                 <div className={snapToGrid ? "flo-editor-action-button flo-editor-action-button-enabled" : "flo-editor-action-button"} onClick={toggleSnapToGrid} data-tooltip-id={"tooltip-action-toggle-snap-to-grid"} data-tooltip-content={"Toggle Snap to Grid"} data-tooltip-place={"bottom"}>
-                                    <FontAwesomeIcon icon={faGrid}/> <span>Snap to Grid</span>
+                                    <Icon name="grid" /> <span>Snap to Grid</span>
                                     <Tooltip id={"tooltip-action-toggle-snap-to-grid"} />
                                 </div>
                                 <div className={showMiniMap ? "flo-editor-action-button flo-editor-action-button-enabled" : "flo-editor-action-button"} onClick={toggleShowMiniMap} data-tooltip-id={"tooltip-action-toggle-minimap"} data-tooltip-content={"Toggle Minimap"} data-tooltip-place={"bottom"}>
-                                    <FontAwesomeIcon icon={faMap}/> <span>Minimap</span>
+                                    <Icon name="map" /> <span>Minimap</span>
                                     <Tooltip id={"tooltip-action-toggle-minimap"} />
                                 </div>
                                 <div className={"flo-editor-action-divider"}></div>
@@ -963,7 +961,7 @@ export function Editor(props : EditorProps) {
                                         data-tooltip-content={hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo"}
                                         data-tooltip-place={"bottom"}
                                     >
-                                        <FontAwesomeIcon icon={faPlay}/> <span className={"hide-sm"}>Execute Flo</span>
+                                        <Icon name="play" /> <span className={"hide-sm"}>Execute Flo</span>
                                         <Tooltip id={"tooltip-action-execute"} />
                                     </a>
                                 )}
@@ -1095,7 +1093,7 @@ export function Editor(props : EditorProps) {
                         <div className="trigger-input-footer">
                             <button className="trigger-input-btn trigger-input-btn--cancel" onClick={() => setTriggerInputModal(null)}>Cancel</button>
                             <button className="trigger-input-btn trigger-input-btn--execute" onClick={handleTriggerInputSubmit} disabled={isTriggering}>
-                                <FontAwesomeIcon icon={faPlay}/> {isTriggering ? "Executing..." : "Execute"}
+                                <Icon name="play" /> {isTriggering ? "Executing..." : "Execute"}
                             </button>
                         </div>
                     </div>

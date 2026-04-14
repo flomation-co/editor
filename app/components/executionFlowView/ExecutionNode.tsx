@@ -1,13 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark, faSpinner, faClock } from "@fortawesome/pro-solid-svg-icons";
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/pro-solid-svg-icons';
-import { fab } from '@fortawesome/free-brands-svg-icons';
+import { Icon } from "~/components/icons/Icon";
 import type { NodeStatus } from '~/types';
-
-library.add(fab, fas);
 
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   iconColour: '#00aa9c' },
@@ -116,8 +110,8 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                             boxShadow: `0 0 14px ${colours.glow}`,
                         }}
                     >
-                        <FontAwesomeIcon
-                            icon={["fa-solid", "fa-" + icon]}
+                        <Icon
+                            name={icon}
                             style={{ fontSize: '16px', color: colours.iconColour }}
                         />
                     </div>
@@ -175,17 +169,17 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
 
                 {status === 'running' && (
                     <div className="exec-node-status-badge exec-node-status-badge--running">
-                        <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '9px' }} />
+                        <Icon name="spinner" spin style={{ fontSize: '9px' }} />
                     </div>
                 )}
                 {status === 'success' && (
                     <div className="exec-node-status-badge exec-node-status-badge--success">
-                        <FontAwesomeIcon icon={faCheck} style={{ fontSize: '9px' }} />
+                        <Icon name="check" style={{ fontSize: '9px' }} />
                     </div>
                 )}
                 {status === 'failed' && (
                     <div className="exec-node-status-badge exec-node-status-badge--failed">
-                        <FontAwesomeIcon icon={faXmark} style={{ fontSize: '9px' }} />
+                        <Icon name="xmark" style={{ fontSize: '9px' }} />
                     </div>
                 )}
             </div>
@@ -201,7 +195,7 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                         </span>
                         {nodeStatus?.duration_ms !== undefined && nodeStatus.duration_ms > 0 && (
                             <span className="exec-node-tooltip-dur">
-                                <FontAwesomeIcon icon={faClock} /> {nodeStatus.duration_ms}ms
+                                <Icon name="clock" /> {nodeStatus.duration_ms}ms
                             </span>
                         )}
                     </div>

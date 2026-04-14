@@ -9,15 +9,14 @@ import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import useConfig from "~/components/config";
-import {faLink, faSpinner, faRotateRight, faXmark, faClock, faArrowUpRightFromSquare, faChevronDown, faChevronUp, faBan} from "@fortawesome/pro-solid-svg-icons";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
 import ExecutionFlowView from "~/components/executionFlowView";
 import NodeInspector from "~/components/executionFlowView/NodeInspector";
 import DataInspector from "~/components/dataInspector";
+import { Icon } from "~/components/icons/Icon";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -237,12 +236,12 @@ export default function ExecutionDetail() {
                         <div className="exec-header-right">
                             {exec.completion_status === "pending" && (
                                 <button className="cancel-button" onClick={cancelExecution} disabled={isCancelling}>
-                                    <FontAwesomeIcon icon={isCancelling ? faSpinner : faBan} spin={isCancelling} /> Cancel
+                                    <Icon name={isCancelling? "spinner" : "ban"} spin={isCancelling} /> Cancel
                                 </button>
                             )}
                             {exec.completion_status !== "pending" && (
                                 <button className="rerun-button" onClick={rerunExecution} disabled={isRerunning}>
-                                    <FontAwesomeIcon icon={isRerunning ? faSpinner : faRotateRight} spin={isRerunning} /> Re-run
+                                    <Icon name={isRerunning? "spinner" : "rotate-right"} spin={isRerunning} /> Re-run
                                 </button>
                             )}
                         </div>
@@ -251,10 +250,10 @@ export default function ExecutionDetail() {
                     {/* ── Metadata chips ── */}
                     <div className="exec-meta-bar">
                         <Link to={"/flo/" + exec.flo_id} className="exec-meta-chip exec-meta-chip--link">
-                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} /> {exec.name}
+                            <Icon name="arrow-up-right-from-square" /> {exec.name}
                         </Link>
                         <span className="exec-meta-chip">
-                            <FontAwesomeIcon icon={faClock} /> {formatDateString(exec.created_at)}
+                            <Icon name="clock" /> {formatDateString(exec.created_at)}
                         </span>
                         {exec.duration > 0 && (
                             <span className="exec-meta-chip">{exec.duration}ms</span>
@@ -315,7 +314,7 @@ export default function ExecutionDetail() {
                                         </button>
                                     </div>
                                     <button className="exec-detail-panel-close" onClick={() => setDetailPanelOpen(false)}>
-                                        <FontAwesomeIcon icon={faXmark} />
+                                        <Icon name="xmark" />
                                     </button>
                                 </div>
 
@@ -330,7 +329,7 @@ export default function ExecutionDetail() {
                                         <>
                                             {exec.completion_status === "pending" && !exec.result && (
                                                 <div className="exec-detail-loading">
-                                                    <FontAwesomeIcon icon={faSpinner} spin /> <span>Waiting for execution to complete...</span>
+                                                    <Icon name="spinner" spin /> <span>Waiting for execution to complete...</span>
                                                 </div>
                                             )}
                                             {(exec.result?.outputs || exec.completion_status !== "pending") && (
