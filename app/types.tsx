@@ -385,6 +385,53 @@ export type AgentState = {
     updated_at: string,
 }
 
+export type AgentMemory = {
+    id: string;
+    agent_id: string;
+    agent_user_id?: string;
+    scope: string;
+    memory_type: string;
+    title: string;
+    body: string;
+    confidence: number;
+    pinned: boolean;
+    created_at: string;
+    last_used_at?: string;
+    expires_at?: string;
+    valid_until?: string;
+}
+
+export type AgentIdentity = {
+    id: string;
+    agent_user_id: string;
+    channel_type: string;
+    channel_external_id: string;
+    channel_scope?: string;
+    verified: boolean;
+    linked_at?: string;
+    created_at: string;
+}
+
+export type AgentAuditLog = {
+    id: string;
+    agent_id: string;
+    agent_user_id?: string;
+    actor_type: string;
+    actor_id?: string;
+    event_type: string;
+    resource_type: string;
+    resource_id?: string;
+    detail: Record<string, any>;
+    created_at: string;
+}
+
+export type AgentUser = {
+    id: string;
+    agent_id: string;
+    display_name: string;
+    created_at: string;
+}
+
 export const PERMISSIONS = {
     FLOW_CREATE: "flow.create",
     FLOW_EDIT: "flow.edit",
