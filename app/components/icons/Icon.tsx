@@ -72,7 +72,7 @@ function IconInner({
       >
         {title && <title>{title}</title>}
         <circle cx="256" cy="256" r="240" fill="none" stroke={colour} strokeWidth="32" />
-        <text x="256" y="300" textAnchor="middle" fontSize="300" fill={colour}>?</text>
+        <text x="256" y="256" textAnchor="middle" dominantBaseline="central" fontSize="300" fill={colour}>?</text>
       </svg>
     );
   }
