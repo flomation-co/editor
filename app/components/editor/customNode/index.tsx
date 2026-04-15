@@ -89,22 +89,22 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const effectiveColours = hasIncompleteRequired
         ? { ...colours, bg: '#e6a817', glow: 'rgba(230,168,23,0.35)' }
         : colours;
-    const effectiveClass = hasIncompleteRequired
+    let effectiveClass = hasIncompleteRequired
         ? `${nodeClass} flo-node--invalid`
         : nodeClass;
+    if (isAINode) effectiveClass += ' flo-node--ai';
+
+    // Multi-handle nodes need rectangular layout, not square
+    const isMultiHandle = type === 5 || type === 6 || isAINode;
 
     return (
         <>
             <div className="node-name">
-                {data.config?.name && (
-                    <>
-                        {hasIncompleteRequired && (
-                            <Icon name={["fa-solid", "fa-triangle-exclamation"]} className="node-name-warning" />
-                        )}
-                        {data.config.name}
-                    </>
+                {hasIncompleteRequired && (
+                    <Icon name={["fa-solid", "fa-triangle-exclamation"]} className="node-name-warning" />
                 )}
-                {data.config?.label && (
+                {data.config?.name || data.config?.label || ''}
+                {data.config?.name && data.config?.label && (
                     <div className="node-label">
                         {data.config.label}
                     </div>
@@ -119,7 +119,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     ...(type === 6 && switchCases.length > 0 ? {
                         minHeight: (switchCases.length + 1) * 28 + 16
                     } : {}),
-                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 220, paddingRight: 70 } : {}),
+                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 70 } : {}),
                 } as React.CSSProperties}
             >
                 {hasInputs && (
@@ -132,19 +132,22 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
                 {icon && (
                     <div
-                        className="node-icon-badge"
+                        className={`node-icon-badge ${isMultiHandle ? '' : 'node-icon-badge--centred'}`}
                         style={{
                             backgroundColor: colours.bgAlpha,
                             boxShadow: `0 0 14px ${colours.glow}`,
                         }}
                     >
-                        <Icon name={icon} style={{ fontSize: '16px', color: colours.iconColour }} />
+                        <Icon name={icon} style={{ fontSize: isMultiHandle ? '16px' : '22px', color: colours.iconColour }} />
                     </div>
                 )}
 
-                <span className="node-inline-label">
-                    {data.config?.label || data.config?.name || ''}
-                </span>
+                {/* Show inline label only for multi-handle nodes that need it */}
+                {isMultiHandle && (
+                    <span className="node-inline-label">
+                        {data.config?.label || data.config?.name || ''}
+                    </span>
+                )}
 
                 {/* Standard source handle for types 1, 2, 3 */}
                 {type !== 4 && type !== 5 && type !== 6 && hasOutputs && !isAINode && (
