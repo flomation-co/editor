@@ -66,7 +66,7 @@ function IconInner({
         height={px ? `${px}px` : size ?? "1em"}
         fill={colour}
         className={className}
-        style={style}
+        style={{ display: "inline-block", verticalAlign: "-0.125em", ...style }}
         role={title ? "img" : "presentation"}
         aria-hidden={!title}
       >
@@ -83,6 +83,8 @@ function IconInner({
   if (spin) injectSpinStyle();
 
   const mergedStyle: CSSProperties = {
+    display: "inline-block",
+    verticalAlign: "-0.125em",
     ...style,
     ...(spin ? { animation: "icon-spin 1s linear infinite" } : {}),
   };

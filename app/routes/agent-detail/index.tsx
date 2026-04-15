@@ -9,6 +9,9 @@ import {useParams, useNavigate} from "react-router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
+import AgentMemoryPanel from "./memory-panel";
+import AgentUsersPanel from "./users-panel";
+import AgentAuditPanel from "./audit-panel";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 
@@ -22,7 +25,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-type Tab = 'config' | 'channels' | 'sessions' | 'state';
+type Tab = 'config' | 'channels' | 'sessions' | 'state' | 'memory' | 'users' | 'audit';
 
 type EmailAccount = { email: string; label?: string; purpose: string };
 
@@ -441,6 +444,9 @@ export default function AgentDetail() {
                     <button className={`agent-tab ${activeTab === 'channels' ? 'active' : ''}`} onClick={() => setActiveTab('channels')}>Channels</button>
                     <button className={`agent-tab ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => setActiveTab('sessions')}>Sessions</button>
                     <button className={`agent-tab ${activeTab === 'state' ? 'active' : ''}`} onClick={() => setActiveTab('state')}>State</button>
+                    <button className={`agent-tab ${activeTab === 'memory' ? 'active' : ''}`} onClick={() => setActiveTab('memory')}>Memory</button>
+                    <button className={`agent-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
+                    <button className={`agent-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>Audit Log</button>
                 </div>
 
                 {activeTab === 'config' && (
@@ -804,6 +810,18 @@ export default function AgentDetail() {
                             ))}
                         </div>
                     </div>
+                )}
+
+                {activeTab === 'memory' && id && (
+                    <AgentMemoryPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
+                )}
+
+                {activeTab === 'users' && id && (
+                    <AgentUsersPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
+                )}
+
+                {activeTab === 'audit' && id && (
+                    <AgentAuditPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
                 )}
             </div>
         </Container>
