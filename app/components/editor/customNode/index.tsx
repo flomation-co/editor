@@ -95,7 +95,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     if (isAINode) effectiveClass += ' flo-node--ai';
 
     // Multi-handle nodes need rectangular layout, not square
-    const isMultiHandle = type === 5 || type === 6 || isAINode;
+    const isMultiHandle = type === 5 || isAINode;
 
     return (
         <>
@@ -240,7 +240,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                         />
                                         <span style={{
                                             position: 'absolute',
-                                            right: 10,
+                                            left: 'calc(100% + 10px)',
                                             top: y,
                                             transform: 'translateY(-50%)',
                                             fontSize: 8,
@@ -269,7 +269,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                         />
                                         <span style={{
                                             position: 'absolute',
-                                            right: 10,
+                                            left: 'calc(100% + 10px)',
                                             top: y,
                                             transform: 'translateY(-50%)',
                                             fontSize: 8,

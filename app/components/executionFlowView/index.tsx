@@ -156,10 +156,20 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
             }
 
-            // Completed: both source and target have executed
+            // Completed successfully: bright green trace
             const sourceCompleted = sourceStatus?.status === 'success' || sourceStatus?.status === 'failed';
+            if (sourceCompleted && targetStatus && targetStatus.status === 'success') {
+                return { ...edge, style: { stroke: 'rgba(34, 197, 94, 0.5)', strokeWidth: 2 }, animated: false };
+            }
+
+            // Target failed: red trace
+            if (sourceCompleted && targetStatus && targetStatus.status === 'failed') {
+                return { ...edge, style: { stroke: 'rgba(239, 68, 68, 0.5)', strokeWidth: 2 }, animated: false };
+            }
+
+            // Partially executed (source done, target still running or waiting)
             if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
-                return { ...edge, style: { stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1.5 } };
+                return { ...edge, style: { stroke: 'rgba(255,255,255,0.35)', strokeWidth: 1.5 } };
             }
 
             // Not executed: source never ran (pending) → dim the edge

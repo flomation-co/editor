@@ -462,7 +462,6 @@
 }
 
 /* ── Multi-handle override: restore rectangular layout ── */
-.flo-node--switch,
 .flo-node--loop,
 .flo-node--ai {
     width: auto;
@@ -471,6 +470,12 @@
     padding: 10px 18px 10px 14px;
     justify-content: flex-start;
     gap: 10px;
+}
+
+/* ── Switch: square body, handles + labels extend right ── */
+.flo-node--switch {
+    min-height: 56px;
+    padding-right: 4px;
 }
 
 /* ── Handles ── */
