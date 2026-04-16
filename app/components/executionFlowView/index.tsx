@@ -100,7 +100,7 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
 
     // Style edges: mute untaken branches + all downstream, animate active edges
     const styledEdges = useMemo(() => {
-        const mutedStyle = { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 };
+        const mutedStyle = { stroke: 'rgba(255,255,255,0.12)', strokeWidth: 1 };
 
         // Step 1: find directly untaken edges (from conditional/switch outputs)
         const untakenTargets = new Set<string>();
@@ -194,7 +194,7 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 elementsSelectable={false}
                 panOnDrag={true}
                 zoomOnScroll={true}
-                defaultEdgeOptions={{ type: 'simplebezier', style: { stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 } }}
+                defaultEdgeOptions={{ type: 'simplebezier', style: { stroke: 'rgba(255,255,255,0.12)', strokeWidth: 1 } }}
                 proOptions={{ hideAttribution: true }}
             >
                 <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="rgba(255,255,255,0.05)" />
