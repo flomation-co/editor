@@ -354,8 +354,8 @@
 .flo-node--conditional {
     border-color: rgba(239,212,103,0.25);
     border-radius: 4px;
-    width: 64px;
-    height: 64px;
+    width: 56px;
+    height: 56px;
     padding: 0;
     min-width: unset;
     transform: rotate(45deg);

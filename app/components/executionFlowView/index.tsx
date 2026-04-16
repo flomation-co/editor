@@ -162,6 +162,11 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 return { ...edge, style: { stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1.5 } };
             }
 
+            // Not executed: source never ran (pending) → dim the edge
+            if (!sourceStatus || sourceStatus.status === 'pending') {
+                return { ...edge, style: mutedStyle, animated: false };
+            }
+
             return edge;
         });
     }, [edges, nodeStatuses, baseNodes]);
