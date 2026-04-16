@@ -472,10 +472,11 @@
     gap: 10px;
 }
 
-/* ── Switch: square body, handles + labels extend right ── */
+/* ── Switch: fixed square, handles overflow outside ── */
 .flo-node--switch {
-    min-height: 56px;
-    padding-right: 4px;
+    width: 56px;
+    height: 56px;
+    overflow: visible;
 }
 
 /* ── Handles ── */

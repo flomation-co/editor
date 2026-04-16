@@ -116,9 +116,6 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
-                    ...(type === 6 && switchCases.length > 0 ? {
-                        minHeight: (switchCases.length + 1) * 28 + 16
-                    } : {}),
                     ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 70 } : {}),
                 } as React.CSSProperties}
             >
