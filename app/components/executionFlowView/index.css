@@ -17,12 +17,15 @@
 .exec-node {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 18px 10px 14px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    width: 48px;
+    height: 48px;
     border-radius: 10px;
     background: #131313;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    min-width: 140px;
+    min-width: unset;
     position: relative;
     font-size: 12px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -136,23 +139,32 @@
     bottom: calc(100% + 22px);
 }
 
+/* ── AI node: rectangular layout for multiple handles ── */
+.exec-node--ai {
+    width: auto;
+    height: auto;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 8px;
+    justify-content: center;
+}
+
 /* ── Icon badge ── */
 .exec-node-icon-badge {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-/* ── Inline label ── */
+/* ── Inline label (hidden for square nodes) ── */
 .exec-node-inline-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #fff;
-    white-space: nowrap;
+    display: none;
 }
 
 /* ── Hover wrapper — CSS-only tooltip trigger ── */

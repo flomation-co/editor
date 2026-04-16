@@ -68,7 +68,13 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
         return [];
     }, [type, data?.config?.inputs]);
 
-    const statusClass = `exec-node exec-node--${status}${isConditional ? ' exec-node--conditional' : ''}`;
+    // Detect AI nodes
+    const isAINode = useMemo(() => {
+        const label = data?.config?.label || data?.label || '';
+        return label.startsWith('ai/');
+    }, [data?.config?.label, data?.label]);
+
+    const statusClass = `exec-node exec-node--${status}${isConditional ? ' exec-node--conditional' : ''}${isAINode ? ' exec-node--ai' : ''}`;
 
     const handleClick = () => {
         if (data?.onNodeClick && data?.nodeId) {
@@ -112,7 +118,7 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     >
                         <Icon
                             name={icon}
-                            style={{ fontSize: '16px', color: colours.iconColour }}
+                            style={{ fontSize: '20px', color: colours.iconColour }}
                         />
                     </div>
                 )}
@@ -121,10 +127,18 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     {data.config?.label || data.config?.name || ''}
                 </span>
 
-                {type !== 4 && type !== 5 && type !== 6 && (
+                {type !== 4 && type !== 5 && type !== 6 && !isAINode && (
                     <Handle type="source" position={Position.Right}
                         {...(type === 3 ? { id: "input" } : {})}
                     />
+                )}
+
+                {isAINode && (
+                    <>
+                        <Handle type="source" position={Position.Right} id="output" style={{ top: '30%' }} />
+                        <Handle type="source" position={Position.Right} id="tools" style={{ top: '60%' }} />
+                        <Handle type="source" position={Position.Right} id="no_response" style={{ top: '90%' }} />
+                    </>
                 )}
 
                 {type === 4 && hasOutputs && (
