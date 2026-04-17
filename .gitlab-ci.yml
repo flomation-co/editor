@@ -58,6 +58,8 @@ compile-npm:
 
 build-rpm-8:
   extends: .build-rpm-nodejs-template
+  only:
+    - main
   image: rockylinux/rockylinux:8
   variables:
     EL_VERSION: "8"
@@ -72,6 +74,8 @@ build-rpm-8:
 
 build-rpm-9:
   extends: .build-rpm-nodejs-template
+  only:
+    - main
   image: rockylinux/rockylinux:9
   variables:
     EL_VERSION: "9"
@@ -86,6 +90,8 @@ build-rpm-9:
 
 build-deb:
   extends: .build-deb-nodejs-template
+  only:
+    - main
   variables:
     CI_TEMPLATES_REF: "main"
   needs:
