@@ -117,6 +117,11 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
                     ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 70 } : {}),
+                    ...(type === 6 ? {
+                        // Switch node height scales to cover all handles (cases + default)
+                        minHeight: Math.max(56, 14 + (switchCases.length + 1) * 28 + 14),
+                        width: Math.max(56, 14 + (switchCases.length + 1) * 28 + 14),
+                    } : {}),
                 } as React.CSSProperties}
             >
                 {hasInputs && (
