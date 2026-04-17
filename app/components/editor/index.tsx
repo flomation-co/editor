@@ -469,6 +469,15 @@ export function Editor(props : EditorProps) {
             }
         }
 
+        // Enforce single On Error handler
+        if (nodeType === "error/on_error") {
+            const hasOnError = nodes.some(n => n.type === "error/on_error" || n.data?.label === "error/on_error");
+            if (hasOnError) {
+                toast.warning("Only one On Error handler is allowed per flow");
+                return;
+            }
+        }
+
         const cfg = plugins[nodeType];
         console.log("New Node", nodeType, cfg);
         if (!cfg) {
