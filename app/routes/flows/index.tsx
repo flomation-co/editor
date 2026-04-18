@@ -476,17 +476,27 @@ export default function Flows() {
             const newFlo = createRes.data;
 
             if (template?.nodes) {
+                // Fetch plugin configs so template nodes are fully hydrated on save
+                let pluginConfigs: Record<string, any> = {};
+                try {
+                    const actionsRes = await api.get(API_URL + '/api/v1/action', {
+                        headers: { Authorization: "Bearer " + token }
+                    });
+                    if (actionsRes.data) pluginConfigs = actionsRes.data;
+                } catch { /* proceed without — nodes will hydrate on editor load */ }
+
                 // Generate real UUIDs for each template node so they're unique
                 const idMap: Record<string, string> = {};
                 template.nodes.forEach(n => { idMap[n.id] = crypto.randomUUID(); });
 
                 const nodes = template.nodes.map(n => {
                     const realId = idMap[n.id];
+                    const config = pluginConfigs[n.label] || undefined;
                     return {
                         id: realId,
                         type: n.type,
                         position: { x: n.x, y: n.y },
-                        data: { id: realId, label: n.label },
+                        data: { id: realId, label: n.label, ...(config ? { config } : {}) },
                         sourcePosition: 'right',
                         targetPosition: 'left',
                     };

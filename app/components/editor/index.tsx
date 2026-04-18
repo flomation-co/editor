@@ -241,28 +241,6 @@ export function Editor(props : EditorProps) {
         }
     }, [id]);
 
-    // Hydrate template nodes: when plugins load, fill in missing config
-    // for nodes created by templates (which only have a label, no config).
-    // Only applies to nodes without any config — never overwrites user-saved configs.
-    useEffect(() => {
-        if (!plugins || nodes.length === 0) return;
-        let hydrated = false;
-        const updated = nodes.map((n: any) => {
-            if (n.data?.label && plugins[n.data.label] && !n.data.config) {
-                hydrated = true;
-                return { ...n, data: { ...n.data, config: plugins[n.data.label] } };
-            }
-            return n;
-        });
-        if (hydrated) {
-            setNodes(updated);
-            // Force edge re-render — ReactFlow may not draw edges to nodes
-            // that had no dimensions before hydration gave them a config.
-            setEdges(eds => [...eds]);
-            lastSavedHashRef.current = JSON.stringify({ nodes: updated, edges });
-        }
-    }, [plugins]);
-
     useEffect(() => {
         if (flo && !flo.revision && plugins && plugins["trigger/manual"] && nodes.length === 0) {
             const nodeId = '' + self.crypto.randomUUID() + '';
