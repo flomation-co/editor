@@ -394,7 +394,7 @@ export default function Flows() {
             id: 'webhook-notify',
             name: 'Webhook → Notify',
             description: 'Receive a webhook, process the data, and send a notification via Slack or email',
-            icon: 'webhook',
+            icon: 'globe',
             colour: '#f59e0b',
             flowName: 'Webhook Notification',
             nodes: [
