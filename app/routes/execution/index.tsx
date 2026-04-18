@@ -258,8 +258,8 @@ export default function ExecutionDetail() {
                         {exec.duration > 0 && (
                             <span className="exec-meta-chip">{exec.duration}ms</span>
                         )}
-                        {exec.runner_id && (
-                            <span className="exec-meta-chip">{exec.runner_id}</span>
+                        {(exec.runner_name || exec.runner_id) && (
+                            <span className="exec-meta-chip">{exec.runner_name || exec.runner_id}</span>
                         )}
                     </div>
 
