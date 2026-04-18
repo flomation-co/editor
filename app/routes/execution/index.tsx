@@ -44,6 +44,7 @@ export default function ExecutionDetail() {
 
     const [ detailPanelOpen, setDetailPanelOpen ] = useState<boolean>(false);
     const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
+    const [ elapsedMs, setElapsedMs ] = useState<number>(0);
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -217,6 +218,45 @@ export default function ExecutionDetail() {
         return dayjs.utc(date).local().format("D MMM YYYY H:mm:ss");
     }
 
+    function friendlyDuration(ms?: number): string {
+        if (!ms || ms <= 0) return "";
+        if (ms < 1000) return ms + "ms";
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) return seconds + "s";
+        const minutes = Math.floor(seconds / 60);
+        const remainSec = seconds % 60;
+        if (minutes < 60) return remainSec > 0 ? `${minutes}m ${remainSec}s` : `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        const remainMin = minutes % 60;
+        return remainMin > 0 ? `${hours}h ${remainMin}m` : `${hours}h`;
+    }
+
+    // Calculate the effective duration:
+    // 1. Use result duration if available (from executor)
+    // 2. Fall back to created_at → completed_at diff (for cancelled/failed without result)
+    // 3. For in-progress flows, calculate live elapsed time
+    function getEffectiveDuration(): number {
+        if (!exec) return 0;
+        if (exec.duration && exec.duration > 0) return exec.duration;
+        if (exec.completed_at && exec.created_at) {
+            return dayjs.utc(exec.completed_at).diff(dayjs.utc(exec.created_at));
+        }
+        return 0;
+    }
+
+    // Live elapsed timer for in-progress executions
+    useEffect(() => {
+        if (!exec || exec.completion_status !== 'pending') {
+            setElapsedMs(0);
+            return;
+        }
+        const start = dayjs.utc(exec.created_at);
+        const tick = () => setElapsedMs(dayjs.utc().diff(start));
+        tick();
+        const interval = setInterval(tick, 1000);
+        return () => clearInterval(interval);
+    }, [exec?.id, exec?.completion_status]);
+
     const openDetailPanel = (tab: DetailTab) => {
         setDetailTab(tab);
         setDetailPanelOpen(true);
@@ -255,8 +295,13 @@ export default function ExecutionDetail() {
                         <span className="exec-meta-chip">
                             <Icon name="clock" /> {formatDateString(exec.created_at)}
                         </span>
-                        {exec.duration > 0 && (
-                            <span className="exec-meta-chip">{exec.duration}ms</span>
+                        {exec.completion_status === 'pending' && elapsedMs > 0 && (
+                            <span className="exec-meta-chip exec-meta-chip--live">
+                                <Icon name="hourglass-half" /> {friendlyDuration(elapsedMs)}
+                            </span>
+                        )}
+                        {exec.completion_status !== 'pending' && getEffectiveDuration() > 0 && (
+                            <span className="exec-meta-chip">{friendlyDuration(getEffectiveDuration())}</span>
                         )}
                         {(exec.runner_name || exec.runner_id) && (
                             <span className="exec-meta-chip">{exec.runner_name || exec.runner_id}</span>

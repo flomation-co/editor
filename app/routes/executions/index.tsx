@@ -4,7 +4,7 @@ import Container from "~/components/container";
 import {Link, useSearchParams} from "react-router";
 import {ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -61,6 +61,19 @@ function triggerIcon(type?: string): any {
 
 function triggerLabel(type?: string): string {
     return TRIGGER_LABELS[type || ''] || type || 'Unknown';
+}
+
+// Live elapsed timer for in-progress executions in the list view
+function LiveDuration({ createdAt, formatter }: { createdAt: string; formatter: (ms: number) => string }) {
+    const [elapsed, setElapsed] = useState(0);
+    useEffect(() => {
+        const start = dayjs.utc(createdAt);
+        const tick = () => setElapsed(dayjs.utc().diff(start));
+        tick();
+        const interval = setInterval(tick, 1000);
+        return () => clearInterval(interval);
+    }, [createdAt]);
+    return <>{formatter(elapsed)}</>;
 }
 
 export default function Executions() {
@@ -193,7 +206,7 @@ export default function Executions() {
     }
 
     function friendlyDuration(ms?: number): string {
-        if (!ms || ms === 0) return "";
+        if (!ms || ms <= 0) return "";
         if (ms < 1000) return ms + "ms";
         const seconds = Math.floor(ms / 1000);
         if (seconds < 60) return seconds + "s";
@@ -203,6 +216,14 @@ export default function Executions() {
         const hours = Math.floor(minutes / 60);
         const remainMin = minutes % 60;
         return remainMin > 0 ? `${hours}h ${remainMin}m` : `${hours}h`;
+    }
+
+    function effectiveDuration(exec: any): number {
+        if (exec.duration && exec.duration > 0) return exec.duration;
+        if (exec.completed_at && exec.created_at) {
+            return dayjs.utc(exec.completed_at).diff(dayjs.utc(exec.created_at));
+        }
+        return 0;
     }
 
     return (
@@ -296,7 +317,11 @@ export default function Executions() {
                                                         <ExecuteState state={exec.execution_status} completionState={exec.completion_status} />
                                                     </Link>
                                                 </td>
-                                                <td className={"table-column-hide-sm flo-table-subdued"}>{friendlyDuration(exec.duration)}</td>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>
+                                                    {exec.completion_status === 'pending'
+                                                        ? <LiveDuration createdAt={exec.created_at} formatter={friendlyDuration} />
+                                                        : friendlyDuration(effectiveDuration(exec))}
+                                                </td>
                                                 {/*<td className={"table-column-hide-sm"}>{friendlyDuration(exec.billing_duration)}</td>*/}
                                                 <td>
                                                     {/*<button disabled={true || r.state != "active"} className={"table-button"}>
