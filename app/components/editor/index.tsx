@@ -226,16 +226,7 @@ export function Editor(props : EditorProps) {
                         zoom: response.data ? response.data.scale : 1
                     });
                     const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
-                    let loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
-                    // Hydrate nodes that have a label but no full config (e.g. from templates)
-                    if (plugins) {
-                        loadedNodes = loadedNodes.map((n: any) => {
-                            if (n.data?.label && plugins[n.data.label] && (!n.data.config || !n.data.config.inputs)) {
-                                return { ...n, data: { ...n.data, config: plugins[n.data.label] } };
-                            }
-                            return n;
-                        });
-                    }
+                    const loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
                     setEdges(loadedEdges);
                     setNodes(loadedNodes);
                     lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });
@@ -249,6 +240,23 @@ export function Editor(props : EditorProps) {
                 })
         }
     }, [id]);
+
+    // Hydrate template nodes: when plugins load, fill in missing config
+    // for any nodes that have a label but no full config (created by templates).
+    useEffect(() => {
+        if (!plugins || nodes.length === 0) return;
+        let hydrated = false;
+        const updated = nodes.map((n: any) => {
+            if (n.data?.label && plugins[n.data.label] && (!n.data.config || !n.data.config.inputs)) {
+                hydrated = true;
+                return { ...n, data: { ...n.data, config: plugins[n.data.label] } };
+            }
+            return n;
+        });
+        if (hydrated) {
+            setNodes(updated);
+        }
+    }, [plugins]);
 
     useEffect(() => {
         if (flo && !flo.revision && plugins && plugins["trigger/manual"] && nodes.length === 0) {
