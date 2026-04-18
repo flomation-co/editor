@@ -640,6 +640,11 @@ export function Editor(props : EditorProps) {
         { name: "message_id", category: "input", source: "Agent Channel" },
         { name: "trigger_source", category: "input", source: "Agent Channel" },
         { name: "commitment_id", category: "input", source: "Commitment" },
+        { name: "is_voice", category: "input", source: "Voice Message" },
+        { name: "voice_audio_base64", category: "input", source: "Voice Message" },
+        { name: "voice_duration", category: "input", source: "Voice Message" },
+        { name: "voice_mime_type", category: "input", source: "Voice Message" },
+        { name: "voice_audio_size", category: "input", source: "Voice Message" },
     ];
 
     // Derive parent node outputs for the selected property node
@@ -742,23 +747,39 @@ export function Editor(props : EditorProps) {
             const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
             if (hasRequiredEmpty) return true;
 
-            // Check for invalid variable substitutions
-            const parentIds = edges.filter((e: any) => e.target === node.id).map((e: any) => e.source);
-            const parentOutputNames = new Set<string>();
-            for (const pid of parentIds) {
-                const pn = nodes.find((n: any) => n.id === pid);
-                if (pn?.data?.config?.outputs) {
-                    for (const o of pn.data.config.outputs) {
-                        if (o.name) parentOutputNames.add(o.name);
+            // Check for invalid variable substitutions.
+            // Walk the full ancestor chain (not just direct parents) so that
+            // outputs from trigger nodes pass through conditional/switch nodes
+            // and are still recognised as valid references downstream.
+            const ancestorOutputNames = new Set<string>();
+            const visited = new Set<string>();
+            const walkAncestors = (nodeId: string) => {
+                if (visited.has(nodeId)) return;
+                visited.add(nodeId);
+                const parentIds = edges.filter((e: any) => e.target === nodeId).map((e: any) => e.source);
+                for (const pid of parentIds) {
+                    const pn = nodes.find((n: any) => n.id === pid);
+                    if (pn?.data?.config?.outputs) {
+                        for (const o of pn.data.config.outputs) {
+                            if (o.name) ancestorOutputNames.add(o.name);
+                        }
+                    }
+                    // Manual trigger's trigger_inputs are also valid output names
+                    if (pn?.data?.config?.trigger_inputs) {
+                        for (const ti of pn.data.config.trigger_inputs) {
+                            if (ti.name) ancestorOutputNames.add(ti.name);
+                        }
+                    }
+                    // Conditional/Switch/Loop nodes pass through parent outputs
+                    // at runtime, so walk further up the chain
+                    const pType = pn?.data?.config?.type;
+                    if (pType === 4 || pType === 5 || pType === 6) {
+                        walkAncestors(pid);
                     }
                 }
-                // Manual trigger's trigger_inputs are also valid output names
-                if (pn?.data?.config?.trigger_inputs) {
-                    for (const ti of pn.data.config.trigger_inputs) {
-                        if (ti.name) parentOutputNames.add(ti.name);
-                    }
-                }
-            }
+            };
+            walkAncestors(node.id);
+            const parentOutputNames = ancestorOutputNames;
 
             return inputs.some((i: any) => {
                 if (!isInputVisible(i, inputs)) return false;
