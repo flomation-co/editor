@@ -469,6 +469,23 @@
 .ni-val--empty { color: rgba(255, 255, 255, 0.2); }
 .ni-hint { color: rgba(255, 255, 255, 0.2); font-size: 11px; margin-left: 4px; }
 
+i/* Media players for audio/image/video */
+.ni-media {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0;
+}
+.ni-media audio { border-radius: 6px; }
+.ni-media img {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.3);
+}
+.ni-media video {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.3);
+}
+
 /* Collapsible tree for arrays/objects */
 .ni-tree { width: 100%; }
 
