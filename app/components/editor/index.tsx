@@ -256,6 +256,9 @@ export function Editor(props : EditorProps) {
         });
         if (hydrated) {
             setNodes(updated);
+            // Force edge re-render — ReactFlow may not draw edges to nodes
+            // that had no dimensions before hydration gave them a config.
+            setEdges(eds => [...eds]);
             lastSavedHashRef.current = JSON.stringify({ nodes: updated, edges });
         }
     }, [plugins]);
