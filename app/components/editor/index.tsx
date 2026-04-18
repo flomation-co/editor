@@ -226,7 +226,16 @@ export function Editor(props : EditorProps) {
                         zoom: response.data ? response.data.scale : 1
                     });
                     const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
-                    const loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    let loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    // Hydrate nodes that have a label but no full config (e.g. from templates)
+                    if (plugins) {
+                        loadedNodes = loadedNodes.map((n: any) => {
+                            if (n.data?.label && plugins[n.data.label] && (!n.data.config || !n.data.config.inputs)) {
+                                return { ...n, data: { ...n.data, config: plugins[n.data.label] } };
+                            }
+                            return n;
+                        });
+                    }
                     setEdges(loadedEdges);
                     setNodes(loadedNodes);
                     lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });

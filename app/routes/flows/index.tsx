@@ -476,18 +476,25 @@ export default function Flows() {
             const newFlo = createRes.data;
 
             if (template?.nodes) {
-                const nodes = template.nodes.map(n => ({
-                    id: n.id,
-                    type: n.type,
-                    position: { x: n.x, y: n.y },
-                    data: { id: n.id, label: n.label, config: { type: n.config.type, label: n.label } },
-                    sourcePosition: 'right',
-                    targetPosition: 'left',
-                }));
+                // Generate real UUIDs for each template node so they're unique
+                const idMap: Record<string, string> = {};
+                template.nodes.forEach(n => { idMap[n.id] = crypto.randomUUID(); });
+
+                const nodes = template.nodes.map(n => {
+                    const realId = idMap[n.id];
+                    return {
+                        id: realId,
+                        type: n.type,
+                        position: { x: n.x, y: n.y },
+                        data: { id: realId, label: n.label },
+                        sourcePosition: 'right',
+                        targetPosition: 'left',
+                    };
+                });
                 const edges = (template.edges || []).map((e, i) => ({
-                    id: `e${i}`,
-                    source: e.source,
-                    target: e.target,
+                    id: crypto.randomUUID(),
+                    source: idMap[e.source],
+                    target: idMap[e.target],
                     ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),
                 }));
                 await api.post(API_URL + "/api/v1/flo/" + newFlo.id + "/revision", {
