@@ -242,13 +242,13 @@ export function Editor(props : EditorProps) {
     }, [id]);
 
     // Hydrate template nodes: when plugins load, fill in missing config
-    // for any nodes that have a label but no full config (created by templates).
-    // Updates the saved hash so auto-save treats this as the baseline, not a change.
+    // for nodes created by templates (which only have a label, no config).
+    // Only applies to nodes without any config — never overwrites user-saved configs.
     useEffect(() => {
         if (!plugins || nodes.length === 0) return;
         let hydrated = false;
         const updated = nodes.map((n: any) => {
-            if (n.data?.label && plugins[n.data.label] && (!n.data.config || !n.data.config.inputs)) {
+            if (n.data?.label && plugins[n.data.label] && !n.data.config) {
                 hydrated = true;
                 return { ...n, data: { ...n.data, config: plugins[n.data.label] } };
             }
@@ -256,7 +256,6 @@ export function Editor(props : EditorProps) {
         });
         if (hydrated) {
             setNodes(updated);
-            // Update the hash so auto-save doesn't treat hydration as a user edit
             lastSavedHashRef.current = JSON.stringify({ nodes: updated, edges });
         }
     }, [plugins]);
