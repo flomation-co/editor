@@ -66,6 +66,7 @@ export default function Flows() {
     const [importModalVisible, setImportModalVisible] = useState(false);
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [templateModalVisible, setTemplateModalVisible] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     const fetchFavourites = () => {
@@ -378,21 +379,127 @@ export default function Flows() {
     };
 
     const createNewFlo = () => {
-        api.post(API_URL + '/api/v1/flo', { name: "Untitled Flo" }, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: "Bearer " + token,
-            }
-        })
-            .then(response => {
-                if (response) {
-                    navigate("/flo/" + response.data.id);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                toast.error("Failed to create flow");
+        setTemplateModalVisible(true);
+    };
+
+    const FLOW_TEMPLATES = [
+        {
+            id: 'blank',
+            name: 'Blank Flow',
+            description: 'Start from scratch with an empty canvas',
+            icon: 'file',
+            colour: '#6b7280',
+        },
+        {
+            id: 'webhook-notify',
+            name: 'Webhook → Notify',
+            description: 'Receive a webhook, process the data, and send a notification via Slack or email',
+            icon: 'bell',
+            colour: '#f59e0b',
+            flowName: 'Webhook Notification',
+            nodes: [
+                { id: 'n1', type: 'trigger/webhook', label: 'trigger/webhook', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n2', type: 'messaging/slack', label: 'messaging/slack', x: 500, y: 200, config: { type: 2 } },
+            ],
+            edges: [{ source: 'n1', target: 'n2' }],
+        },
+        {
+            id: 'schedule-report',
+            name: 'Scheduled Report',
+            description: 'Run on a schedule, query a database or API, and email the results',
+            icon: 'calendar-days',
+            colour: '#3b82f6',
+            flowName: 'Scheduled Report',
+            nodes: [
+                { id: 'n1', type: 'trigger/schedule', label: 'trigger/schedule', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n2', type: 'http/request', label: 'http/request', x: 400, y: 200, config: { type: 2 } },
+                { id: 'n3', type: 'common/smtp', label: 'common/smtp', x: 700, y: 200, config: { type: 2 } },
+            ],
+            edges: [{ source: 'n1', target: 'n2' }, { source: 'n2', target: 'n3' }],
+        },
+        {
+            id: 'git-cicd',
+            name: 'Git Push → Build → Notify',
+            description: 'Trigger on git push, run a build script, and notify the team on success or failure',
+            icon: 'code-branch',
+            colour: '#10b981',
+            flowName: 'CI/CD Pipeline',
+            nodes: [
+                { id: 'n1', type: 'trigger/git-poll', label: 'trigger/git-poll', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n2', type: 'script/bash', label: 'script/bash', x: 400, y: 200, config: { type: 2 } },
+                { id: 'n3', type: 'messaging/slack', label: 'messaging/slack', x: 700, y: 200, config: { type: 2 } },
+            ],
+            edges: [{ source: 'n1', target: 'n2' }, { source: 'n2', target: 'n3' }],
+        },
+        {
+            id: 'form-approval',
+            name: 'Form → Approve → Action',
+            description: 'Collect data via a form, apply conditional logic, then take action based on the result',
+            icon: 'clipboard-check',
+            colour: '#8b5cf6',
+            flowName: 'Form Approval',
+            nodes: [
+                { id: 'n1', type: 'trigger/form', label: 'trigger/form', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n2', type: 'conditional/if', label: 'conditional/if', x: 400, y: 200, config: { type: 4 } },
+                { id: 'n3', type: 'common/smtp', label: 'common/smtp', x: 700, y: 100, config: { type: 2 } },
+                { id: 'n4', type: 'common/smtp', label: 'common/smtp', x: 700, y: 300, config: { type: 2 } },
+            ],
+            edges: [
+                { source: 'n1', target: 'n2' },
+                { source: 'n2', target: 'n3', sourceHandle: 'true-branch' },
+                { source: 'n2', target: 'n4', sourceHandle: 'false-branch' },
+            ],
+        },
+        {
+            id: 'ai-agent',
+            name: 'AI Chat Agent',
+            description: 'Respond to Telegram or Slack messages with an AI-powered agent using tools',
+            icon: 'brain',
+            colour: '#06b6d4',
+            flowName: 'AI Agent',
+            nodes: [
+                { id: 'n1', type: 'trigger/telegram', label: 'trigger/telegram', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n2', type: 'ai/anthropic', label: 'ai/anthropic', x: 450, y: 200, config: { type: 2 } },
+                { id: 'n3', type: 'messaging/telegram', label: 'messaging/telegram', x: 800, y: 200, config: { type: 2 } },
+            ],
+            edges: [{ source: 'n1', target: 'n2' }, { source: 'n2', target: 'n3' }],
+        },
+    ];
+
+    const createFlowWithTemplate = async (template: typeof FLOW_TEMPLATES[0] | null) => {
+        setTemplateModalVisible(false);
+        try {
+            const name = template?.flowName || 'Untitled Flo';
+            const createRes = await api.post(API_URL + '/api/v1/flo', { name }, {
+                headers: { 'Content-Type': 'application/json', Authorization: "Bearer " + token }
             });
+            const newFlo = createRes.data;
+
+            if (template?.nodes) {
+                const nodes = template.nodes.map(n => ({
+                    id: n.id,
+                    type: n.type,
+                    position: { x: n.x, y: n.y },
+                    data: { id: n.id, label: n.label, config: { type: n.config.type, label: n.label } },
+                    sourcePosition: 'right',
+                    targetPosition: 'left',
+                }));
+                const edges = (template.edges || []).map((e, i) => ({
+                    id: `e${i}`,
+                    source: e.source,
+                    target: e.target,
+                    ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),
+                }));
+                await api.post(API_URL + "/api/v1/flo/" + newFlo.id + "/revision", {
+                    data: { nodes, edges },
+                }, { headers: { Authorization: "Bearer " + token } });
+            }
+
+            navigate("/flo/" + newFlo.id);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to create flow");
+        }
     };
 
     return (
@@ -459,6 +566,36 @@ export default function Flows() {
                     {isLoading && !flos && (
                         <div className={"loading-container"}>
                             <Icon name="spinner" spin />
+                        </div>
+                    )}
+
+                    {flos && flos.length === 0 && totalFloCount === 0 && !search && (
+                        <div className="flows-empty-state">
+                            <div className="flows-empty-icon">
+                                <Icon name="wand-magic-sparkles" />
+                            </div>
+                            <h2 className="flows-empty-title">Create your first Flow</h2>
+                            <p className="flows-empty-desc">
+                                Flows are automated workflows that connect triggers, actions, and logic.
+                                Start with a template or create a blank flow.
+                            </p>
+                            <div className="flows-template-grid">
+                                {FLOW_TEMPLATES.map(t => (
+                                    <button
+                                        key={t.id}
+                                        className="flows-template-card"
+                                        onClick={() => createFlowWithTemplate(t.id === 'blank' ? null : t)}
+                                    >
+                                        <div className="flows-template-icon" style={{ background: t.colour + '22', color: t.colour }}>
+                                            <Icon name={t.icon} />
+                                        </div>
+                                        <div className="flows-template-info">
+                                            <div className="flows-template-name">{t.name}</div>
+                                            <div className="flows-template-desc">{t.description}</div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -584,6 +721,36 @@ export default function Flows() {
                 onDismiss={() => setImportModalVisible(false)}
                 onImported={refreshFlows}
             />
+
+            {templateModalVisible && (
+                <Modal
+                    label="Create a New Flow"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setTemplateModalVisible(false)}
+                >
+                    <div className="flows-template-modal">
+                        <p className="flows-template-modal-desc">Choose a template to get started, or start with a blank canvas.</p>
+                        <div className="flows-template-grid">
+                            {FLOW_TEMPLATES.map(t => (
+                                <button
+                                    key={t.id}
+                                    className="flows-template-card"
+                                    onClick={() => createFlowWithTemplate(t.id === 'blank' ? null : t)}
+                                >
+                                    <div className="flows-template-icon" style={{ background: t.colour + '22', color: t.colour }}>
+                                        <Icon name={t.icon} />
+                                    </div>
+                                    <div className="flows-template-info">
+                                        <div className="flows-template-name">{t.name}</div>
+                                        <div className="flows-template-desc">{t.description}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </Modal>
+            )}
 
         </Container>
 
