@@ -153,7 +153,13 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
                 return { ...edge, style: mutedStyle, animated: false };
             }
 
-            // Active: target is running → marching ants
+            // Mute edges from sources that never executed (e.g. non-entry
+            // trigger nodes that are skipped at runtime)
+            if (!sourceStatus || sourceStatus.status === 'pending') {
+                return { ...edge, style: mutedStyle, animated: false };
+            }
+
+            // Active: target is running → marching ants (only if source actually ran)
             if (targetStatus?.status === 'running') {
                 return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
             }
@@ -172,11 +178,6 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
             // Partially executed (source done, target still running or waiting)
             if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
                 return { ...edge, style: { stroke: 'rgba(255,255,255,0.35)', strokeWidth: 1.5 } };
-            }
-
-            // Not executed: source never ran (pending) → dim the edge
-            if (!sourceStatus || sourceStatus.status === 'pending') {
-                return { ...edge, style: mutedStyle, animated: false };
             }
 
             return edge;
