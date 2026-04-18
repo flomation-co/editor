@@ -394,7 +394,7 @@ export default function Flows() {
             id: 'webhook-notify',
             name: 'Webhook → Notify',
             description: 'Receive a webhook, process the data, and send a notification via Slack or email',
-            icon: 'bell',
+            icon: 'webhook',
             colour: '#f59e0b',
             flowName: 'Webhook Notification',
             nodes: [
@@ -407,7 +407,7 @@ export default function Flows() {
             id: 'schedule-report',
             name: 'Scheduled Report',
             description: 'Run on a schedule, query a database or API, and email the results',
-            icon: 'calendar-days',
+            icon: 'clock',
             colour: '#3b82f6',
             flowName: 'Scheduled Report',
             nodes: [
@@ -435,7 +435,7 @@ export default function Flows() {
             id: 'form-approval',
             name: 'Form → Approve → Action',
             description: 'Collect data via a form, apply conditional logic, then take action based on the result',
-            icon: 'clipboard-check',
+            icon: 'clipboard-list',
             colour: '#8b5cf6',
             flowName: 'Form Approval',
             nodes: [
