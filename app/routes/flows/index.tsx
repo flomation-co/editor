@@ -425,7 +425,7 @@ export default function Flows() {
             colour: '#10b981',
             flowName: 'CI/CD Pipeline',
             nodes: [
-                { id: 'n1', type: 'trigger/git-poll', label: 'trigger/git-poll', x: 100, y: 200, config: { type: 1 } },
+                { id: 'n1', type: 'trigger/git_poll', label: 'trigger/git_poll', x: 100, y: 200, config: { type: 1 } },
                 { id: 'n2', type: 'script/bash', label: 'script/bash', x: 400, y: 200, config: { type: 2 } },
                 { id: 'n3', type: 'messaging/slack', label: 'messaging/slack', x: 700, y: 200, config: { type: 2 } },
             ],
