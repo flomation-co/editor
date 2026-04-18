@@ -146,8 +146,10 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
             const targetStatus = nodeStatuses.get(edge.target);
             const sourceStatus = nodeStatuses.get(edge.source);
 
-            // Mute if source or target is in the untaken subgraph
-            if (mutedNodes.has(edge.target) || (mutedNodes.has(edge.source) && mutedNodes.has(edge.target))) {
+            // Mute if either end is in the untaken subgraph, or if this
+            // specific edge comes from an unmatched conditional/switch handle
+            const isEdgeMuted = mutedNodes.has(edge.target) || mutedNodes.has(edge.source);
+            if (isEdgeMuted) {
                 return { ...edge, style: mutedStyle, animated: false };
             }
 
