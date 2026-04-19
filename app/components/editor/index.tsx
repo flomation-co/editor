@@ -735,23 +735,36 @@ export function Editor(props : EditorProps) {
             const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
             if (hasRequiredEmpty) return true;
 
-            // Check for invalid variable substitutions
-            const parentIds = edges.filter((e: any) => e.target === node.id).map((e: any) => e.source);
-            const parentOutputNames = new Set<string>();
-            for (const pid of parentIds) {
-                const pn = nodes.find((n: any) => n.id === pid);
-                if (pn?.data?.config?.outputs) {
-                    for (const o of pn.data.config.outputs) {
-                        if (o.name) parentOutputNames.add(o.name);
+            // Build the full set of valid variables for this specific node
+            // by walking ancestors (same logic as allVariables, but per-node)
+            const nodeVarNames = new Set<string>();
+            const seenNodes = new Set<string>();
+            const walkParents = (nid: string) => {
+                if (seenNodes.has(nid)) return;
+                seenNodes.add(nid);
+                const pIds = edges.filter((e: any) => e.target === nid).map((e: any) => e.source);
+                for (const pid of pIds) {
+                    const pn = nodes.find((n: any) => n.id === pid) as any;
+                    if (!pn?.data?.config) continue;
+                    if (pn.data.config.outputs) {
+                        for (const o of pn.data.config.outputs) {
+                            if (o.name) nodeVarNames.add(o.name);
+                        }
+                    }
+                    if (pn.data.config.trigger_inputs) {
+                        for (const ti of pn.data.config.trigger_inputs) {
+                            if (ti.name) nodeVarNames.add(ti.name);
+                        }
+                    }
+                    // Walk through pass-through nodes (conditional, loop, switch)
+                    // and sub-flow invoke nodes to find upstream outputs
+                    const pt = pn.data?.config?.type;
+                    if (pt === 4 || pt === 5 || pt === 6 || pn.data?.label === 'subflow/invoke') {
+                        walkParents(pid);
                     }
                 }
-                // Manual trigger's trigger_inputs are also valid output names
-                if (pn?.data?.config?.trigger_inputs) {
-                    for (const ti of pn.data.config.trigger_inputs) {
-                        if (ti.name) parentOutputNames.add(ti.name);
-                    }
-                }
-            }
+            };
+            walkParents(node.id);
 
             return inputs.some((i: any) => {
                 if (!isInputVisible(i, inputs)) return false;
@@ -768,7 +781,7 @@ export function Editor(props : EditorProps) {
                         return !allVariables.some(v => `${v.category}.${v.name}` === name ||
                             (v.category === 'secrets' && `secret.${v.name}` === name));
                     }
-                    if (parentOutputNames.has(name)) return false;
+                    if (nodeVarNames.has(name)) return false;
                     return true; // unresolvable variable
                 });
             });
