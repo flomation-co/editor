@@ -713,6 +713,8 @@ export function Editor(props : EditorProps) {
 
     const hasValidationErrors = useMemo(() => {
         const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.'];
+        // Prefixes that are always valid (runtime variables, not environment-dependent)
+        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
@@ -758,13 +760,20 @@ export function Editor(props : EditorProps) {
                 if (!refs) return false;
                 return refs.some((ref: string) => {
                     const name = ref.slice(2, -1);
-                    if (validPrefixes.some(p => name.startsWith(p))) return false;
+                    // Runtime variables (flow, var, loop, trigger) are always valid
+                    if (runtimePrefixes.some(p => name.startsWith(p))) return false;
+                    // Environment-dependent variables (secrets, env) must exist
+                    // in the current environment's variables list
+                    if (validPrefixes.some(p => name.startsWith(p))) {
+                        return !allVariables.some(v => `${v.category}.${v.name}` === name ||
+                            (v.category === 'secrets' && `secret.${v.name}` === name));
+                    }
                     if (parentOutputNames.has(name)) return false;
                     return true; // unresolvable variable
                 });
             });
         });
-    }, [nodes, edges]);
+    }, [nodes, edges, allVariables]);
 
     const defaultEdgeOptions = useMemo(() => {
         return {

@@ -48,6 +48,8 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
         if (dotIndex >= 0) {
             category = inner.slice(0, dotIndex);
             varName = inner.slice(dotIndex + 1);
+            // Normalise "secret" → "secrets" to match the variable items
+            if (category === "secret") category = "secrets";
         } else {
             // Bare name — parent output
             category = "input";
