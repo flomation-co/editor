@@ -472,6 +472,11 @@
     gap: 10px;
 }
 
+/* ── Sub-Flow: green theme ── */
+.flo-node--subflow {
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
 /* ── Switch: width fixed, height grows to contain all handles ── */
 .flo-node--switch {
     width: 56px;

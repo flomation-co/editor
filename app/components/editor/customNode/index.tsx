@@ -36,12 +36,20 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
     const type = data?.config?.type ?? 2;
     const isErrorNode = data?.label?.startsWith('error/') || data?.config?.plugin?.startsWith('error/');
+    const isSubFlowBegin = data?.label === 'subflow/begin' || data?.config?.plugin === 'subflow/begin';
+    const isSubFlowEnd = data?.label === 'subflow/end' || data?.config?.plugin === 'subflow/end';
+    const isSubFlowNode = isSubFlowBegin || isSubFlowEnd || data?.label === 'subflow/invoke' || data?.config?.plugin === 'subflow/invoke';
+
     const colours = isErrorNode
         ? { bg: '#ef4444', bgAlpha: 'rgba(239,68,68,0.15)', glow: 'rgba(239,68,68,0.35)', text: '#ef4444', iconColour: '#f87171' }
+        : isSubFlowNode
+        ? { bg: '#10b981', bgAlpha: 'rgba(16,185,129,0.15)', glow: 'rgba(16,185,129,0.35)', text: '#10b981', iconColour: '#34d399' }
         : (NODE_COLOURS[type] ?? NODE_COLOURS[2]);
-    const nodeClass = isErrorNode ? 'flo-node flo-node--error' : (NODE_CLASS_MAP[type] ?? NODE_CLASS_MAP[2]);
+    const nodeClass = isErrorNode ? 'flo-node flo-node--error'
+        : isSubFlowNode ? 'flo-node flo-node--subflow'
+        : (NODE_CLASS_MAP[type] ?? NODE_CLASS_MAP[2]);
     const isTrigger = type === 1;
-    const hasInputs = !isTrigger && !isErrorNode;
+    const hasInputs = !isTrigger && !isErrorNode && !isSubFlowBegin;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
     // Detect AI nodes that support tool use and no-response handles
