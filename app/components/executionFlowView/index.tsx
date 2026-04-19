@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useImperativeHandle, forwardRef } from 'react';
 import {
     ReactFlow,
     ReactFlowProvider,
     Background,
     BackgroundVariant,
+    useReactFlow,
     type Node,
     type Edge,
 } from '@xyflow/react';
@@ -16,6 +17,10 @@ import useCookieToken from '~/components/cookie';
 
 import './index.css';
 
+export type ExecutionFlowViewHandle = {
+    focusNode: (nodeId: string) => void;
+};
+
 type ExecutionFlowViewProps = {
     floId: string;
     nodeStatuses: Map<string, NodeStatus>;
@@ -24,12 +29,31 @@ type ExecutionFlowViewProps = {
 
 const nodeTypes = { executionNode: ExecutionNode };
 
-function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionFlowViewProps) {
+const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlowViewProps>(({ floId, nodeStatuses, onNodeClick }, ref) => {
     const config = useConfig();
     const token = useCookieToken();
+    const reactFlow = useReactFlow();
     const [baseNodes, setBaseNodes] = useState<Node[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
     const [defaultViewport, setDefaultViewport] = useState({ x: 0, y: 0, zoom: 1 });
+
+    useImperativeHandle(ref, () => ({
+        focusNode: (nodeId: string) => {
+            const node = baseNodes.find(n => n.id === nodeId);
+            if (node) {
+                // Offset upward so the node sits in the visible area above the
+                // detail panel (which covers roughly the bottom 40% of the view).
+                const viewport = reactFlow.getViewport();
+                const container = document.querySelector('.execution-flow-container');
+                const yOffset = container ? container.clientHeight * 0.2 : 100;
+                reactFlow.setCenter(
+                    node.position.x + 75,
+                    node.position.y + 25 + yOffset,
+                    { zoom: Math.max(viewport.zoom, 0.8), duration: 400 }
+                );
+            }
+        },
+    }), [baseNodes, reactFlow]);
 
     // Fetch flow definition once — stores base nodes without execution status
     useEffect(() => {
@@ -201,12 +225,14 @@ function ExecutionFlowViewInner({ floId, nodeStatuses, onNodeClick }: ExecutionF
             </ReactFlow>
         </div>
     );
-}
+});
 
-export default function ExecutionFlowView(props: ExecutionFlowViewProps) {
+const ExecutionFlowView = forwardRef<ExecutionFlowViewHandle, ExecutionFlowViewProps>((props, ref) => {
     return (
         <ReactFlowProvider>
-            <ExecutionFlowViewInner {...props} />
+            <ExecutionFlowViewInner {...props} ref={ref} />
         </ReactFlowProvider>
     );
-}
+});
+
+export default ExecutionFlowView;

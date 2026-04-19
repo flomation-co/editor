@@ -178,6 +178,21 @@
     word-break: break-word;
 }
 
+/* ── Node focus link ── */
+.log-entry--clickable .log-entry-main { cursor: pointer; }
+.log-entry--clickable:hover { background: rgba(139, 0, 222, 0.08); }
+
+.log-entry-node-link {
+    color: rgba(139, 0, 222, 0.4);
+    font-size: 10px;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+.log-entry-node-link:hover { color: #a78bfa; }
+
 /* ── Expand chevron ── */
 .log-entry-expand {
     color: rgba(255, 255, 255, 0.15);
@@ -186,6 +201,7 @@
     width: 14px;
     text-align: center;
     transition: color 0.15s ease;
+    cursor: pointer;
 }
 
 .log-entry-main:hover .log-entry-expand {

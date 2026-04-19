@@ -4,7 +4,7 @@ import Container from "~/components/container";
 import {Link, useNavigate, useParams} from "react-router";
 import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution, NodeStatus} from "~/types";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import api from "~/lib/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -13,7 +13,7 @@ import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useToast} from "~/components/toast";
 import {LogOutput} from "~/components/logOutput";
-import ExecutionFlowView from "~/components/executionFlowView";
+import ExecutionFlowView, { type ExecutionFlowViewHandle } from "~/components/executionFlowView";
 import NodeInspector from "~/components/executionFlowView/NodeInspector";
 import DataInspector from "~/components/dataInspector";
 import { Icon } from "~/components/icons/Icon";
@@ -44,6 +44,8 @@ export default function ExecutionDetail() {
 
     const [ detailPanelOpen, setDetailPanelOpen ] = useState<boolean>(false);
     const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
+
+    const flowViewRef = useRef<ExecutionFlowViewHandle>(null);
 
     const controller = new AbortController();
     const token = useCookieToken();
@@ -209,6 +211,12 @@ export default function ExecutionDetail() {
         setSelectedNodeId(nodeId);
     }, []);
 
+    const focusNode = useCallback((nodeId: string) => {
+        if (flowViewRef.current) {
+            flowViewRef.current.focusNode(nodeId);
+        }
+    }, []);
+
     function formatDateString(date) {
         if (!date) {
             return "Never Run";
@@ -266,6 +274,7 @@ export default function ExecutionDetail() {
                     {/* ── Flow visualisation (fills remaining space) ── */}
                     <div className="exec-flow-area">
                         <ExecutionFlowView
+                            ref={flowViewRef}
                             floId={exec.flo_id}
                             nodeStatuses={nodeStatuses}
                             onNodeClick={handleNodeClick}
@@ -343,6 +352,7 @@ export default function ExecutionDetail() {
                                         <LogOutput
                                             logs={exec.result}
                                             streamingLines={!exec.result ? streamingLogs : undefined}
+                                            onNodeClick={focusNode}
                                         />
                                     )}
                                 </div>

@@ -13,6 +13,7 @@ type LogEntry = {
 type LogOutputProps = {
     logs?: any;
     streamingLines?: string[];
+    onNodeClick?: (nodeId: string) => void;
 };
 
 const SEVERITY_ORDER: Record<string, number> = {
@@ -137,24 +138,41 @@ function ObjectTree({ data, depth = 0 }: { data: any; depth?: number }) {
     return <span className="log-val">{String(data)}</span>;
 }
 
-function LogEntryRow({ entry }: { entry: LogEntry }) {
+function LogEntryRow({ entry, onNodeClick }: { entry: LogEntry; onNodeClick?: (nodeId: string) => void }) {
     const [expanded, setExpanded] = useState(false);
 
     const level = (entry.level || 'info').toLowerCase();
     const extraKeys = Object.keys(entry).filter(k => !HIDDEN_KEYS.has(k) && k !== 'error');
     const hasExtra = extraKeys.length > 0 || (entry.error && entry.error.length > 60);
 
+    // Extract node ID from log entry fields
+    const nodeId = entry.id || entry.node;
+    const isClickable = !!(nodeId && onNodeClick);
+
+    const handleClick = () => {
+        if (isClickable) {
+            onNodeClick!(nodeId as string);
+        } else if (hasExtra) {
+            setExpanded(!expanded);
+        }
+    };
+
     return (
-        <div className={`log-entry log-entry--${level}`}>
-            <div className="log-entry-main" onClick={() => hasExtra && setExpanded(!expanded)}>
+        <div className={`log-entry log-entry--${level}${isClickable ? ' log-entry--clickable' : ''}`}>
+            <div className="log-entry-main" onClick={handleClick}>
                 <span className="log-entry-time">{formatTimestamp(entry.time)}</span>
                 <span className={`log-entry-level log-entry-level--${level}`}>{level.toUpperCase()}</span>
                 <span className="log-entry-msg">{entry.msg}</span>
                 {entry.error && (
                     <span className="log-entry-error"> {entry.error}</span>
                 )}
+                {isClickable && (
+                    <span className="log-entry-node-link" onClick={(e) => { e.stopPropagation(); onNodeClick!(nodeId as string); }} title="Focus node">
+                        <Icon name="location-arrow" />
+                    </span>
+                )}
                 {hasExtra && (
-                    <span className="log-entry-expand">
+                    <span className="log-entry-expand" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
                         <Icon name={expanded? "chevron-down" : "chevron-right"} />
                     </span>
                 )}
@@ -178,7 +196,7 @@ function LogEntryRow({ entry }: { entry: LogEntry }) {
     );
 }
 
-export function LogOutput({ logs, streamingLines }: LogOutputProps) {
+export function LogOutput({ logs, streamingLines, onNodeClick }: LogOutputProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [autoScroll, setAutoScroll] = useState(true);
     const [filter, setFilter] = useState<string>('');
@@ -265,7 +283,7 @@ export function LogOutput({ logs, streamingLines }: LogOutputProps) {
                     <div className="log-viewer-empty">No log entries{filter ? ' matching filter' : ''}</div>
                 )}
                 {allEntries.map((entry, i) => (
-                    <LogEntryRow key={i} entry={entry} />
+                    <LogEntryRow key={i} entry={entry} onNodeClick={onNodeClick} />
                 ))}
             </div>
         </div>
