@@ -160,7 +160,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 )}
 
                 {/* Standard source handle for types 1, 2, 3 */}
-                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && !isAINode && (
+                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && !isAINode && !isSubFlowEnd && (
                     <Handle
                         type="source"
                         position={Position.Right}
