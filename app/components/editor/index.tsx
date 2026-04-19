@@ -759,22 +759,46 @@ export function Editor(props : EditorProps) {
                 const parentIds = edges.filter((e: any) => e.target === nodeId).map((e: any) => e.source);
                 for (const pid of parentIds) {
                     const pn = nodes.find((n: any) => n.id === pid);
-                    if (pn?.data?.config?.outputs) {
+                    if (!pn) continue;
+
+                    if (pn.data?.config?.outputs) {
                         for (const o of pn.data.config.outputs) {
                             if (o.name) ancestorOutputNames.add(o.name);
                         }
                     }
                     // Manual trigger's trigger_inputs are also valid output names
-                    if (pn?.data?.config?.trigger_inputs) {
+                    if (pn.data?.config?.trigger_inputs) {
                         for (const ti of pn.data.config.trigger_inputs) {
                             if (ti.name) ancestorOutputNames.add(ti.name);
                         }
                     }
+
                     // Conditional/Switch/Loop nodes pass through parent outputs
                     // at runtime, so walk further up the chain
-                    const pType = pn?.data?.config?.type;
+                    const pType = pn.data?.config?.type;
                     if (pType === 4 || pType === 5 || pType === 6) {
                         walkAncestors(pid);
+                    }
+
+                    // Begin Sub-Flow: find all Invoke nodes that call this
+                    // sub-flow by name and include their ancestors' outputs.
+                    // At runtime, the engine passes all Invoke parent outputs
+                    // through the Begin node to the sub-flow chain.
+                    if (pn.data?.label === 'subflow/begin' || pn.type === 'subflow/begin') {
+                        const beginName = pn.data?.config?.inputs?.find(
+                            (i: any) => i.name === 'name')?.value;
+                        if (beginName) {
+                            // Find all Invoke nodes referencing this sub-flow
+                            for (const inv of nodes as any[]) {
+                                if (inv.data?.label !== 'subflow/invoke' && inv.type !== 'subflow/invoke') continue;
+                                const invName = inv.data?.config?.inputs?.find(
+                                    (i: any) => i.name === 'sub_flow_name')?.value;
+                                if (invName === beginName) {
+                                    // Walk the Invoke node's ancestors
+                                    walkAncestors(inv.id);
+                                }
+                            }
+                        }
                     }
                 }
             };
