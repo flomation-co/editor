@@ -717,6 +717,26 @@ export function Editor(props : EditorProps) {
                 if (passThroughTypes.has(parentType)) {
                     collectParentOutputs(parentId);
                 }
+
+                // Begin Sub-Flow: find Invoke nodes that call this sub-flow
+                // by name, and include their ancestors' outputs. At runtime,
+                // the engine passes all Invoke parent context through Begin.
+                const pLabel = parentNode.data?.label || parentNode.type;
+                if (pLabel === 'subflow/begin') {
+                    const beginName = parentNode.data?.config?.inputs?.find(
+                        (i: any) => i.name === 'name')?.value;
+                    if (beginName) {
+                        for (const inv of nodes as any[]) {
+                            const invLabel = inv.data?.label || inv.type;
+                            if (invLabel !== 'subflow/invoke') continue;
+                            const invName = inv.data?.config?.inputs?.find(
+                                (i: any) => i.name === 'sub_flow_name')?.value;
+                            if (invName === beginName) {
+                                collectParentOutputs(inv.id);
+                            }
+                        }
+                    }
+                }
             }
         };
 
