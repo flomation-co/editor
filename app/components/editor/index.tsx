@@ -703,6 +703,26 @@ export function Editor(props : EditorProps) {
                 if (passThroughTypes.has(parentType)) {
                     collectParentOutputs(parentId);
                 }
+
+                // Sub-flow cross-reference: when we reach a Begin Sub-Flow
+                // node, find all Invoke Sub-Flow nodes that call this sub-flow
+                // and walk up from their ancestors too.
+                if (parentNode.data?.label === 'subflow/begin') {
+                    const beginName = parentNode.data?.config?.inputs?.find(
+                        (i: any) => i.name === 'name'
+                    )?.value;
+                    if (beginName) {
+                        for (const n of nodes as any[]) {
+                            if (n.data?.label !== 'subflow/invoke') continue;
+                            const invokeName = n.data?.config?.inputs?.find(
+                                (i: any) => i.name === 'sub_flow_name'
+                            )?.value;
+                            if (invokeName === beginName) {
+                                collectParentOutputs(n.id);
+                            }
+                        }
+                    }
+                }
             }
         };
 
@@ -761,6 +781,24 @@ export function Editor(props : EditorProps) {
                     const pt = pn.data?.config?.type;
                     if (pt === 4 || pt === 5 || pt === 6 || pn.data?.label === 'subflow/invoke') {
                         walkParents(pid);
+                    }
+                    // Sub-flow cross-reference: when we reach a Begin Sub-Flow,
+                    // find Invoke nodes that call this sub-flow and walk their ancestors
+                    if (pn.data?.label === 'subflow/begin') {
+                        const beginName = pn.data?.config?.inputs?.find(
+                            (i: any) => i.name === 'name'
+                        )?.value;
+                        if (beginName) {
+                            for (const n of nodes as any[]) {
+                                if ((n as any).data?.label !== 'subflow/invoke') continue;
+                                const invokeName = (n as any).data?.config?.inputs?.find(
+                                    (i: any) => i.name === 'sub_flow_name'
+                                )?.value;
+                                if (invokeName === beginName) {
+                                    walkParents((n as any).id);
+                                }
+                            }
+                        }
                     }
                 }
             };
