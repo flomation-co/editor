@@ -213,6 +213,7 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
                 nodeTypes={nodeTypes}
                 fitView
                 fitViewOptions={{ padding: 0.4, maxZoom: 0.8 }}
+                minZoom={0.1}
                 nodesDraggable={false}
                 nodesConnectable={false}
                 elementsSelectable={false}
