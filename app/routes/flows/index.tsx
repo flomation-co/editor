@@ -616,6 +616,37 @@ export default function Flows() {
                         </div>
                     )}
 
+                    {flos && flos.length === 0 && search && (
+                        <div className="flows-empty-state">
+                            <div className="flows-empty-icon" style={{ opacity: 0.4 }}>
+                                <Icon name="magnifying-glass" />
+                            </div>
+                            <h2 className="flows-empty-title">No flows found</h2>
+                            <p className="flows-empty-desc">
+                                No flows match "{search}". Try a different search or create a new flow.
+                            </p>
+                            <button
+                                className="flows-action-btn"
+                                style={{
+                                    padding: '10px 24px',
+                                    fontSize: 14,
+                                    background: 'rgba(0,170,156,0.1)',
+                                    border: '1px solid rgba(0,170,156,0.3)',
+                                    color: '#00aa9c',
+                                    borderRadius: 8,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    margin: '0 auto',
+                                }}
+                                onClick={() => createFlowWithTemplate(null)}
+                            >
+                                <Icon name="plus" /> Create Flow
+                            </button>
+                        </div>
+                    )}
+
                     {flos && flos.length > 0 && (
                         <div className="flow-cards" style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
                             {flos.map(flo => (
