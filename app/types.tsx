@@ -80,6 +80,9 @@ export type Flo = {
     environment_name?: string,
     has_validation_errors?: boolean,
     recent_executions?: ExecutionStatusDot[],
+    notify_on_success?: boolean,
+    notify_on_failure?: boolean,
+    notification_emails?: string,
 }
 
 export type ExecutionStatusDot = {

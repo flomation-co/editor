@@ -75,6 +75,12 @@ export function Editor(props : EditorProps) {
     const [ envDropdownOpen, setEnvDropdownOpen ] = useState<boolean>(false);
     const envDropdownRef = useRef<HTMLDivElement>(null);
 
+    const [ notifyDropdownOpen, setNotifyDropdownOpen ] = useState<boolean>(false);
+    const notifyDropdownRef = useRef<HTMLDivElement>(null);
+    const [ notifySuccess, setNotifySuccess ] = useState<boolean>(false);
+    const [ notifyFailure, setNotifyFailure ] = useState<boolean>(false);
+    const [ notificationEmails, setNotificationEmails ] = useState<string>('');
+
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
     const [ triggerInputModal, setTriggerInputModal ] = useState<{floId: string; triggerId: string; inputs: any[]} | null>(null);
@@ -232,6 +238,9 @@ export function Editor(props : EditorProps) {
                     lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });
                     setName(response.data ? response.data.name : "Untitled Flo");
                     setEnvironment(response.data ? response.data.environment_id : null);
+                    setNotifySuccess(response.data?.notify_on_success || false);
+                    setNotifyFailure(response.data?.notify_on_failure || false);
+                    setNotificationEmails(response.data?.notification_emails || '');
                     setStatus("Up to date");
                 })
                 .catch(error => {
@@ -266,6 +275,14 @@ export function Editor(props : EditorProps) {
             flo.environment_id = environment ? environment : undefined;
         }
     }, [ environment ])
+
+    useEffect(() => {
+        if (flo) {
+            flo.notify_on_success = notifySuccess;
+            flo.notify_on_failure = notifyFailure;
+            flo.notification_emails = notificationEmails || undefined;
+        }
+    }, [ notifySuccess, notifyFailure, notificationEmails ])
 
     useEffect(() => {
         if (flo) {
@@ -875,11 +892,14 @@ export function Editor(props : EditorProps) {
         setEnvDropdownOpen(false);
     }
 
-    // Close env dropdown on outside click
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             if (envDropdownRef.current && !envDropdownRef.current.contains(e.target as Node)) {
                 setEnvDropdownOpen(false);
+            }
+            if (notifyDropdownRef.current && !notifyDropdownRef.current.contains(e.target as Node)) {
+                setNotifyDropdownOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClick);
@@ -996,6 +1016,60 @@ export function Editor(props : EditorProps) {
                                     </div>
                                 </div>
                             )}
+                            <div className={"flo-editor-property-action-section"}>
+                                <div className={"flo-editor-env-dropdown"} ref={notifyDropdownRef}>
+                                    <button
+                                        className={"flo-editor-env-button"}
+                                        onClick={() => setNotifyDropdownOpen(!notifyDropdownOpen)}
+                                        data-tooltip-id={"tooltip-notifications"}
+                                        data-tooltip-content={"Execution Notifications"}
+                                        data-tooltip-place={"bottom"}
+                                    >
+                                        <Icon name="bell" className={"flo-editor-env-icon"} />
+                                        {(notifySuccess || notifyFailure) && (
+                                            <span className="flo-notify-dot" />
+                                        )}
+                                        <Tooltip id={"tooltip-notifications"} />
+                                    </button>
+                                    {notifyDropdownOpen && (
+                                        <div className={"flo-editor-env-menu"} style={{ minWidth: 280, padding: '12px 14px' }}>
+                                            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 10 }}>
+                                                Execution Notifications
+                                            </div>
+                                            <label className="flo-notify-toggle" onClick={e => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={notifySuccess}
+                                                    onChange={e => setNotifySuccess(e.target.checked)}
+                                                />
+                                                <span className="flo-notify-toggle-label">Notify on success</span>
+                                            </label>
+                                            <label className="flo-notify-toggle" onClick={e => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={notifyFailure}
+                                                    onChange={e => setNotifyFailure(e.target.checked)}
+                                                />
+                                                <span className="flo-notify-toggle-label">Notify on failure</span>
+                                            </label>
+                                            <div style={{ marginTop: 10 }}>
+                                                <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
+                                                    Recipient emails (comma-separated)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="flo-notify-email-input"
+                                                    value={notificationEmails}
+                                                    onChange={e => setNotificationEmails(e.target.value)}
+                                                    placeholder="Leave empty to notify flow author"
+                                                    onClick={e => e.stopPropagation()}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={"flo-editor-action-divider"}></div>
+                            </div>
                             <div className={"flo-editor-property-action-section"}>
                                 <div className={"flo-editor-action-button"} onClick={showAddNode} data-tooltip-id={"tooltip-action-add-node"} data-tooltip-content={"Add Node"} data-tooltip-place={"bottom"}>
                                     <Icon name="plus" /> <span>Add Node</span>
