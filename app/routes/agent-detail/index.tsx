@@ -13,6 +13,7 @@ import AgentMemoryPanel from "./memory-panel";
 import AgentUsersPanel from "./users-panel";
 import AgentAuditPanel from "./audit-panel";
 import AgentSchedulePanel from "./schedule-panel";
+import SlackPermissionChecker from "./slack-permissions";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 
@@ -731,11 +732,13 @@ export default function AgentDetail() {
                                                             Required OAuth scopes under <em>OAuth &amp; Permissions</em>:
                                                         </div>
                                                         <div style={{ marginTop: 2, fontFamily: "'Courier New', monospace", fontSize: 11 }}>
-                                                            chat:write · users:read · app_mentions:read · channels:history · groups:history · im:history · mpim:history
+                                                            chat:write · users:read · users:read.email · app_mentions:read · channels:read · groups:read · channels:history · groups:history · im:history · mpim:history · search:read · files:write
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <SlackPermissionChecker baseUrl={baseUrl} headers={headers} />
                                         </div>
                                     )}
 
