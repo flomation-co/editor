@@ -22,7 +22,85 @@ function maybeParseJson(value: any): any {
     return value;
 }
 
-function InspectorValue({ value, depth = 0 }: { value: any; depth?: number }) {
+// Detect base64-encoded media from the value and/or the key name.
+function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | null; mimeType: string } {
+    const lk = key.toLowerCase();
+
+    // Check by key name patterns
+    if (lk.includes('audio') || lk.includes('voice') || lk.includes('speech') || lk.includes('tts')) {
+        if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
+            return { type: 'audio', mimeType: lk.includes('ogg') ? 'audio/ogg' : 'audio/mpeg' };
+        }
+    }
+    if (lk.includes('image') || lk.includes('photo') || lk.includes('screenshot') || lk.includes('thumbnail')) {
+        if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
+            // Detect format from base64 header
+            const mimeType = value.startsWith('/9j/') ? 'image/jpeg'
+                : value.startsWith('iVBOR') ? 'image/png'
+                : value.startsWith('R0lGOD') ? 'image/gif'
+                : value.startsWith('UklGR') ? 'image/webp'
+                : 'image/png';
+            return { type: 'image', mimeType };
+        }
+    }
+    if (lk.includes('video')) {
+        if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
+            return { type: 'video', mimeType: 'video/mp4' };
+        }
+    }
+
+    // Check by data URI prefix
+    if (value.startsWith('data:audio/')) return { type: 'audio', mimeType: value.split(';')[0].replace('data:', '') };
+    if (value.startsWith('data:image/')) return { type: 'image', mimeType: value.split(';')[0].replace('data:', '') };
+    if (value.startsWith('data:video/')) return { type: 'video', mimeType: value.split(';')[0].replace('data:', '') };
+
+    return { type: null, mimeType: '' };
+}
+
+function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'video'; mimeType: string; data: string }) {
+    // Strip data URI prefix if present, otherwise assume raw base64
+    const base64 = data.startsWith('data:') ? data : `data:${mimeType};base64,${data}`;
+    const sizeKB = Math.round((data.length * 3) / 4 / 1024);
+
+    if (type === 'audio') {
+        return (
+            <div className="ni-media">
+                <audio controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
+                    <source src={base64} type={mimeType} />
+                </audio>
+                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+            </div>
+        );
+    }
+
+    if (type === 'image') {
+        return (
+            <div className="ni-media">
+                <img
+                    src={base64}
+                    alt="output"
+                    style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6, marginTop: 4 }}
+                />
+                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+            </div>
+        );
+    }
+
+    if (type === 'video') {
+        return (
+            <div className="ni-media">
+                <video controls preload="metadata" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6 }}>
+                    <source src={base64} type={mimeType} />
+                </video>
+                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+            </div>
+        );
+    }
+
+    return null;
+}
+
+function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?: number; keyName?: string }) {
     const [expanded, setExpanded] = useState(depth < 1);
     const parsed = depth === 0 ? maybeParseJson(value) : value;
 
@@ -40,6 +118,15 @@ function InspectorValue({ value, depth = 0 }: { value: any; depth?: number }) {
 
     if (typeof parsed === 'string') {
         if (parsed === '********') return <span className="ni-val ni-val--obfuscated">********</span>;
+
+        // Detect and render media content (audio, image, video)
+        if (keyName && parsed.length > 100) {
+            const media = detectMedia(keyName, parsed);
+            if (media.type) {
+                return <MediaPlayer type={media.type} mimeType={media.mimeType} data={parsed} />;
+            }
+        }
+
         if (parsed.length > 200 && depth > 1) {
             return <span className="ni-val ni-val--string">{parsed.slice(0, 197)}...</span>;
         }
@@ -155,7 +242,7 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                                     <div className="ni-entry-value">
                                         {SENSITIVE_KEYS.test(key) || value === '********'
                                             ? <span className="ni-val ni-val--obfuscated">********</span>
-                                            : <InspectorValue value={value} />}
+                                            : <InspectorValue value={value} keyName={key} />}
                                     </div>
                                 </div>
                             ))}
@@ -173,7 +260,7 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                                 <div key={key} className="ni-entry">
                                     <div className="ni-entry-key">{key}</div>
                                     <div className="ni-entry-value">
-                                        <InspectorValue value={value} />
+                                        <InspectorValue value={value} keyName={key} />
                                     </div>
                                 </div>
                             ))}

@@ -472,10 +472,15 @@
     gap: 10px;
 }
 
-/* ── Switch: fixed square, handles overflow outside ── */
+/* ── Sub-Flow: green theme ── */
+.flo-node--subflow {
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+/* ── Switch: width fixed, height grows to contain all handles ── */
 .flo-node--switch {
     width: 56px;
-    height: 56px;
+    min-height: 56px;
     overflow: visible;
 }
 
