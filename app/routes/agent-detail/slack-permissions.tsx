@@ -15,6 +15,7 @@ type PermissionResult = {
     bot_user?: string;
     scopes?: ScopeCheck[];
     all_granted?: boolean;
+    oauth_url?: string;
 };
 
 type Props = {
@@ -94,16 +95,52 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                 Bot: {result.bot_user}
                             </span>
                         </div>
-                        <span style={{
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                            fontSize: 11,
-                            fontWeight: 500,
-                            background: result.all_granted ? "rgba(0,170,156,0.1)" : "rgba(245,158,11,0.1)",
-                            color: result.all_granted ? "#00aa9c" : "rgba(245,158,11,0.9)",
-                        }}>
-                            {result.all_granted ? "All permissions granted" : "Missing permissions"}
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            {result.oauth_url && !result.all_granted && (
+                                <a
+                                    href={result.oauth_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        padding: "2px 8px",
+                                        borderRadius: 4,
+                                        fontSize: 11,
+                                        background: "rgba(0,170,156,0.08)",
+                                        border: "1px solid rgba(0,170,156,0.2)",
+                                        color: "#00aa9c",
+                                        textDecoration: "none",
+                                        display: "flex", alignItems: "center", gap: 4,
+                                    }}
+                                >
+                                    <Icon name="arrow-up-right-from-square" /> Manage Scopes
+                                </a>
+                            )}
+                            {result.oauth_url && result.all_granted && (
+                                <a
+                                    href={result.oauth_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        color: "rgba(255,255,255,0.2)",
+                                        fontSize: 10,
+                                        textDecoration: "none",
+                                        display: "flex", alignItems: "center", gap: 4,
+                                    }}
+                                >
+                                    <Icon name="arrow-up-right-from-square" /> Slack Admin
+                                </a>
+                            )}
+                            <span style={{
+                                padding: "2px 8px",
+                                borderRadius: 4,
+                                fontSize: 11,
+                                fontWeight: 500,
+                                background: result.all_granted ? "rgba(0,170,156,0.1)" : "rgba(245,158,11,0.1)",
+                                color: result.all_granted ? "#00aa9c" : "rgba(245,158,11,0.9)",
+                            }}>
+                                {result.all_granted ? "All permissions granted" : "Missing permissions"}
+                            </span>
+                        </div>
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
