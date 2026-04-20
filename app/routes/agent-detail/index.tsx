@@ -12,6 +12,7 @@ import utc from "dayjs/plugin/utc";
 import AgentMemoryPanel from "./memory-panel";
 import AgentUsersPanel from "./users-panel";
 import AgentAuditPanel from "./audit-panel";
+import AgentSchedulePanel from "./schedule-panel";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 
@@ -25,7 +26,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-type Tab = 'config' | 'channels' | 'sessions' | 'state' | 'memory' | 'users' | 'audit';
+type Tab = 'config' | 'channels' | 'schedules' | 'sessions' | 'state' | 'memory' | 'users' | 'audit';
 
 type EmailAccount = { email: string; label?: string; purpose: string };
 
@@ -442,6 +443,7 @@ export default function AgentDetail() {
                 <div className="agent-tabs">
                     <button className={`agent-tab ${activeTab === 'config' ? 'active' : ''}`} onClick={() => setActiveTab('config')}>Configuration</button>
                     <button className={`agent-tab ${activeTab === 'channels' ? 'active' : ''}`} onClick={() => setActiveTab('channels')}>Channels</button>
+                    <button className={`agent-tab ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => setActiveTab('schedules')}>Schedules</button>
                     <button className={`agent-tab ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => setActiveTab('sessions')}>Sessions</button>
                     <button className={`agent-tab ${activeTab === 'state' ? 'active' : ''}`} onClick={() => setActiveTab('state')}>State</button>
                     <button className={`agent-tab ${activeTab === 'memory' ? 'active' : ''}`} onClick={() => setActiveTab('memory')}>Memory</button>
@@ -764,6 +766,10 @@ export default function AgentDetail() {
                             </button>
                         )}
                     </div>
+                )}
+
+                {activeTab === 'schedules' && (
+                    <AgentSchedulePanel baseUrl={baseUrl} headers={headers} />
                 )}
 
                 {activeTab === 'sessions' && (

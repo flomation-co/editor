@@ -170,12 +170,20 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
             const targetStatus = nodeStatuses.get(edge.target);
             const sourceStatus = nodeStatuses.get(edge.source);
 
-            // Mute if source or target is in the untaken subgraph
-            if (mutedNodes.has(edge.target) || (mutedNodes.has(edge.source) && mutedNodes.has(edge.target))) {
+            // Mute if either end is in the untaken subgraph, or if this
+            // specific edge comes from an unmatched conditional/switch handle
+            const isEdgeMuted = mutedNodes.has(edge.target) || mutedNodes.has(edge.source);
+            if (isEdgeMuted) {
                 return { ...edge, style: mutedStyle, animated: false };
             }
 
-            // Active: target is running → marching ants
+            // Mute edges from sources that never executed (e.g. non-entry
+            // trigger nodes that are skipped at runtime)
+            if (!sourceStatus || sourceStatus.status === 'pending') {
+                return { ...edge, style: mutedStyle, animated: false };
+            }
+
+            // Active: target is running → marching ants (only if source actually ran)
             if (targetStatus?.status === 'running') {
                 return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
             }
@@ -194,11 +202,6 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
             // Partially executed (source done, target still running or waiting)
             if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
                 return { ...edge, style: { stroke: 'rgba(255,255,255,0.35)', strokeWidth: 1.5 } };
-            }
-
-            // Not executed: source never ran (pending) → dim the edge
-            if (!sourceStatus || sourceStatus.status === 'pending') {
-                return { ...edge, style: mutedStyle, animated: false };
             }
 
             return edge;
