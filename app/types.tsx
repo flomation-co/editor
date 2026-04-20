@@ -352,6 +352,25 @@ export type AgentChannel = {
     config: Record<string, any>
 }
 
+export type AgentSchedule = {
+    id: string,
+    agent_id: string,
+    agent_user_id?: string,
+    conversation_id?: string,
+    name: string,
+    description: string,
+    schedule_mode: 'interval' | 'daily' | 'weekly',
+    interval_val?: string,
+    unit?: 'minutes' | 'hours' | 'days',
+    time_of_day?: string,
+    days_of_week?: string,
+    timezone: string,
+    enabled: boolean,
+    last_fired_at?: string,
+    created_at: string,
+    updated_at: string,
+}
+
 export type AgentSession = {
     id: string,
     agent_id: string,
