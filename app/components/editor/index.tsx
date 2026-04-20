@@ -469,15 +469,6 @@ export function Editor(props : EditorProps) {
             }
         }
 
-        // Enforce single On Error handler
-        if (nodeType === "error/on_error") {
-            const hasOnError = nodes.some(n => n.type === "error/on_error" || n.data?.label === "error/on_error");
-            if (hasOnError) {
-                toast.warning("Only one On Error handler is allowed per flow");
-                return;
-            }
-        }
-
         const cfg = plugins[nodeType];
         console.log("New Node", nodeType, cfg);
         if (!cfg) {
@@ -640,11 +631,6 @@ export function Editor(props : EditorProps) {
         { name: "message_id", category: "input", source: "Agent Channel" },
         { name: "trigger_source", category: "input", source: "Agent Channel" },
         { name: "commitment_id", category: "input", source: "Commitment" },
-        { name: "is_voice", category: "input", source: "Voice Message" },
-        { name: "voice_audio_base64", category: "input", source: "Voice Message" },
-        { name: "voice_duration", category: "input", source: "Voice Message" },
-        { name: "voice_mime_type", category: "input", source: "Voice Message" },
-        { name: "voice_audio_size", category: "input", source: "Voice Message" },
     ];
 
     // Derive parent node outputs for the selected property node
@@ -718,21 +704,21 @@ export function Editor(props : EditorProps) {
                     collectParentOutputs(parentId);
                 }
 
-                // Begin Sub-Flow: find Invoke nodes that call this sub-flow
-                // by name, and include their ancestors' outputs. At runtime,
-                // the engine passes all Invoke parent context through Begin.
-                const pLabel = parentNode.data?.label || parentNode.type;
-                if (pLabel === 'subflow/begin') {
+                // Sub-flow cross-reference: when we reach a Begin Sub-Flow
+                // node, find all Invoke Sub-Flow nodes that call this sub-flow
+                // and walk up from their ancestors too.
+                if (parentNode.data?.label === 'subflow/begin') {
                     const beginName = parentNode.data?.config?.inputs?.find(
-                        (i: any) => i.name === 'name')?.value;
+                        (i: any) => i.name === 'name'
+                    )?.value;
                     if (beginName) {
-                        for (const inv of nodes as any[]) {
-                            const invLabel = inv.data?.label || inv.type;
-                            if (invLabel !== 'subflow/invoke') continue;
-                            const invName = inv.data?.config?.inputs?.find(
-                                (i: any) => i.name === 'sub_flow_name')?.value;
-                            if (invName === beginName) {
-                                collectParentOutputs(inv.id);
+                        for (const n of nodes as any[]) {
+                            if (n.data?.label !== 'subflow/invoke') continue;
+                            const invokeName = n.data?.config?.inputs?.find(
+                                (i: any) => i.name === 'sub_flow_name'
+                            )?.value;
+                            if (invokeName === beginName) {
+                                collectParentOutputs(n.id);
                             }
                         }
                     }
@@ -747,6 +733,8 @@ export function Editor(props : EditorProps) {
 
     const hasValidationErrors = useMemo(() => {
         const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.'];
+        // Prefixes that are always valid (runtime variables, not environment-dependent)
+        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
@@ -767,63 +755,54 @@ export function Editor(props : EditorProps) {
             const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
             if (hasRequiredEmpty) return true;
 
-            // Check for invalid variable substitutions.
-            // Walk the full ancestor chain (not just direct parents) so that
-            // outputs from trigger nodes pass through conditional/switch nodes
-            // and are still recognised as valid references downstream.
-            const ancestorOutputNames = new Set<string>();
-            const visited = new Set<string>();
-            const walkAncestors = (nodeId: string) => {
-                if (visited.has(nodeId)) return;
-                visited.add(nodeId);
-                const parentIds = edges.filter((e: any) => e.target === nodeId).map((e: any) => e.source);
-                for (const pid of parentIds) {
-                    const pn = nodes.find((n: any) => n.id === pid);
-                    if (!pn) continue;
-
-                    if (pn.data?.config?.outputs) {
+            // Build the full set of valid variables for this specific node
+            // by walking ancestors (same logic as allVariables, but per-node)
+            const nodeVarNames = new Set<string>();
+            const seenNodes = new Set<string>();
+            const walkParents = (nid: string) => {
+                if (seenNodes.has(nid)) return;
+                seenNodes.add(nid);
+                const pIds = edges.filter((e: any) => e.target === nid).map((e: any) => e.source);
+                for (const pid of pIds) {
+                    const pn = nodes.find((n: any) => n.id === pid) as any;
+                    if (!pn?.data?.config) continue;
+                    if (pn.data.config.outputs) {
                         for (const o of pn.data.config.outputs) {
-                            if (o.name) ancestorOutputNames.add(o.name);
+                            if (o.name) nodeVarNames.add(o.name);
                         }
                     }
-                    // Manual trigger's trigger_inputs are also valid output names
-                    if (pn.data?.config?.trigger_inputs) {
+                    if (pn.data.config.trigger_inputs) {
                         for (const ti of pn.data.config.trigger_inputs) {
-                            if (ti.name) ancestorOutputNames.add(ti.name);
+                            if (ti.name) nodeVarNames.add(ti.name);
                         }
                     }
-
-                    // Conditional/Switch/Loop nodes pass through parent outputs
-                    // at runtime, so walk further up the chain
-                    const pType = pn.data?.config?.type;
-                    if (pType === 4 || pType === 5 || pType === 6) {
-                        walkAncestors(pid);
+                    // Walk through pass-through nodes (conditional, loop, switch)
+                    // and sub-flow invoke nodes to find upstream outputs
+                    const pt = pn.data?.config?.type;
+                    if (pt === 4 || pt === 5 || pt === 6 || pn.data?.label === 'subflow/invoke') {
+                        walkParents(pid);
                     }
-
-                    // Begin Sub-Flow: find all Invoke nodes that call this
-                    // sub-flow by name and include their ancestors' outputs.
-                    // At runtime, the engine passes all Invoke parent outputs
-                    // through the Begin node to the sub-flow chain.
-                    if (pn.data?.label === 'subflow/begin' || pn.type === 'subflow/begin') {
+                    // Sub-flow cross-reference: when we reach a Begin Sub-Flow,
+                    // find Invoke nodes that call this sub-flow and walk their ancestors
+                    if (pn.data?.label === 'subflow/begin') {
                         const beginName = pn.data?.config?.inputs?.find(
-                            (i: any) => i.name === 'name')?.value;
+                            (i: any) => i.name === 'name'
+                        )?.value;
                         if (beginName) {
-                            // Find all Invoke nodes referencing this sub-flow
-                            for (const inv of nodes as any[]) {
-                                if (inv.data?.label !== 'subflow/invoke' && inv.type !== 'subflow/invoke') continue;
-                                const invName = inv.data?.config?.inputs?.find(
-                                    (i: any) => i.name === 'sub_flow_name')?.value;
-                                if (invName === beginName) {
-                                    // Walk the Invoke node's ancestors
-                                    walkAncestors(inv.id);
+                            for (const n of nodes as any[]) {
+                                if ((n as any).data?.label !== 'subflow/invoke') continue;
+                                const invokeName = (n as any).data?.config?.inputs?.find(
+                                    (i: any) => i.name === 'sub_flow_name'
+                                )?.value;
+                                if (invokeName === beginName) {
+                                    walkParents((n as any).id);
                                 }
                             }
                         }
                     }
                 }
             };
-            walkAncestors(node.id);
-            const parentOutputNames = ancestorOutputNames;
+            walkParents(node.id);
 
             return inputs.some((i: any) => {
                 if (!isInputVisible(i, inputs)) return false;
@@ -832,13 +811,20 @@ export function Editor(props : EditorProps) {
                 if (!refs) return false;
                 return refs.some((ref: string) => {
                     const name = ref.slice(2, -1);
-                    if (validPrefixes.some(p => name.startsWith(p))) return false;
-                    if (parentOutputNames.has(name)) return false;
+                    // Runtime variables (flow, var, loop, trigger) are always valid
+                    if (runtimePrefixes.some(p => name.startsWith(p))) return false;
+                    // Environment-dependent variables (secrets, env) must exist
+                    // in the current environment's variables list
+                    if (validPrefixes.some(p => name.startsWith(p))) {
+                        return !allVariables.some(v => `${v.category}.${v.name}` === name ||
+                            (v.category === 'secrets' && `secret.${v.name}` === name));
+                    }
+                    if (nodeVarNames.has(name)) return false;
                     return true; // unresolvable variable
                 });
             });
         });
-    }, [nodes, edges]);
+    }, [nodes, edges, allVariables]);
 
     const defaultEdgeOptions = useMemo(() => {
         return {

@@ -187,6 +187,16 @@ function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?
     return <span className="ni-val">{String(parsed)}</span>;
 }
 
+// Derive a human-readable action name from the action ID path.
+// e.g. "git/checkout" → "Checkout", "string/upper_case" → "Upper Case"
+function humaniseActionLabel(label: string): string {
+    if (!label) return '';
+    const lastSegment = label.includes('/') ? label.split('/').pop()! : label;
+    return lastSegment
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export default function NodeInspector({ nodeId, status, onClose }: NodeInspectorProps) {
     const statusLabel = status.status.charAt(0).toUpperCase() + status.status.slice(1);
     const badgeClass = `node-inspector-badge node-inspector-badge--${status.status}`;
@@ -202,8 +212,8 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
             <div className="node-inspector">
                 <div className="node-inspector-header">
                     <div>
-                        <div className="node-inspector-title">{status.label || nodeId}</div>
-                        <div className="node-inspector-subtitle">{status.action}</div>
+                        <div className="node-inspector-title">{humaniseActionLabel(status.label) || nodeId}</div>
+                        <div className="node-inspector-subtitle">{status.label}</div>
                     </div>
                     <button className="node-inspector-close" onClick={onClose}>
                         <Icon name="xmark" />
