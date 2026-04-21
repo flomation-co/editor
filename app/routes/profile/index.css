@@ -1,5 +1,5 @@
 .profile-page {
-    max-width: 560px;
+    max-width: 620px;
     margin: 0 auto;
     padding: 20px 20px 0;
     display: flex;
@@ -7,6 +7,46 @@
     gap: 20px;
 }
 
+/* ── Tabs ── */
+.profile-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 0;
+}
+
+.profile-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    color: rgba(255, 255, 255, 0.4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: -1px;
+}
+
+.profile-tab:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.profile-tab.active {
+    color: #c084fc;
+    border-bottom-color: #c084fc;
+}
+
+.profile-tab svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ── Cards ── */
 .profile-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -116,7 +156,7 @@
     color: #e5e7eb;
 }
 
-/* Security row */
+/* ── Security row ── */
 .profile-security-row {
     display: flex;
     align-items: center;
@@ -137,4 +177,89 @@
 .profile-security-desc {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Login History ── */
+.login-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.login-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.login-entry:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.login-entry:first-child {
+    padding-top: 0;
+}
+
+.login-entry-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 2px;
+}
+
+.login-entry-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.login-entry-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.login-entry-device {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
+    margin-bottom: 3px;
+}
+
+.login-entry-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.login-entry-separator {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.login-entry-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: 3px;
+}
+
+@media (max-width: 640px) {
+    .profile-tabs {
+        overflow-x: auto;
+    }
+
+    .profile-security-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 }
