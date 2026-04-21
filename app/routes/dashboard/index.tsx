@@ -12,6 +12,7 @@ import type {UserDashboard} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import SupportWidget from "~/components/widgets/support-widget";
+import TipWidget from "~/components/widgets/tip-widget";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -88,7 +89,7 @@ export default function Dashboard() {
                     <video autoPlay={true} loop={true} muted={true} src={"https://flomation-live-static.s3.eu-west-2.amazonaws.com/marketing/flomation_video_1.mp4"} style={{width: "100%", aspectRatio: "16/9"}}></video>
                 </Card>
                 <Card>
-                    <SupportWidget />
+                    <TipWidget />
                 </Card>
             </div>
 
