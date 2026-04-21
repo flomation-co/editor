@@ -307,7 +307,7 @@ export function Editor(props : EditorProps) {
                     console.error(error);
                 })
         }
-    }, [ name, viewport, environment ]);
+    }, [ name, viewport, environment, notifySuccess, notifyFailure, notificationEmails ]);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastSavedHashRef = useRef<string>("");
