@@ -86,10 +86,10 @@ export default function Dashboard() {
 
             <div className={"card-container"}>
                 <Card>
-                    <video autoPlay={true} loop={true} muted={true} src={"https://flomation-live-static.s3.eu-west-2.amazonaws.com/marketing/flomation_video_1.mp4"} style={{width: "100%", aspectRatio: "16/9"}}></video>
+                    <TipWidget />
                 </Card>
                 <Card>
-                    <TipWidget />
+                    <SupportWidget />
                 </Card>
             </div>
 
