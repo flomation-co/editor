@@ -215,6 +215,13 @@ export type AuthUser = {
     email_address?: string
     created_at?: string
     marketing_opt_in?: boolean
+    eula_version?: number,
+    eula_accepted_at?: string,
+}
+
+export type EulaResponse = {
+    version: number,
+    content: string,
 }
 
 export type JWTPayload = {
