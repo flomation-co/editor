@@ -101,7 +101,14 @@ export default function EulaModal() {
             <polyline points="10 9 9 9 8 9" />
           </svg>
           <h2 className="eula-title">End User Licence Agreement</h2>
-          <span className="eula-version">Version {eula.version}</span>
+          <div className="eula-meta">
+            <span className="eula-version">Version {eula.version}</span>
+            <span className="eula-date">
+              Updated {new Date(eula.created_at).toLocaleDateString("en-GB", {
+                day: "numeric", month: "long", year: "numeric",
+              })}
+            </span>
+          </div>
         </div>
 
         <div

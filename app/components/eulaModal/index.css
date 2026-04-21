@@ -47,13 +47,24 @@
   flex: 1;
 }
 
+.eula-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .eula-version {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.05);
   padding: 3px 10px;
   border-radius: 20px;
-  flex-shrink: 0;
+}
+
+.eula-date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .eula-content {
