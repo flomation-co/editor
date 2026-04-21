@@ -220,8 +220,10 @@ export type AuthUser = {
 }
 
 export type EulaResponse = {
+    id: number,
     version: number,
     content: string,
+    created_at: string,
 }
 
 export type JWTPayload = {
