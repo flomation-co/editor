@@ -17,6 +17,7 @@ import AuthProvider from "~/context/auth/provider";
 import OrganisationProvider from "~/context/organisation/provider";
 import PermissionsProvider from "~/context/permissions/provider";
 import {ToastProvider} from "~/components/toast";
+import CookieBanner from "~/components/cookieBanner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -62,6 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <CookieBanner />
         <AuthProvider>
           <OrganisationProvider>
             <PermissionsProvider>
