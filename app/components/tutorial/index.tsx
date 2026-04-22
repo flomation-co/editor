@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTutorial } from "~/context/tutorial/use";
-import { Icon } from "~/components/icons/Icon";
 import "./index.css";
 
 type StepPlacement = "bottom" | "top" | "left" | "right";
@@ -11,54 +10,64 @@ interface TutorialStep {
     body: string;
     placement: StepPlacement;
     page: string;
-    waitForSelector?: boolean;
-    waitMessage?: string;
+    /** Advance when the user navigates to a URL matching this prefix */
+    advanceOnNavigate?: string;
+    /** Advance when this selector appears in the DOM */
+    advanceOnSelector?: string;
+    /** Advance when the target element's value changes (input fields) */
+    advanceOnInputChange?: boolean;
+    /** Advance when this selector is clicked */
+    advanceOnClick?: string;
 }
 
 const STEPS: TutorialStep[] = [
     {
         selector: ".flows-action-btn--primary",
         title: "Create a New Flow",
-        body: "Click \"New\" to create your first automation flow. Flows connect actions together to automate your workflows.",
+        body: "Click \"New\" to create your first automation flow.",
         placement: "bottom",
         page: "/flow",
+        advanceOnNavigate: "/flo/",
     },
     {
         selector: ".flo-editor-title-textbox",
         title: "Name Your Flow",
-        body: "Give your flow a meaningful name so you can easily find and manage it later.",
+        body: "Click the title and type a name for your flow.",
         placement: "bottom",
         page: "/flo",
+        advanceOnInputChange: true,
     },
     {
         selector: "[data-tooltip-id=\"tooltip-action-add-node\"]",
         title: "Add a Node",
-        body: "Click \"Add Node\" to add your first action. Nodes are the building blocks of your flow — each one performs a specific task.",
+        body: "Click \"Add Node\" to add your first action to the flow.",
         placement: "bottom",
         page: "/flo",
+        advanceOnSelector: ".react-flow__node",
     },
     {
         selector: ".property-menu-expanded-wrap",
         title: "Configure Properties",
-        body: "Each node has properties you can configure. Set input values, choose options, and connect data between nodes.",
+        body: "Click on the node you added to see its properties.",
         placement: "left",
         page: "/flo",
-        waitForSelector: true,
-        waitMessage: "Click on the node you just added to see its properties.",
+        advanceOnSelector: ".property-menu-expanded-wrap",
     },
     {
         selector: ".flo-editor-env-button",
         title: "Choose an Environment",
-        body: "Environments store variables and secrets your flow needs at runtime. Select one from the dropdown.",
+        body: "Click the environment dropdown to see available environments.",
         placement: "bottom",
         page: "/flo",
+        advanceOnClick: ".flo-editor-env-button",
     },
     {
         selector: "[data-tooltip-id=\"tooltip-action-execute\"]",
         title: "Execute Your Flow",
-        body: "Click \"Execute\" to run your flow. You'll see real-time progress and can inspect each node's inputs and outputs.",
+        body: "Click \"Execute\" to run your flow. You're all set!",
         placement: "bottom",
         page: "/flo",
+        advanceOnNavigate: "/execution/",
     },
 ];
 
@@ -75,9 +84,9 @@ interface Rect {
 export default function TutorialOverlay() {
     const { currentStep, isActive, advanceStep, skipTutorial } = useTutorial();
     const [targetRect, setTargetRect] = useState<Rect | null>(null);
-    const [waiting, setWaiting] = useState(false);
     const observerRef = useRef<MutationObserver | null>(null);
     const rafRef = useRef<number>(0);
+    const advancedRef = useRef(false);
 
     const step = STEPS[currentStep];
 
@@ -85,13 +94,9 @@ export default function TutorialOverlay() {
         if (!step) return;
         const el = document.querySelector(step.selector);
         if (!el) {
-            if (step.waitForSelector) {
-                setWaiting(true);
-                setTargetRect(null);
-            }
+            setTargetRect(null);
             return;
         }
-        setWaiting(false);
         const r = el.getBoundingClientRect();
         setTargetRect({
             top: r.top - PADDING,
@@ -101,23 +106,38 @@ export default function TutorialOverlay() {
         });
     }, [step]);
 
+    // Reset advanced flag when step changes
+    useEffect(() => {
+        advancedRef.current = false;
+    }, [currentStep]);
+
+    // Main effect: position tracking + action detection
     useEffect(() => {
         if (!isActive || !step) return;
 
-        // Check if we're on the right page
         const pathname = window.location.pathname;
         if (!pathname.startsWith(step.page)) {
             setTargetRect(null);
             return;
         }
 
-        // Initial position
-        const timer = setTimeout(updateRect, 100);
+        const timer = setTimeout(updateRect, 150);
 
-        // Watch for DOM changes (element appearing/disappearing)
+        // DOM observer for position updates and selector-based advancement
         observerRef.current = new MutationObserver(() => {
             cancelAnimationFrame(rafRef.current);
-            rafRef.current = requestAnimationFrame(updateRect);
+            rafRef.current = requestAnimationFrame(() => {
+                updateRect();
+
+                // Check advanceOnSelector
+                if (step.advanceOnSelector && !advancedRef.current) {
+                    const el = document.querySelector(step.advanceOnSelector);
+                    if (el) {
+                        advancedRef.current = true;
+                        setTimeout(advanceStep, 600);
+                    }
+                }
+            });
         });
         observerRef.current.observe(document.body, {
             childList: true,
@@ -126,7 +146,46 @@ export default function TutorialOverlay() {
             attributeFilter: ["class", "style"],
         });
 
-        // Reposition on resize/scroll
+        // Navigation-based advancement
+        let navInterval: ReturnType<typeof setInterval> | null = null;
+        if (step.advanceOnNavigate) {
+            const target = step.advanceOnNavigate;
+            navInterval = setInterval(() => {
+                if (window.location.pathname.startsWith(target) && !advancedRef.current) {
+                    advancedRef.current = true;
+                    advanceStep();
+                }
+            }, 300);
+        }
+
+        // Input change advancement
+        let inputListener: (() => void) | null = null;
+        if (step.advanceOnInputChange) {
+            const checkInput = () => {
+                const el = document.querySelector(step.selector) as HTMLInputElement | null;
+                if (el && el.value && el.value.trim().length > 0 && !advancedRef.current) {
+                    advancedRef.current = true;
+                    setTimeout(advanceStep, 800);
+                }
+            };
+            inputListener = checkInput;
+            document.addEventListener("input", checkInput, true);
+        }
+
+        // Click-based advancement
+        let clickListener: ((e: Event) => void) | null = null;
+        if (step.advanceOnClick) {
+            const clickSelector = step.advanceOnClick;
+            clickListener = (e: Event) => {
+                const target = e.target as HTMLElement;
+                if (target.closest(clickSelector) && !advancedRef.current) {
+                    advancedRef.current = true;
+                    setTimeout(advanceStep, 500);
+                }
+            };
+            document.addEventListener("click", clickListener, true);
+        }
+
         window.addEventListener("resize", updateRect);
         window.addEventListener("scroll", updateRect, true);
 
@@ -134,18 +193,20 @@ export default function TutorialOverlay() {
             clearTimeout(timer);
             cancelAnimationFrame(rafRef.current);
             observerRef.current?.disconnect();
+            if (navInterval) clearInterval(navInterval);
+            if (inputListener) document.removeEventListener("input", inputListener, true);
+            if (clickListener) document.removeEventListener("click", clickListener, true);
             window.removeEventListener("resize", updateRect);
             window.removeEventListener("scroll", updateRect, true);
         };
-    }, [isActive, currentStep, step, updateRect]);
+    }, [isActive, currentStep, step, updateRect, advanceStep]);
 
     if (!isActive || !step) return null;
 
-    // Not on the right page — dormant
     const pathname = window.location.pathname;
     if (!pathname.startsWith(step.page)) return null;
 
-    // Compute clip-path for the spotlight hole
+    // Clip-path for spotlight hole
     const clipPath = targetRect
         ? `polygon(
             0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%,
@@ -157,7 +218,7 @@ export default function TutorialOverlay() {
         )`
         : "none";
 
-    // Calculate tooltip position
+    // Tooltip position
     const tooltipStyle: React.CSSProperties = {};
     if (targetRect) {
         switch (step.placement) {
@@ -178,14 +239,7 @@ export default function TutorialOverlay() {
                 tooltipStyle.left = targetRect.left + targetRect.width + TOOLTIP_GAP;
                 break;
         }
-    } else if (waiting) {
-        // Centre the tooltip when waiting for an element
-        tooltipStyle.top = "50%";
-        tooltipStyle.left = "50%";
-        tooltipStyle.transform = "translate(-50%, -50%)";
     }
-
-    const isLastStep = currentStep === STEPS.length - 1;
 
     return (
         <>
@@ -198,11 +252,12 @@ export default function TutorialOverlay() {
                     <span className="tutorial-step-indicator">
                         Step {currentStep + 1} of {STEPS.length}
                     </span>
+                    <button className="tutorial-btn tutorial-btn--skip" onClick={skipTutorial}>
+                        Skip
+                    </button>
                 </div>
                 <h3 className="tutorial-tooltip-title">{step.title}</h3>
-                <p className="tutorial-tooltip-body">
-                    {waiting && step.waitMessage ? step.waitMessage : step.body}
-                </p>
+                <p className="tutorial-tooltip-body">{step.body}</p>
                 <div className="tutorial-progress">
                     {STEPS.map((_, i) => (
                         <div
@@ -210,17 +265,6 @@ export default function TutorialOverlay() {
                             className={`tutorial-dot ${i <= currentStep ? "active" : ""} ${i === currentStep ? "current" : ""}`}
                         />
                     ))}
-                </div>
-                <div className="tutorial-actions">
-                    <button className="tutorial-btn tutorial-btn--skip" onClick={skipTutorial}>
-                        Skip Tutorial
-                    </button>
-                    {!waiting && (
-                        <button className="tutorial-btn tutorial-btn--next" onClick={advanceStep}>
-                            <Icon name={isLastStep ? "check" : "arrow-right"} />
-                            {isLastStep ? "Finish" : "Next"}
-                        </button>
-                    )}
                 </div>
             </div>
         </>
