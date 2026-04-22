@@ -424,6 +424,56 @@
     transform: translateY(-50%);
 }
 
+/* ── Handle labels with background cutout ── */
+.handle-label {
+    position: absolute;
+    font-size: 8px;
+    pointer-events: none;
+    z-index: 1;
+    background: var(--xy-background-color, #131313);
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.handle-label--outside {
+    left: calc(100% + 6px);
+    transform: translateY(-50%);
+}
+
+.handle-label--inside {
+    right: 10px;
+}
+
+.handle-label--italic {
+    font-style: italic;
+}
+
+.handle-label--truncate {
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.handle-label--default {
+    color: rgba(6, 182, 212, 0.55);
+}
+
+.diamond-label {
+    z-index: 1;
+    background: var(--xy-background-color, #131313);
+    padding: 1px 3px;
+    border-radius: 3px;
+}
+
+.loop-label {
+    z-index: 1;
+    background: var(--xy-background-color, #131313);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
 .flo-node--loop {
     border-color: rgba(185,103,239,0.25);
 }
