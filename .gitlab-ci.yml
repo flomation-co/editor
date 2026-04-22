@@ -103,7 +103,7 @@ build-deb:
     expire_in: 30 days
 
 publish-rpm-8:
-  extends: .publish-rpm-template
+  extends: .publish-rpm-s3sync-template
   only:
     - main
   variables:
@@ -117,7 +117,7 @@ publish-rpm-8:
     - build-rpm-8
 
 publish-rpm-9:
-  extends: .publish-rpm-template
+  extends: .publish-rpm-s3sync-template
   only:
     - main
   variables:
@@ -144,7 +144,7 @@ publish-deb:
     - build-deb
 
 publish-rpm-8-live:
-  extends: .publish-rpm-template
+  extends: .publish-rpm-s3sync-template
   only:
     - main
   variables:
@@ -159,7 +159,7 @@ publish-rpm-8-live:
     - build-rpm-8
 
 publish-rpm-9-live:
-  extends: .publish-rpm-template
+  extends: .publish-rpm-s3sync-template
   only:
     - main
   variables:
