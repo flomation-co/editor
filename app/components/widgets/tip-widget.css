@@ -1,0 +1,114 @@
+.tip-widget {
+    padding: 20px;
+}
+
+.tip-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tip-widget-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+    flex: 1;
+}
+
+.tip-widget-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(245, 158, 11, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+}
+
+.tip-widget-badge svg {
+    width: 13px;
+    height: 13px;
+}
+
+.tip-widget-refresh {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.tip-widget-refresh:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.tip-widget-refresh svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tip-widget-content {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.tip-widget-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 8px;
+    background: rgba(0, 170, 156, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00aa9c;
+    margin-top: 1px;
+}
+
+.tip-widget-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tip-widget-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.tip-widget-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 4px;
+}
+
+.tip-widget-body {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.tip-widget-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #00aa9c;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.tip-widget-link:hover {
+    color: #00ccbb;
+}
