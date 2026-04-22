@@ -23,7 +23,7 @@ export default function TutorialProvider({ children }: { children: React.ReactNo
         }
         setCurrentStep(user.onboarding_step ?? 0);
         setIsActive(true);
-    }, [user?.id]);
+    }, [user]);
 
     const persistStep = useCallback((step: number, completed: boolean) => {
         const url = config("AUTOMATE_API_URL");
