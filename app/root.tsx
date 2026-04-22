@@ -19,6 +19,8 @@ import PermissionsProvider from "~/context/permissions/provider";
 import {ToastProvider} from "~/components/toast";
 import CookieBanner from "~/components/cookieBanner";
 import EulaModal from "~/components/eulaModal";
+import TutorialProvider from "~/context/tutorial/provider";
+import TutorialOverlay from "~/components/tutorial";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -67,7 +69,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <CookieBanner />
         <AuthProvider>
           <EulaModal />
-          <OrganisationProvider>
+          <TutorialProvider>
+            <TutorialOverlay />
+            <OrganisationProvider>
             <PermissionsProvider>
               <ToastProvider>
                 {children}
@@ -76,6 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </ToastProvider>
             </PermissionsProvider>
           </OrganisationProvider>
+          </TutorialProvider>
         </AuthProvider>
       </body>
     </html>

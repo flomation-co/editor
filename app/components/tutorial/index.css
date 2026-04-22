@@ -1,0 +1,151 @@
+/* ── Spotlight overlay ── */
+.tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+    pointer-events: none;
+    animation: tutorialFadeIn 0.3s ease-out;
+}
+
+/* ── Tooltip card ── */
+.tutorial-tooltip {
+    position: fixed;
+    z-index: 999;
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 20px 22px;
+    max-width: 340px;
+    min-width: 280px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(70, 0, 112, 0.15);
+    pointer-events: auto;
+    animation: tutorialSlideIn 0.25s ease-out;
+}
+
+.tutorial-tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.tutorial-step-indicator {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #00aa9c;
+}
+
+.tutorial-tooltip-title {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.tutorial-tooltip-body {
+    margin: 0 0 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Progress dots ── */
+.tutorial-progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.tutorial-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.tutorial-dot.active {
+    background: rgba(0, 170, 156, 0.3);
+}
+
+.tutorial-dot.current {
+    background: #00aa9c;
+    box-shadow: 0 0 8px rgba(0, 170, 156, 0.4);
+}
+
+/* ── Action buttons ── */
+.tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.tutorial-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.tutorial-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+.tutorial-btn--skip {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.35);
+    padding-left: 0;
+}
+
+.tutorial-btn--skip:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.tutorial-btn--next {
+    background: #00aa9c;
+    color: #fff;
+    font-weight: 600;
+}
+
+.tutorial-btn--next:hover {
+    background: #00ccbb;
+    transform: translateY(-1px);
+}
+
+/* ── Animations ── */
+@keyframes tutorialFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes tutorialSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .tutorial-tooltip {
+        max-width: calc(100vw - 32px);
+        min-width: unset;
+    }
+}
