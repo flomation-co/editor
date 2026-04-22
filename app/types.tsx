@@ -217,6 +217,8 @@ export type AuthUser = {
     marketing_opt_in?: boolean
     eula_version?: number,
     eula_accepted_at?: string,
+    onboarding_step?: number,
+    onboarding_completed_at?: string,
 }
 
 export type EulaResponse = {
