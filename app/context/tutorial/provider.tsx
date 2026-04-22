@@ -5,7 +5,7 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import useCookieToken from "~/components/cookie";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 export default function TutorialProvider({ children }: { children: React.ReactNode }) {
     const { user, setUser, token } = useAuth();

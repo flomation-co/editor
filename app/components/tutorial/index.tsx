@@ -22,6 +22,14 @@ interface TutorialStep {
 
 const STEPS: TutorialStep[] = [
     {
+        selector: "[data-tooltip-content=\"Flows\"]",
+        title: "Welcome to Flomation",
+        body: "Let\u2019s get you started. Click \"Flows\" in the sidebar to see your automation flows.",
+        placement: "right",
+        page: "/",
+        advanceOnNavigate: "/flow",
+    },
+    {
         selector: ".flows-action-btn--primary",
         title: "Create a New Flow",
         body: "Click \"New\" to create your first automation flow.",
