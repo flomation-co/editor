@@ -92,13 +92,11 @@ export default function Agents() {
 
     return (
         <Container>
-            <div className="header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span>Agents</span>
-                <div className="agents-header-actions">
-                    <button className="create-agent-btn" onClick={handleCreateAgent}>
-                        <Icon name="plus" /> New Agent
-                    </button>
-                </div>
+            <div className="header">Agents</div>
+            <div className="agents-action-bar">
+                <button className="create-agent-btn" onClick={handleCreateAgent}>
+                    <Icon name="plus" /> New Agent
+                </button>
             </div>
 
             {loading && (

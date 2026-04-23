@@ -68,7 +68,7 @@
 }
 
 .boards-action-btn--primary {
-    background: linear-gradient(135deg, #460070, #6b21a8);
+    background: #00aa9c;
     border-color: rgba(139, 92, 246, 0.3);
     color: #e5e7eb;
 }
@@ -78,7 +78,7 @@
 }
 
 .boards-action-btn--primary:hover {
-    background: linear-gradient(135deg, #5b0092, #7c3aed);
+    background: #00ccbb;
     border-color: rgba(139, 92, 246, 0.5);
 }
 
@@ -288,7 +288,7 @@
     padding: 0 20px;
     border: none;
     border-radius: 8px;
-    background: linear-gradient(135deg, #460070, #6b21a8);
+    background: #00aa9c;
     color: #e5e7eb;
     font-size: 13px;
     font-weight: 500;
@@ -300,7 +300,7 @@
 }
 
 .boards-empty-btn:hover {
-    background: linear-gradient(135deg, #5b0092, #7c3aed);
+    background: #00ccbb;
     box-shadow: 0 4px 20px rgba(70, 0, 112, 0.4);
 }
 

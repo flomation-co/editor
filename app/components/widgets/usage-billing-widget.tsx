@@ -1,4 +1,6 @@
 import React from "react";
+import { Icon } from "~/components/icons/Icon";
+import "./usage-billing-widget.css";
 
 interface UsageBillingData {
     currentUsage: number;
@@ -32,58 +34,41 @@ function friendlyDuration(ms: number): string {
 }
 
 export default function UsageBillingWidget(props: UsageBillingWidgetProps) {
-
-    if (props.loading) {
-        return (
-            <div className="usage-billing-widget loading">
-                <div className="widget-header">
-                    <h3>Usage & Billing</h3>
-                </div>
-                <div className="loading-content">Loading...</div>
-            </div>
-        );
-    }
-
     const usage = props.data?.currentUsage || 0;
     const limit = props.data?.monthlyLimit || 1;
     const usagePercentage = (usage / limit) * 100;
     const isNearLimit = usagePercentage > 80;
 
     return (
-        <div className="usage-billing-widget">
-            <div className="widget-header">
-                <h3>Usage & Billing</h3>
-                <span className="billing-period">{props.data?.billingPeriod}</span>
+        <div className="usage-widget">
+            <div className="usage-widget-header">
+                <div className="usage-widget-badge">
+                    <Icon name="pie-chart" />
+                </div>
+                <h3>Usage</h3>
+                <span className="usage-widget-period">{props.data?.billingPeriod || "Monthly"}</span>
             </div>
 
-            <div className="usage-section">
-                <div className="usage-stats">
-                    <div className="current-usage">
-                        <span className="usage-number">{friendlyDuration(usage)}</span>
-                    </div>
-                    <div className="usage-limit">
-                        of {friendlyDuration(limit)} limit
-                    </div>
-                </div>
-
-                <div className="usage-bar">
-                    <div
-                        className={`usage-progress ${isNearLimit ? 'near-limit' : ''}`}
-                        style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-                    ></div>
-                </div>
-
-                <div className="usage-percentage">
-                    <span>{usagePercentage.toFixed(1)}% used</span>
-                    {isNearLimit && <span className="warning-badge">Near Limit</span>}
-                </div>
+            <div className="usage-widget-stats">
+                <span className="usage-widget-value">{friendlyDuration(usage)}</span>
+                <span className="usage-widget-limit">of {friendlyDuration(limit)}</span>
             </div>
 
-            <div className="billing-section">
-                <div className="current-cost">
-                    <span className="cost-label">Current Period Cost</span>
-                    <span className="cost-amount">£{props.data?.currentCost?.toFixed(2) || "0.00"}</span>
-                </div>
+            <div className="usage-widget-bar">
+                <div
+                    className={`usage-widget-bar-fill ${isNearLimit ? "near-limit" : ""}`}
+                    style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                />
+            </div>
+
+            <div className="usage-widget-footer">
+                <span className="usage-widget-pct">{usagePercentage.toFixed(1)}% used</span>
+                {isNearLimit && <span className="usage-widget-warn">Near Limit</span>}
+            </div>
+
+            <div className="usage-widget-cost">
+                <span className="usage-widget-cost-label">Current Period</span>
+                <span className="usage-widget-cost-value">£{props.data?.currentCost?.toFixed(2) || "0.00"}</span>
             </div>
         </div>
     );

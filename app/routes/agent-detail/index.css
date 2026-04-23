@@ -1,5 +1,5 @@
 .agent-detail {
-    max-width: 900px;
+    max-width: 100%;
 }
 
 .agent-detail-header {
@@ -173,6 +173,30 @@
 
 .agent-form-input:focus {
     border-color: rgba(192, 132, 252, 0.5);
+}
+
+.agent-mode-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.agent-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.agent-mode-btn.active {
+    background: rgba(0, 170, 156, 0.12);
+    border-color: rgba(0, 170, 156, 0.3);
+    color: #00aa9c;
 }
 
 .agent-form-input.textarea {

@@ -16,6 +16,7 @@ import {PaginationControls} from "~/components/paginationControls";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import { Icon } from "~/components/icons/Icon";
+import { ExecutionTableSkeleton } from "~/components/skeleton";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -263,9 +264,22 @@ export default function Executions() {
             </div>
 
             {isLoading && (
-                <div className={"loading-container"}>
-                    <Icon name="spinner" spin />
-                </div>
+                <table className={"flo-table"}>
+                    <thead className={"flo-table-head"}>
+                    <tr>
+                        <th>Name</th>
+                        <th className={"table-column-hide-sm"}>Execution #</th>
+                        <th className={"table-column-hide-sm"}>Started</th>
+                        <th className={"table-column-hide-sm"}>Trigger</th>
+                        <th className={"table-column-hide-sm"}>Status</th>
+                        <th className={"table-column-hide-sm"}>Duration</th>
+                        <th><span className={"table-column-hide-sm"}>Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <ExecutionTableSkeleton />
+                    </tbody>
+                </table>
             )}
             {!isLoading && (
                 <>

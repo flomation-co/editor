@@ -21,6 +21,7 @@ import useCookieToken from "~/components/cookie";
 import {useOrganisation} from "~/context/organisation/use";
 import {generateExportWrapper, downloadAsJson, downloadAsZip} from "~/lib/export";
 import { Icon } from "~/components/icons/Icon";
+import { FlowListSkeleton } from "~/components/skeleton";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -581,9 +582,7 @@ export default function Flows() {
                     )}
 
                     {isLoading && !flos && (
-                        <div className={"loading-container"}>
-                            <Icon name="spinner" spin />
-                        </div>
+                        <FlowListSkeleton />
                     )}
 
                     {flos && flos.length === 0 && totalFloCount === 0 && !search && (

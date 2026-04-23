@@ -84,13 +84,13 @@
 }
 
 .board-view-btn--primary {
-    background: linear-gradient(135deg, #460070, #6b21a8);
+    background: #00aa9c;
     border-color: rgba(139, 92, 246, 0.3);
     color: #e5e7eb;
 }
 
 .board-view-btn--primary:hover {
-    background: linear-gradient(135deg, #5b0092, #7c3aed);
+    background: #00ccbb;
     border-color: rgba(139, 92, 246, 0.5);
 }
 

@@ -1,116 +1,134 @@
 .support-widget {
-    min-height: auto;
+    padding: 20px;
+}
+
+.support-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.support-widget-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+    flex: 1;
+}
+
+.support-widget-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #818cf8;
+}
+
+.support-widget-badge svg {
+    width: 13px;
+    height: 13px;
 }
 
 .support-channels {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    flex: 1;
+    gap: 6px;
 }
 
-.support-card {
+.support-channel {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 14px 16px;
-    background: var(--primary-background-muted);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    transition: all 0.15s ease;
     cursor: pointer;
 }
 
-.support-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-1px);
+.support-channel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
-.support-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+.support-channel-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
     flex-shrink: 0;
 }
 
-.support-card-icon--email {
-    background: rgba(139, 92, 246, 0.15);
+.support-channel-icon svg {
+    width: 15px;
+    height: 15px;
+}
+
+.support-channel-icon--email {
+    background: rgba(139, 92, 246, 0.12);
     color: #a78bfa;
 }
 
-.support-card:hover .support-card-icon--email {
-    background: rgba(139, 92, 246, 0.25);
-}
-
-.support-card-icon--github {
-    background: rgba(255, 255, 255, 0.08);
+.support-channel-icon--github {
+    background: rgba(255, 255, 255, 0.06);
     color: #d1d5db;
 }
 
-.support-card:hover .support-card-icon--github {
-    background: rgba(255, 255, 255, 0.14);
+.support-channel-icon--discord {
+    background: rgba(88, 101, 242, 0.12);
+    color: #818cf8;
 }
 
-.support-card-icon--discord {
-    background: rgba(88, 101, 242, 0.15);
-    color: #7289da;
-}
-
-.support-card:hover .support-card-icon--discord {
-    background: rgba(88, 101, 242, 0.25);
-}
-
-.support-card-content {
+.support-channel-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-width: 0;
 }
 
-.support-card-title {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: var(--primary-font-colour);
+.support-channel-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
 }
 
-.support-card-detail {
-    font-size: 0.78em;
-    color: var(--secondary-font-colour);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.support-channel-detail {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
 }
 
-.support-footer {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid var(--primary-background-muted);
+.support-widget-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.8em;
-    color: var(--secondary-font-colour);
+    gap: 8px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
 }
 
-.support-footer-icon {
-    color: var(--secondary-font-colour);
-    font-size: 14px;
+.support-widget-footer-icon {
+    width: 13px;
+    height: 13px;
     flex-shrink: 0;
 }
 
-.support-footer a {
-    color: var(--highlight-colour, #a78bfa);
+.support-widget-footer a {
+    color: #00aa9c;
     text-decoration: none;
     font-weight: 500;
 }
 
-.support-footer a:hover {
-    text-decoration: underline;
+.support-widget-footer a:hover {
+    color: #00ccbb;
 }

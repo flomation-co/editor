@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_ENV=production react-router build",
-    "dev": "react-router dev",
+    "dev": "PORT=5174 react-router dev",
     "start": "cross-env NODE_ENV=production PORT=8080 react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },

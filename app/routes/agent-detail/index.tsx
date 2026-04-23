@@ -643,6 +643,30 @@ export default function AgentDetail() {
                                     {ch.type === 'slack' && (
                                         <div style={{ marginTop: 12 }}>
                                             <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Connection Mode</label>
+                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                    {['events_api', 'socket'].map(mode => (
+                                                        <button
+                                                            key={mode}
+                                                            type="button"
+                                                            className={`agent-mode-btn ${(ch.config?.mode || 'events_api') === mode ? 'active' : ''}`}
+                                                            onClick={() => {
+                                                                const updated = [...channels];
+                                                                updated[idx] = { ...ch, config: { ...ch.config, mode } };
+                                                                setChannels(updated);
+                                                            }}
+                                                        >
+                                                            {mode === 'events_api' ? 'Events API' : 'Socket Mode'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                    {(ch.config?.mode || 'events_api') === 'socket'
+                                                        ? 'Socket Mode connects via WebSocket — no public URL needed. Enables bot presence (online status).'
+                                                        : 'Events API receives events via HTTP webhooks. Requires a publicly accessible URL.'}
+                                                </span>
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
                                                 <label className="agent-form-label">Bot Token</label>
                                                 <input
                                                     className="agent-form-input"
@@ -656,56 +680,79 @@ export default function AgentDetail() {
                                                     placeholder="xoxb-..."
                                                 />
                                             </div>
-                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
-                                                <label className="agent-form-label">Signing Secret (optional, for request verification)</label>
-                                                <input
-                                                    className="agent-form-input"
-                                                    type="password"
-                                                    value={ch.config?.signing_secret || ''}
-                                                    onChange={e => {
-                                                        const updated = [...channels];
-                                                        updated[idx] = { ...ch, config: { ...ch.config, signing_secret: e.target.value } };
-                                                        setChannels(updated);
-                                                    }}
-                                                    placeholder="Slack App signing secret"
-                                                />
-                                            </div>
-                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
-                                                <label className="agent-form-label">Events API Request URL</label>
-                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                            {(ch.config?.mode === 'socket') && (<>
+                                                <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                    <label className="agent-form-label">App-Level Token</label>
                                                     <input
                                                         className="agent-form-input"
-                                                        readOnly
-                                                        value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`}
-                                                        style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                        type="password"
+                                                        value={ch.config?.app_token || ''}
+                                                        onChange={e => {
+                                                            const updated = [...channels];
+                                                            updated[idx] = { ...ch, config: { ...ch.config, app_token: e.target.value } };
+                                                            setChannels(updated);
+                                                        }}
+                                                        placeholder="xapp-1-..."
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        style={{
-                                                            background: 'rgba(255,255,255,0.06)',
-                                                            border: '1px solid rgba(255,255,255,0.1)',
-                                                            borderRadius: 6,
-                                                            padding: '8px 10px',
-                                                            cursor: 'pointer',
-                                                            color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
-                                                            fontSize: 13,
-                                                            transition: 'color 0.2s',
-                                                        }}
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(
-                                                                `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`
-                                                            );
-                                                            setUrlCopied(true);
-                                                            setTimeout(() => setUrlCopied(false), 2000);
-                                                        }}
-                                                    >
-                                                        <Icon name={urlCopied? "check" : "copy"} />
-                                                    </button>
+                                                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                        Generate in your Slack App under <strong>Basic Information → App-Level Tokens</strong> with the <code>connections:write</code> scope.
+                                                    </span>
                                                 </div>
-                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
-                                                    Paste this URL in your Slack App's <strong>Event Subscriptions → Request URL</strong>.
-                                                </span>
-                                            </div>
+                                            </>)}
+                                            {(ch.config?.mode || 'events_api') !== 'socket' && (
+                                                <>
+                                                    <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                        <label className="agent-form-label">Signing Secret (optional, for request verification)</label>
+                                                        <input
+                                                            className="agent-form-input"
+                                                            type="password"
+                                                            value={ch.config?.signing_secret || ''}
+                                                            onChange={e => {
+                                                                const updated = [...channels];
+                                                                updated[idx] = { ...ch, config: { ...ch.config, signing_secret: e.target.value } };
+                                                                setChannels(updated);
+                                                            }}
+                                                            placeholder="Slack App signing secret"
+                                                        />
+                                                    </div>
+                                                    <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                        <label className="agent-form-label">Events API Request URL</label>
+                                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                            <input
+                                                                className="agent-form-input"
+                                                                readOnly
+                                                                value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`}
+                                                                style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.06)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    borderRadius: 6,
+                                                                    padding: '8px 10px',
+                                                                    cursor: 'pointer',
+                                                                    color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
+                                                                    fontSize: 13,
+                                                                    transition: 'color 0.2s',
+                                                                }}
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(
+                                                                        `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/slack/${id}`
+                                                                    );
+                                                                    setUrlCopied(true);
+                                                                    setTimeout(() => setUrlCopied(false), 2000);
+                                                                }}
+                                                            >
+                                                                <Icon name={urlCopied? "check" : "copy"} />
+                                                            </button>
+                                                        </div>
+                                                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                            Paste this URL in your Slack App's <strong>Event Subscriptions → Request URL</strong>.
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
                                             <div className="agent-form-group" style={{ marginBottom: 0 }}>
                                                 <label className="agent-form-label" style={{ marginBottom: 6 }}>Slack App Setup Guide</label>
                                                 <div style={{
@@ -717,6 +764,16 @@ export default function AgentDetail() {
                                                     borderRadius: 8,
                                                     padding: '10px 14px',
                                                 }}>
+                                                    {(ch.config?.mode === 'socket') && (
+                                                        <div style={{ marginBottom: 8 }}>
+                                                            <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Socket Mode</strong>
+                                                            <div style={{ marginTop: 4 }}>
+                                                                Enable Socket Mode in your Slack App under <strong>Settings → Socket Mode</strong>.
+                                                                Generate an App-Level Token with the <code>connections:write</code> scope.
+                                                                Bot will show as <span style={{ color: '#00aa9c' }}>● online</span> when connected.
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     <div style={{ marginBottom: 8 }}>
                                                         <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Event Subscriptions</strong>
                                                         <div style={{ marginTop: 4 }}>
@@ -732,7 +789,7 @@ export default function AgentDetail() {
                                                             Required OAuth scopes under <em>OAuth &amp; Permissions</em>:
                                                         </div>
                                                         <div style={{ marginTop: 2, fontFamily: "'Courier New', monospace", fontSize: 11 }}>
-                                                            chat:write · users:read · users:read.email · app_mentions:read · channels:read · groups:read · channels:history · groups:history · im:history · mpim:history · search:read.public · search:read.private · search:read.im · search:read.mpim · search:read.files · files:write
+                                                            chat:write · users:read · users:read.email · users:write · app_mentions:read · channels:read · groups:read · channels:history · groups:history · im:history · mpim:history · search:read.public · search:read.private · search:read.im · search:read.mpim · search:read.files · files:write
                                                         </div>
                                                     </div>
                                                 </div>
