@@ -680,7 +680,7 @@ export default function AgentDetail() {
                                                     placeholder="xoxb-..."
                                                 />
                                             </div>
-                                            {(ch.config?.mode === 'socket') && (
+                                            {(ch.config?.mode === 'socket') && (<>
                                                 <div className="agent-form-group" style={{ marginBottom: 12 }}>
                                                     <label className="agent-form-label">App-Level Token</label>
                                                     <input
@@ -698,7 +698,41 @@ export default function AgentDetail() {
                                                         Generate in your Slack App under <strong>Basic Information → App-Level Tokens</strong> with the <code>connections:write</code> scope.
                                                     </span>
                                                 </div>
-                                            )}
+                                                <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                    <label className="agent-form-label">Bot Status Text</label>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        type="text"
+                                                        value={ch.config?.status_text || ''}
+                                                        onChange={e => {
+                                                            const updated = [...channels];
+                                                            updated[idx] = { ...ch, config: { ...ch.config, status_text: e.target.value } };
+                                                            setChannels(updated);
+                                                        }}
+                                                        placeholder="Online"
+                                                    />
+                                                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                        Shown on the bot's Slack profile. Defaults to "Online" if left blank.
+                                                    </span>
+                                                </div>
+                                                <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                    <label className="agent-form-label">Bot Status Emoji</label>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        type="text"
+                                                        value={ch.config?.status_emoji || ''}
+                                                        onChange={e => {
+                                                            const updated = [...channels];
+                                                            updated[idx] = { ...ch, config: { ...ch.config, status_emoji: e.target.value } };
+                                                            setChannels(updated);
+                                                        }}
+                                                        placeholder=":large_green_circle:"
+                                                    />
+                                                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                        Slack emoji code shown next to the status. Defaults to 🟢 if left blank.
+                                                    </span>
+                                                </div>
+                                            </>)}
                                             {(ch.config?.mode || 'events_api') !== 'socket' && (
                                                 <>
                                                     <div className="agent-form-group" style={{ marginBottom: 12 }}>
