@@ -789,7 +789,7 @@ export default function AgentDetail() {
                                                             Required OAuth scopes under <em>OAuth &amp; Permissions</em>:
                                                         </div>
                                                         <div style={{ marginTop: 2, fontFamily: "'Courier New', monospace", fontSize: 11 }}>
-                                                            chat:write · users:read · users:read.email · app_mentions:read · channels:read · groups:read · channels:history · groups:history · im:history · mpim:history · search:read.public · search:read.private · search:read.im · search:read.mpim · search:read.files · files:write
+                                                            chat:write · users:read · users:read.email · users:write · app_mentions:read · channels:read · groups:read · channels:history · groups:history · im:history · mpim:history · search:read.public · search:read.private · search:read.im · search:read.mpim · search:read.files · files:write
                                                         </div>
                                                     </div>
                                                 </div>
