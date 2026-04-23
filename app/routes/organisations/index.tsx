@@ -21,7 +21,7 @@ export default function Organisations() {
     const config = useConfig();
     const token = useCookieToken();
     const auth = useAuth();
-    const { currentOrg, refreshOrganisations } = useOrganisation();
+    const { organisations, currentOrg, setCurrentOrg, refreshOrganisations } = useOrganisation();
 
     const [newOrgName, setNewOrgName] = useState("");
     const [members, setMembers] = useState<OrganisationMember[]>([]);
@@ -110,8 +110,34 @@ export default function Organisations() {
     if (!currentOrg) {
         return (
             <Container>
-                <div className={"header"}>Organisation</div>
+                <div className={"header"}>Organisations</div>
+
+                {organisations.length > 0 && (
+                    <div className={"org-section"}>
+                        <div className={"org-section-header"}>Your Organisations</div>
+                        <div className={"org-members-list"}>
+                            {organisations.map(org => (
+                                <div key={org.id} className={"org-member-row"}>
+                                    <div className={"org-member-name"}>
+                                        <span>{org.name}</span>
+                                        {org.role && (
+                                            <span className={"org-member-email"}>{org.role}</span>
+                                        )}
+                                    </div>
+                                    <a
+                                        className={"org-switch-link"}
+                                        onClick={() => setCurrentOrg(org)}
+                                    >
+                                        Switch →
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className={"org-section"}>
+                    <div className={"org-section-header"}>Create Organisation</div>
                     <p className={"org-description"}>
                         Create an organisation to collaborate with your team. Organisation members can view and execute shared flows.
                     </p>

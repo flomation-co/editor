@@ -5,7 +5,7 @@
     transform: translateY(-50%);
     writing-mode: vertical-rl;
     padding: 12px 6px;
-    background: linear-gradient(135deg, #460070, #6b21a8);
+    background: #00aa9c;
     border: none;
     border-radius: 8px 0 0 8px;
     color: #fff;
@@ -142,7 +142,7 @@
 
 .feedback-submit {
     padding: 8px 20px;
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    background: #00aa9c;
     border: none;
     border-radius: 8px;
     color: #fff;

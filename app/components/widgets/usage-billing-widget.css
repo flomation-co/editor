@@ -1,0 +1,119 @@
+.usage-widget {
+    padding: 20px;
+}
+
+.usage-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.usage-widget-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+    flex: 1;
+}
+
+.usage-widget-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(139, 0, 222, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b49eed;
+}
+
+.usage-widget-badge svg {
+    width: 13px;
+    height: 13px;
+}
+
+.usage-widget-period {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.usage-widget-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.usage-widget-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e5e7eb;
+}
+
+.usage-widget-limit {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.usage-widget-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.usage-widget-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #00aa9c, #00ccbb);
+    transition: width 0.4s ease;
+}
+
+.usage-widget-bar-fill.near-limit {
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+.usage-widget-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.usage-widget-pct {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.usage-widget-warn {
+    font-size: 10px;
+    font-weight: 600;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.usage-widget-cost {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.usage-widget-cost-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.usage-widget-cost-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #00aa9c;
+}

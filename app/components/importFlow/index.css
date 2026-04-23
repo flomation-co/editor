@@ -210,13 +210,13 @@
 }
 
 .import-btn-primary {
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    background: #00aa9c;
     color: #fff;
     border-color: transparent;
 }
 
 .import-btn-primary:hover {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    background: #00ccbb;
 }
 
 .import-btn-primary:disabled {

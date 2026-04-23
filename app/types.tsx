@@ -219,6 +219,7 @@ export type AuthUser = {
     eula_accepted_at?: string,
     onboarding_step?: number,
     onboarding_completed_at?: string,
+    checklist_flags?: number,
 }
 
 export type EulaResponse = {

@@ -7,20 +7,23 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #460070, #6b21a8);
-    border: none;
+    height: 34px;
+    padding: 0 14px;
+    background: #00aa9c;
+    border: 1px solid rgba(0, 170, 156, 0.3);
     border-radius: 6px;
     color: #fff;
     font-size: 13px;
     font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
-    transition: opacity 0.1s ease;
+    transition: background 0.1s ease, border-color 0.1s ease;
     margin-bottom: 20px;
 }
 
 .env-create-btn:hover {
-    opacity: 0.85;
+    background: #00ccbb;
+    border-color: rgba(0, 204, 187, 0.5);
 }
 
 /* Create form */
@@ -57,8 +60,8 @@
 .env-create-form-save {
     height: 38px;
     padding: 0 16px;
-    background: linear-gradient(135deg, #460070, #6b21a8);
-    border: none;
+    background: #00aa9c;
+    border: 1px solid rgba(0, 170, 156, 0.3);
     border-radius: 6px;
     color: #fff;
     font-size: 13px;
@@ -69,6 +72,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    transition: background 0.1s ease;
+}
+
+.env-create-form-save:hover:not(:disabled) {
+    background: #00ccbb;
 }
 
 .env-create-form-save:disabled {

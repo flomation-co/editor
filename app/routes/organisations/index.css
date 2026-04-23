@@ -52,7 +52,7 @@
 .org-create-form button,
 .org-invite-form button {
     padding: 8px 16px;
-    background: linear-gradient(135deg, #460070, #6b21a8);
+    background: #00aa9c;
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -271,4 +271,19 @@
 
 .org-toggle input:checked + .org-toggle-slider::before {
     transform: translateX(20px);
+}
+
+
+.org-switch-link {
+    font-size: 11px;
+    font-weight: 500;
+    color: #00aa9c;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.org-switch-link:hover {
+    color: #00ccbb;
 }

@@ -6,13 +6,14 @@ import Card from "~/components/card";
 import UsageBillingWidget from "~/components/widgets/usage-billing-widget";
 import SubscriptionUpgradeWidget from "~/components/widgets/subscription-upgrade-widget";
 
-import "~/components/widgets/widgets.css";
+// Legacy widgets.css no longer needed — each widget has its own CSS
 import useCookieToken from "~/components/cookie";
 import type {UserDashboard} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import SupportWidget from "~/components/widgets/support-widget";
 import TipWidget from "~/components/widgets/tip-widget";
+import ChecklistWidget from "~/components/widgets/checklist-widget";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -74,6 +75,12 @@ export default function Dashboard() {
 
             <div className={"card-container"}>
                 <Card>
+                    <TipWidget />
+                </Card>
+            </div>
+
+            <div className={"card-container"}>
+                <Card>
                     <UsageBillingWidget data={{
                         currentUsage: userDashboard ? userDashboard.usage : 0,
                         monthlyLimit: userDashboard ? userDashboard.allowance : 0,
@@ -82,14 +89,11 @@ export default function Dashboard() {
                         currentCost: 0.00
                     }} />
                 </Card>
-            </div>
-
-            <div className={"card-container"}>
-                <Card>
-                    <TipWidget />
-                </Card>
                 <Card>
                     <SupportWidget />
+                </Card>
+                <Card>
+                    <ChecklistWidget />
                 </Card>
             </div>
 

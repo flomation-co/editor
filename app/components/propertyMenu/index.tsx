@@ -13,6 +13,7 @@ import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
+import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
@@ -308,6 +309,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 )
 
                                             case "string":
+                                                if (i.name === "flow_id") {
+                                                    return (
+                                                        <FlowSelectProperty
+                                                            nodeId={props.node.data.id}
+                                                            name={i.name}
+                                                            label={i.label}
+                                                            key={props.node.data.id + "-" + i.name}
+                                                            value={i.value}
+                                                            required={i.required}
+                                                            onValueChange={onValueChange}
+                                                        />
+                                                    )
+                                                }
                                                 return (
                                                     <StringProperty
                                                         nodeId={props.node.data.id}
