@@ -28,10 +28,41 @@
     color: #00aa9c;
 }
 
+.checklist-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .checklist-progress {
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.35);
+}
+
+.checklist-dismiss {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.checklist-dismiss:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.checklist-dismiss svg {
+    width: 12px;
+    height: 12px;
 }
 
 /* Progress bar */

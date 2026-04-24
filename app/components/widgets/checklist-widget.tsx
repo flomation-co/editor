@@ -75,6 +75,7 @@ export default function ChecklistWidget() {
     const [flags, setFlags] = useState(user?.checklist_flags ?? 0);
     const [showShare, setShowShare] = useState(false);
     const [detected, setDetected] = useState(false);
+    const [dismissed, setDismissed] = useState(() => localStorage.getItem("flomation-checklist-dismissed") === "true");
 
     useEffect(() => {
         setFlags(user?.checklist_flags ?? 0);
@@ -172,10 +173,14 @@ export default function ChecklistWidget() {
         }
     }, [flags, user, config, cookieToken, token, setUser]);
 
-    const completed = ITEMS.filter(item => (flags & item.flag) !== 0).length;
-    const allDone = (flags & ALL_FLAGS) === ALL_FLAGS;
+    const handleDismiss = () => {
+        localStorage.setItem("flomation-checklist-dismissed", "true");
+        setDismissed(true);
+    };
 
-    if (allDone) return null;
+    const completed = ITEMS.filter(item => (flags & item.flag) !== 0).length;
+
+    if (dismissed) return null;
 
     return (
         <div className="checklist-widget">
@@ -184,7 +189,12 @@ export default function ChecklistWidget() {
                     <Icon name="clipboard-list" className="checklist-header-icon" />
                     <h3>Getting Started</h3>
                 </div>
-                <span className="checklist-progress">{completed} / {ITEMS.length}</span>
+                <div className="checklist-header-right">
+                    <span className="checklist-progress">{completed} / {ITEMS.length}</span>
+                    <button className="checklist-dismiss" onClick={handleDismiss} title="Dismiss">
+                        <Icon name="xmark" />
+                    </button>
+                </div>
             </div>
             <div className="checklist-bar">
                 <div className="checklist-bar-fill" style={{ width: `${(completed / ITEMS.length) * 100}%` }} />
