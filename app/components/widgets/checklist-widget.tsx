@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "~/context/auth/use";
 import useConfig from "~/components/config";
@@ -12,9 +12,9 @@ const FLAG_PROFILE_NAME   = 1;
 const FLAG_CREATE_FLOW    = 2;
 const FLAG_EXECUTE_FLOW   = 4;
 const FLAG_CONFIGURE_ENV  = 8;
-const FLAG_SHARE          = 16;
+const FLAG_INVITE_TEAM    = 16;
 
-const ALL_FLAGS = FLAG_PROFILE_NAME | FLAG_CREATE_FLOW | FLAG_EXECUTE_FLOW | FLAG_CONFIGURE_ENV | FLAG_SHARE;
+const ALL_FLAGS = FLAG_PROFILE_NAME | FLAG_CREATE_FLOW | FLAG_EXECUTE_FLOW | FLAG_CONFIGURE_ENV | FLAG_INVITE_TEAM;
 
 interface ChecklistItem {
     flag: number;
@@ -23,6 +23,7 @@ interface ChecklistItem {
     link?: string;
     linkLabel?: string;
     icon: string;
+    action?: "share";
 }
 
 const ITEMS: ChecklistItem[] = [
@@ -57,35 +58,154 @@ const ITEMS: ChecklistItem[] = [
         icon: "layer-group",
     },
     {
-        flag: FLAG_SHARE,
-        label: "Share with Colleagues",
-        description: "Invite a colleague or share a flow with your team.",
+        flag: FLAG_INVITE_TEAM,
+        label: "Invite Your Team",
+        description: "Share Flomation with your colleagues and start collaborating.",
         icon: "user-group",
+        action: "share",
     },
 ];
+
+const SHARE_URL = "https://www.flomation.co";
+const SHARE_TEXT = "Check out Flomation — a powerful workflow automation platform that connects your tools, teams, and processes into seamless flows.";
 
 export default function ChecklistWidget() {
     const { user, setUser, token } = useAuth();
     const config = useConfig();
     const cookieToken = useCookieToken();
 
-    const flags = user?.checklist_flags ?? 0;
-    const completed = ITEMS.filter(item => (flags & item.flag) !== 0).length;
-    const allDone = flags === ALL_FLAGS;
+    const [flags, setFlags] = useState(user?.checklist_flags ?? 0);
+    const [showShare, setShowShare] = useState(false);
+    const [detected, setDetected] = useState(false);
 
-    const markDone = useCallback((flag: number) => {
-        if ((flags & flag) !== 0) return; // already done
+    useEffect(() => {
+        setFlags(user?.checklist_flags ?? 0);
+    }, [user?.checklist_flags]);
+
+    // Auto-detect completed items on mount
+    useEffect(() => {
+        if (!user || detected) return;
+        setDetected(true);
 
         const url = config("AUTOMATE_API_URL");
         const tkn = cookieToken || token;
-        api.post(url + "/api/v1/user/checklist", { flag }, {
-            headers: { Authorization: "Bearer " + tkn },
-        }).then(() => {
-            if (user) {
-                setUser({ ...user, checklist_flags: (user.checklist_flags ?? 0) | flag });
+        const headers = { Authorization: "Bearer " + tkn };
+        const currentFlags = user.checklist_flags ?? 0;
+        let newFlags = currentFlags;
+
+        const checks: Promise<void>[] = [];
+
+        // Profile name: check if not default/empty
+        if (!(currentFlags & FLAG_PROFILE_NAME)) {
+            if (user.name && user.name !== "" && user.name !== "auto-generate") {
+                newFlags |= FLAG_PROFILE_NAME;
             }
+        }
+
+        // Create flow: check if user owns any flows
+        if (!(currentFlags & FLAG_CREATE_FLOW)) {
+            checks.push(
+                api.get(`${url}/api/v1/flo?limit=1`, { headers })
+                    .then(res => {
+                        const total = parseInt(res.headers?.["x-total-items"] || "0", 10);
+                        if (total > 0 || (Array.isArray(res.data) && res.data.length > 0)) {
+                            newFlags |= FLAG_CREATE_FLOW;
+                        }
+                    })
+                    .catch(() => {})
+            );
+        }
+
+        // Execute flow: check usage (if > 0, they've executed something)
+        if (!(currentFlags & FLAG_EXECUTE_FLOW)) {
+            checks.push(
+                api.get(`${url}/api/v1/dashboard`, { headers })
+                    .then(res => {
+                        if (res.data && res.data.usage && res.data.usage > 0) {
+                            newFlags |= FLAG_EXECUTE_FLOW;
+                        }
+                    })
+                    .catch(() => {})
+            );
+        }
+
+        // Configure environment: check if any environments exist
+        if (!(currentFlags & FLAG_CONFIGURE_ENV)) {
+            checks.push(
+                api.get(`${url}/api/v1/environment`, { headers })
+                    .then(res => {
+                        if (Array.isArray(res.data) && res.data.length > 0) {
+                            newFlags |= FLAG_CONFIGURE_ENV;
+                        }
+                    })
+                    .catch(() => {})
+            );
+        }
+
+        Promise.all(checks).then(() => {
+            if (newFlags !== currentFlags) {
+                setFlags(newFlags);
+                // Persist each new flag
+                const added = newFlags & ~currentFlags;
+                for (let bit = 1; bit <= 16; bit <<= 1) {
+                    if (added & bit) {
+                        api.post(`${url}/api/v1/user/checklist`, { flag: bit }, { headers }).catch(() => {});
+                    }
+                }
+                if (user) {
+                    setUser({ ...user, checklist_flags: newFlags });
+                }
+            }
+        });
+    }, [user?.id]);
+
+    const markDone = useCallback((flag: number) => {
+        if (flags & flag) return;
+
+        const url = config("AUTOMATE_API_URL");
+        const tkn = cookieToken || token;
+        const newFlags = flags | flag;
+        setFlags(newFlags);
+        api.post(`${url}/api/v1/user/checklist`, { flag }, {
+            headers: { Authorization: "Bearer " + tkn },
         }).catch(() => {});
+        if (user) {
+            setUser({ ...user, checklist_flags: newFlags });
+        }
     }, [flags, user, config, cookieToken, token, setUser]);
+
+    const handleShare = (platform: string) => {
+        const encoded = encodeURIComponent(SHARE_URL);
+        const text = encodeURIComponent(SHARE_TEXT);
+        let shareUrl = "";
+
+        switch (platform) {
+            case "twitter":
+                shareUrl = `https://x.com/intent/tweet?text=${text}&url=${encoded}`;
+                break;
+            case "linkedin":
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`;
+                break;
+            case "facebook":
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
+                break;
+            case "email":
+                shareUrl = `mailto:?subject=${encodeURIComponent("Check out Flomation")}&body=${text}%0A%0A${encoded}`;
+                break;
+            case "copy":
+                navigator.clipboard.writeText(SHARE_URL);
+                markDone(FLAG_INVITE_TEAM);
+                return;
+        }
+
+        if (shareUrl) {
+            window.open(shareUrl, "_blank", "noopener,noreferrer,width=600,height=400");
+            markDone(FLAG_INVITE_TEAM);
+        }
+    };
+
+    const completed = ITEMS.filter(item => (flags & item.flag) !== 0).length;
+    const allDone = (flags & ALL_FLAGS) === ALL_FLAGS;
 
     if (allDone) return null;
 
@@ -122,10 +242,38 @@ export default function ChecklistWidget() {
                                     {item.linkLabel} →
                                 </Link>
                             )}
+                            {item.action === "share" && !done && (
+                                <button className="checklist-item-link checklist-share-btn" onClick={() => setShowShare(!showShare)}>
+                                    Share →
+                                </button>
+                            )}
                         </div>
                     );
                 })}
             </div>
+
+            {showShare && (
+                <div className="checklist-share-panel">
+                    <div className="checklist-share-title">Share Flomation</div>
+                    <div className="checklist-share-buttons">
+                        <button className="checklist-share-option" onClick={() => handleShare("twitter")}>
+                            <Icon name="x-twitter" /> X / Twitter
+                        </button>
+                        <button className="checklist-share-option" onClick={() => handleShare("linkedin")}>
+                            <Icon name="linkedin" /> LinkedIn
+                        </button>
+                        <button className="checklist-share-option" onClick={() => handleShare("facebook")}>
+                            <Icon name="facebook" /> Facebook
+                        </button>
+                        <button className="checklist-share-option" onClick={() => handleShare("email")}>
+                            <Icon name="envelope" /> Email
+                        </button>
+                        <button className="checklist-share-option" onClick={() => handleShare("copy")}>
+                            <Icon name="copy" /> Copy Link
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
