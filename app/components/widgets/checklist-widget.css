@@ -28,10 +28,41 @@
     color: #00aa9c;
 }
 
+.checklist-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .checklist-progress {
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.35);
+}
+
+.checklist-dismiss {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.checklist-dismiss:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.checklist-dismiss svg {
+    width: 12px;
+    height: 12px;
 }
 
 /* Progress bar */
@@ -147,4 +178,58 @@
 
 .checklist-item-link:hover {
     color: #00ccbb;
+}
+
+.checklist-share-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Share panel */
+.checklist-share-panel {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.checklist-share-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 10px;
+}
+
+.checklist-share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.checklist-share-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.checklist-share-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.checklist-share-option svg {
+    width: 12px;
+    height: 12px;
 }
