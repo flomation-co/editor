@@ -5,6 +5,7 @@ import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import api from "~/lib/api";
 import { Icon } from "~/components/icons/Icon";
+import ShareModal from "~/components/shareModal";
 import "./checklist-widget.css";
 
 // Bitmask flags — must match API
@@ -65,9 +66,6 @@ const ITEMS: ChecklistItem[] = [
         action: "share",
     },
 ];
-
-const SHARE_URL = "https://www.flomation.co";
-const SHARE_TEXT = "Check out Flomation — a powerful workflow automation platform that connects your tools, teams, and processes into seamless flows.";
 
 export default function ChecklistWidget() {
     const { user, setUser, token } = useAuth();
@@ -174,36 +172,6 @@ export default function ChecklistWidget() {
         }
     }, [flags, user, config, cookieToken, token, setUser]);
 
-    const handleShare = (platform: string) => {
-        const encoded = encodeURIComponent(SHARE_URL);
-        const text = encodeURIComponent(SHARE_TEXT);
-        let shareUrl = "";
-
-        switch (platform) {
-            case "twitter":
-                shareUrl = `https://x.com/intent/tweet?text=${text}&url=${encoded}`;
-                break;
-            case "linkedin":
-                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`;
-                break;
-            case "facebook":
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encoded}`;
-                break;
-            case "email":
-                shareUrl = `mailto:?subject=${encodeURIComponent("Check out Flomation")}&body=${text}%0A%0A${encoded}`;
-                break;
-            case "copy":
-                navigator.clipboard.writeText(SHARE_URL);
-                markDone(FLAG_INVITE_TEAM);
-                return;
-        }
-
-        if (shareUrl) {
-            window.open(shareUrl, "_blank", "noopener,noreferrer,width=600,height=400");
-            markDone(FLAG_INVITE_TEAM);
-        }
-    };
-
     const completed = ITEMS.filter(item => (flags & item.flag) !== 0).length;
     const allDone = (flags & ALL_FLAGS) === ALL_FLAGS;
 
@@ -252,28 +220,11 @@ export default function ChecklistWidget() {
                 })}
             </div>
 
-            {showShare && (
-                <div className="checklist-share-panel">
-                    <div className="checklist-share-title">Share Flomation</div>
-                    <div className="checklist-share-buttons">
-                        <button className="checklist-share-option" onClick={() => handleShare("twitter")}>
-                            <Icon name="x-twitter" /> X / Twitter
-                        </button>
-                        <button className="checklist-share-option" onClick={() => handleShare("linkedin")}>
-                            <Icon name="linkedin" /> LinkedIn
-                        </button>
-                        <button className="checklist-share-option" onClick={() => handleShare("facebook")}>
-                            <Icon name="facebook" /> Facebook
-                        </button>
-                        <button className="checklist-share-option" onClick={() => handleShare("email")}>
-                            <Icon name="envelope" /> Email
-                        </button>
-                        <button className="checklist-share-option" onClick={() => handleShare("copy")}>
-                            <Icon name="copy" /> Copy Link
-                        </button>
-                    </div>
-                </div>
-            )}
+            <ShareModal
+                visible={showShare}
+                onDismiss={() => setShowShare(false)}
+                onShared={() => markDone(FLAG_INVITE_TEAM)}
+            />
         </div>
     );
 }
