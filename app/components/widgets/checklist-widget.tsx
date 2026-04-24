@@ -81,7 +81,7 @@ export default function ChecklistWidget() {
         setFlags(user?.checklist_flags ?? 0);
     }, [user?.checklist_flags]);
 
-    // Auto-detect completed items on mount
+    // Auto-detect completed items on mount (except invite/share)
     useEffect(() => {
         if (!user || detected) return;
         setDetected(true);
@@ -94,14 +94,12 @@ export default function ChecklistWidget() {
 
         const checks: Promise<void>[] = [];
 
-        // Profile name: check if not default/empty
         if (!(currentFlags & FLAG_PROFILE_NAME)) {
             if (user.name && user.name !== "" && user.name !== "auto-generate") {
                 newFlags |= FLAG_PROFILE_NAME;
             }
         }
 
-        // Create flow: check if user owns any flows
         if (!(currentFlags & FLAG_CREATE_FLOW)) {
             checks.push(
                 api.get(`${url}/api/v1/flo?limit=1`, { headers })
@@ -115,7 +113,6 @@ export default function ChecklistWidget() {
             );
         }
 
-        // Execute flow: check usage (if > 0, they've executed something)
         if (!(currentFlags & FLAG_EXECUTE_FLOW)) {
             checks.push(
                 api.get(`${url}/api/v1/dashboard`, { headers })
@@ -128,7 +125,6 @@ export default function ChecklistWidget() {
             );
         }
 
-        // Configure environment: check if any environments exist
         if (!(currentFlags & FLAG_CONFIGURE_ENV)) {
             checks.push(
                 api.get(`${url}/api/v1/environment`, { headers })
@@ -144,7 +140,6 @@ export default function ChecklistWidget() {
         Promise.all(checks).then(() => {
             if (newFlags !== currentFlags) {
                 setFlags(newFlags);
-                // Persist each new flag
                 const added = newFlags & ~currentFlags;
                 for (let bit = 1; bit <= 16; bit <<= 1) {
                     if (added & bit) {
@@ -233,7 +228,6 @@ export default function ChecklistWidget() {
             <ShareModal
                 visible={showShare}
                 onDismiss={() => setShowShare(false)}
-                onShared={() => markDone(FLAG_INVITE_TEAM)}
             />
         </div>
     );
