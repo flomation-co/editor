@@ -153,16 +153,14 @@ export default function ChecklistWidget() {
         });
     }, [user?.id]);
 
-    const markDone = useCallback((flag: number) => {
-        if (flags & flag) return;
-
+    const toggleFlag = useCallback((flag: number) => {
         const url = config("AUTOMATE_API_URL");
         const tkn = cookieToken || token;
-        const newFlags = flags | flag;
+        const headers = { Authorization: "Bearer " + tkn };
+        const isDone = (flags & flag) !== 0;
+        const newFlags = isDone ? (flags & ~flag) : (flags | flag);
         setFlags(newFlags);
-        api.post(`${url}/api/v1/user/checklist`, { flag }, {
-            headers: { Authorization: "Bearer " + tkn },
-        }).catch(() => {});
+        api.post(`${url}/api/v1/user/checklist`, { flag, clear: isDone }, { headers }).catch(() => {});
         if (user) {
             setUser({ ...user, checklist_flags: newFlags });
         }
@@ -201,8 +199,7 @@ export default function ChecklistWidget() {
                         <div key={item.flag} className={`checklist-item ${done ? "done" : ""}`}>
                             <button
                                 className={`checklist-check ${done ? "checked" : ""}`}
-                                onClick={() => markDone(item.flag)}
-                                disabled={done}
+                                onClick={() => toggleFlag(item.flag)}
                             >
                                 {done && <Icon name="check" />}
                             </button>
