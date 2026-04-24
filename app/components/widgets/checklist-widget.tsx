@@ -75,7 +75,7 @@ export default function ChecklistWidget() {
     const [flags, setFlags] = useState(user?.checklist_flags ?? 0);
     const [showShare, setShowShare] = useState(false);
     const [detected, setDetected] = useState(false);
-    const [dismissed, setDismissed] = useState(() => localStorage.getItem("flomation-checklist-dismissed") === "true");
+    const [dismissed, setDismissed] = useState(() => typeof window !== "undefined" && localStorage.getItem("flomation-checklist-dismissed") === "true");
 
     useEffect(() => {
         setFlags(user?.checklist_flags ?? 0);
