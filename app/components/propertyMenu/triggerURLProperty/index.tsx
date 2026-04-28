@@ -47,6 +47,14 @@ const TriggerURLProperty = (props: Props) => {
             triggerPath = `/webhook/${trigger.id}`;
             triggerUrl = launchUrl + triggerPath;
             break;
+        case "gitlab-webhook":
+            triggerPath = `/webhook/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            break;
+        case "github-webhook":
+            triggerPath = `/webhook/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            break;
         case "qr":
             triggerPath = `/qr/${trigger.id}`;
             triggerUrl = launchUrl + triggerPath;

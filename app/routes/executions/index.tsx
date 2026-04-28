@@ -107,7 +107,7 @@ export default function Executions() {
         { label: "5m", value: 300000 },
         { label: "Off", value: 0 },
     ];
-    const [ refreshInterval, setRefreshInterval ] = useState<number>(5000);
+    const [ refreshInterval, setRefreshInterval ] = useState<number>(15000);
     const [ refreshCycle, setRefreshCycle ] = useState<number>(0);
 
     const controller = new AbortController();
