@@ -14,6 +14,7 @@ import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
+import WebhookSecretProperty from "~/components/propertyMenu/webhookSecretProperty";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
@@ -283,6 +284,23 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     key={props.node.data.id + "-" + i.name}
                                                     value={i.value || "{}"}
                                                     onChange={(val) => onValueChange(i.name, val)}
+                                                />
+                                            );
+                                        }
+
+                                        // Special case: webhook_secret on GitLab/GitHub triggers — auto-generate with copy/regenerate
+                                        if (i.name === "webhook_secret" && (
+                                            props.node.data.label === "trigger/gitlab_webhook" ||
+                                            props.node.data.label === "trigger/github_webhook"
+                                        )) {
+                                            return (
+                                                <WebhookSecretProperty
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    value={i.value || ""}
+                                                    onValueChange={onValueChange}
                                                 />
                                             );
                                         }

@@ -1,0 +1,49 @@
+.webhook-secret-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.webhook-secret-input {
+    flex: 1;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color, #333);
+    border-radius: 6px;
+    background: var(--input-bg, #1a1a2e);
+    color: var(--text-color, #e0e0e0);
+    min-width: 0;
+    text-overflow: ellipsis;
+}
+
+.webhook-secret-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.webhook-secret-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border-color, #333);
+    border-radius: 6px;
+    background: var(--input-bg, #1a1a2e);
+    color: var(--text-muted, #888);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.webhook-secret-btn:hover {
+    color: var(--text-color, #e0e0e0);
+    border-color: var(--text-muted, #888);
+}
+
+.webhook-secret-btn svg {
+    width: 12px;
+    height: 12px;
+}
