@@ -139,6 +139,7 @@ interface VoucherHistoryItem {
     months_remaining?: number;
     redeemed_at: string;
     active: boolean;
+    preloaded: boolean;
 }
 
 function VoucherHistory({token}: { token: string | null }) {
@@ -174,8 +175,8 @@ function VoucherHistory({token}: { token: string | null }) {
                     </span>
                     <span className="billing-invoice-date">{formatDate(v.redeemed_at)}</span>
                     <span className="billing-invoice-status">
-                        <span className={`billing-badge ${v.active ? "billing-badge--active" : "billing-badge--cancelled"}`}>
-                            {v.active ? "active" : "used"}
+                        <span className={`billing-badge ${v.active ? (v.preloaded ? "billing-badge--trialling" : "billing-badge--active") : "billing-badge--cancelled"}`}>
+                            {v.preloaded ? "preloaded" : v.active ? "active" : "used"}
                         </span>
                     </span>
                 </div>
