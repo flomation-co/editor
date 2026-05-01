@@ -412,6 +412,13 @@
     gap: 10px;
 }
 
+.billing-order-vat-note {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 8px;
+    text-align: right;
+}
+
 /* ── Plan rows ── */
 .billing-plan-row {
     display: flex;

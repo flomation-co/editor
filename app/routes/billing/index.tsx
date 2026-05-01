@@ -263,6 +263,10 @@ export default function Billing() {
         const price = plan.prices?.[0];
         if (!price) return null;
 
+        const grossPence = price.amount_pence;
+        const netPence = Math.round(grossPence / 1.20);
+        const vatPence = grossPence - netPence;
+
         const startDate = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
@@ -270,14 +274,8 @@ export default function Billing() {
         return (
             <div className="billing-order-summary">
                 <div className="billing-order-line">
-                    <span className="billing-order-label">{plan.name} Plan</span>
-                    <span className="billing-order-value">{formatCurrency(price.amount_pence)} / {price.billing_interval}</span>
-                </div>
-                <div className="billing-order-line billing-order-line--muted">
-                    <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
-                    <span className="billing-order-value">
-                        {isUpgrade ? formatDate(startDate.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
-                    </span>
+                    <span className="billing-order-label">{plan.name} Plan (monthly)</span>
+                    <span className="billing-order-value">{formatCurrency(netPence)}</span>
                 </div>
                 {isUpgrade && currentPrice && currentPrice.amount_pence > 0 && (
                     <div className="billing-order-line billing-order-line--muted">
@@ -285,12 +283,27 @@ export default function Billing() {
                         <span className="billing-order-value" style={{color: "#00ccbb"}}>Calculated at checkout</span>
                     </div>
                 )}
+                <div className="billing-order-line">
+                    <span className="billing-order-label">VAT (20%)</span>
+                    <span className="billing-order-value">{formatCurrency(vatPence)}</span>
+                </div>
+                <div className="billing-order-divider" />
+                <div className="billing-order-line" style={{fontWeight: 600}}>
+                    <span className="billing-order-label">Total (inc. VAT)</span>
+                    <span className="billing-order-value">{formatCurrency(grossPence)} / {price.billing_interval}</span>
+                </div>
+                <div className="billing-order-line billing-order-line--muted">
+                    <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
+                    <span className="billing-order-value">
+                        {isUpgrade ? formatDate(startDate.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
+                    </span>
+                </div>
                 <div className="billing-order-divider" />
                 {defaultPM ? (
                     <div className="billing-order-line">
                         <span className="billing-order-label">Payment method</span>
                         <span className="billing-order-value">
-                            {defaultPM.card_brand?.toUpperCase()} •••• {defaultPM.card_last4}
+                            {defaultPM.card_brand?.toUpperCase()} &bull;&bull;&bull;&bull; {defaultPM.card_last4}
                         </span>
                     </div>
                 ) : (
@@ -299,6 +312,9 @@ export default function Billing() {
                         <span>No payment method on file. Please add a card on the Payment tab first.</span>
                     </div>
                 )}
+                <div className="billing-order-vat-note">
+                    All prices include VAT. VAT No: GB 000 0000 00
+                </div>
             </div>
         );
     };
