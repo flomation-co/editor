@@ -1,6 +1,7 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
+import {useAuth} from "~/context/auth/use";
 import useCookieToken from "~/components/cookie";
 import {Icon} from "~/components/icons/Icon";
 import "./index.css";
@@ -43,6 +44,16 @@ interface Invoice {
     created_at: string;
 }
 
+interface ModalState {
+    visible: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    variant?: "primary" | "danger";
+    onConfirm?: () => void;
+}
+
 function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString("en-GB", {
         day: "numeric", month: "short", year: "numeric",
@@ -50,7 +61,7 @@ function formatDate(dateStr: string): string {
 }
 
 function formatCurrency(pence: number, currency: string = "GBP"): string {
-    const symbol = currency === "GBP" ? "£" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency + " ";
+    const symbol = currency === "GBP" ? "\u00a3" : currency === "USD" ? "$" : currency === "EUR" ? "\u20ac" : currency + " ";
     return `${symbol}${(pence / 100).toFixed(2)}`;
 }
 
@@ -65,7 +76,61 @@ function statusBadgeClass(status: string): string {
     }
 }
 
+// ── Modal component ───────────────────────────────────────────────────
+
+function BillingModal({modal, onClose}: { modal: ModalState; onClose: () => void }) {
+    if (!modal.visible) return null;
+
+    return (
+        <div className="billing-modal-overlay" onClick={onClose}>
+            <div className="billing-modal" onClick={e => e.stopPropagation()}>
+                <div className="billing-modal-header">
+                    <h3>{modal.title}</h3>
+                    <button className="billing-modal-close" onClick={onClose}>
+                        <Icon name="xmark" />
+                    </button>
+                </div>
+                <div className="billing-modal-body">
+                    <p>{modal.message}</p>
+                </div>
+                <div className="billing-modal-footer">
+                    <button className="billing-btn billing-btn--secondary" onClick={onClose}>
+                        {modal.cancelLabel || "Cancel"}
+                    </button>
+                    {modal.onConfirm && (
+                        <button
+                            className={`billing-btn ${modal.variant === "danger" ? "billing-btn--danger" : "billing-btn--primary"}`}
+                            onClick={() => { modal.onConfirm?.(); onClose(); }}
+                        >
+                            {modal.confirmLabel || "Confirm"}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Notification toast ────────────────────────────────────────────────
+
+function BillingNotification({message, variant, onDismiss}: { message: string; variant: "success" | "error"; onDismiss: () => void }) {
+    useEffect(() => {
+        const timer = setTimeout(onDismiss, 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        <div className={`billing-notification billing-notification--${variant}`} onClick={onDismiss}>
+            <Icon name={variant === "success" ? "check-circle" : "circle-exclamation"} />
+            <span>{message}</span>
+        </div>
+    );
+}
+
+// ── Main component ────────────────────────────────────────────────────
+
 export default function Billing() {
+    const auth = useAuth();
     const token = useCookieToken();
     const [activeTab, setActiveTab] = useState<Tab>("subscription");
 
@@ -80,14 +145,18 @@ export default function Billing() {
     const [voucherCode, setVoucherCode] = useState("");
     const [voucherResult, setVoucherResult] = useState<{ success: boolean; message: string } | null>(null);
 
-    // Find the current plan's price for display.
+    const [modal, setModal] = useState<ModalState>({visible: false, title: "", message: ""});
+    const [notification, setNotification] = useState<{ message: string; variant: "success" | "error" } | null>(null);
+
+    const closeModal = () => setModal(m => ({...m, visible: false}));
+    const notify = (message: string, variant: "success" | "error") => setNotification({message, variant});
+
     const currentPrice: BillingPlanPrice | undefined = subscription
         ? plans.flatMap(p => p.prices).find(pr => pr.plan_id === subscription.plan_id)
         : undefined;
 
     const currentPlanName = plans.find(p => p.id === subscription?.plan_id)?.name
-        ?? quota?.plan_slug?.charAt(0).toUpperCase() + (quota?.plan_slug?.slice(1) ?? "")
-        ?? "Start";
+        ?? (quota?.plan_slug ? quota.plan_slug.charAt(0).toUpperCase() + quota.plan_slug.slice(1) : "Start");
 
     useEffect(() => {
         if (!token) return;
@@ -115,6 +184,17 @@ export default function Billing() {
             setLoading(false);
         });
 
+        // Check for setup success redirect.
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("setup") === "success") {
+            setActiveTab("payment");
+            notify("Payment method added successfully.", "success");
+            window.history.replaceState({}, "", "/billing?tab=payment");
+        }
+        if (params.get("tab")) {
+            setActiveTab(params.get("tab") as Tab);
+        }
+
         return () => controller.abort();
     }, []);
 
@@ -128,65 +208,103 @@ export default function Billing() {
                 token,
                 window.location.origin + "/billing?tab=payment&setup=success",
                 window.location.origin + "/billing?tab=payment",
+                auth.user?.email,
+                auth.user?.name,
             );
             window.location.href = url;
         } catch {
-            alert("Failed to start payment method setup. Please try again.");
+            notify("Failed to start payment method setup. Please try again.", "error");
         } finally {
             setActionLoading(false);
         }
     };
 
-    const handleDeletePM = async (pmId: string) => {
-        if (!token || !confirm("Remove this payment method?")) return;
-        const base = billingBaseURL();
-        await api.delete(base + "/api/v1/billing/payment-method/" + pmId, {
-            headers: {"Authorization": "Bearer " + token},
+    const handleDeletePM = (pmId: string) => {
+        setModal({
+            visible: true,
+            title: "Remove Payment Method",
+            message: "Are you sure you want to remove this payment method? This cannot be undone.",
+            confirmLabel: "Remove",
+            variant: "danger",
+            onConfirm: async () => {
+                if (!token) return;
+                try {
+                    const base = billingBaseURL();
+                    await api.delete(base + "/api/v1/billing/payment-method/" + pmId, {
+                        headers: {"Authorization": "Bearer " + token},
+                    });
+                    setPMs(pms => pms.filter(p => p.id !== pmId));
+                    notify("Payment method removed.", "success");
+                } catch {
+                    notify("Failed to remove payment method.", "error");
+                }
+            },
         });
-        setPMs(pms => pms.filter(p => p.id !== pmId));
     };
 
     const handleSetDefaultPM = async (pmId: string) => {
         if (!token) return;
-        const base = billingBaseURL();
-        await api.post(base + "/api/v1/billing/payment-method/" + pmId + "/default", {}, {
-            headers: {"Authorization": "Bearer " + token},
-        });
-        setPMs(pms => pms.map(p => ({...p, is_default: p.id === pmId})));
+        try {
+            const base = billingBaseURL();
+            await api.post(base + "/api/v1/billing/payment-method/" + pmId + "/default", {}, {
+                headers: {"Authorization": "Bearer " + token},
+            });
+            setPMs(pms => pms.map(p => ({...p, is_default: p.id === pmId})));
+            notify("Default payment method updated.", "success");
+        } catch {
+            notify("Failed to update default payment method.", "error");
+        }
     };
 
-    const handleUpgrade = async (plan: BillingPlan) => {
-        if (!token || actionLoading) return;
+    const handleUpgrade = (plan: BillingPlan) => {
         const price = plan.prices?.[0];
         if (!price) return;
 
-        if (!confirm(`Upgrade to ${plan.name} for ${formatCurrency(price.amount_pence)}/${price.billing_interval}?`)) return;
-
-        setActionLoading(true);
-        try {
-            await upgradeSubscription(token, plan.slug, price.id);
-            window.location.reload();
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : "Unknown error";
-            alert(`Upgrade failed: ${message}`);
-        } finally {
-            setActionLoading(false);
-        }
+        setModal({
+            visible: true,
+            title: `Upgrade to ${plan.name}`,
+            message: `You'll be upgraded to the ${plan.name} plan at ${formatCurrency(price.amount_pence)}/${price.billing_interval}. ` +
+                `The difference will be prorated for the remainder of your current billing period.`,
+            confirmLabel: `Upgrade to ${plan.name}`,
+            variant: "primary",
+            onConfirm: async () => {
+                if (!token) return;
+                setActionLoading(true);
+                try {
+                    await upgradeSubscription(token, plan.slug, price.id);
+                    notify(`Successfully upgraded to ${plan.name}!`, "success");
+                    setTimeout(() => window.location.reload(), 1500);
+                } catch {
+                    notify("Upgrade failed. Please try again or contact support.", "error");
+                } finally {
+                    setActionLoading(false);
+                }
+            },
+        });
     };
 
-    const handleCancel = async () => {
-        if (!token || actionLoading) return;
-        if (!confirm("Are you sure you want to cancel your subscription? You'll retain access until the end of the current billing period.")) return;
-
-        setActionLoading(true);
-        try {
-            await cancelSubscription(token);
-            window.location.reload();
-        } catch {
-            alert("Failed to cancel subscription. Please try again.");
-        } finally {
-            setActionLoading(false);
-        }
+    const handleCancel = () => {
+        setModal({
+            visible: true,
+            title: "Cancel Subscription",
+            message: "Are you sure you want to cancel? You'll retain access to all features until the end of your current billing period.",
+            confirmLabel: "Cancel Subscription",
+            cancelLabel: "Keep Subscription",
+            variant: "danger",
+            onConfirm: async () => {
+                if (!token) return;
+                setActionLoading(true);
+                try {
+                    await cancelSubscription(token);
+                    notify("Subscription cancelled. You'll retain access until the end of your billing period.", "success");
+                    setTimeout(() => window.location.reload(), 1500);
+                } catch {
+                    notify("Failed to cancel subscription. Please try again.", "error");
+                } finally {
+                    setActionLoading(false);
+                }
+            },
+        });
     };
 
     const handleReactivate = async () => {
@@ -197,9 +315,10 @@ export default function Billing() {
             await api.post(base + "/api/v1/billing/subscription/reactivate", {}, {
                 headers: {"Authorization": "Bearer " + token},
             });
-            window.location.reload();
+            notify("Subscription reactivated!", "success");
+            setTimeout(() => window.location.reload(), 1500);
         } catch {
-            alert("Failed to reactivate. Please try again.");
+            notify("Failed to reactivate. Please try again.", "error");
         } finally {
             setActionLoading(false);
         }
@@ -234,7 +353,8 @@ export default function Billing() {
             });
             setVoucherResult({success: true, message: "Voucher applied to your subscription!"});
             setVoucherCode("");
-        } catch (err: unknown) {
+            notify("Voucher applied successfully!", "success");
+        } catch {
             setVoucherResult({success: false, message: "Failed to apply voucher"});
         } finally {
             setActionLoading(false);
@@ -257,6 +377,16 @@ export default function Billing() {
     return (
         <Container>
             <div className="header">Billing</div>
+
+            {notification && (
+                <BillingNotification
+                    message={notification.message}
+                    variant={notification.variant}
+                    onDismiss={() => setNotification(null)}
+                />
+            )}
+
+            <BillingModal modal={modal} onClose={closeModal} />
 
             <div className="billing-page">
                 <div className="billing-tabs">
@@ -322,7 +452,6 @@ export default function Billing() {
                             )}
                         </div>
 
-                        {/* Available upgrades */}
                         {plans.filter(p => p.prices?.[0]?.amount_pence > (currentPrice?.amount_pence || 0)).length > 0 && (
                             <div className="billing-card">
                                 <div className="billing-section-label">Available Upgrades</div>
@@ -348,7 +477,6 @@ export default function Billing() {
                             </div>
                         )}
 
-                        {/* Cancel */}
                         {subscription && subscription.status === "active" && !subscription.cancel_at_period_end && currentPrice && currentPrice.amount_pence > 0 && (
                             <div className="billing-card">
                                 <div className="billing-section-label">Cancel Subscription</div>
@@ -383,7 +511,7 @@ export default function Billing() {
                                     <div key={pm.id} className="billing-pm-item">
                                         <div className="billing-pm-icon">{pm.card_brand || "card"}</div>
                                         <div className="billing-pm-details">
-                                            <div className="billing-pm-number">•••• •••• •••• {pm.card_last4 || "????"}</div>
+                                            <div className="billing-pm-number">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; {pm.card_last4 || "????"}</div>
                                             <div className="billing-pm-expiry">
                                                 Expires {pm.card_exp_month?.toString().padStart(2, "0")}/{pm.card_exp_year}
                                             </div>
