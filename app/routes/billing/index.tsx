@@ -9,6 +9,7 @@ import "./index.css";
 import {
     fetchPlans, fetchSubscription, fetchQuota,
     setupPaymentMethod, upgradeSubscription, downgradeSubscription, cancelSubscription,
+    previewUpgrade, type UpgradePreview,
     type BillingPlan, type BillingSubscription, type QuotaResponse,
     type BillingPlanPrice,
 } from "~/lib/billing";
@@ -324,77 +325,27 @@ export default function Billing() {
 
     const defaultPM = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
 
-    const activeVouchers = voucherHistory.filter(v => v.active || v.preloaded);
-    const flatVouchers = activeVouchers.filter(v => v.discount_type === "flat");
-    const pctVouchers = activeVouchers.filter(v => v.discount_type === "percentage");
+    const [upgradePreviewData, setUpgradePreviewData] = useState<UpgradePreview | null>(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
 
     const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean) => {
         const price = plan.prices?.[0];
         if (!price) return null;
-
-        const newGross = price.amount_pence;
-        const now = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
 
-        // Work in GROSS (VAT-inclusive) throughout. Extract VAT at the very end.
-        // This ensures flat vouchers (e.g. "£10 off") deduct their face value.
-        const currentGross = currentPrice ? currentPrice.amount_pence : 0;
+        // If we have server-provided preview data for an upgrade, use it.
+        const p = isUpgrade ? upgradePreviewData : null;
 
-        // Calculate proration for upgrades with existing paid subscription.
-        let creditGross = 0;
-        let chargeGross = newGross;
-        let hasProration = false;
-        let remainingDaysDisplay = 0;
-
-        if (isUpgrade && subscription?.current_period_start && subscription?.current_period_end && currentPrice && currentPrice.amount_pence > 0) {
-            const periodStart = new Date(subscription.current_period_start);
-            const periodEnd = new Date(subscription.current_period_end);
-            const totalDays = (periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24);
-            const remainingDays = Math.max(0, (periodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            remainingDaysDisplay = Math.ceil(remainingDays);
-            const ratio = totalDays > 0 ? remainingDays / totalDays : 1;
-
-            if (ratio >= 0.95) {
-                chargeGross = newGross;
-                creditGross = currentGross;
-            } else {
-                chargeGross = Math.round(newGross * ratio);
-                creditGross = Math.round(currentGross * ratio);
-            }
-            hasProration = true;
-        }
-
-        // Apply stacked voucher discounts in gross: flat first, then percentage.
-        let remaining = chargeGross - creditGross;
-        const voucherLines: { label: string; amount: number }[] = [];
-
-        // Flat vouchers at face value (gross).
-        for (const v of flatVouchers) {
-            if (remaining <= 0) break;
-            const discount = Math.min(v.discount_value, remaining);
-            remaining -= discount;
-            voucherLines.push({
-                label: `Voucher ${v.code} (${formatCurrency(v.discount_value)} off)`,
-                amount: discount,
-            });
-        }
-
-        // Percentage vouchers on the gross remainder.
-        for (const v of pctVouchers) {
-            if (remaining <= 0) break;
-            const discount = Math.round((remaining * v.discount_value) / 100);
-            remaining -= discount;
-            voucherLines.push({
-                label: `Voucher ${v.code} (${v.discount_value}% off)`,
-                amount: discount,
-            });
-        }
-
-        const totalDue = Math.max(0, remaining);
-        // Back-calculate net and VAT from the final gross amount.
-        const subtotalNet = Math.round(totalDue / 1.20);
-        const vatPence = totalDue - subtotalNet;
+        const chargeGross = p ? p.charge_gross : price.amount_pence;
+        const creditGross = p ? p.credit_gross : 0;
+        const voucherLines = p ? p.vouchers.map(v => ({label: v.label, amount: v.amount})) : [];
+        const totalDue = p ? p.total_due : price.amount_pence;
+        const subtotalNet = p ? p.subtotal_net : Math.round(price.amount_pence / 1.20);
+        const vatPence = p ? p.vat_amount : price.amount_pence - subtotalNet;
+        const hasProration = p ? p.is_prorated : false;
+        const remainingDaysDisplay = p ? p.remaining_days : 0;
+        const effectiveDate = p ? p.effective_date : new Date().toISOString().split("T")[0];
 
         return (
             <div className="billing-order-summary">
@@ -443,7 +394,7 @@ export default function Billing() {
                 <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
                     <span className="billing-order-value">
-                        {isUpgrade ? formatDate(now.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
+                        {isUpgrade ? formatDate(effectiveDate) : formatDate(subscription?.current_period_end || endDate.toISOString())}
                     </span>
                 </div>
                 <div className="billing-order-divider" />
@@ -467,30 +418,45 @@ export default function Billing() {
         );
     };
 
-    const handleUpgrade = (plan: BillingPlan) => {
+    const handleUpgrade = async (plan: BillingPlan) => {
         const price = plan.prices?.[0];
-        if (!price) return;
+        if (!price || !token) return;
 
-        setModal({
-            visible: true,
-            title: `Upgrade to ${plan.name}`,
-            content: buildOrderSummary(plan, true),
-            confirmLabel: defaultPM ? `Confirm Upgrade` : undefined,
-            variant: "primary",
-            onConfirm: defaultPM ? async () => {
-                if (!token) return;
-                setActionLoading(true);
-                try {
-                    await upgradeSubscription(token, plan.slug, price.id);
-                    notify(`Successfully upgraded to ${plan.name}!`, "success");
-                    setTimeout(() => window.location.reload(), 1500);
-                } catch {
-                    notify("Upgrade failed. Please try again or contact support.", "error");
-                } finally {
-                    setActionLoading(false);
-                }
-            } : undefined,
-        });
+        // Fetch the server-calculated preview.
+        setPreviewLoading(true);
+        try {
+            const preview = await previewUpgrade(token, plan.slug, price.id);
+            setUpgradePreviewData(preview);
+
+            // Show modal with server data (buildOrderSummary will read upgradePreviewData).
+            // Use setTimeout to let state update before rendering.
+            setTimeout(() => {
+                setModal({
+                    visible: true,
+                    title: `Upgrade to ${plan.name}`,
+                    content: buildOrderSummary(plan, true),
+                    confirmLabel: defaultPM ? `Confirm Upgrade` : undefined,
+                    variant: "primary",
+                    onConfirm: defaultPM ? async () => {
+                        if (!token) return;
+                        setActionLoading(true);
+                        try {
+                            await upgradeSubscription(token, plan.slug, price.id);
+                            notify(`Successfully upgraded to ${plan.name}!`, "success");
+                            setTimeout(() => window.location.reload(), 1500);
+                        } catch {
+                            notify("Upgrade failed. Please try again or contact support.", "error");
+                        } finally {
+                            setActionLoading(false);
+                        }
+                    } : undefined,
+                });
+            }, 0);
+        } catch {
+            notify("Failed to load upgrade details. Please try again.", "error");
+        } finally {
+            setPreviewLoading(false);
+        }
     };
 
     const handleDowngrade = (plan: BillingPlan) => {

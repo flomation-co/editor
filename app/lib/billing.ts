@@ -160,6 +160,33 @@ export async function upgradeSubscription(token: string, planSlug: string, price
 }
 
 /**
+ * Preview an upgrade — returns the exact breakdown the charge will use.
+ */
+export async function previewUpgrade(token: string, planSlug: string, priceId: string): Promise<UpgradePreview> {
+    const url = billingBaseURL() + "/api/v1/billing/subscription/upgrade/preview";
+    const response = await api.post(url, { plan_slug: planSlug, price_id: priceId }, {
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
+}
+
+export interface UpgradePreview {
+    plan_name: string;
+    plan_slug: string;
+    price_id: string;
+    charge_gross: number;
+    credit_gross: number;
+    vouchers: { code: string; label: string; discount_type: string; amount: number }[];
+    total_due: number;
+    subtotal_net: number;
+    vat_amount: number;
+    is_prorated: boolean;
+    remaining_days: number;
+    current_plan: string;
+    effective_date: string;
+}
+
+/**
  * Downgrade to a lower plan (effective at period end).
  */
 export async function downgradeSubscription(token: string, planSlug: string, priceId: string): Promise<unknown> {
