@@ -324,7 +324,9 @@ export default function Billing() {
 
     const defaultPM = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
 
-    const activeVoucher = voucherHistory.find(v => v.active);
+    const activeVouchers = voucherHistory.filter(v => v.active || v.preloaded);
+    const flatVouchers = activeVouchers.filter(v => v.discount_type === "flat");
+    const pctVouchers = activeVouchers.filter(v => v.discount_type === "percentage");
 
     const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean) => {
         const price = plan.prices?.[0];
@@ -364,22 +366,34 @@ export default function Billing() {
             hasProration = true;
         }
 
-        // Apply voucher discount if active.
-        let voucherDiscountNet = 0;
-        let voucherLabel = "";
-        const chargeAfterCredit = chargeNet - creditNet;
-        if (activeVoucher && chargeAfterCredit > 0) {
-            if (activeVoucher.discount_type === "percentage") {
-                voucherDiscountNet = Math.round((chargeAfterCredit * activeVoucher.discount_value) / 100);
-                voucherLabel = `Voucher ${activeVoucher.code} (${activeVoucher.discount_value}% off)`;
-            } else {
-                const flatNet = Math.round(activeVoucher.discount_value / 1.20);
-                voucherDiscountNet = Math.min(flatNet, chargeAfterCredit);
-                voucherLabel = `Voucher ${activeVoucher.code} (${formatCurrency(activeVoucher.discount_value)} off)`;
-            }
+        // Apply stacked voucher discounts: flat first, then percentage.
+        let remaining = chargeNet - creditNet;
+        const voucherLines: { label: string; amount: number }[] = [];
+
+        // Flat vouchers first.
+        for (const v of flatVouchers) {
+            if (remaining <= 0) break;
+            const flatNet = Math.round(v.discount_value / 1.20);
+            const discount = Math.min(flatNet, remaining);
+            remaining -= discount;
+            voucherLines.push({
+                label: `Voucher ${v.code} (${formatCurrency(v.discount_value)} off)`,
+                amount: discount,
+            });
         }
 
-        const subtotalNet = Math.max(0, chargeAfterCredit - voucherDiscountNet);
+        // Percentage vouchers on the remainder.
+        for (const v of pctVouchers) {
+            if (remaining <= 0) break;
+            const discount = Math.round((remaining * v.discount_value) / 100);
+            remaining -= discount;
+            voucherLines.push({
+                label: `Voucher ${v.code} (${v.discount_value}% off)`,
+                amount: discount,
+            });
+        }
+
+        const subtotalNet = Math.max(0, remaining);
         const vatPence = Math.round(subtotalNet * 0.20);
         const totalDue = subtotalNet + vatPence;
 
@@ -401,12 +415,12 @@ export default function Billing() {
                         <span className="billing-order-value">-{formatCurrency(creditNet)}</span>
                     </div>
                 )}
-                {voucherDiscountNet > 0 && (
-                    <div className="billing-order-line" style={{color: "#a78bfa"}}>
-                        <span className="billing-order-label">{voucherLabel}</span>
-                        <span className="billing-order-value">-{formatCurrency(voucherDiscountNet)}</span>
+                {voucherLines.map((vl, i) => (
+                    <div key={i} className="billing-order-line" style={{color: "#a78bfa"}}>
+                        <span className="billing-order-label">{vl.label}</span>
+                        <span className="billing-order-value">-{formatCurrency(vl.amount)}</span>
                     </div>
-                )}
+                ))}
                 <div className="billing-order-divider" />
                 <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">Subtotal (ex. VAT)</span>
