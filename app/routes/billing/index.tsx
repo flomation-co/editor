@@ -351,7 +351,7 @@ export default function Billing() {
             <div className="billing-order-summary">
                 <div className="billing-order-line">
                     <span className="billing-order-label">{plan.name} Plan (monthly, inc. VAT)</span>
-                    <span className="billing-order-value">{formatCurrency(newGross)}</span>
+                    <span className="billing-order-value">{formatCurrency(price.amount_pence)}</span>
                 </div>
                 {hasProration && remainingDaysDisplay < 28 && (
                     <div className="billing-order-line billing-order-line--muted">
@@ -388,7 +388,7 @@ export default function Billing() {
                 {!hasProration && (
                     <div className="billing-order-line billing-order-line--muted">
                         <span className="billing-order-label">Billed {price.billing_interval}ly</span>
-                        <span className="billing-order-value">{formatCurrency(newGross)} / {price.billing_interval}</span>
+                        <span className="billing-order-value">{formatCurrency(price.amount_pence)} / {price.billing_interval}</span>
                     </div>
                 )}
                 <div className="billing-order-line billing-order-line--muted">
