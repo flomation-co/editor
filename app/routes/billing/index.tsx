@@ -337,13 +337,13 @@ export default function Billing() {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
 
-        // Work in ex-VAT (net) amounts throughout, add VAT at the end.
-        const newNet = Math.round(newGross / 1.20);
-        const currentNet = currentPrice ? Math.round(currentPrice.amount_pence / 1.20) : 0;
+        // Work in GROSS (VAT-inclusive) throughout. Extract VAT at the very end.
+        // This ensures flat vouchers (e.g. "£10 off") deduct their face value.
+        const currentGross = currentPrice ? currentPrice.amount_pence : 0;
 
         // Calculate proration for upgrades with existing paid subscription.
-        let creditNet = 0;
-        let chargeNet = newNet;
+        let creditGross = 0;
+        let chargeGross = newGross;
         let hasProration = false;
         let remainingDaysDisplay = 0;
 
@@ -355,26 +355,24 @@ export default function Billing() {
             remainingDaysDisplay = Math.ceil(remainingDays);
             const ratio = totalDays > 0 ? remainingDays / totalDays : 1;
 
-            // If ratio is >=0.95 (within ~1.5 days of full month), just charge full price difference.
             if (ratio >= 0.95) {
-                chargeNet = newNet;
-                creditNet = currentNet;
+                chargeGross = newGross;
+                creditGross = currentGross;
             } else {
-                chargeNet = Math.round(newNet * ratio);
-                creditNet = Math.round(currentNet * ratio);
+                chargeGross = Math.round(newGross * ratio);
+                creditGross = Math.round(currentGross * ratio);
             }
             hasProration = true;
         }
 
-        // Apply stacked voucher discounts: flat first, then percentage.
-        let remaining = chargeNet - creditNet;
+        // Apply stacked voucher discounts in gross: flat first, then percentage.
+        let remaining = chargeGross - creditGross;
         const voucherLines: { label: string; amount: number }[] = [];
 
-        // Flat vouchers first.
+        // Flat vouchers at face value (gross).
         for (const v of flatVouchers) {
             if (remaining <= 0) break;
-            const flatNet = Math.round(v.discount_value / 1.20);
-            const discount = Math.min(flatNet, remaining);
+            const discount = Math.min(v.discount_value, remaining);
             remaining -= discount;
             voucherLines.push({
                 label: `Voucher ${v.code} (${formatCurrency(v.discount_value)} off)`,
@@ -382,7 +380,7 @@ export default function Billing() {
             });
         }
 
-        // Percentage vouchers on the remainder.
+        // Percentage vouchers on the gross remainder.
         for (const v of pctVouchers) {
             if (remaining <= 0) break;
             const discount = Math.round((remaining * v.discount_value) / 100);
@@ -393,26 +391,27 @@ export default function Billing() {
             });
         }
 
-        const subtotalNet = Math.max(0, remaining);
-        const vatPence = Math.round(subtotalNet * 0.20);
-        const totalDue = subtotalNet + vatPence;
+        const totalDue = Math.max(0, remaining);
+        // Back-calculate net and VAT from the final gross amount.
+        const subtotalNet = Math.round(totalDue / 1.20);
+        const vatPence = totalDue - subtotalNet;
 
         return (
             <div className="billing-order-summary">
                 <div className="billing-order-line">
-                    <span className="billing-order-label">{plan.name} Plan (monthly, ex. VAT)</span>
-                    <span className="billing-order-value">{formatCurrency(newNet)}</span>
+                    <span className="billing-order-label">{plan.name} Plan (monthly, inc. VAT)</span>
+                    <span className="billing-order-value">{formatCurrency(newGross)}</span>
                 </div>
                 {hasProration && remainingDaysDisplay < 28 && (
                     <div className="billing-order-line billing-order-line--muted">
                         <span className="billing-order-label">Prorated for {remainingDaysDisplay} day{remainingDaysDisplay !== 1 ? "s" : ""} remaining</span>
-                        <span className="billing-order-value">{formatCurrency(chargeNet)}</span>
+                        <span className="billing-order-value">{formatCurrency(chargeGross)}</span>
                     </div>
                 )}
-                {hasProration && creditNet > 0 && (
+                {hasProration && creditGross > 0 && (
                     <div className="billing-order-line" style={{color: "#00ccbb"}}>
                         <span className="billing-order-label">Credit for unused {currentPlanName}</span>
-                        <span className="billing-order-value">-{formatCurrency(creditNet)}</span>
+                        <span className="billing-order-value">-{formatCurrency(creditGross)}</span>
                     </div>
                 )}
                 {voucherLines.map((vl, i) => (
