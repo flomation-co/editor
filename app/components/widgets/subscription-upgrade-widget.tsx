@@ -5,8 +5,10 @@ interface PlanFeature {
     included: boolean;
 }
 
-interface UpgradePlan {
+export interface UpgradePlan {
     name: string;
+    slug?: string;
+    priceId?: string;
     price: number;
     billingPeriod: string;
     features: PlanFeature[];
