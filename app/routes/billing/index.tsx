@@ -415,6 +415,30 @@ export default function Billing() {
         }
     };
 
+    const handleDownloadInvoice = async (invoiceId: string, invoiceNumber: string) => {
+        if (!token) return;
+        try {
+            const base = billingBaseURL();
+            const response = await api.get(base + "/api/v1/billing/invoice/" + invoiceId + "/pdf", {
+                headers: {"Authorization": "Bearer " + token},
+                responseType: "blob",
+            });
+
+            // Create a download link from the blob.
+            const blob = new Blob([response.data], {type: "application/pdf"});
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${invoiceNumber}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch {
+            notify("Failed to download invoice. Please try again.", "error");
+        }
+    };
+
     const handleValidateVoucher = async () => {
         if (!token || !voucherCode.trim()) return;
         setVoucherResult(null);
@@ -682,6 +706,13 @@ export default function Billing() {
                                                 {inv.status}
                                             </span>
                                         </span>
+                                        <button
+                                            className="billing-btn billing-btn--secondary billing-btn--small"
+                                            onClick={() => handleDownloadInvoice(inv.id, inv.invoice_number)}
+                                            title="Download PDF"
+                                        >
+                                            <Icon name="file-export" />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
