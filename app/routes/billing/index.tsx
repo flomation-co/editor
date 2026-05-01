@@ -211,7 +211,7 @@ export default function Billing() {
                 token,
                 window.location.origin + "/billing?tab=payment&setup=success",
                 window.location.origin + "/billing?tab=payment",
-                auth.user?.email,
+                auth.user?.email_address,
                 auth.user?.name,
                 isOrgMode ? currentOrg?.name : undefined,
             );
