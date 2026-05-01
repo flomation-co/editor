@@ -159,6 +159,17 @@ export async function upgradeSubscription(token: string, planSlug: string, price
 }
 
 /**
+ * Downgrade to a lower plan (effective at period end).
+ */
+export async function downgradeSubscription(token: string, planSlug: string, priceId: string): Promise<unknown> {
+    const url = billingBaseURL() + "/api/v1/billing/subscription/downgrade";
+    const response = await api.post(url, { plan_slug: planSlug, price_id: priceId }, {
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
+}
+
+/**
  * Cancel the current subscription (at period end).
  */
 export async function cancelSubscription(token: string): Promise<void> {

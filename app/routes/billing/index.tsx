@@ -7,7 +7,7 @@ import {Icon} from "~/components/icons/Icon";
 import "./index.css";
 import {
     fetchPlans, fetchSubscription, fetchQuota,
-    setupPaymentMethod, upgradeSubscription, cancelSubscription,
+    setupPaymentMethod, upgradeSubscription, downgradeSubscription, cancelSubscription,
     type BillingPlan, type BillingSubscription, type QuotaResponse,
     type BillingPlanPrice,
 } from "~/lib/billing";
@@ -47,7 +47,8 @@ interface Invoice {
 interface ModalState {
     visible: boolean;
     title: string;
-    message: string;
+    message?: string;
+    content?: React.ReactNode;
     confirmLabel?: string;
     cancelLabel?: string;
     variant?: "primary" | "danger";
@@ -91,7 +92,7 @@ function BillingModal({modal, onClose}: { modal: ModalState; onClose: () => void
                     </button>
                 </div>
                 <div className="billing-modal-body">
-                    <p>{modal.message}</p>
+                    {modal.content ? modal.content : <p>{modal.message}</p>}
                 </div>
                 <div className="billing-modal-footer">
                     <button className="billing-btn billing-btn--secondary" onClick={onClose}>
@@ -256,6 +257,52 @@ export default function Billing() {
         }
     };
 
+    const defaultPM = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
+
+    const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean) => {
+        const price = plan.prices?.[0];
+        if (!price) return null;
+
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        return (
+            <div className="billing-order-summary">
+                <div className="billing-order-line">
+                    <span className="billing-order-label">{plan.name} Plan</span>
+                    <span className="billing-order-value">{formatCurrency(price.amount_pence)} / {price.billing_interval}</span>
+                </div>
+                <div className="billing-order-line billing-order-line--muted">
+                    <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
+                    <span className="billing-order-value">
+                        {isUpgrade ? formatDate(startDate.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
+                    </span>
+                </div>
+                {isUpgrade && currentPrice && currentPrice.amount_pence > 0 && (
+                    <div className="billing-order-line billing-order-line--muted">
+                        <span className="billing-order-label">Prorated credit ({currentPlanName})</span>
+                        <span className="billing-order-value" style={{color: "#00ccbb"}}>Calculated at checkout</span>
+                    </div>
+                )}
+                <div className="billing-order-divider" />
+                {defaultPM ? (
+                    <div className="billing-order-line">
+                        <span className="billing-order-label">Payment method</span>
+                        <span className="billing-order-value">
+                            {defaultPM.card_brand?.toUpperCase()} •••• {defaultPM.card_last4}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="billing-order-warning">
+                        <Icon name="exclamation-triangle" />
+                        <span>No payment method on file. Please add a card on the Payment tab first.</span>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const handleUpgrade = (plan: BillingPlan) => {
         const price = plan.prices?.[0];
         if (!price) return;
@@ -263,11 +310,10 @@ export default function Billing() {
         setModal({
             visible: true,
             title: `Upgrade to ${plan.name}`,
-            message: `You'll be upgraded to the ${plan.name} plan at ${formatCurrency(price.amount_pence)}/${price.billing_interval}. ` +
-                `The difference will be prorated for the remainder of your current billing period.`,
-            confirmLabel: `Upgrade to ${plan.name}`,
+            content: buildOrderSummary(plan, true),
+            confirmLabel: defaultPM ? `Confirm Upgrade` : undefined,
             variant: "primary",
-            onConfirm: async () => {
+            onConfirm: defaultPM ? async () => {
                 if (!token) return;
                 setActionLoading(true);
                 try {
@@ -276,6 +322,32 @@ export default function Billing() {
                     setTimeout(() => window.location.reload(), 1500);
                 } catch {
                     notify("Upgrade failed. Please try again or contact support.", "error");
+                } finally {
+                    setActionLoading(false);
+                }
+            } : undefined,
+        });
+    };
+
+    const handleDowngrade = (plan: BillingPlan) => {
+        const price = plan.prices?.[0];
+        if (!price) return;
+
+        setModal({
+            visible: true,
+            title: `Downgrade to ${plan.name}`,
+            content: buildOrderSummary(plan, false),
+            confirmLabel: "Confirm Downgrade",
+            variant: "danger",
+            onConfirm: async () => {
+                if (!token) return;
+                setActionLoading(true);
+                try {
+                    await downgradeSubscription(token, plan.slug, price.id);
+                    notify(`Downgrade to ${plan.name} scheduled for end of billing period.`, "success");
+                    setTimeout(() => window.location.reload(), 1500);
+                } catch {
+                    notify("Downgrade failed. Please try again or contact support.", "error");
                 } finally {
                     setActionLoading(false);
                 }
@@ -454,30 +526,66 @@ export default function Billing() {
                             )}
                         </div>
 
-                        {plans.filter(p => p.prices?.[0]?.amount_pence > (currentPrice?.amount_pence || 0)).length > 0 && (
-                            <div className="billing-card">
-                                <div className="billing-section-label">Available Upgrades</div>
-                                {plans
-                                    .filter(p => p.prices?.[0]?.amount_pence > (currentPrice?.amount_pence || 0))
-                                    .map(plan => (
-                                        <div key={plan.id} className="billing-pm-item" style={{marginBottom: 8}}>
-                                            <div style={{flex: 1}}>
-                                                <div style={{fontSize: 14, fontWeight: 600, color: "#e5e7eb"}}>{plan.name}</div>
-                                                <div style={{fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2}}>
-                                                    {plan.description || `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                        {(() => {
+                            const currentAmount = currentPrice?.amount_pence || 0;
+                            const upgrades = plans.filter(p => p.prices?.[0]?.amount_pence > currentAmount);
+                            const downgrades = plans.filter(p => {
+                                const amt = p.prices?.[0]?.amount_pence ?? 0;
+                                return amt < currentAmount && subscription?.status !== "none";
+                            });
+
+                            return (
+                                <>
+                                    {upgrades.length > 0 && (
+                                        <div className="billing-card">
+                                            <div className="billing-section-label">Available Upgrades</div>
+                                            {upgrades.map(plan => (
+                                                <div key={plan.id} className="billing-plan-row">
+                                                    <div className="billing-plan-row-info">
+                                                        <div className="billing-plan-row-name">{plan.name}</div>
+                                                        <div className="billing-plan-row-desc">
+                                                            {plan.description || `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                                        </div>
+                                                    </div>
+                                                    <div className="billing-plan-row-price">
+                                                        {formatCurrency(plan.prices[0].amount_pence)}
+                                                        <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>
+                                                    </div>
+                                                    <button className="billing-btn billing-btn--primary billing-btn--small" onClick={() => handleUpgrade(plan)} disabled={actionLoading}>
+                                                        Upgrade
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            <div style={{fontSize: 15, fontWeight: 600, color: "#e5e7eb", marginRight: 12}}>
-                                                {formatCurrency(plan.prices[0].amount_pence)}
-                                                <span style={{fontSize: 11, color: "rgba(255,255,255,0.35)"}}> /{plan.prices[0].billing_interval}</span>
-                                            </div>
-                                            <button className="billing-btn billing-btn--primary billing-btn--small" onClick={() => handleUpgrade(plan)} disabled={actionLoading}>
-                                                Upgrade
-                                            </button>
+                                            ))}
                                         </div>
-                                    ))}
-                            </div>
-                        )}
+                                    )}
+
+                                    {downgrades.length > 0 && (
+                                        <div className="billing-card">
+                                            <div className="billing-section-label">Downgrade Options</div>
+                                            {downgrades.map(plan => (
+                                                <div key={plan.id} className="billing-plan-row">
+                                                    <div className="billing-plan-row-info">
+                                                        <div className="billing-plan-row-name">{plan.name}</div>
+                                                        <div className="billing-plan-row-desc">
+                                                            {plan.prices[0].amount_pence === 0
+                                                                ? "Free"
+                                                                : `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                                        </div>
+                                                    </div>
+                                                    <div className="billing-plan-row-price">
+                                                        {plan.prices[0].amount_pence === 0 ? "Free" : formatCurrency(plan.prices[0].amount_pence)}
+                                                        {plan.prices[0].amount_pence > 0 && <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>}
+                                                    </div>
+                                                    <button className="billing-btn billing-btn--secondary billing-btn--small" onClick={() => handleDowngrade(plan)} disabled={actionLoading}>
+                                                        Downgrade
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
 
                         {subscription && subscription.status === "active" && subscription.status !== "none" && !subscription.cancel_at_period_end && currentPrice && currentPrice.amount_pence > 0 && (
                             <div className="billing-card">

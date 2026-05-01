@@ -412,6 +412,107 @@
     gap: 10px;
 }
 
+/* ── Plan rows ── */
+.billing-plan-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.billing-plan-row:last-child {
+    margin-bottom: 0;
+}
+
+.billing-plan-row-info {
+    flex: 1;
+}
+
+.billing-plan-row-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.billing-plan-row-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.billing-plan-row-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-right: 12px;
+    white-space: nowrap;
+}
+
+.billing-plan-row-period {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    font-weight: 400;
+}
+
+/* ── Order summary (modal) ── */
+.billing-order-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.billing-order-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.billing-order-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.billing-order-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.billing-order-line--muted .billing-order-label,
+.billing-order-line--muted .billing-order-value {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+}
+
+.billing-order-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 4px 0;
+}
+
+.billing-order-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    font-size: 12px;
+    color: #fbbf24;
+}
+
+.billing-order-warning svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
 /* ── Modal ── */
 .billing-modal-overlay {
     position: fixed;
