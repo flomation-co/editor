@@ -206,6 +206,8 @@ export default function Dashboard() {
                         currentUsage: userDashboard ? userDashboard.usage : 0,
                         monthlyLimit: userDashboard ? userDashboard.allowance : 0,
                         billingPeriod: "Monthly",
+                        periodStart: subscription?.current_period_start,
+                        periodEnd: subscription?.current_period_end,
                         nextBillingDate: nextBillingDate,
                         currentCost: currentCost,
                     }} />

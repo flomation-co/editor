@@ -99,6 +99,27 @@
     border-radius: 8px;
 }
 
+.usage-widget-period-dates {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.usage-widget-period-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.usage-widget-period-range {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+}
+
 .usage-widget-cost {
     display: flex;
     justify-content: space-between;

@@ -1,0 +1,188 @@
+.subscription-upgrade-widget {
+    padding: 0;
+}
+
+.subscription-upgrade-widget .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.subscription-upgrade-widget .widget-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+}
+
+.subscription-upgrade-widget .current-plan-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(0, 170, 156, 0.12);
+    color: #00ccbb;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.subscription-upgrade-widget .upgrade-content .upgrade-message p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0 0 16px;
+}
+
+.subscription-upgrade-widget .plans-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.subscription-upgrade-widget .plan-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    position: relative;
+}
+
+.subscription-upgrade-widget .plan-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.subscription-upgrade-widget .plan-card.highlighted {
+    border-color: rgba(0, 170, 156, 0.3);
+    background: rgba(0, 170, 156, 0.04);
+}
+
+.subscription-upgrade-widget .plan-badge {
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #00aa9c;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.subscription-upgrade-widget .savings-badge {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+.subscription-upgrade-widget .plan-header .plan-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+}
+
+.subscription-upgrade-widget .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.subscription-upgrade-widget .price-amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e5e7eb;
+}
+
+.subscription-upgrade-widget .price-period {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.subscription-upgrade-widget .plan-features {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.subscription-upgrade-widget .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.subscription-upgrade-widget .feature-icon {
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.subscription-upgrade-widget .feature-icon.included {
+    color: #00ccbb;
+}
+
+.subscription-upgrade-widget .feature-icon.not-included {
+    color: rgba(255, 255, 255, 0.15);
+}
+
+.subscription-upgrade-widget .feature-text {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.subscription-upgrade-widget .upgrade-button {
+    width: 100%;
+    height: 34px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.subscription-upgrade-widget .upgrade-button.primary {
+    background: #00aa9c;
+    color: #fff;
+}
+
+.subscription-upgrade-widget .upgrade-button.primary:hover {
+    background: #00ccbb;
+}
+
+.subscription-upgrade-widget .upgrade-button.secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.subscription-upgrade-widget .upgrade-button.secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+}
+
+.subscription-upgrade-widget .upgrade-footer {
+    margin-top: 12px;
+}
+
+.subscription-upgrade-widget .upgrade-note {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    text-align: center;
+    margin: 0;
+}

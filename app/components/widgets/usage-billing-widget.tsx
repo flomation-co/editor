@@ -6,6 +6,8 @@ interface UsageBillingData {
     currentUsage: number;
     monthlyLimit: number;
     billingPeriod: string;
+    periodStart?: string;
+    periodEnd?: string;
     nextBillingDate: string;
     currentCost: number;
 }
@@ -66,10 +68,27 @@ export default function UsageBillingWidget(props: UsageBillingWidgetProps) {
                 {isNearLimit && <span className="usage-widget-warn">Near Limit</span>}
             </div>
 
-            <div className="usage-widget-cost">
-                <span className="usage-widget-cost-label">Current Period</span>
-                <span className="usage-widget-cost-value">£{props.data?.currentCost?.toFixed(2) || "0.00"}</span>
-            </div>
+            {(props.data?.periodStart || props.data?.periodEnd) && (
+                <div className="usage-widget-period-dates">
+                    <span className="usage-widget-period-label">Billing Period</span>
+                    <span className="usage-widget-period-range">
+                        {props.data.periodStart ? new Date(props.data.periodStart).toLocaleDateString("en-GB", {day: "numeric", month: "short"}) : ""}
+                        {" — "}
+                        {props.data.periodEnd ? (() => {
+                            const end = new Date(props.data.periodEnd!);
+                            end.setDate(end.getDate() - 1);
+                            return end.toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric"});
+                        })() : ""}
+                    </span>
+                </div>
+            )}
+
+            {props.data?.currentCost ? (
+                <div className="usage-widget-cost">
+                    <span className="usage-widget-cost-label">Current Period</span>
+                    <span className="usage-widget-cost-value">£{props.data.currentCost.toFixed(2)}</span>
+                </div>
+            ) : null}
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import "./subscription-upgrade-widget.css";
 
 interface PlanFeature {
     name: string;
