@@ -197,6 +197,7 @@ export default function Billing() {
     const [quota, setQuota] = useState<QuotaResponse | null>(null);
     const [paymentMethods, setPMs] = useState<PaymentMethod[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [voucherHistory, setVoucherHistory] = useState<VoucherHistoryItem[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -233,11 +234,16 @@ export default function Billing() {
                 signal: controller.signal,
                 headers: {"Authorization": "Bearer " + token},
             }),
-        ]).then(([subRes, plansRes, quotaRes, pmRes, invRes]) => {
+            api.get(base + "/api/v1/billing/voucher/history", {
+                signal: controller.signal,
+                headers: {"Authorization": "Bearer " + token},
+            }),
+        ]).then(([subRes, plansRes, quotaRes, pmRes, invRes, vhRes]) => {
             if (subRes.status === "fulfilled") setSubscription(subRes.value);
             if (plansRes.status === "fulfilled") setPlans(plansRes.value);
             if (quotaRes.status === "fulfilled") setQuota(quotaRes.value);
             if (pmRes.status === "fulfilled") setPMs(pmRes.value?.data || []);
+            if (vhRes.status === "fulfilled") setVoucherHistory(vhRes.value?.data || []);
             if (invRes.status === "fulfilled") setInvoices(invRes.value?.data || []);
             setLoading(false);
         });
@@ -317,43 +323,105 @@ export default function Billing() {
 
     const defaultPM = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
 
+    const activeVoucher = voucherHistory.find(v => v.active);
+
     const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean) => {
         const price = plan.prices?.[0];
         if (!price) return null;
 
-        const grossPence = price.amount_pence;
-        const netPence = Math.round(grossPence / 1.20);
-        const vatPence = grossPence - netPence;
-
-        const startDate = new Date();
+        const newGross = price.amount_pence;
+        const now = new Date();
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
+
+        // Calculate proration for upgrades with existing paid subscription.
+        let creditPence = 0;
+        let chargePence = newGross;
+        let hasProration = false;
+
+        if (isUpgrade && subscription?.current_period_start && subscription?.current_period_end && currentPrice && currentPrice.amount_pence > 0) {
+            const periodStart = new Date(subscription.current_period_start);
+            const periodEnd = new Date(subscription.current_period_end);
+            const totalDays = (periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24);
+            const remainingDays = Math.max(0, (periodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (totalDays > 0) {
+                creditPence = Math.round((currentPrice.amount_pence * remainingDays) / totalDays);
+                chargePence = Math.round((newGross * remainingDays) / totalDays);
+                hasProration = true;
+            }
+        }
+
+        // Apply voucher discount if active.
+        let voucherDiscountPence = 0;
+        let voucherLabel = "";
+        if (activeVoucher) {
+            if (activeVoucher.discount_type === "percentage") {
+                voucherDiscountPence = Math.round((chargePence * activeVoucher.discount_value) / 100);
+                voucherLabel = `Voucher ${activeVoucher.code} (${activeVoucher.discount_value}% off)`;
+            } else {
+                voucherDiscountPence = Math.min(activeVoucher.discount_value, chargePence);
+                voucherLabel = `Voucher ${activeVoucher.code} (${formatCurrency(activeVoucher.discount_value)} off)`;
+            }
+        }
+
+        const netCharge = hasProration ? chargePence - creditPence - voucherDiscountPence : newGross - voucherDiscountPence;
+        const finalCharge = Math.max(0, netCharge);
+        const netExVat = Math.round(finalCharge / 1.20);
+        const vatPence = finalCharge - netExVat;
+
+        // Full plan price breakdown (ex VAT).
+        const planNetExVat = Math.round(newGross / 1.20);
+        const planVat = newGross - planNetExVat;
 
         return (
             <div className="billing-order-summary">
                 <div className="billing-order-line">
-                    <span className="billing-order-label">{plan.name} Plan (monthly)</span>
-                    <span className="billing-order-value">{formatCurrency(netPence)}</span>
+                    <span className="billing-order-label">{plan.name} Plan (monthly, ex. VAT)</span>
+                    <span className="billing-order-value">{formatCurrency(planNetExVat)}</span>
                 </div>
-                {isUpgrade && currentPrice && currentPrice.amount_pence > 0 && (
-                    <div className="billing-order-line billing-order-line--muted">
-                        <span className="billing-order-label">Prorated credit ({currentPlanName})</span>
-                        <span className="billing-order-value" style={{color: "#00ccbb"}}>Calculated at checkout</span>
+                {hasProration && (
+                    <>
+                        <div className="billing-order-line billing-order-line--muted">
+                            <span className="billing-order-label">Prorated for remaining period ({Math.ceil((new Date(subscription!.current_period_end).getTime() - now.getTime()) / (1000*60*60*24))} days)</span>
+                            <span className="billing-order-value">{formatCurrency(chargePence)}</span>
+                        </div>
+                        <div className="billing-order-line" style={{color: "#00ccbb"}}>
+                            <span className="billing-order-label">Credit for unused {currentPlanName}</span>
+                            <span className="billing-order-value">-{formatCurrency(creditPence)}</span>
+                        </div>
+                    </>
+                )}
+                {voucherDiscountPence > 0 && (
+                    <div className="billing-order-line" style={{color: "#a78bfa"}}>
+                        <span className="billing-order-label">{voucherLabel}</span>
+                        <span className="billing-order-value">-{formatCurrency(voucherDiscountPence)}</span>
                     </div>
                 )}
-                <div className="billing-order-line">
+                <div className="billing-order-divider" />
+                <div className="billing-order-line billing-order-line--muted">
+                    <span className="billing-order-label">Subtotal (ex. VAT)</span>
+                    <span className="billing-order-value">{formatCurrency(netExVat)}</span>
+                </div>
+                <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">VAT (20%)</span>
                     <span className="billing-order-value">{formatCurrency(vatPence)}</span>
                 </div>
                 <div className="billing-order-divider" />
                 <div className="billing-order-line" style={{fontWeight: 600}}>
-                    <span className="billing-order-label">Total (inc. VAT)</span>
-                    <span className="billing-order-value">{formatCurrency(grossPence)} / {price.billing_interval}</span>
+                    <span className="billing-order-label">{hasProration ? "Due today (inc. VAT)" : "Total (inc. VAT)"}</span>
+                    <span className="billing-order-value">{formatCurrency(finalCharge)}</span>
                 </div>
+                {!hasProration && (
+                    <div className="billing-order-line billing-order-line--muted">
+                        <span className="billing-order-label">Billed {price.billing_interval}ly</span>
+                        <span className="billing-order-value">{formatCurrency(newGross)} / {price.billing_interval}</span>
+                    </div>
+                )}
                 <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
                     <span className="billing-order-value">
-                        {isUpgrade ? formatDate(startDate.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
+                        {isUpgrade ? formatDate(now.toISOString()) : formatDate(subscription?.current_period_end || endDate.toISOString())}
                     </span>
                 </div>
                 <div className="billing-order-divider" />
