@@ -409,13 +409,13 @@ export default function Billing() {
                     </div>
                 )}
                 {hasProration && creditGross > 0 && (
-                    <div className="billing-order-line" style={{color: "#00ccbb"}}>
+                    <div className="billing-order-line billing-order-line--credit">
                         <span className="billing-order-label">Credit for unused {currentPlanName}</span>
                         <span className="billing-order-value">-{formatCurrency(creditGross)}</span>
                     </div>
                 )}
                 {voucherLines.map((vl, i) => (
-                    <div key={i} className="billing-order-line" style={{color: "#a78bfa"}}>
+                    <div key={i} className="billing-order-line billing-order-line--voucher">
                         <span className="billing-order-label">{vl.label}</span>
                         <span className="billing-order-value">-{formatCurrency(vl.amount)}</span>
                     </div>
