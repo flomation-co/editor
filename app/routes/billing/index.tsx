@@ -334,74 +334,82 @@ export default function Billing() {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
 
+        // Work in ex-VAT (net) amounts throughout, add VAT at the end.
+        const newNet = Math.round(newGross / 1.20);
+        const currentNet = currentPrice ? Math.round(currentPrice.amount_pence / 1.20) : 0;
+
         // Calculate proration for upgrades with existing paid subscription.
-        let creditPence = 0;
-        let chargePence = newGross;
+        let creditNet = 0;
+        let chargeNet = newNet;
         let hasProration = false;
+        let remainingDaysDisplay = 0;
 
         if (isUpgrade && subscription?.current_period_start && subscription?.current_period_end && currentPrice && currentPrice.amount_pence > 0) {
             const periodStart = new Date(subscription.current_period_start);
             const periodEnd = new Date(subscription.current_period_end);
             const totalDays = (periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24);
             const remainingDays = Math.max(0, (periodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            remainingDaysDisplay = Math.ceil(remainingDays);
+            const ratio = totalDays > 0 ? remainingDays / totalDays : 1;
 
-            if (totalDays > 0) {
-                creditPence = Math.round((currentPrice.amount_pence * remainingDays) / totalDays);
-                chargePence = Math.round((newGross * remainingDays) / totalDays);
-                hasProration = true;
+            // If ratio is >=0.95 (within ~1.5 days of full month), just charge full price difference.
+            if (ratio >= 0.95) {
+                chargeNet = newNet;
+                creditNet = currentNet;
+            } else {
+                chargeNet = Math.round(newNet * ratio);
+                creditNet = Math.round(currentNet * ratio);
             }
+            hasProration = true;
         }
 
         // Apply voucher discount if active.
-        let voucherDiscountPence = 0;
+        let voucherDiscountNet = 0;
         let voucherLabel = "";
-        if (activeVoucher) {
+        const chargeAfterCredit = chargeNet - creditNet;
+        if (activeVoucher && chargeAfterCredit > 0) {
             if (activeVoucher.discount_type === "percentage") {
-                voucherDiscountPence = Math.round((chargePence * activeVoucher.discount_value) / 100);
+                voucherDiscountNet = Math.round((chargeAfterCredit * activeVoucher.discount_value) / 100);
                 voucherLabel = `Voucher ${activeVoucher.code} (${activeVoucher.discount_value}% off)`;
             } else {
-                voucherDiscountPence = Math.min(activeVoucher.discount_value, chargePence);
+                const flatNet = Math.round(activeVoucher.discount_value / 1.20);
+                voucherDiscountNet = Math.min(flatNet, chargeAfterCredit);
                 voucherLabel = `Voucher ${activeVoucher.code} (${formatCurrency(activeVoucher.discount_value)} off)`;
             }
         }
 
-        const netCharge = hasProration ? chargePence - creditPence - voucherDiscountPence : newGross - voucherDiscountPence;
-        const finalCharge = Math.max(0, netCharge);
-        const netExVat = Math.round(finalCharge / 1.20);
-        const vatPence = finalCharge - netExVat;
-
-        // Full plan price breakdown (ex VAT).
-        const planNetExVat = Math.round(newGross / 1.20);
-        const planVat = newGross - planNetExVat;
+        const subtotalNet = Math.max(0, chargeAfterCredit - voucherDiscountNet);
+        const vatPence = Math.round(subtotalNet * 0.20);
+        const totalDue = subtotalNet + vatPence;
 
         return (
             <div className="billing-order-summary">
                 <div className="billing-order-line">
                     <span className="billing-order-label">{plan.name} Plan (monthly, ex. VAT)</span>
-                    <span className="billing-order-value">{formatCurrency(planNetExVat)}</span>
+                    <span className="billing-order-value">{formatCurrency(newNet)}</span>
                 </div>
-                {hasProration && (
-                    <>
-                        <div className="billing-order-line billing-order-line--muted">
-                            <span className="billing-order-label">Prorated for remaining period ({Math.ceil((new Date(subscription!.current_period_end).getTime() - now.getTime()) / (1000*60*60*24))} days)</span>
-                            <span className="billing-order-value">{formatCurrency(chargePence)}</span>
-                        </div>
-                        <div className="billing-order-line" style={{color: "#00ccbb"}}>
-                            <span className="billing-order-label">Credit for unused {currentPlanName}</span>
-                            <span className="billing-order-value">-{formatCurrency(creditPence)}</span>
-                        </div>
-                    </>
+                {hasProration && remainingDaysDisplay < 28 && (
+                    <div className="billing-order-line billing-order-line--muted">
+                        <span className="billing-order-label">Prorated for {remainingDaysDisplay} day{remainingDaysDisplay !== 1 ? "s" : ""} remaining</span>
+                        <span className="billing-order-value">{formatCurrency(chargeNet)}</span>
+                    </div>
                 )}
-                {voucherDiscountPence > 0 && (
+                {hasProration && creditNet > 0 && (
+                    <div className="billing-order-line" style={{color: "#00ccbb"}}>
+                        <span className="billing-order-label">Credit for unused {currentPlanName}</span>
+                        <span className="billing-order-value">-{formatCurrency(creditNet)}</span>
+                    </div>
+                )}
+                {voucherDiscountNet > 0 && (
                     <div className="billing-order-line" style={{color: "#a78bfa"}}>
                         <span className="billing-order-label">{voucherLabel}</span>
-                        <span className="billing-order-value">-{formatCurrency(voucherDiscountPence)}</span>
+                        <span className="billing-order-value">-{formatCurrency(voucherDiscountNet)}</span>
                     </div>
                 )}
                 <div className="billing-order-divider" />
                 <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">Subtotal (ex. VAT)</span>
-                    <span className="billing-order-value">{formatCurrency(netExVat)}</span>
+                    <span className="billing-order-value">{formatCurrency(subtotalNet)}</span>
                 </div>
                 <div className="billing-order-line billing-order-line--muted">
                     <span className="billing-order-label">VAT (20%)</span>
@@ -410,7 +418,7 @@ export default function Billing() {
                 <div className="billing-order-divider" />
                 <div className="billing-order-line" style={{fontWeight: 600}}>
                     <span className="billing-order-label">{hasProration ? "Due today (inc. VAT)" : "Total (inc. VAT)"}</span>
-                    <span className="billing-order-value">{formatCurrency(finalCharge)}</span>
+                    <span className="billing-order-value">{formatCurrency(totalDue)}</span>
                 </div>
                 {!hasProration && (
                     <div className="billing-order-line billing-order-line--muted">
