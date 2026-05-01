@@ -421,14 +421,16 @@ export default function Billing() {
                                             : "Free"}
                                     </div>
                                 </div>
-                                <div style={{marginLeft: "auto"}}>
-                                    <span className={`billing-badge ${statusBadgeClass(subscription?.status || quota?.status || "active")}`}>
-                                        {subscription?.status || quota?.status || "active"}
-                                    </span>
-                                </div>
+                                {subscription?.status && subscription.status !== "none" && (
+                                    <div style={{marginLeft: "auto"}}>
+                                        <span className={`billing-badge ${statusBadgeClass(subscription.status)}`}>
+                                            {subscription.status}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
-                            {subscription && (
+                            {subscription?.current_period_start && subscription.status !== "none" && (
                                 <div className="billing-plan-details">
                                     <div className="billing-detail-item">
                                         <span className="billing-detail-label">Period Start</span>
@@ -441,7 +443,7 @@ export default function Billing() {
                                 </div>
                             )}
 
-                            {subscription?.cancel_at_period_end && (
+                            {subscription?.cancel_at_period_end && subscription.status !== "none" && (
                                 <div className="billing-cancel-warning">
                                     <Icon name="exclamation-triangle" />
                                     Subscription will be cancelled at the end of the current billing period.
@@ -477,7 +479,7 @@ export default function Billing() {
                             </div>
                         )}
 
-                        {subscription && subscription.status === "active" && !subscription.cancel_at_period_end && currentPrice && currentPrice.amount_pence > 0 && (
+                        {subscription && subscription.status === "active" && subscription.status !== "none" && !subscription.cancel_at_period_end && currentPrice && currentPrice.amount_pence > 0 && (
                             <div className="billing-card">
                                 <div className="billing-section-label">Cancel Subscription</div>
                                 <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 14}}>

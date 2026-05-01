@@ -177,13 +177,14 @@ export default function Dashboard() {
         return () => controller.abort();
     }, []);
 
-    // Calculate cost from subscription price.
-    const currentCost = subscription?.price
+    // Calculate cost from subscription price (only for paid subs).
+    const hasPaidSub = subscription?.status && subscription.status !== "none" && subscription.price;
+    const currentCost = hasPaidSub && subscription?.price
         ? subscription.price.amount_pence / 100
         : 0;
 
     // Calculate next billing date from subscription period end.
-    const nextBillingDate = subscription?.current_period_end
+    const nextBillingDate = hasPaidSub && subscription?.current_period_end
         ? new Date(subscription.current_period_end).toLocaleDateString("en-GB", {
             day: "numeric", month: "long", year: "numeric",
         })
