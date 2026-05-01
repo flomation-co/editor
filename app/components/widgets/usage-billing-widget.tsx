@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 import { Icon } from "~/components/icons/Icon";
 import "./usage-billing-widget.css";
 
@@ -89,6 +90,11 @@ export default function UsageBillingWidget(props: UsageBillingWidgetProps) {
                     <span className="usage-widget-cost-value">£{props.data.currentCost.toFixed(2)}</span>
                 </div>
             ) : null}
+
+            <Link to="/billing" className="usage-widget-upgrade">
+                <Icon name="bolt-lightning" />
+                <span>Manage Subscription</span>
+            </Link>
         </div>
     );
 }
