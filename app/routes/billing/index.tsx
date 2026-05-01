@@ -381,14 +381,19 @@ export default function Billing() {
                     <span className="billing-order-value">{formatCurrency(vatPence)}</span>
                 </div>
                 <div className="billing-order-divider" />
-                <div className="billing-order-line" style={{fontWeight: 600}}>
-                    <span className="billing-order-label">{hasProration ? "Due today (inc. VAT)" : "Total (inc. VAT)"}</span>
-                    <span className="billing-order-value">{formatCurrency(totalDue)}</span>
+                <div className="billing-order-total">
+                    <span className="billing-order-total-label">{hasProration ? "Due today (inc. VAT)" : "Total (inc. VAT)"}</span>
+                    <span className="billing-order-total-value">{formatCurrency(totalDue)}</span>
                 </div>
                 {!hasProration && (
                     <div className="billing-order-line billing-order-line--muted">
-                        <span className="billing-order-label">Billed {price.billing_interval}ly</span>
+                        <span className="billing-order-label">Billed {price.billing_interval}ly *</span>
                         <span className="billing-order-value">{formatCurrency(price.amount_pence)} / {price.billing_interval}</span>
+                    </div>
+                )}
+                {voucherLines.length > 0 && !hasProration && (
+                    <div className="billing-order-asterisk">
+                        * Recurring charge may be lower while active vouchers are applied
                     </div>
                 )}
                 <div className="billing-order-line billing-order-line--muted">

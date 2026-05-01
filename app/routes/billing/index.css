@@ -434,6 +434,33 @@
     font-weight: 400;
 }
 
+.billing-order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0 8px;
+}
+
+.billing-order-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.billing-order-total-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00ccbb;
+    letter-spacing: -0.5px;
+}
+
+.billing-order-asterisk {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    font-style: italic;
+    margin-top: 4px;
+}
+
 .billing-order-vat-note {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.3);
