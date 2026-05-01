@@ -112,13 +112,14 @@ export async function fetchSubscription(token: string, signal?: AbortSignal): Pr
  * Initiate the payment method setup flow via Stripe Checkout.
  * Returns a URL to redirect the user to.
  */
-export async function setupPaymentMethod(token: string, successURL: string, cancelURL: string, email?: string, name?: string): Promise<string> {
+export async function setupPaymentMethod(token: string, successURL: string, cancelURL: string, email?: string, name?: string, organisationName?: string): Promise<string> {
     const url = billingBaseURL() + "/api/v1/billing/payment-method/setup";
     const response = await api.post(url, {
         success_url: successURL,
         cancel_url: cancelURL,
         email: email || "",
         name: name || "",
+        organisation_name: organisationName || undefined,
     }, {
         headers: { "Authorization": "Bearer " + token },
     });

@@ -2,6 +2,7 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useAuth} from "~/context/auth/use";
+import {useOrganisation} from "~/context/organisation/use";
 import useCookieToken from "~/components/cookie";
 import {Icon} from "~/components/icons/Icon";
 import "./index.css";
@@ -132,6 +133,7 @@ function BillingNotification({message, variant, onDismiss}: { message: string; v
 
 export default function Billing() {
     const auth = useAuth();
+    const {currentOrg, isOrgMode} = useOrganisation();
     const token = useCookieToken();
     const [activeTab, setActiveTab] = useState<Tab>("subscription");
 
@@ -211,6 +213,7 @@ export default function Billing() {
                 window.location.origin + "/billing?tab=payment",
                 auth.user?.email,
                 auth.user?.name,
+                isOrgMode ? currentOrg?.name : undefined,
             );
             window.location.href = url;
         } catch {
