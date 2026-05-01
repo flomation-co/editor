@@ -129,6 +129,61 @@ function BillingNotification({message, variant, onDismiss}: { message: string; v
     );
 }
 
+// ── Voucher history component ─────────────────────────────────────────
+
+interface VoucherHistoryItem {
+    code: string;
+    description?: string;
+    discount_type: string;
+    discount_value: number;
+    months_remaining?: number;
+    redeemed_at: string;
+    active: boolean;
+}
+
+function VoucherHistory({token}: { token: string | null }) {
+    const [history, setHistory] = useState<VoucherHistoryItem[]>([]);
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        if (!token) return;
+        const base = billingBaseURL();
+        api.get(base + "/api/v1/billing/voucher/history", {
+            headers: {"Authorization": "Bearer " + token},
+        }).then(res => {
+            setHistory(res.data || []);
+            setLoaded(true);
+        }).catch(() => setLoaded(true));
+    }, []);
+
+    if (!loaded) return <div className="billing-empty">Loading...</div>;
+    if (history.length === 0) return <div className="billing-empty">No vouchers have been used.</div>;
+
+    return (
+        <div className="billing-invoice-list">
+            {history.map((v, i) => (
+                <div key={i} className="billing-invoice-row">
+                    <span className="billing-invoice-number" style={{flex: 1}}>{v.code}</span>
+                    <span className="billing-invoice-date">
+                        {v.discount_type === "percentage" ? `${v.discount_value}% off` : formatCurrency(v.discount_value) + " off"}
+                    </span>
+                    <span className="billing-invoice-date">
+                        {v.months_remaining !== null && v.months_remaining !== undefined
+                            ? `${v.months_remaining} month${v.months_remaining !== 1 ? "s" : ""} remaining`
+                            : "Ongoing"}
+                    </span>
+                    <span className="billing-invoice-date">{formatDate(v.redeemed_at)}</span>
+                    <span className="billing-invoice-status">
+                        <span className={`billing-badge ${v.active ? "billing-badge--active" : "billing-badge--cancelled"}`}>
+                            {v.active ? "active" : "used"}
+                        </span>
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 // ── Main component ────────────────────────────────────────────────────
 
 export default function Billing() {
@@ -722,6 +777,7 @@ export default function Billing() {
 
                 {/* ── Voucher tab ── */}
                 {activeTab === "voucher" && (
+                    <>
                     <div className="billing-card">
                         <div className="billing-card-title" style={{marginBottom: 18}}>Redeem a Voucher</div>
                         <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
@@ -754,6 +810,14 @@ export default function Billing() {
                             </div>
                         )}
                     </div>
+
+                    <div className="billing-card">
+                        <div className="billing-card-title" style={{marginBottom: 18}}>Voucher History</div>
+                        <div id="voucher-history-container">
+                            <VoucherHistory token={token} />
+                        </div>
+                    </div>
+                    </>
                 )}
             </div>
         </Container>
