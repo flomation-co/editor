@@ -328,14 +328,14 @@ export default function Billing() {
     const [upgradePreviewData, setUpgradePreviewData] = useState<UpgradePreview | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
 
-    const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean) => {
+    const buildOrderSummary = (plan: BillingPlan, isUpgrade: boolean, previewData?: UpgradePreview | null) => {
         const price = plan.prices?.[0];
         if (!price) return null;
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1);
 
-        // If we have server-provided preview data for an upgrade, use it.
-        const p = isUpgrade ? upgradePreviewData : null;
+        // Use server-provided preview data if available.
+        const p = previewData || null;
 
         const chargeGross = p ? p.charge_gross : price.amount_pence;
         const creditGross = p ? p.credit_gross : 0;
@@ -426,32 +426,27 @@ export default function Billing() {
         setPreviewLoading(true);
         try {
             const preview = await previewUpgrade(token, plan.slug, price.id);
-            setUpgradePreviewData(preview);
 
-            // Show modal with server data (buildOrderSummary will read upgradePreviewData).
-            // Use setTimeout to let state update before rendering.
-            setTimeout(() => {
-                setModal({
-                    visible: true,
-                    title: `Upgrade to ${plan.name}`,
-                    content: buildOrderSummary(plan, true),
-                    confirmLabel: defaultPM ? `Confirm Upgrade` : undefined,
-                    variant: "primary",
-                    onConfirm: defaultPM ? async () => {
-                        if (!token) return;
-                        setActionLoading(true);
-                        try {
-                            await upgradeSubscription(token, plan.slug, price.id);
-                            notify(`Successfully upgraded to ${plan.name}!`, "success");
-                            setTimeout(() => window.location.reload(), 1500);
-                        } catch {
-                            notify("Upgrade failed. Please try again or contact support.", "error");
-                        } finally {
-                            setActionLoading(false);
-                        }
-                    } : undefined,
-                });
-            }, 0);
+            setModal({
+                visible: true,
+                title: `Upgrade to ${plan.name}`,
+                content: buildOrderSummary(plan, true, preview),
+                confirmLabel: defaultPM ? `Confirm Upgrade` : undefined,
+                variant: "primary",
+                onConfirm: defaultPM ? async () => {
+                    if (!token) return;
+                    setActionLoading(true);
+                    try {
+                        await upgradeSubscription(token, plan.slug, price.id);
+                        notify(`Successfully upgraded to ${plan.name}!`, "success");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } catch {
+                        notify("Upgrade failed. Please try again or contact support.", "error");
+                    } finally {
+                        setActionLoading(false);
+                    }
+                } : undefined,
+            });
         } catch {
             notify("Failed to load upgrade details. Please try again.", "error");
         } finally {
