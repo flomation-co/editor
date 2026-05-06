@@ -1,12 +1,15 @@
 import React from "react";
+import "./subscription-upgrade-widget.css";
 
 interface PlanFeature {
     name: string;
     included: boolean;
 }
 
-interface UpgradePlan {
+export interface UpgradePlan {
     name: string;
+    slug?: string;
+    priceId?: string;
     price: number;
     billingPeriod: string;
     features: PlanFeature[];

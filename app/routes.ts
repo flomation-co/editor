@@ -4,6 +4,7 @@ export default [
     index("routes/dashboard/index.tsx"),
 
     route("profile", "routes/profile/index.tsx"),
+    route("billing", "routes/billing/index.tsx"),
 
     route("flow", "routes/flows/index.tsx"),
     route("trigger", "routes/triggers/index.tsx"),

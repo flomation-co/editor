@@ -138,6 +138,7 @@ export function VerticalNav(props: VerticalNavProps) {
 
                 <div className={"vertical-nav-bottom-section"}>
                     <div className={"menu-section-list"}>
+                        <NavLink to={"/billing"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Billing" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="dollar-sign" /></div><span className={"menu-section-list-item-label"}>Billing</span></NavLink>
                         <Link to={"https://discord.gg/y3Td3kw5tA"} className={"menu-section-list-item"} target={"_blank"} data-tooltip-id="nav-tip" data-tooltip-content="Community" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="discord" /></div><span className={"menu-section-list-item-label"}>Community <Icon name="arrow-up-right-from-square" /></span></Link>
                         <NavLink to={"/status"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="System Status" data-tooltip-place="right">
                             <div className={"menu-section-list-icon"}>

@@ -4,9 +4,7 @@ import {useAuth} from "~/context/auth/use";
 import React, {useEffect, useState} from "react";
 import Card from "~/components/card";
 import UsageBillingWidget from "~/components/widgets/usage-billing-widget";
-import SubscriptionUpgradeWidget from "~/components/widgets/subscription-upgrade-widget";
 
-// Legacy widgets.css no longer needed — each widget has its own CSS
 import useCookieToken from "~/components/cookie";
 import type {UserDashboard} from "~/types";
 import api from "~/lib/api";
@@ -14,6 +12,10 @@ import useConfig from "~/components/config";
 import SupportWidget from "~/components/widgets/support-widget";
 import TipWidget from "~/components/widgets/tip-widget";
 import ChecklistWidget from "~/components/widgets/checklist-widget";
+import {
+    fetchQuota, fetchSubscription,
+    type QuotaResponse, type BillingSubscription,
+} from "~/lib/billing";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -24,54 +26,45 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Dashboard() {
     const auth = useAuth();
-    const controller = new AbortController();
     const token = useCookieToken();
 
-    const [ userDashboard, setUserDashboard ] = useState<UserDashboard>();
-
-    // Handle upgrade button clicks
-    const handleUpgradeClick = (planName: string) => {
-        // TODO: Implement your upgrade logic here
-        // This might redirect to a payment page, open a modal, etc.
-        console.log(`User wants to upgrade to: ${planName}`);
-
-        // Example implementation options:
-
-        // Option 1: Redirect to upgrade page
-        // window.location.href = `/upgrade?plan=${planName.toLowerCase()}`;
-
-        // Option 2: Call your API endpoint
-        // fetch('/api/upgrade/initiate', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ plan: planName })
-        // }).then(response => response.json())
-        //   .then(data => window.location.href = data.checkoutUrl);
-
-        // Option 3: Show confirmation for now
-        alert(`Upgrading to ${planName} plan. This will redirect to payment processing.`);
-    };
+    const [userDashboard, setUserDashboard] = useState<UserDashboard>();
+    const [subscription, setSubscription] = useState<BillingSubscription | null>(null);
 
     useEffect(() => {
+        const controller = new AbortController();
         const config = useConfig();
-        let url = config("AUTOMATE_API_URL") + '/api/v1/dashboard';
-        api.get(url, {
+
+        // Fetch dashboard usage data (existing endpoint).
+        const dashboardURL = config("AUTOMATE_API_URL") + "/api/v1/dashboard";
+        api.get(dashboardURL, {
             signal: controller.signal,
-            headers: {
-                "Authorization": "Bearer " + token,
+            headers: { "Authorization": "Bearer " + token },
+        }).then(response => {
+            if (response) {
+                setUserDashboard(response.data);
             }
-        })
-            .then(response => {
-                if (response) {
-                    setUserDashboard(response.data);
-                }
-            })
+        }).catch(() => {});
+
+        // Fetch current subscription for period dates.
+        if (token) {
+            fetchSubscription(token, controller.signal)
+                .then(sub => setSubscription(sub))
+                .catch(() => {});
+        }
+
+        return () => controller.abort();
     }, []);
+
+    // Only show cost for paid subscriptions.
+    const hasPaidSub = subscription?.status && subscription.status !== "none" && subscription.price;
+    const currentCost = hasPaidSub && subscription?.price
+        ? subscription.price.amount_pence / 100
+        : 0;
 
     return (
         <Container>
             <div className={"header"}>{auth.user ? "Welcome, " + auth.user?.name : ""}</div>
-
 
             <div className={"card-container"}>
                 <Card>
@@ -85,8 +78,10 @@ export default function Dashboard() {
                         currentUsage: userDashboard ? userDashboard.usage : 0,
                         monthlyLimit: userDashboard ? userDashboard.allowance : 0,
                         billingPeriod: "Monthly",
-                        nextBillingDate: "2025-10-21",
-                        currentCost: 0.00
+                        periodStart: subscription?.current_period_start,
+                        periodEnd: subscription?.current_period_end,
+                        nextBillingDate: "",
+                        currentCost: currentCost,
                     }} />
                 </Card>
                 <Card>
@@ -96,17 +91,6 @@ export default function Dashboard() {
                     <ChecklistWidget />
                 </Card>
             </div>
-
-            {/*<div className={"card-container"}>*/}
-            {/*    <Card></Card>*/}
-            {/*    <Card></Card>*/}
-            {/*    <Card></Card>*/}
-            {/*</div>*/}
-            {/*<div className={"card-container"}>*/}
-            {/*    <Card>*/}
-            {/*        /!*<SubscriptionUpgradeWidget />*!/*/}
-            {/*    </Card>*/}
-            {/*</div>*/}
         </Container>
     )
 }

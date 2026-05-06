@@ -1,5 +1,6 @@
 const local = {
     AUTOMATE_API_URL: 'http://localhost:9080',
+    BILLING_API_URL: 'http://localhost:9085',
     TRIGGER_URL: 'http://localhost:9999',
     LOGIN_URL: 'http://localhost:8999',
     LAUNCH_URL: 'https://cognominal-merlene-nonconnubially.ngrok-free.dev'
@@ -7,6 +8,7 @@ const local = {
 
 const dev = {
     AUTOMATE_API_URL: 'https://api.dev.flomation.app',
+    BILLING_API_URL: 'https://billing.dev.flomation.app',
     TRIGGER_URL: 'https://launch.dev.flomation.app',
     LOGIN_URL: 'https://id.dev.flomation.app',
     LAUNCH_URL: 'https://launch.dev.flomation.app'
@@ -14,6 +16,7 @@ const dev = {
 
 const live = {
     AUTOMATE_API_URL: 'https://api.flomation.app',
+    BILLING_API_URL: 'https://billing.flomation.app',
     TRIGGER_URL: 'https://launch.flomation.app',
     LOGIN_URL: 'https://id.flomation.app',
     LAUNCH_URL: 'https://launch.flomation.app'
