@@ -339,7 +339,7 @@ export default function Billing() {
 
         const chargeGross = p ? p.charge_gross : price.amount_pence;
         const creditGross = p ? p.credit_gross : 0;
-        const voucherLines = p ? p.vouchers.map(v => ({label: v.label, amount: v.amount})) : [];
+        const voucherLines = p && p.vouchers ? p.vouchers.map(v => ({label: v.label, amount: v.amount})) : [];
         const totalDue = p ? p.total_due : price.amount_pence;
         const subtotalNet = p ? p.subtotal_net : Math.round(price.amount_pence / 1.20);
         const vatPence = p ? p.vat_amount : price.amount_pence - subtotalNet;
@@ -417,7 +417,7 @@ export default function Billing() {
                     </div>
                 )}
                 <div className="billing-order-vat-note">
-                    All prices include VAT. VAT No: GB 000 0000 00
+                    All prices include VAT. VAT No: 517 5918 67
                 </div>
             </div>
         );
