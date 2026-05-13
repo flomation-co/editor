@@ -12,6 +12,8 @@ import {
     previewUpgrade, type UpgradePreview,
     type BillingPlan, type BillingSubscription, type QuotaResponse,
     type BillingPlanPrice,
+    type CreditAccount, type CreditTransaction,
+    fetchCreditAccount, fetchCreditTransactions, purchaseCredit, updateCreditSettings,
 } from "~/lib/billing";
 import api from "~/lib/api";
 import {billingBaseURL} from "~/lib/billing";
@@ -23,7 +25,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-type Tab = "subscription" | "payment" | "invoices" | "voucher";
+type Tab = "subscription" | "payment" | "invoices" | "voucher" | "credits";
 
 interface PaymentMethod {
     id: string;
@@ -67,6 +69,17 @@ function formatCurrency(pence: number, currency: string = "GBP"): string {
     const symbol = currency === "GBP" ? "\u00a3" : currency === "USD" ? "$" : currency === "EUR" ? "\u20ac" : currency + " ";
     return `${symbol}${(pence / 100).toFixed(2)}`;
 }
+
+const ENTITLEMENT_LABELS: Record<string, string> = {
+    execution_minutes: "Execution Minutes / Month",
+    flow_count: "Flows",
+    runner_count: "Runners",
+    agent_count: "AI Agents",
+    org_members: "Organisation Members",
+    mfa_enabled: "Multi-Factor Authentication",
+    rbac_enabled: "Role-Based Access Control",
+    sso_enabled: "Single Sign-On (SSO)",
+};
 
 function statusBadgeClass(status: string): string {
     switch (status) {
@@ -201,6 +214,14 @@ export default function Billing() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [voucherHistory, setVoucherHistory] = useState<VoucherHistoryItem[]>([]);
 
+    const [creditAccount, setCreditAccount] = useState<CreditAccount | null>(null);
+    const [creditTransactions, setCreditTransactions] = useState<CreditTransaction[]>([]);
+    const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+    const [purchaseAmount, setPurchaseAmount] = useState<number>(1000);
+    const [topupThreshold, setTopupThreshold] = useState<number>(500);
+    const [topupAmount, setTopupAmount] = useState<number>(1000);
+    const [autoTopupEnabled, setAutoTopupEnabled] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [voucherCode, setVoucherCode] = useState("");
@@ -240,13 +261,23 @@ export default function Billing() {
                 signal: controller.signal,
                 headers: {"Authorization": "Bearer " + token},
             }),
-        ]).then(([subRes, plansRes, quotaRes, pmRes, invRes, vhRes]) => {
+            fetchCreditAccount(token, controller.signal),
+            fetchCreditTransactions(token, controller.signal),
+        ]).then(([subRes, plansRes, quotaRes, pmRes, invRes, vhRes, creditRes, txRes]) => {
             if (subRes.status === "fulfilled") setSubscription(subRes.value);
             if (plansRes.status === "fulfilled") setPlans(plansRes.value);
             if (quotaRes.status === "fulfilled") setQuota(quotaRes.value);
             if (pmRes.status === "fulfilled") setPMs(pmRes.value?.data || []);
             if (vhRes.status === "fulfilled") setVoucherHistory(vhRes.value?.data || []);
             if (invRes.status === "fulfilled") setInvoices(invRes.value?.data || []);
+            if (creditRes.status === "fulfilled") {
+                const ca = creditRes.value as CreditAccount;
+                setCreditAccount(ca);
+                setAutoTopupEnabled(ca.auto_topup);
+                setTopupThreshold(ca.topup_threshold_pence || 500);
+                setTopupAmount(ca.topup_amount_pence || 1000);
+            }
+            if (txRes.status === "fulfilled") setCreditTransactions(txRes.value as CreditTransaction[]);
             setLoading(false);
         });
 
@@ -619,6 +650,9 @@ export default function Billing() {
                     <button className={`billing-tab ${activeTab === "subscription" ? "active" : ""}`} onClick={() => setActiveTab("subscription")}>
                         <Icon name="star" /> Subscription
                     </button>
+                    <button className={`billing-tab ${activeTab === "credits" ? "active" : ""}`} onClick={() => setActiveTab("credits")}>
+                        <Icon name="coins" /> Credits
+                    </button>
                     <button className={`billing-tab ${activeTab === "payment" ? "active" : ""}`} onClick={() => setActiveTab("payment")}>
                         <Icon name="shield-halved" /> Payment
                     </button>
@@ -669,6 +703,36 @@ export default function Billing() {
                                 </div>
                             )}
 
+                            {quota?.entitlements && Object.keys(quota.entitlements).length > 0 && (
+                                <div className="billing-entitlements">
+                                    <div className="billing-section-label" style={{marginTop: 16}}>Plan Entitlements</div>
+                                    <div className="billing-entitlement-grid">
+                                        {Object.entries(quota.entitlements).map(([key, value]) => {
+                                            const label = ENTITLEMENT_LABELS[key] || key.replace(/_/g, " ");
+                                            let display: string;
+                                            if (typeof value === "boolean") {
+                                                display = value ? "Included" : "Not included";
+                                            } else if (typeof value === "number") {
+                                                display = value === -1 ? "Unlimited" : String(value);
+                                            } else {
+                                                display = String(value);
+                                            }
+                                            const isIncluded = value === true || (typeof value === "number" && value !== 0);
+                                            const isUnlimited = typeof value === "number" && value === -1;
+                                            return (
+                                                <div key={key} className="billing-entitlement-item">
+                                                    <span className={`billing-entitlement-icon ${isIncluded ? "included" : "excluded"}`}>
+                                                        <Icon name={isIncluded ? "check" : "xmark"} />
+                                                    </span>
+                                                    <span className="billing-entitlement-label">{label}</span>
+                                                    <span className={`billing-entitlement-value ${isUnlimited ? "unlimited" : ""}`}>{display}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             {subscription?.cancel_at_period_end && subscription.status !== "none" && (
                                 <div className="billing-cancel-warning">
                                     <Icon name="exclamation-triangle" />
@@ -693,48 +757,128 @@ export default function Billing() {
                                     {upgrades.length > 0 && (
                                         <div className="billing-card">
                                             <div className="billing-section-label">Available Upgrades</div>
-                                            {upgrades.map(plan => (
-                                                <div key={plan.id} className="billing-plan-row">
-                                                    <div className="billing-plan-row-info">
-                                                        <div className="billing-plan-row-name">{plan.name}</div>
-                                                        <div className="billing-plan-row-desc">
-                                                            {plan.description || `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                            {upgrades.map(plan => {
+                                                const isExpanded = expandedPlanId === plan.id;
+                                                return (
+                                                    <div key={plan.id} className="billing-plan-row-wrapper">
+                                                        <div className="billing-plan-row">
+                                                            <button className="billing-plan-expand" onClick={() => setExpandedPlanId(isExpanded ? null : plan.id)}>
+                                                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} />
+                                                            </button>
+                                                            <div className="billing-plan-row-info">
+                                                                <div className="billing-plan-row-name">{plan.name}</div>
+                                                                <div className="billing-plan-row-desc">
+                                                                    {plan.description || `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                                                </div>
+                                                            </div>
+                                                            <div className="billing-plan-row-price">
+                                                                {formatCurrency(plan.prices[0].amount_pence)}
+                                                                <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>
+                                                            </div>
+                                                            <button className="billing-btn billing-btn--primary billing-btn--small" onClick={() => handleUpgrade(plan)} disabled={actionLoading}>
+                                                                Upgrade
+                                                            </button>
                                                         </div>
+                                                        {isExpanded && plan.entitlements?.length > 0 && (
+                                                            <div className="billing-plan-entitlements-accordion">
+                                                                <div className="billing-entitlement-grid">
+                                                                    {plan.entitlements.map(ent => {
+                                                                        const label = ENTITLEMENT_LABELS[ent.entitlement_key] || ent.entitlement_key.replace(/_/g, " ");
+                                                                        let display: string;
+                                                                        let isIncluded: boolean;
+                                                                        let isUnlimited = false;
+                                                                        if (ent.value_bool !== undefined && ent.value_bool !== null) {
+                                                                            display = ent.value_bool ? "Included" : "Not included";
+                                                                            isIncluded = ent.value_bool;
+                                                                        } else if (ent.value_int !== undefined && ent.value_int !== null) {
+                                                                            isUnlimited = ent.value_int === -1;
+                                                                            display = isUnlimited ? "Unlimited" : String(ent.value_int);
+                                                                            isIncluded = ent.value_int !== 0;
+                                                                        } else {
+                                                                            display = "—";
+                                                                            isIncluded = false;
+                                                                        }
+                                                                        return (
+                                                                            <div key={ent.entitlement_key} className="billing-entitlement-item">
+                                                                                <span className={`billing-entitlement-icon ${isIncluded ? "included" : "excluded"}`}>
+                                                                                    <Icon name={isIncluded ? "check" : "xmark"} />
+                                                                                </span>
+                                                                                <span className="billing-entitlement-label">{label}</span>
+                                                                                <span className={`billing-entitlement-value ${isUnlimited ? "unlimited" : ""}`}>{display}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className="billing-plan-row-price">
-                                                        {formatCurrency(plan.prices[0].amount_pence)}
-                                                        <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>
-                                                    </div>
-                                                    <button className="billing-btn billing-btn--primary billing-btn--small" onClick={() => handleUpgrade(plan)} disabled={actionLoading}>
-                                                        Upgrade
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
 
                                     {downgrades.length > 0 && (
                                         <div className="billing-card">
                                             <div className="billing-section-label">Downgrade Options</div>
-                                            {downgrades.map(plan => (
-                                                <div key={plan.id} className="billing-plan-row">
-                                                    <div className="billing-plan-row-info">
-                                                        <div className="billing-plan-row-name">{plan.name}</div>
-                                                        <div className="billing-plan-row-desc">
-                                                            {plan.prices[0].amount_pence === 0
-                                                                ? "Free"
-                                                                : `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                            {downgrades.map(plan => {
+                                                const isExpanded = expandedPlanId === plan.id;
+                                                return (
+                                                    <div key={plan.id} className="billing-plan-row-wrapper">
+                                                        <div className="billing-plan-row">
+                                                            <button className="billing-plan-expand" onClick={() => setExpandedPlanId(isExpanded ? null : plan.id)}>
+                                                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} />
+                                                            </button>
+                                                            <div className="billing-plan-row-info">
+                                                                <div className="billing-plan-row-name">{plan.name}</div>
+                                                                <div className="billing-plan-row-desc">
+                                                                    {plan.prices[0].amount_pence === 0
+                                                                        ? "Free"
+                                                                        : `${formatCurrency(plan.prices[0].amount_pence)} / ${plan.prices[0].billing_interval}`}
+                                                                </div>
+                                                            </div>
+                                                            <div className="billing-plan-row-price">
+                                                                {plan.prices[0].amount_pence === 0 ? "Free" : formatCurrency(plan.prices[0].amount_pence)}
+                                                                {plan.prices[0].amount_pence > 0 && <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>}
+                                                            </div>
+                                                            <button className="billing-btn billing-btn--secondary billing-btn--small" onClick={() => handleDowngrade(plan)} disabled={actionLoading}>
+                                                                Downgrade
+                                                            </button>
                                                         </div>
+                                                        {isExpanded && plan.entitlements?.length > 0 && (
+                                                            <div className="billing-plan-entitlements-accordion">
+                                                                <div className="billing-entitlement-grid">
+                                                                    {plan.entitlements.map(ent => {
+                                                                        const label = ENTITLEMENT_LABELS[ent.entitlement_key] || ent.entitlement_key.replace(/_/g, " ");
+                                                                        let display: string;
+                                                                        let isIncluded: boolean;
+                                                                        let isUnlimited = false;
+                                                                        if (ent.value_bool !== undefined && ent.value_bool !== null) {
+                                                                            display = ent.value_bool ? "Included" : "Not included";
+                                                                            isIncluded = ent.value_bool;
+                                                                        } else if (ent.value_int !== undefined && ent.value_int !== null) {
+                                                                            isUnlimited = ent.value_int === -1;
+                                                                            display = isUnlimited ? "Unlimited" : String(ent.value_int);
+                                                                            isIncluded = ent.value_int !== 0;
+                                                                        } else {
+                                                                            display = "—";
+                                                                            isIncluded = false;
+                                                                        }
+                                                                        return (
+                                                                            <div key={ent.entitlement_key} className="billing-entitlement-item">
+                                                                                <span className={`billing-entitlement-icon ${isIncluded ? "included" : "excluded"}`}>
+                                                                                    <Icon name={isIncluded ? "check" : "xmark"} />
+                                                                                </span>
+                                                                                <span className="billing-entitlement-label">{label}</span>
+                                                                                <span className={`billing-entitlement-value ${isUnlimited ? "unlimited" : ""}`}>{display}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className="billing-plan-row-price">
-                                                        {plan.prices[0].amount_pence === 0 ? "Free" : formatCurrency(plan.prices[0].amount_pence)}
-                                                        {plan.prices[0].amount_pence > 0 && <span className="billing-plan-row-period">/{plan.prices[0].billing_interval}</span>}
-                                                    </div>
-                                                    <button className="billing-btn billing-btn--secondary billing-btn--small" onClick={() => handleDowngrade(plan)} disabled={actionLoading}>
-                                                        Downgrade
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </>
@@ -832,6 +976,209 @@ export default function Billing() {
                 )}
 
                 {/* ── Voucher tab ── */}
+                {/* ── Credits tab ── */}
+                {activeTab === "credits" && (
+                    <>
+                    {/* Balance card */}
+                    <div className="billing-card">
+                        <div className="billing-section-label">Credit Balance</div>
+                        <div className="billing-credit-balance">
+                            <span className="billing-credit-amount">{formatCurrency(creditAccount?.balance_pence ?? 0)}</span>
+                            <span className={`billing-badge ${
+                                (creditAccount?.balance_pence ?? 0) > 500 ? "billing-badge--active" :
+                                (creditAccount?.balance_pence ?? 0) > 0 ? "billing-badge--trialling" :
+                                "billing-badge--cancelled"
+                            }`}>
+                                {(creditAccount?.balance_pence ?? 0) > 500 ? "Healthy" :
+                                 (creditAccount?.balance_pence ?? 0) > 0 ? "Low" : "Empty"}
+                            </span>
+                        </div>
+                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 8}}>
+                            Credits are used when your subscription execution allowance is exceeded.
+                        </p>
+                    </div>
+
+                    {/* Purchase credits */}
+                    <div className="billing-card">
+                        <div className="billing-card-title" style={{marginBottom: 18}}>Purchase Credits</div>
+                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
+                            Add credit to your account. Minimum purchase is £5.00. All prices include VAT.
+                        </p>
+
+                        <div className="billing-credit-presets">
+                            {[500, 1000, 2000, 5000].map(amount => (
+                                <button
+                                    key={amount}
+                                    className={`billing-btn ${purchaseAmount === amount ? "billing-btn--primary" : "billing-btn--secondary"}`}
+                                    onClick={() => setPurchaseAmount(amount)}
+                                >
+                                    {formatCurrency(amount)}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{display: "flex", gap: 12, alignItems: "center", marginTop: 16}}>
+                            <div style={{position: "relative", flex: 1}}>
+                                <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                <input
+                                    type="number"
+                                    className="billing-voucher-input"
+                                    style={{paddingLeft: 28, width: "100%"}}
+                                    placeholder="Custom amount"
+                                    value={(purchaseAmount / 100).toFixed(2)}
+                                    onChange={e => {
+                                        const val = Math.round(parseFloat(e.target.value || "0") * 100);
+                                        setPurchaseAmount(val);
+                                    }}
+                                    min="5"
+                                    step="0.01"
+                                />
+                            </div>
+                            <button
+                                className="billing-btn billing-btn--primary"
+                                disabled={actionLoading || purchaseAmount < 500}
+                                onClick={async () => {
+                                    if (!token) return;
+                                    setActionLoading(true);
+                                    try {
+                                        await purchaseCredit(token, purchaseAmount);
+                                        notify("Credit purchased successfully.", "success");
+                                        const updated = await fetchCreditAccount(token);
+                                        setCreditAccount(updated);
+                                        const txs = await fetchCreditTransactions(token);
+                                        setCreditTransactions(txs);
+                                    } catch (err: unknown) {
+                                        const msg = (err as {response?: {data?: {error?: string}}})?.response?.data?.error || "Failed to purchase credit.";
+                                        notify(msg, "error");
+                                    } finally {
+                                        setActionLoading(false);
+                                    }
+                                }}
+                            >
+                                {actionLoading ? "Processing..." : `Purchase ${formatCurrency(purchaseAmount)}`}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Auto top-up settings */}
+                    <div className="billing-card">
+                        <div className="billing-card-title" style={{marginBottom: 18}}>Auto Top-up</div>
+                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
+                            Automatically top up your credit balance when it falls below a threshold. Minimum values are £5.00.
+                        </p>
+
+                        <div style={{display: "flex", alignItems: "center", gap: 12, marginBottom: 16}}>
+                            <label className="billing-credit-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={autoTopupEnabled}
+                                    onChange={e => setAutoTopupEnabled(e.target.checked)}
+                                />
+                                <span className="billing-credit-toggle-slider" />
+                            </label>
+                            <span style={{fontSize: 14, color: "rgba(255,255,255,0.7)"}}>
+                                {autoTopupEnabled ? "Enabled" : "Disabled"}
+                            </span>
+                        </div>
+
+                        {autoTopupEnabled && (
+                            <div style={{display: "flex", gap: 16, marginBottom: 16}}>
+                                <div style={{flex: 1}}>
+                                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4, display: "block"}}>
+                                        When balance falls below
+                                    </label>
+                                    <div style={{position: "relative"}}>
+                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                        <input
+                                            type="number"
+                                            className="billing-voucher-input"
+                                            style={{paddingLeft: 28, width: "100%"}}
+                                            value={(topupThreshold / 100).toFixed(2)}
+                                            onChange={e => setTopupThreshold(Math.round(parseFloat(e.target.value || "0") * 100))}
+                                            min="5"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{flex: 1}}>
+                                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4, display: "block"}}>
+                                        Top up by
+                                    </label>
+                                    <div style={{position: "relative"}}>
+                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                        <input
+                                            type="number"
+                                            className="billing-voucher-input"
+                                            style={{paddingLeft: 28, width: "100%"}}
+                                            value={(topupAmount / 100).toFixed(2)}
+                                            onChange={e => setTopupAmount(Math.round(parseFloat(e.target.value || "0") * 100))}
+                                            min="5"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            className="billing-btn billing-btn--primary billing-btn--small"
+                            disabled={actionLoading}
+                            onClick={async () => {
+                                if (!token) return;
+                                setActionLoading(true);
+                                try {
+                                    await updateCreditSettings(token, {
+                                        auto_topup: autoTopupEnabled,
+                                        topup_threshold_pence: autoTopupEnabled ? topupThreshold : 0,
+                                        topup_amount_pence: autoTopupEnabled ? topupAmount : 0,
+                                    });
+                                    notify("Auto top-up settings saved.", "success");
+                                    const updated = await fetchCreditAccount(token);
+                                    setCreditAccount(updated);
+                                } catch {
+                                    notify("Failed to save auto top-up settings.", "error");
+                                } finally {
+                                    setActionLoading(false);
+                                }
+                            }}
+                        >
+                            Save Settings
+                        </button>
+                    </div>
+
+                    {/* Transaction history */}
+                    <div className="billing-card">
+                        <div className="billing-card-title" style={{marginBottom: 18}}>Transaction History</div>
+                        {creditTransactions.length === 0 ? (
+                            <div className="billing-empty">No transactions yet.</div>
+                        ) : (
+                            <div className="billing-invoice-list">
+                                {creditTransactions.map(tx => (
+                                    <div key={tx.id} className="billing-invoice-row">
+                                        <span className="billing-invoice-date" style={{minWidth: 90}}>{formatDate(tx.created_at)}</span>
+                                        <span style={{flex: 1, fontSize: 13, color: "rgba(255,255,255,0.6)"}}>
+                                            {tx.description || tx.transaction_type}
+                                        </span>
+                                        <span style={{
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                            color: tx.amount_pence >= 0 ? "#34d399" : "#f87171",
+                                            minWidth: 80,
+                                            textAlign: "right",
+                                        }}>
+                                            {tx.amount_pence >= 0 ? "+" : ""}{formatCurrency(Math.abs(tx.amount_pence))}
+                                        </span>
+                                        <span style={{fontSize: 12, color: "rgba(255,255,255,0.3)", minWidth: 80, textAlign: "right"}}>
+                                            Bal: {formatCurrency(tx.balance_after)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    </>
+                )}
+
                 {activeTab === "voucher" && (
                     <>
                     <div className="billing-card">
