@@ -47,7 +47,6 @@ export interface CreditAccount {
     auto_topup: boolean;
     topup_threshold_pence: number;
     topup_amount_pence: number;
-    rate_pence_per_min: number;
 }
 
 export interface CreditTransaction {
