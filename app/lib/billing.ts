@@ -38,6 +38,25 @@ export interface QuotaResponse {
     entitlements: Record<string, number | boolean | unknown>;
     usage_ms?: number;
     allowance_ms?: number;
+    credit_balance_pence?: number;
+}
+
+export interface CreditAccount {
+    id?: string;
+    balance_pence: number;
+    auto_topup: boolean;
+    topup_threshold_pence: number;
+    topup_amount_pence: number;
+}
+
+export interface CreditTransaction {
+    id: string;
+    transaction_type: string;
+    amount_pence: number;
+    balance_after: number;
+    description?: string;
+    execution_id?: string;
+    created_at: string;
 }
 
 export interface BillingSubscription {
@@ -205,4 +224,58 @@ export async function cancelSubscription(token: string): Promise<void> {
     await api.post(url, {}, {
         headers: { "Authorization": "Bearer " + token },
     });
+}
+
+// ── Credit endpoints (billing service) ────────────────────────────────
+
+/**
+ * Fetch the user's credit account (balance, settings, current rate).
+ */
+export async function fetchCreditAccount(token: string, signal?: AbortSignal): Promise<CreditAccount> {
+    const url = billingBaseURL() + "/api/v1/billing/credit";
+    const response = await api.get(url, {
+        signal,
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
+}
+
+/**
+ * Fetch credit transaction history.
+ */
+export async function fetchCreditTransactions(token: string, signal?: AbortSignal): Promise<CreditTransaction[]> {
+    const url = billingBaseURL() + "/api/v1/billing/credit/transactions";
+    const response = await api.get(url, {
+        signal,
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data || [];
+}
+
+/**
+ * Purchase credits. Amount is in pence (minimum 500 = £5.00).
+ */
+export async function purchaseCredit(token: string, amountPence: number, voucherCode?: string): Promise<unknown> {
+    const url = billingBaseURL() + "/api/v1/billing/credit/purchase";
+    const response = await api.post(url, {
+        amount_pence: amountPence,
+        voucher_code: voucherCode || undefined,
+    }, {
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
+}
+
+/**
+ * Update auto top-up settings.
+ */
+export async function updateCreditSettings(
+    token: string,
+    settings: { auto_topup: boolean; topup_threshold_pence: number; topup_amount_pence: number },
+): Promise<unknown> {
+    const url = billingBaseURL() + "/api/v1/billing/credit/settings";
+    const response = await api.post(url, settings, {
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
 }

@@ -30,6 +30,7 @@ export default function Dashboard() {
 
     const [userDashboard, setUserDashboard] = useState<UserDashboard>();
     const [subscription, setSubscription] = useState<BillingSubscription | null>(null);
+    const [quota, setQuota] = useState<QuotaResponse | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -46,10 +47,13 @@ export default function Dashboard() {
             }
         }).catch(() => {});
 
-        // Fetch current subscription for period dates.
+        // Fetch current subscription for period dates and quota for credit balance.
         if (token) {
             fetchSubscription(token, controller.signal)
                 .then(sub => setSubscription(sub))
+                .catch(() => {});
+            fetchQuota(token, controller.signal)
+                .then(q => setQuota(q))
                 .catch(() => {});
         }
 
@@ -82,6 +86,7 @@ export default function Dashboard() {
                         periodEnd: subscription?.current_period_end,
                         nextBillingDate: "",
                         currentCost: currentCost,
+                        creditBalancePence: quota?.credit_balance_pence,
                     }} />
                 </Card>
                 <Card>

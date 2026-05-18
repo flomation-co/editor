@@ -11,6 +11,7 @@ interface UsageBillingData {
     periodEnd?: string;
     nextBillingDate: string;
     currentCost: number;
+    creditBalancePence?: number;
 }
 
 interface UsageBillingWidgetProps {
@@ -91,10 +92,27 @@ export default function UsageBillingWidget(props: UsageBillingWidgetProps) {
                 </div>
             ) : null}
 
-            <Link to="/billing" className="usage-widget-upgrade">
-                <Icon name="bolt-lightning" />
-                <span>Manage Subscription</span>
-            </Link>
+            {props.data?.creditBalancePence !== undefined && (
+                <div className="usage-widget-credit">
+                    <span className="usage-widget-credit-label">Credit Balance</span>
+                    <span className={`usage-widget-credit-value ${props.data.creditBalancePence <= 0 ? "empty" : props.data.creditBalancePence <= 500 ? "low" : ""}`}>
+                        £{(props.data.creditBalancePence / 100).toFixed(2)}
+                    </span>
+                </div>
+            )}
+
+            <div className="usage-widget-actions">
+                <Link to="/billing" className="usage-widget-upgrade">
+                    <Icon name="bolt-lightning" />
+                    <span>Manage Subscription</span>
+                </Link>
+                {props.data?.creditBalancePence !== undefined && props.data.creditBalancePence <= 500 && (
+                    <Link to="/billing?tab=credits" className="usage-widget-upgrade usage-widget-add-credit">
+                        <Icon name="coins" />
+                        <span>Add Credit</span>
+                    </Link>
+                )}
+            </div>
         </div>
     );
 }

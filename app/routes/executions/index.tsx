@@ -273,6 +273,7 @@ export default function Executions() {
                         <th className={"table-column-hide-sm"}>Trigger</th>
                         <th className={"table-column-hide-sm"}>Status</th>
                         <th className={"table-column-hide-sm"}>Duration</th>
+                        <th className={"table-column-hide-sm"}>Cost</th>
                         <th><span className={"table-column-hide-sm"}>Actions</span></th>
                     </tr>
                     </thead>
@@ -294,7 +295,7 @@ export default function Executions() {
                                     <th className={"table-column-hide-sm"}>Trigger</th>
                                     <th className={"table-column-hide-sm"}>Status</th>
                                     <th className={"table-column-hide-sm"}>Duration</th>
-                                    {/*<th className={"table-column-hide-sm"}>Allocation</th>*/}
+                                    <th className={"table-column-hide-sm"}>Cost</th>
                                     <th>
                                         <span className={"table-column-hide-sm"}>Actions</span>
                                     </th>
@@ -336,7 +337,13 @@ export default function Executions() {
                                                         ? <LiveDuration createdAt={exec.created_at} formatter={friendlyDuration} />
                                                         : friendlyDuration(effectiveDuration(exec))}
                                                 </td>
-                                                {/*<td className={"table-column-hide-sm"}>{friendlyDuration(exec.billing_duration)}</td>*/}
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>
+                                                    {exec.credit_cost_pence ? (
+                                                        <span style={{color: "#fbbf24", fontWeight: 500}}>
+                                                            £{(exec.credit_cost_pence / 100).toFixed(2)}
+                                                        </span>
+                                                    ) : null}
+                                                </td>
                                                 <td>
                                                     {/*<button disabled={true || r.state != "active"} className={"table-button"}>
                                             <Icon name="pencil" /> Edit
