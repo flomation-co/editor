@@ -221,7 +221,19 @@ Deploy to Sandbox:
     - main
   script:
     - mkdir -p ~/.ssh && echo "${OVH_DEPLOY_KEY}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-    - ssh -o StrictHostKeyChecking=no ubuntu@${OVH_HOST} "sudo apt update && sudo apt install -y ${PACKAGE} && sudo systemctl restart ${SERVICE}"
+    - |
+      ssh -o StrictHostKeyChecking=no ubuntu@${OVH_HOST} bash -s <<'DEPLOY'
+        sudo apt update && sudo apt install -y flomation-editor
+        sudo tee /opt/flomation/editor/build/client/run-config.js > /dev/null <<'RCFG'
+      window.properties = {
+          AUTOMATE_API_URL: "https://api.sandbox.flomation.app",
+          TRIGGER_URL: "https://launch.sandbox.flomation.app",
+          LOGIN_URL: "https://sentinel.sandbox.flomation.app"
+      }
+      RCFG
+        sudo chown flomation:flomation /opt/flomation/editor/build/client/run-config.js
+        sudo systemctl restart flomation-editor
+      DEPLOY
 
 Deploy to Live:
   stage: Production
