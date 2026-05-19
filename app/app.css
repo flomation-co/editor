@@ -57,9 +57,15 @@ body {
 .flo-container {
   width: 100%;
   min-width: 0;
-  padding: 25px;
+  padding: 12px;
   overflow-y: scroll;
   overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .flo-container {
+    padding: 25px;
+  }
 }
 
 .page-row-container {

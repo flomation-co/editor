@@ -162,18 +162,31 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 0 20px;
+    padding: 0;
+}
+
+@media (min-width: 768px) {
+    .flow-cards {
+        padding: 0 20px;
+    }
 }
 
 .flow-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
+    gap: 8px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     transition: background 0.12s ease;
+}
+
+@media (min-width: 768px) {
+    .flow-card {
+        gap: 12px;
+        padding: 14px 16px;
+    }
 }
 
 .flow-card:hover {
