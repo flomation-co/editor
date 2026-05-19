@@ -71,6 +71,31 @@
     white-space: nowrap;
 }
 
+@media (max-width: 480px) {
+    .org-switcher-label {
+        max-width: 80px;
+    }
+
+    .flo-logo {
+        height: 16px;
+        margin: 6px;
+    }
+
+    .horizontal-nav {
+        padding: 4px 6px;
+        gap: 2px;
+    }
+
+    .org-switcher {
+        margin-left: 6px;
+    }
+
+    .org-switcher-button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
 .org-switcher-chevron {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.4);

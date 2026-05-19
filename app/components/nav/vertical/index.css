@@ -1,12 +1,18 @@
 .vertical-nav {
     height: 100%;
-    width: 50px;
+    width: 42px;
     display: inline-block;
     overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.01);
     transition: width 0.15s ease;
     flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .vertical-nav {
+        width: 50px;
+    }
 }
 
 @media (min-width: 1024px) {
