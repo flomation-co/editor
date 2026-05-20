@@ -26,14 +26,17 @@ type Props = {
     onChange: (value: string) => void;
 }
 
+
 const fieldTypes = [
-    {value: "text", label: "Text"},
-    {value: "multiline", label: "Multi-line Text"},
-    {value: "number", label: "Number"},
-    {value: "boolean", label: "Checkbox"},
+    {value: "text", label: "Text", icon: "i-cursor"},
+    {value: "multiline", label: "Multi-line", icon: "align-left"},
+    {value: "number", label: "Number", icon: "hashtag"},
+    {value: "boolean", label: "Checkbox", icon: "check"},
 ];
 
 const FormBuilder = (props: Props) => {
+    const [addingToPage, setAddingToPage] = useState<number | null>(null);
+
     const [form, setForm] = useState<FormDefinition>(() => {
         try {
             const parsed = JSON.parse(props.value || "{}");
@@ -70,12 +73,13 @@ const FormBuilder = (props: Props) => {
         }));
     };
 
-    const addField = (pageIndex: number) => {
+    const addField = (pageIndex: number, type: string) => {
         const fieldNum = form.pages.reduce((acc, p) => acc + p.components.length, 0) + 1;
+        const typeLabel = fieldTypes.find(ft => ft.value === type)?.label || type;
         const newField: FormComponent = {
             name: `field_${fieldNum}`,
-            label: `Field ${fieldNum}`,
-            type: "text",
+            label: `${typeLabel} Field`,
+            type,
             placeholder: "",
             required: false,
             order: form.pages[pageIndex].components.length,
@@ -87,6 +91,7 @@ const FormBuilder = (props: Props) => {
                 i === pageIndex ? {...p, components: [...p.components, newField]} : p
             ),
         }));
+        setAddingToPage(null);
     };
 
     const updateField = (pageIndex: number, fieldIndex: number, updates: Partial<FormComponent>) => {
@@ -192,67 +197,95 @@ const FormBuilder = (props: Props) => {
 
                     {page.components.map((comp, fieldIndex) => (
                         <div key={fieldIndex} className="fb-component">
-                            <div className="fb-component-header">
-                                <Icon name="grip-vertical" className="fb-grip" />
-                                <div className="fb-component-fields">
-                                    <div className="fb-row">
+                            <div className="fb-component-card">
+                                <div className="fb-component-top">
+                                    <div className="fb-component-top-left">
+                                        <Icon name="grip-vertical" className="fb-grip" />
+                                        <span className="fb-field-badge">
+                                            <Icon name={fieldTypes.find(ft => ft.value === comp.type)?.icon || "font"} />
+                                            {fieldTypes.find(ft => ft.value === comp.type)?.label || comp.type}
+                                        </span>
+                                    </div>
+                                    <div className="fb-component-actions">
+                                        <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, -1)} disabled={fieldIndex === 0}>
+                                            <Icon name="chevron-up" />
+                                        </button>
+                                        <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, 1)} disabled={fieldIndex === page.components.length - 1}>
+                                            <Icon name="chevron-down" />
+                                        </button>
+                                        <button className="fb-icon-btn fb-danger" onClick={() => removeField(pageIndex, fieldIndex)}>
+                                            <Icon name="trash" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="fb-component-grid">
+                                    <div className="fb-field-group">
+                                        <span className="fb-field-group-label">Label</span>
                                         <input
                                             className="fb-input fb-input-sm"
                                             value={comp.label}
-                                            placeholder="Label"
+                                            placeholder="Display label"
                                             onChange={e => updateField(pageIndex, fieldIndex, {label: e.target.value})}
                                         />
-                                        <select
-                                            className="fb-select"
-                                            value={comp.type}
-                                            onChange={e => updateField(pageIndex, fieldIndex, {type: e.target.value})}
-                                        >
-                                            {fieldTypes.map(ft => (
-                                                <option key={ft.value} value={ft.value}>{ft.label}</option>
-                                            ))}
-                                        </select>
                                     </div>
-                                    <div className="fb-row">
+                                    <div className="fb-field-group">
+                                        <span className="fb-field-group-label">Identifier</span>
                                         <input
                                             className="fb-input fb-input-sm"
                                             value={comp.name}
-                                            placeholder="Field name"
+                                            placeholder="field_name"
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
+                                    </div>
+                                    <div className="fb-field-group fb-full-width">
+                                        <span className="fb-field-group-label">Placeholder</span>
                                         <input
                                             className="fb-input fb-input-sm"
                                             value={comp.placeholder}
-                                            placeholder="Placeholder"
+                                            placeholder="Hint text shown to user"
                                             onChange={e => updateField(pageIndex, fieldIndex, {placeholder: e.target.value})}
                                         />
-                                        <label className="fb-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={comp.required}
-                                                onChange={e => updateField(pageIndex, fieldIndex, {required: e.target.checked})}
-                                            />
-                                            Required
-                                        </label>
                                     </div>
                                 </div>
-                                <div className="fb-component-actions">
-                                    <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, -1)} disabled={fieldIndex === 0}>
-                                        <Icon name="chevron-up" />
-                                    </button>
-                                    <button className="fb-icon-btn" onClick={() => moveField(pageIndex, fieldIndex, 1)} disabled={fieldIndex === page.components.length - 1}>
-                                        <Icon name="chevron-down" />
-                                    </button>
-                                    <button className="fb-icon-btn fb-danger" onClick={() => removeField(pageIndex, fieldIndex)}>
-                                        <Icon name="trash" />
-                                    </button>
+                                <div className="fb-component-footer">
+                                    <label className="fb-toggle-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={comp.required}
+                                            onChange={e => updateField(pageIndex, fieldIndex, {required: e.target.checked})}
+                                        />
+                                        Required
+                                    </label>
+                                    <span className="fb-field-name">{comp.name}</span>
                                 </div>
                             </div>
                         </div>
                     ))}
 
-                    <button className="fb-add-field" onClick={() => addField(pageIndex)}>
-                        <Icon name="plus" /> Add Field
-                    </button>
+                    {addingToPage === pageIndex ? (
+                        <div className="fb-type-picker">
+                            <span className="fb-type-picker-label">Choose field type</span>
+                            <div className="fb-type-picker-grid">
+                                {fieldTypes.map(ft => (
+                                    <button
+                                        key={ft.value}
+                                        className="fb-type-picker-option"
+                                        onClick={() => addField(pageIndex, ft.value)}
+                                    >
+                                        <Icon name={ft.icon} />
+                                        <span>{ft.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <button className="fb-type-picker-cancel" onClick={() => setAddingToPage(null)}>
+                                Cancel
+                            </button>
+                        </div>
+                    ) : (
+                        <button className="fb-add-field" onClick={() => setAddingToPage(pageIndex)}>
+                            <Icon name="plus" /> Add Field
+                        </button>
+                    )}
                 </div>
             ))}
 

@@ -84,6 +84,7 @@ export type Flo = {
     notify_on_success?: boolean,
     notify_on_failure?: boolean,
     notification_emails?: string,
+    max_concurrent_executions?: number,
 }
 
 export type ExecutionStatusDot = {

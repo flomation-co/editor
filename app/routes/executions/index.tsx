@@ -333,9 +333,11 @@ export default function Executions() {
                                                     </Link>
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    {exec.completion_status === 'pending'
+                                                    {exec.completion_status === 'pending' && exec.execution_status !== 'created'
                                                         ? <LiveDuration createdAt={exec.created_at} formatter={friendlyDuration} />
-                                                        : friendlyDuration(effectiveDuration(exec))}
+                                                        : exec.execution_status === 'created'
+                                                            ? '—'
+                                                            : friendlyDuration(effectiveDuration(exec))}
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
                                                     {exec.credit_cost_pence ? (
