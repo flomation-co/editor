@@ -72,14 +72,15 @@ export function Editor(props : EditorProps) {
 
     const [ environments, setEnvironments ] = useState<Environment[]>();
     const [ envVariables, setEnvVariables ] = useState<VariableItem[]>([]);
-    const [ envDropdownOpen, setEnvDropdownOpen ] = useState<boolean>(false);
-    const envDropdownRef = useRef<HTMLDivElement>(null);
 
-    const [ notifyDropdownOpen, setNotifyDropdownOpen ] = useState<boolean>(false);
-    const notifyDropdownRef = useRef<HTMLDivElement>(null);
+    const [ settingsDropdownOpen, setSettingsDropdownOpen ] = useState<boolean>(false);
+    const settingsDropdownRef = useRef<HTMLDivElement>(null);
+    const [ envSearch, setEnvSearch ] = useState<string | null>(null);
+    const [ envListOpen, setEnvListOpen ] = useState<boolean>(false);
     const [ notifySuccess, setNotifySuccess ] = useState<boolean>(false);
     const [ notifyFailure, setNotifyFailure ] = useState<boolean>(false);
     const [ notificationEmails, setNotificationEmails ] = useState<string>('');
+    const [ maxConcurrent, setMaxConcurrent ] = useState<number | null>(null);
 
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
@@ -241,6 +242,7 @@ export function Editor(props : EditorProps) {
                     setNotifySuccess(response.data?.notify_on_success || false);
                     setNotifyFailure(response.data?.notify_on_failure || false);
                     setNotificationEmails(response.data?.notification_emails || '');
+                    setMaxConcurrent(response.data?.max_concurrent_executions || null);
                     setStatus("Up to date");
                 })
                 .catch(error => {
@@ -286,6 +288,12 @@ export function Editor(props : EditorProps) {
 
     useEffect(() => {
         if (flo) {
+            flo.max_concurrent_executions = maxConcurrent || undefined;
+        }
+    }, [ maxConcurrent ])
+
+    useEffect(() => {
+        if (flo) {
             flo.x = viewport.x;
             flo.y = viewport.y;
             flo.scale = viewport.zoom;
@@ -307,7 +315,7 @@ export function Editor(props : EditorProps) {
                     console.error(error);
                 })
         }
-    }, [ name, viewport, environment, notifySuccess, notifyFailure, notificationEmails ]);
+    }, [ name, viewport, environment, notifySuccess, notifyFailure, notificationEmails, maxConcurrent ]);
 
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastSavedHashRef = useRef<string>("");
@@ -674,6 +682,35 @@ export function Editor(props : EditorProps) {
                     }
                 }
             }
+
+            // Add form fields from Form Trigger as available variables
+            if (n.type === 'trigger/form' || n.data?.label === 'trigger/form') {
+                const formDefInput = n.data?.config?.inputs?.find((i: any) => i.name === 'form_definition');
+                if (formDefInput?.value) {
+                    try {
+                        const formDef = typeof formDefInput.value === 'string'
+                            ? JSON.parse(formDefInput.value)
+                            : formDefInput.value;
+                        if (formDef?.pages) {
+                            for (const page of formDef.pages) {
+                                if (Array.isArray(page.components)) {
+                                    for (const comp of page.components) {
+                                        if (comp.name && comp.name.trim()) {
+                                            items.push({
+                                                name: comp.name.trim(),
+                                                category: "input",
+                                                source: comp.label || "Form Field",
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch {
+                        // Invalid form definition JSON — skip
+                    }
+                }
+            }
         }
 
         if (!propertyNode || !plugins) return items;
@@ -793,6 +830,24 @@ export function Editor(props : EditorProps) {
                             if (ti.name) nodeVarNames.add(ti.name);
                         }
                     }
+                    // Add form fields from Form Trigger
+                    if (pn.data?.label === 'trigger/form' || pn.type === 'trigger/form') {
+                        const fdInput = pn.data?.config?.inputs?.find((i: any) => i.name === 'form_definition');
+                        if (fdInput?.value) {
+                            try {
+                                const fd = typeof fdInput.value === 'string' ? JSON.parse(fdInput.value) : fdInput.value;
+                                if (fd?.pages) {
+                                    for (const pg of fd.pages) {
+                                        if (Array.isArray(pg.components)) {
+                                            for (const c of pg.components) {
+                                                if (c.name) nodeVarNames.add(c.name);
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch { /* skip */ }
+                        }
+                    }
                     // Walk through pass-through nodes (conditional, loop, switch)
                     // and sub-flow invoke nodes to find upstream outputs
                     const pt = pn.data?.config?.type;
@@ -889,17 +944,13 @@ export function Editor(props : EditorProps) {
 
     const selectEnvironment = (envId: string | null) => {
         setEnvironment(envId);
-        setEnvDropdownOpen(false);
     }
 
     // Close dropdowns on outside click
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
-            if (envDropdownRef.current && !envDropdownRef.current.contains(e.target as Node)) {
-                setEnvDropdownOpen(false);
-            }
-            if (notifyDropdownRef.current && !notifyDropdownRef.current.contains(e.target as Node)) {
-                setNotifyDropdownOpen(false);
+            if (settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target as Node)) {
+                setSettingsDropdownOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClick);
@@ -986,84 +1037,122 @@ export function Editor(props : EditorProps) {
                                     </div>
                                 </div>
                             </div>
-                            {environments && (
-                                <div className={"flo-editor-property-action-section"}>
-                                    <div className={"flo-editor-env-dropdown"} ref={envDropdownRef}>
-                                        <button className={"flo-editor-env-button"} onClick={() => setEnvDropdownOpen(!envDropdownOpen)}>
-                                            <Icon name="wrench" className={"flo-editor-env-icon"} />
-                                            <span className={"flo-editor-env-label"}>{flo.environment_id ? environments.find(e => e.id === flo.environment_id)?.name || "Environment" : "No Environment"}</span>
-                                            <Icon name="chevron-down" className={"flo-editor-env-chevron"} />
-                                        </button>
-                                        {envDropdownOpen && (
-                                            <div className={"flo-editor-env-menu"}>
-                                                <div
-                                                    className={`flo-editor-env-item ${!flo.environment_id ? "active" : ""}`}
-                                                    onClick={() => selectEnvironment(null)}
-                                                >
-                                                    No Environment
-                                                </div>
-                                                {environments.map(env => (
-                                                    <div
-                                                        key={env.id}
-                                                        className={`flo-editor-env-item ${env.id === flo.environment_id ? "active" : ""}`}
-                                                        onClick={() => selectEnvironment(env.id)}
-                                                    >
-                                                        {env.name}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                             <div className={"flo-editor-property-action-section"}>
-                                <div className={"flo-editor-env-dropdown"} ref={notifyDropdownRef}>
+                                <div className={"flo-editor-env-dropdown"} ref={settingsDropdownRef}>
                                     <button
                                         className={"flo-editor-env-button"}
-                                        onClick={() => setNotifyDropdownOpen(!notifyDropdownOpen)}
-                                        data-tooltip-id={"tooltip-notifications"}
-                                        data-tooltip-content={"Execution Notifications"}
+                                        onClick={() => setSettingsDropdownOpen(!settingsDropdownOpen)}
+                                        data-tooltip-id={"tooltip-settings"}
+                                        data-tooltip-content={"Flow Settings"}
                                         data-tooltip-place={"bottom"}
                                     >
-                                        <Icon name="bell" className={"flo-editor-env-icon"} />
-                                        {(notifySuccess || notifyFailure) && (
-                                            <span className="flo-notify-dot" />
-                                        )}
-                                        <Tooltip id={"tooltip-notifications"} />
+                                        <Icon name="gear" className={"flo-editor-env-icon"} />
+                                        <span className={"flo-editor-env-label"}>Settings</span>
+                                        <Icon name="chevron-down" className={"flo-editor-env-chevron"} />
+                                        <Tooltip id={"tooltip-settings"} />
                                     </button>
-                                    {notifyDropdownOpen && (
-                                        <div className={"flo-editor-env-menu"} style={{ minWidth: 280, padding: '12px 14px' }}>
-                                            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 10 }}>
-                                                Execution Notifications
-                                            </div>
-                                            <label className="flo-notify-toggle" onClick={e => e.stopPropagation()}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={notifySuccess}
-                                                    onChange={e => setNotifySuccess(e.target.checked)}
-                                                />
-                                                <span className="flo-notify-toggle-label">Notify on success</span>
-                                            </label>
-                                            <label className="flo-notify-toggle" onClick={e => e.stopPropagation()}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={notifyFailure}
-                                                    onChange={e => setNotifyFailure(e.target.checked)}
-                                                />
-                                                <span className="flo-notify-toggle-label">Notify on failure</span>
-                                            </label>
-                                            <div style={{ marginTop: 10 }}>
-                                                <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
-                                                    Recipient emails (comma-separated)
+                                    {settingsDropdownOpen && (
+                                        <div className={"flo-editor-env-menu flo-settings-panel"}>
+                                            <div className="flo-settings-header">Flow Settings</div>
+
+                                            {environments && (
+                                                <div className="flo-settings-section" onClick={e => e.stopPropagation()}>
+                                                    <div className="flo-settings-section-label">Environment</div>
+                                                    <div className="flo-settings-env-search">
+                                                        <input
+                                                            type="text"
+                                                            className="flo-settings-env-input"
+                                                            placeholder="Search environments..."
+                                                            value={envSearch !== null ? envSearch : (environment ? environments.find(e => e.id === environment)?.name || '' : '')}
+                                                            onFocus={() => { setEnvSearch(''); setEnvListOpen(true); }}
+                                                            onBlur={() => setTimeout(() => { setEnvSearch(null); setEnvListOpen(false); }, 150)}
+                                                            onChange={e => setEnvSearch(e.target.value)}
+                                                        />
+                                                        {envListOpen && (
+                                                            <div className="flo-settings-env-list">
+                                                                <div
+                                                                    className={`flo-settings-env-option ${!environment ? "active" : ""}`}
+                                                                    onMouseDown={() => selectEnvironment(null)}
+                                                                >
+                                                                    No Environment
+                                                                </div>
+                                                                {environments
+                                                                    .filter(env => !envSearch || env.name.toLowerCase().includes(envSearch.toLowerCase()))
+                                                                    .map(env => (
+                                                                        <div
+                                                                            key={env.id}
+                                                                            className={`flo-settings-env-option ${env.id === environment ? "active" : ""}`}
+                                                                            onMouseDown={() => selectEnvironment(env.id)}
+                                                                        >
+                                                                            {env.name}
+                                                                        </div>
+                                                                    ))
+                                                                }
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flo-settings-section" onClick={e => e.stopPropagation()}>
+                                                <div className="flo-settings-section-label">Notifications</div>
+                                                <label className="flo-notify-toggle">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={notifySuccess}
+                                                        onChange={e => setNotifySuccess(e.target.checked)}
+                                                    />
+                                                    <span className="flo-notify-toggle-label">Notify on success</span>
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    className="flo-notify-email-input"
-                                                    value={notificationEmails}
-                                                    onChange={e => setNotificationEmails(e.target.value)}
-                                                    placeholder="Leave empty to notify flow author"
-                                                    onClick={e => e.stopPropagation()}
-                                                />
+                                                <label className="flo-notify-toggle">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={notifyFailure}
+                                                        onChange={e => setNotifyFailure(e.target.checked)}
+                                                    />
+                                                    <span className="flo-notify-toggle-label">Notify on failure</span>
+                                                </label>
+                                                <div style={{ marginTop: 8 }}>
+                                                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
+                                                        Recipient emails (comma-separated)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        className="flo-notify-email-input"
+                                                        value={notificationEmails}
+                                                        onChange={e => setNotificationEmails(e.target.value)}
+                                                        placeholder="Leave empty to notify flow author"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flo-settings-section" onClick={e => e.stopPropagation()}>
+                                                <div className="flo-settings-section-label">Concurrency</div>
+                                                <label className="flo-notify-toggle">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={maxConcurrent !== null}
+                                                        onChange={e => setMaxConcurrent(e.target.checked ? 1 : null)}
+                                                    />
+                                                    <span className="flo-notify-toggle-label">Limit concurrent executions</span>
+                                                </label>
+                                                {maxConcurrent !== null && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                                                        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                                                            Max executions
+                                                        </label>
+                                                        <input
+                                                            type="number"
+                                                            className="flo-settings-number-input"
+                                                            min={1}
+                                                            value={maxConcurrent}
+                                                            onChange={e => {
+                                                                const val = parseInt(e.target.value, 10);
+                                                                if (!isNaN(val) && val >= 1) setMaxConcurrent(val);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}

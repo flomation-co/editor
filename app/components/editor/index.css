@@ -862,3 +862,117 @@
 .flo-notify-email-input::placeholder {
     color: rgba(255, 255, 255, 0.25);
 }
+
+/* ── Unified Settings Panel ── */
+
+.flo-settings-panel {
+    min-width: 320px;
+    padding: 0 !important;
+}
+
+.flo-settings-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 14px 8px;
+}
+
+.flo-settings-section {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.flo-settings-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 6px;
+}
+
+.flo-settings-env-search {
+    position: relative;
+}
+
+.flo-settings-env-input {
+    width: 100%;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.flo-settings-env-input:focus {
+    border-color: rgba(0, 170, 156, 0.4);
+}
+
+.flo-settings-env-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.flo-settings-env-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 160px;
+    overflow-y: auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 10001;
+    padding: 4px;
+}
+
+.flo-settings-env-list::-webkit-scrollbar { width: 4px; }
+.flo-settings-env-list::-webkit-scrollbar-track { background: transparent; }
+.flo-settings-env-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+
+.flo-settings-env-option {
+    padding: 6px 10px;
+    border-radius: 4px;
+    color: #d1d5db;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.flo-settings-env-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.flo-settings-env-option.active {
+    background: rgba(0, 170, 156, 0.15);
+    color: #2dd4bf;
+}
+
+.flo-settings-number-input {
+    width: 56px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    text-align: center;
+    -moz-appearance: textfield;
+}
+
+.flo-settings-number-input::-webkit-inner-spin-button,
+.flo-settings-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.flo-settings-number-input:focus {
+    border-color: rgba(0, 170, 156, 0.4);
+}
