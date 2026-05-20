@@ -85,6 +85,10 @@ export default function Profile() {
         window.location.replace(config("LOGIN_URL") + "/mfa");
     };
 
+    const openPasskeys = () => {
+        window.location.replace(config("LOGIN_URL") + "/passkeys");
+    };
+
     const saveProfile = () => {
         if (!user) return;
         const url = config("AUTOMATE_API_URL");
@@ -176,6 +180,17 @@ export default function Profile() {
                                     </div>
                                     <button className="profile-btn profile-btn--secondary" onClick={openMFA} disabled={!user}>
                                         <Icon name="shield-halved" /> Manage MFA
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="profile-field">
+                                <div className="profile-security-row">
+                                    <div className="profile-security-info">
+                                        <div className="profile-security-title">Passkeys</div>
+                                        <div className="profile-security-desc">Sign in with your fingerprint, face, or security key — no password required</div>
+                                    </div>
+                                    <button className="profile-btn profile-btn--secondary" onClick={openPasskeys} disabled={!user}>
+                                        <Icon name="key" /> Manage Passkeys
                                     </button>
                                 </div>
                             </div>
