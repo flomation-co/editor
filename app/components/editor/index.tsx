@@ -188,15 +188,24 @@ export function Editor(props : EditorProps) {
             api.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
                 headers: { "Authorization": "Bearer " + token }
             }).catch(() => ({ data: [] })),
-        ]).then(([propsRes, secretsRes]) => {
+            api.get(API_URL + "/api/v1/environment/" + environment + "/credential", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+        ]).then(([propsRes, secretsRes, credsRes]) => {
             const properties = propsRes.data || [];
             const secrets = secretsRes.data || [];
+            const credentials = credsRes.data || [];
 
             properties.forEach((p: Property) => {
                 items.push({ name: p.name, category: "env" });
             });
             secrets.forEach((s: Secret) => {
                 items.push({ name: s.name, category: "secrets" });
+            });
+            credentials.forEach((c: any) => {
+                if (c.name && c.status === 'active') {
+                    items.push({ name: c.name, category: "credentials", source: c.provider_name || c.provider_slug });
+                }
             });
 
             setEnvVariables(items);
@@ -786,9 +795,9 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.'];
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
         // Prefixes that are always valid (runtime variables, not environment-dependent)
-        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.'];
+        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;

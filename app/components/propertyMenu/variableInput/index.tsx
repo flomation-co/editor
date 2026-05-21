@@ -3,7 +3,7 @@ import "./index.css";
 
 export type VariableItem = {
     name: string;
-    category: "secrets" | "env" | "input" | "flow" | "var";
+    category: "secrets" | "env" | "input" | "flow" | "var" | "credentials";
     /** Optional label shown in autocomplete (e.g. parent node name) */
     source?: string;
 };
