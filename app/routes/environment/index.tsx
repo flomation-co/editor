@@ -121,6 +121,19 @@ const providerScopes: Record<string, ScopeGroup[]> = {
             { scope: "r_ads_reporting", label: "Read ad reports" },
         ]},
     ],
+    linkedin_community: [
+        { group: "Member Content", scopes: [
+            { scope: "r_member_social", label: "Read member posts", default: true },
+            { scope: "w_member_social", label: "Write member posts", default: true },
+        ]},
+        { group: "Organisation Content", scopes: [
+            { scope: "r_organization_social", label: "Read organisation posts", default: true },
+            { scope: "w_organization_social", label: "Write organisation posts", default: true },
+        ]},
+        { group: "Organisation Admin", scopes: [
+            { scope: "rw_organization_admin", label: "Manage organisation pages", default: true },
+        ]},
+    ],
     facebook: [
         { group: "Pages", scopes: [
             { scope: "pages_manage_posts", label: "Manage posts", default: true },
