@@ -6,6 +6,8 @@ export type VariableItem = {
     category: "secrets" | "env" | "input" | "flow" | "var" | "credentials";
     /** Optional label shown in autocomplete (e.g. parent node name) */
     source?: string;
+    /** If set, this value is inserted instead of name. Used for scoped parent references where the display name is human-readable but the insert value uses node IDs. */
+    insertName?: string;
 };
 
 type VariableInputProps = {
@@ -41,24 +43,38 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
         }
 
         const inner = match[1];
-        const dotIndex = inner.indexOf(".");
+
+        // Check if the full reference matches a scoped parent output (nodeId.output)
+        const scopedMatch = variables.find(
+            (v) => v.category === "input" && v.insertName === inner
+        );
+
         let category: string;
         let varName: string;
+        let valid: boolean;
 
-        if (dotIndex >= 0) {
-            category = inner.slice(0, dotIndex);
-            varName = inner.slice(dotIndex + 1);
-            // Normalise "secret" → "secrets" to match the variable items
-            if (category === "secret") category = "secrets";
-        } else {
-            // Bare name — parent output
+        if (scopedMatch) {
+            // Scoped parent reference — treat as valid input
             category = "input";
             varName = inner;
-        }
+            valid = true;
+        } else {
+            const dotIndex = inner.indexOf(".");
+            if (dotIndex >= 0) {
+                category = inner.slice(0, dotIndex);
+                varName = inner.slice(dotIndex + 1);
+                // Normalise "secret" → "secrets" to match the variable items
+                if (category === "secret") category = "secrets";
+            } else {
+                // Bare name — parent output
+                category = "input";
+                varName = inner;
+            }
 
-        const valid = variables.some(
-            (v) => v.category === category && v.name === varName
-        );
+            valid = variables.some(
+                (v) => v.category === category && (v.name === varName || v.insertName === varName)
+            );
+        }
 
         segments.push({
             type: "variable",
@@ -148,7 +164,8 @@ const VariableInput = (props: VariableInputProps) => {
         const lower = autocomplete.filter.toLowerCase();
         return props.variables.filter((v) => {
             const full = `${v.category}.${v.name}`.toLowerCase();
-            return full.includes(lower) || v.name.toLowerCase().includes(lower);
+            const src = (v.source || '').toLowerCase();
+            return full.includes(lower) || v.name.toLowerCase().includes(lower) || src.includes(lower);
         });
     }, [autocomplete.visible, autocomplete.filter, props.variables]);
 
@@ -216,9 +233,11 @@ const VariableInput = (props: VariableInputProps) => {
                 ? value.slice(inputRef.current.selectionStart || 0)
                 : "";
             // Parent outputs use bare ${name}, secrets/env use ${category.name}
+            // Scoped parent refs use insertName (node ID-based) for stability
+            const varName = variable.insertName || variable.name;
             const insertion = variable.category === "input"
-                ? `\${${variable.name}}`
-                : `\${${variable.category}.${variable.name}}`;
+                ? `\${${varName}}`
+                : `\${${variable.category}.${varName}}`;
             const newValue = before + insertion + afterCursor;
             setValue(newValue);
             setAutocomplete((prev) => ({ ...prev, visible: false }));
@@ -296,9 +315,25 @@ const VariableInput = (props: VariableInputProps) => {
                 const pillClass = seg.valid
                     ? `variable-pill variable-pill--${seg.category}`
                     : "variable-pill variable-pill--invalid";
+
+                // Show human-readable labels for parent output references:
+                // - Scoped (nodeId.output) → "${Node Name > output}"
+                // - Flat (output) → "${Parent Name > output}" if source exists
+                let displayText = seg.value;
+                if (seg.valid && seg.category === "input") {
+                    const matched = props.variables.find(
+                        (v) => v.insertName === seg.varName
+                    ) || props.variables.find(
+                        (v) => v.category === "input" && v.name === seg.varName && v.source
+                    );
+                    if (matched?.source) {
+                        displayText = "${" + matched.source + " > " + matched.name + "}";
+                    }
+                }
+
                 return (
                     <span key={i} className={pillClass}>
-                        {seg.value}
+                        {displayText}
                     </span>
                 );
             }

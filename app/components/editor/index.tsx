@@ -745,17 +745,18 @@ export function Editor(props : EditorProps) {
                 const parentNode = nodes.find((n: any) => n.id === parentId) as any;
                 if (!parentNode?.data?.config) continue;
 
-                const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+                const parentActionName = parentNode.data.config.name || parentNode.type;
+                const parentUserLabel = parentNode.data.config.label;
+                const parentNodeName = parentUserLabel || parentActionName;
                 const parentType = parentNode.data?.config?.type;
-
-                // Add this parent's outputs
                 if (parentNode.data.config.outputs) {
                     for (const output of parentNode.data.config.outputs) {
                         if (output.name) {
                             items.push({
                                 name: output.name,
+                                insertName: parentId + "." + output.name,
                                 category: "input",
-                                source: parentLabel,
+                                source: parentNodeName,
                             });
                         }
                     }
@@ -831,7 +832,10 @@ export function Editor(props : EditorProps) {
                     if (!pn?.data?.config) continue;
                     if (pn.data.config.outputs) {
                         for (const o of pn.data.config.outputs) {
-                            if (o.name) nodeVarNames.add(o.name);
+                            if (o.name) {
+                                nodeVarNames.add(o.name);
+                                nodeVarNames.add(pid + "." + o.name);
+                            }
                         }
                     }
                     if (pn.data.config.trigger_inputs) {
