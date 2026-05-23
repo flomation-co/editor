@@ -188,15 +188,24 @@ export function Editor(props : EditorProps) {
             api.get(API_URL + "/api/v1/environment/" + environment + "/secret", {
                 headers: { "Authorization": "Bearer " + token }
             }).catch(() => ({ data: [] })),
-        ]).then(([propsRes, secretsRes]) => {
+            api.get(API_URL + "/api/v1/environment/" + environment + "/credential", {
+                headers: { "Authorization": "Bearer " + token }
+            }).catch(() => ({ data: [] })),
+        ]).then(([propsRes, secretsRes, credsRes]) => {
             const properties = propsRes.data || [];
             const secrets = secretsRes.data || [];
+            const credentials = credsRes.data || [];
 
             properties.forEach((p: Property) => {
                 items.push({ name: p.name, category: "env" });
             });
             secrets.forEach((s: Secret) => {
                 items.push({ name: s.name, category: "secrets" });
+            });
+            credentials.forEach((c: any) => {
+                if (c.name && c.status === 'active') {
+                    items.push({ name: c.name, category: "credentials", source: c.provider_name || c.provider_slug });
+                }
             });
 
             setEnvVariables(items);
@@ -736,17 +745,18 @@ export function Editor(props : EditorProps) {
                 const parentNode = nodes.find((n: any) => n.id === parentId) as any;
                 if (!parentNode?.data?.config) continue;
 
-                const parentLabel = parentNode.data.config.label || parentNode.data.config.name || parentNode.type;
+                const parentActionName = parentNode.data.config.name || parentNode.type;
+                const parentUserLabel = parentNode.data.config.label;
+                const parentNodeName = parentUserLabel || parentActionName;
                 const parentType = parentNode.data?.config?.type;
-
-                // Add this parent's outputs
                 if (parentNode.data.config.outputs) {
                     for (const output of parentNode.data.config.outputs) {
                         if (output.name) {
                             items.push({
                                 name: output.name,
+                                insertName: parentId + "." + output.name,
                                 category: "input",
-                                source: parentLabel,
+                                source: parentNodeName,
                             });
                         }
                     }
@@ -786,9 +796,9 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.'];
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
         // Prefixes that are always valid (runtime variables, not environment-dependent)
-        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.'];
+        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
@@ -822,7 +832,10 @@ export function Editor(props : EditorProps) {
                     if (!pn?.data?.config) continue;
                     if (pn.data.config.outputs) {
                         for (const o of pn.data.config.outputs) {
-                            if (o.name) nodeVarNames.add(o.name);
+                            if (o.name) {
+                                nodeVarNames.add(o.name);
+                                nodeVarNames.add(pid + "." + o.name);
+                            }
                         }
                     }
                     if (pn.data.config.trigger_inputs) {

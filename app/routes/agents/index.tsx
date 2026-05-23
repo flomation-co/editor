@@ -37,20 +37,12 @@ function ChannelIcon({ type }: { type: string }) {
     );
 }
 
-function StatusBadge({ status }: { status: string }) {
-    const labels: Record<string, string> = {
-        running: "Running",
-        stopped: "Stopped",
-        paused: "Paused",
-        error: "Error",
-    };
-    return (
-        <span className={`agent-status-badge ${status}`}>
-            <span className="agent-status-dot" />
-            {labels[status] || status}
-        </span>
-    );
-}
+const STATUS_LABELS: Record<string, string> = {
+    running: "Running",
+    stopped: "Stopped",
+    paused: "Paused",
+    error: "Error",
+};
 
 export default function Agents() {
     const token = useCookieToken();
@@ -121,49 +113,43 @@ export default function Agents() {
             )}
 
             {!loading && agents.length > 0 && (
-                <div className="agents-grid">
+                <div className="agents-list">
                     {agents.map(agent => (
                         <div
                             key={agent.id}
                             className="agent-card"
                             onClick={() => navigate(`/agent/${agent.id}`)}
                         >
-                            <div className="agent-card-header">
-                                <span className="agent-card-name">{agent.name}</span>
-                                <StatusBadge status={agent.status} />
-                            </div>
-
-                            {agent.description && (
-                                <div className="agent-card-description">{agent.description}</div>
-                            )}
-
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div className="agent-channels">
-                                    {(agent.channels || []).map((ch: AgentChannel, i: number) => (
-                                        <ChannelIcon key={i} type={ch.type} />
-                                    ))}
-                                    {(!agent.channels || agent.channels.length === 0) && (
-                                        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>No channels</span>
+                            <div className={`agent-card-indicator agent-card-indicator--${agent.status}`} />
+                            <div className="agent-card-info">
+                                <div className="agent-card-name">
+                                    <Icon name="robot" className="agent-card-icon" />
+                                    {agent.name}
+                                </div>
+                                {agent.description && (
+                                    <div className="agent-card-description">{agent.description}</div>
+                                )}
+                                <div className="agent-card-details">
+                                    <div className="agent-channels">
+                                        {(agent.channels || []).map((ch: AgentChannel, i: number) => (
+                                            <ChannelIcon key={i} type={ch.type} />
+                                        ))}
+                                        {(!agent.channels || agent.channels.length === 0) && (
+                                            <span>No channels</span>
+                                        )}
+                                    </div>
+                                    <span><Icon name="comment" /> {agent.message_count || 0} messages</span>
+                                    <span><Icon name="bolt" /> {agent.execution_count || 0} executions</span>
+                                    {agent.orchestrator_flow_name && (
+                                        <span><Icon name="diagram-project" /> {agent.orchestrator_flow_name}</span>
                                     )}
                                 </div>
-
-                                <div className="agent-card-stats">
-                                    <span className="agent-card-stat">
-                                        <Icon name="comment" />
-                                        {agent.message_count || 0}
-                                    </span>
-                                    <span className="agent-card-stat">
-                                        <Icon name="robot" />
-                                        {agent.execution_count || 0}
-                                    </span>
-                                </div>
                             </div>
-
-                            {agent.orchestrator_flow_name && (
-                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-                                    Flow: {agent.orchestrator_flow_name}
-                                </div>
-                            )}
+                            <div className="agent-card-meta">
+                                <span className={`agent-card-badge agent-card-badge--${agent.status}`}>
+                                    {STATUS_LABELS[agent.status] || agent.status}
+                                </span>
+                            </div>
                         </div>
                     ))}
                 </div>
