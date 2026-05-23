@@ -31,27 +31,27 @@ type Tab = 'config' | 'channels' | 'schedules' | 'sessions' | 'state' | 'memory'
 
 type EmailAccount = { email: string; label?: string; purpose: string };
 
-function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key: string, fallback?: string) => string }) {
+function AgentEmailChannel({ agentId, config, token }: { agentId: string; config: (key: string, fallback?: string) => string; token: string }) {
     const [accounts, setAccounts] = useState<EmailAccount[]>([]);
     const [authURLs, setAuthURLs] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
 
     const apiUrl = config("AUTOMATE_API_URL");
-    // Use the trigger_google_account endpoints with agent ID as the scope key.
-    // This reuses the same infrastructure — trigger_id is just TEXT, works with agent IDs too.
 
     const fetchAccounts = useCallback(() => {
         if (!agentId || !apiUrl) { setLoading(false); return; }
         setLoading(true);
-        fetch(`${apiUrl}/api/v1/internal/trigger/${agentId}/google-accounts`)
-            .then(res => res.json())
-            .then(data => {
+        api.get(`${apiUrl}/api/v1/agent/${agentId}/google-accounts`, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(response => {
+                const data = response?.data || {};
                 setAccounts(data.accounts || []);
                 setAuthURLs(data.auth_urls || {});
             })
             .catch(() => { setAccounts([]); setAuthURLs({}); })
             .finally(() => setLoading(false));
-    }, [agentId, apiUrl]);
+    }, [agentId, apiUrl, token]);
 
     useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
@@ -72,7 +72,9 @@ function AgentEmailChannel({ agentId, config }: { agentId: string; config: (key:
 
     const removeAccount = (email: string, purpose: string) => {
         if (!agentId || !apiUrl) return;
-        fetch(`${apiUrl}/api/v1/internal/trigger/${agentId}/google-account/${encodeURIComponent(email)}?purpose=${purpose}`, { method: "DELETE" })
+        api.delete(`${apiUrl}/api/v1/agent/${agentId}/google-account/${encodeURIComponent(email)}?purpose=${purpose}`, {
+            headers: { Authorization: "Bearer " + token }
+        })
             .then(() => fetchAccounts())
             .catch(console.error);
     };
@@ -800,7 +802,7 @@ export default function AgentDetail() {
                                     )}
 
                                     {ch.type === 'email' && (
-                                        <AgentEmailChannel agentId={id || ''} config={config} />
+                                        <AgentEmailChannel agentId={id || ''} config={config} token={token} />
                                     )}
 
                                     {ch.type === 'webhook' && (
