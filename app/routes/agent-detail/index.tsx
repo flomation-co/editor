@@ -586,6 +586,7 @@ export default function AgentDetail() {
                                             {ch.type === 'telegram' && <Icon name="telegram" style={{ color: '#229ED9', fontSize: 18 }} />}
                                             {ch.type === 'slack' && <Icon name="slack" style={{ color: '#E01E5A', fontSize: 18 }} />}
                                             {ch.type === 'email' && <Icon name="envelope" style={{ color: '#EA4335', fontSize: 16 }} />}
+                                            {ch.type === 'facebook_messenger' && <Icon name="facebook" style={{ color: '#1877F2', fontSize: 18 }} />}
                                             {ch.type === 'webhook' && <Icon name="robot" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
                                             <select
                                                 className="agent-form-input"
@@ -600,6 +601,7 @@ export default function AgentDetail() {
                                                 <option value="telegram">Telegram</option>
                                                 <option value="slack">Slack</option>
                                                 <option value="email">Email</option>
+                                                <option value="facebook_messenger">Facebook Messenger</option>
                                                 <option value="webhook">Webhook</option>
                                             </select>
                                         </div>
@@ -803,6 +805,16 @@ export default function AgentDetail() {
 
                                     {ch.type === 'email' && (
                                         <AgentEmailChannel agentId={id || ''} config={config} token={token} />
+                                    )}
+
+                                    {ch.type === 'facebook_messenger' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div style={{ padding: '10px 14px', background: 'rgba(0,170,156,0.06)', border: '1px solid rgba(0,170,156,0.15)', borderRadius: 6, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                                                <Icon name="info-circle" style={{ marginRight: 6, color: '#00aa9c' }} />
+                                                Facebook Messenger is configured via a <strong>Facebook Messenger Trigger</strong> node in the orchestrator flow.
+                                                Add the trigger to your flow, configure the credential and page, then wire the outputs to your response actions.
+                                            </div>
+                                        </div>
                                     )}
 
                                     {ch.type === 'webhook' && (

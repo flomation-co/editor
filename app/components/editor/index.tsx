@@ -649,6 +649,7 @@ export function Editor(props : EditorProps) {
         { name: "channel_type", category: "flow", source: "Agent Channel" },
         { name: "channel_id", category: "flow", source: "Agent Channel" },
         { name: "thread_id", category: "flow", source: "Agent Channel" },
+        { name: "page_access_token", category: "flow", source: "Facebook Messenger" },
     ];
 
     // Canonical trigger data variables injected by Launch when an agent
@@ -1255,6 +1256,7 @@ export function Editor(props : EditorProps) {
                                             node={propertyNode}
                                             variables={allVariables}
                                             triggers={flo?.triggers}
+                                            environmentId={environment || undefined}
                                             onValueChange={onValueChange}
                                             onNameChange={onNameChange}
                                             onDismiss={() => {setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false); setPropertyExpanded(false);}}

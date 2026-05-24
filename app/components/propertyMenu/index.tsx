@@ -15,12 +15,14 @@ import SelectProperty from "~/components/propertyMenu/selectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 import WebhookSecretProperty from "~/components/propertyMenu/webhookSecretProperty";
+import FacebookPageProperty from "~/components/propertyMenu/facebookPageProperty";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
     node: object;
     variables?: VariableItem[];
     triggers?: Trigger[];
+    environmentId?: string;
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
@@ -300,6 +302,32 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     name={i.name}
                                                     label={i.label}
                                                     value={i.value || ""}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            );
+                                        }
+
+                                        // Special case: page_id on Facebook triggers — dropdown of managed pages
+                                        if (i.name === "page_id" && (
+                                            props.node.data.label === "trigger/facebook_messenger" ||
+                                            props.node.data.label === "trigger/facebook_feed"
+                                        )) {
+                                            // Extract credential name from the access_token input value
+                                            const tokenInput = props.node.data.config.inputs.find((x: any) => x.name === "access_token");
+                                            const tokenValue = localValues["access_token"] ?? tokenInput?.value ?? "";
+                                            const credMatch = tokenValue.match(/\$\{credentials\.([^}]+)\}/);
+                                            const credentialName = credMatch ? credMatch[1] : "";
+
+                                            return (
+                                                <FacebookPageProperty
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    value={localValues[i.name] ?? i.value ?? ""}
+                                                    required={i.required}
+                                                    credentialName={credentialName}
+                                                    environmentId={props.environmentId}
                                                     onValueChange={onValueChange}
                                                 />
                                             );
