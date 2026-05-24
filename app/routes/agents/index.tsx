@@ -27,6 +27,7 @@ const CHANNEL_ICONS: Record<string, any> = {
     slack: "slack",
     email: "envelope",
     webhook: "globe",
+    facebook_messenger: "facebook",
 };
 
 function ChannelIcon({ type }: { type: string }) {

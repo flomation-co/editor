@@ -70,9 +70,22 @@ const TriggerURLProperty = (props: Props) => {
             showSnippet = true;
             snippetCode = `<img src="${triggerUrl}" width="1" height="1" alt="" style="display:none" />`;
             break;
+        case "facebook-messenger":
+        case "facebook-feed": {
+            // Facebook webhooks must be publicly accessible — use LAUNCH_URL (ngrok)
+            const publicUrl = config("LAUNCH_URL") || launchUrl;
+            triggerPath = `/webhook/facebook`;
+            triggerUrl = publicUrl + triggerPath;
+            break;
+        }
+        case "linkedin-poll":
+            // Polling-based — no URL needed
+            return null;
         default:
             return null;
     }
+
+    const isFacebookTrigger = typeName === "facebook-messenger" || typeName === "facebook-feed";
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -82,7 +95,21 @@ const TriggerURLProperty = (props: Props) => {
 
     return (
         <div className="trigger-url-section">
-            <div className="trigger-url-label">Trigger URL</div>
+            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : "Trigger URL"}</div>
+            {isFacebookTrigger && (
+                <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
+                    Paste this URL in your{" "}
+                    <a
+                        href="https://developers.facebook.com/apps/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#00aa9c", textDecoration: "underline" }}
+                    >
+                        Facebook App Dashboard
+                    </a>
+                    {" "}under <strong>Webhooks</strong>. Subscribe to <strong>Page</strong> events.
+                </div>
+            )}
             <div className="trigger-url-box">
                 <code className="trigger-url-text">{triggerUrl}</code>
                 <button className="trigger-url-copy" onClick={() => copyToClipboard(triggerUrl)}>

@@ -365,7 +365,7 @@ export type Agent = {
 }
 
 export type AgentChannel = {
-    type: 'telegram' | 'slack' | 'email' | 'webhook',
+    type: 'telegram' | 'slack' | 'email' | 'webhook' | 'facebook_messenger',
     config: Record<string, any>
 }
 

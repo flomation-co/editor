@@ -40,6 +40,11 @@ const TRIGGER_ICONS: Record<string, any> = {
     form: "file",
     qr: "qrcode",
     image: "image",
+    'gitlab-webhook': "gitlab",
+    'github-webhook': "github",
+    'facebook-messenger': "facebook",
+    'facebook-feed': "facebook",
+    'linkedin-poll': "linkedin",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -54,6 +59,11 @@ const TRIGGER_LABELS: Record<string, string> = {
     form: 'Form',
     qr: 'QR Code',
     image: 'Tracking Pixel',
+    'gitlab-webhook': 'GitLab',
+    'github-webhook': 'GitHub',
+    'facebook-messenger': 'Messenger',
+    'facebook-feed': 'Facebook Feed',
+    'linkedin-poll': 'LinkedIn',
 };
 
 function triggerIcon(type?: string): any {

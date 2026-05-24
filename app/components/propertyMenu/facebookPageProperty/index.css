@@ -1,0 +1,115 @@
+.fb-page-property {
+    position: relative;
+}
+
+.fb-page-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    font-size: inherit;
+    font-family: inherit;
+    color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fb-page-selector:hover {
+    border-color: rgba(107, 114, 128, 0.8);
+}
+
+.fb-page-selected {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fb-page-placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.fb-page-id {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 11px;
+    font-family: monospace;
+}
+
+.fb-page-loading {
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fb-page-chevron {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.fb-page-error {
+    font-size: 11px;
+    color: #f87171;
+    margin-top: 4px;
+    padding: 0 2px;
+}
+
+.fb-page-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.fb-page-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+    border-bottom: 1px solid rgba(107, 114, 128, 0.15);
+}
+
+.fb-page-option:last-child {
+    border-bottom: none;
+}
+
+.fb-page-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.fb-page-option--selected {
+    background: rgba(0, 170, 156, 0.1);
+}
+
+.fb-page-option-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+.fb-page-option-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 2px;
+}
+
+.fb-page-option-id {
+    font-family: monospace;
+}
