@@ -27,6 +27,19 @@ export function meta({}: Route.MetaArgs) {
 
 type Tab = "subscription" | "payment" | "invoices" | "voucher" | "credits";
 
+function cardBrandIcon(brand?: string): React.ReactNode {
+    switch (brand?.toLowerCase()) {
+        case "visa":
+            return <svg viewBox="0 0 48 32" width="32" height="20"><path fill="#1A1F71" d="M19.5 21.5h-3.2l2-12.3h3.2l-2 12.3zm13.4-12c-.6-.3-1.6-.5-2.9-.5-3.2 0-5.4 1.7-5.4 4.1 0 1.8 1.6 2.8 2.8 3.4 1.2.6 1.7 1 1.7 1.5 0 .8-1 1.2-1.9 1.2-1.3 0-2-.2-3-.7l-.4-.2-.5 2.8c.8.3 2.2.6 3.6.6 3.4 0 5.6-1.7 5.6-4.2 0-1.4-.8-2.5-2.7-3.3-1.1-.6-1.8-1-1.8-1.5 0-.5.6-1 1.8-1 1 0 1.8.2 2.4.5l.3.1.4-2.8zm8.3-.3h-2.5c-.8 0-1.3.2-1.7 1l-4.7 11.3h3.4l.7-1.8h4.1l.4 1.8h3l-2.7-12.3zm-4 8l1.7-4.6.9 4.6h-2.6zM16 9.2l-3 8.4-.3-1.6c-.6-1.9-2.3-4-4.3-5l2.9 11h3.4l5.1-12.8H16z"/><path fill="#F9A533" d="M10.4 9.2H5.1l-.1.3c4 1 6.7 3.5 7.8 6.5l-1.1-5.7c-.2-.8-.8-1-1.3-1.1z"/></svg>;
+        case "mastercard":
+            return <svg viewBox="0 0 48 32" width="32" height="20"><circle cx="18" cy="16" r="10" fill="#EB001B"/><circle cx="30" cy="16" r="10" fill="#F79E1B"/><path d="M24 8.8a10 10 0 0 0-3.7 7.2A10 10 0 0 0 24 23.2a10 10 0 0 0 3.7-7.2A10 10 0 0 0 24 8.8z" fill="#FF5F00"/></svg>;
+        case "amex":
+            return <svg viewBox="0 0 48 32" width="32" height="20"><rect width="48" height="32" rx="4" fill="#2E77BC"/><text x="24" y="19" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="sans-serif">AMEX</text></svg>;
+        default:
+            return <svg viewBox="0 0 48 32" width="32" height="20"><rect width="48" height="32" rx="4" fill="rgba(255,255,255,0.1)"/><text x="24" y="19" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="sans-serif">{brand?.toUpperCase() || "CARD"}</text></svg>;
+    }
+}
+
 interface PaymentMethod {
     id: string;
     card_last4?: string;
@@ -917,7 +930,7 @@ export default function Billing() {
                             <div className="billing-pm-list">
                                 {paymentMethods.map(pm => (
                                     <div key={pm.id} className="billing-pm-item">
-                                        <div className="billing-pm-icon">{pm.card_brand || "card"}</div>
+                                        <div className="billing-pm-icon" title={pm.card_brand || "card"}>{cardBrandIcon(pm.card_brand)}</div>
                                         <div className="billing-pm-details">
                                             <div className="billing-pm-number">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; {pm.card_last4 || "????"}</div>
                                             <div className="billing-pm-expiry">
