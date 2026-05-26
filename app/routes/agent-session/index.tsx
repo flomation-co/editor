@@ -179,7 +179,7 @@ export default function AgentSessionView() {
     useEffect(() => {
         if (!session || session.status !== 'active') return;
 
-        const sseUrl = `${config("AUTOMATE_API_URL")}/api/v1/internal/agent/${id}/session/${sessionId}/stream`;
+        const sseUrl = `${config("AUTOMATE_API_URL")}/api/v1/agent/${id}/session/${sessionId}/stream`;
         const eventSource = new EventSource(sseUrl);
 
         eventSource.addEventListener('message', (e) => {
