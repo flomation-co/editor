@@ -33,12 +33,17 @@ export default function Status() {
         const apiUrl = config("AUTOMATE_API_URL");
         const loginUrl = config("LOGIN_URL");
         const triggerUrl = config("TRIGGER_URL");
+        const billingUrl = config("BILLING_API_URL");
 
         const checks: ServiceStatus[] = [
             { name: "Automation API", url: apiUrl, description: "Core API for flows, executions and data", status: "checking" },
             { name: "Identity (Sentinel)", url: loginUrl, description: "Authentication and user management", status: "checking" },
             { name: "Launch Service", url: triggerUrl, description: "Trigger polling and scheduling", status: "checking" },
         ];
+
+        if (billingUrl) {
+            checks.push({ name: "Billing", url: billingUrl, description: "Subscription and payment management", status: "checking" });
+        }
 
         setServices([...checks]);
 
