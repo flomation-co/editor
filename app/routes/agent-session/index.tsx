@@ -10,6 +10,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(utc);
 
@@ -313,15 +315,18 @@ export default function AgentSessionView() {
     if (loading) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
                     <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="agent-session-view">
                 <div className="agent-session-header">
                     <button
@@ -446,6 +451,7 @@ export default function AgentSessionView() {
                     </button>
                 )}
             </div>
+            </ProtectedRoute>
         </Container>
     );
 }

@@ -13,6 +13,8 @@ import utc from "dayjs/plugin/utc";
 import useCookieToken from "~/components/cookie";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -71,6 +73,7 @@ export default function Runners() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.RUNNER_VIEW}>
             <div className={"header"}>Runners</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search runners..." disabled={true} />
@@ -134,6 +137,7 @@ export default function Runners() {
                     ))}
                 </div>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

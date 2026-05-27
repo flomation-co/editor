@@ -12,6 +12,8 @@ import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -81,6 +83,7 @@ export default function Environments() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.ENVIRONMENT_VIEW}>
             <div className={"header"}>Environments</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search environments..." disabled={true} />
@@ -171,6 +174,7 @@ export default function Environments() {
                     Are you sure you want to delete this environment? All properties and secrets will be permanently removed.
                 </Modal>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

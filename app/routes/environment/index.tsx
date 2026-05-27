@@ -10,6 +10,8 @@ import {toast} from "react-toastify";
 import Modal from "~/components/modal";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 type ScopeItem = { scope: string; label: string; default?: boolean };
 type ScopeGroup = { group: string; scopes: ScopeItem[] };
@@ -366,6 +368,7 @@ export default function EnvironmentDetail() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.ENVIRONMENT_VIEW}>
             <div className={"header"}>{environment?.name || "Environment"}</div>
             <div className="env-detail-back">
                 <Link to="/environment" className="env-detail-back-link">
@@ -654,6 +657,7 @@ export default function EnvironmentDetail() {
                     Are you sure you want to delete <strong>{confirmDelete.name}</strong>?
                 </Modal>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

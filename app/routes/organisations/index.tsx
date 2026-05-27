@@ -9,6 +9,8 @@ import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -110,6 +112,7 @@ export default function Organisations() {
     if (!currentOrg) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.ORGANISATION_VIEW}>
                 <div className={"header"}>Organisations</div>
 
                 {organisations.length > 0 && (
@@ -154,6 +157,7 @@ export default function Organisations() {
                         </button>
                     </div>
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
@@ -170,6 +174,7 @@ export default function Organisations() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.ORGANISATION_VIEW}>
             <div className={"header"}>{currentOrg.name}</div>
 
             {isAdmin && (
@@ -257,6 +262,7 @@ export default function Organisations() {
                     )}
                 </div>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

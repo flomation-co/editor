@@ -18,6 +18,8 @@ import useConfig from "~/components/config";
 import {PaginationControls} from "~/components/paginationControls";
 import {useAuth} from "~/context/auth/use";
 import useCookieToken from "~/components/cookie";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 import {useOrganisation} from "~/context/organisation/use";
 import {generateExportWrapper, downloadAsJson, downloadAsZip} from "~/lib/export";
 import { Icon } from "~/components/icons/Icon";
@@ -522,7 +524,7 @@ export default function Flows() {
 
     return (
         <Container>
-            <>
+            <ProtectedRoute permissions={[PERMISSIONS.FLOW_CREATE, PERMISSIONS.FLOW_EDIT, PERMISSIONS.FLOW_EXECUTE]}>
                 <div className={"header"}>Flows</div>
 
                 <div className="flows-action-bar">
@@ -743,7 +745,6 @@ export default function Flows() {
                         </div>
                     )}
                 </>
-            </>
 
             {deleteModalVisible && (
                 <Modal
@@ -799,6 +800,7 @@ export default function Flows() {
                 </Modal>
             )}
 
+            </ProtectedRoute>
         </Container>
 
     )

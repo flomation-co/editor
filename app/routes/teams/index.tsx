@@ -3,7 +3,7 @@ import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
 import type {Group, GroupMember, OrganisationMember} from "~/types";
-import {PERMISSION_CATEGORIES} from "~/types";
+import {PERMISSION_CATEGORIES, PERMISSIONS} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
@@ -11,6 +11,7 @@ import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -160,12 +161,14 @@ export default function Groups() {
     if (!currentOrg) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
                 <div className={"header"}>Teams</div>
                 <div className={"groups-section"}>
                     <p className={"groups-description"}>
                         Switch to an organisation to manage teams.
                     </p>
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
@@ -177,6 +180,7 @@ export default function Groups() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
             <div className={"header"}>Teams</div>
 
             <div className={"groups-section"}>
@@ -333,6 +337,7 @@ export default function Groups() {
                     Are you sure you want to delete this team? All members and permissions will be removed.
                 </Modal>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

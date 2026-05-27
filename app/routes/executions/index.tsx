@@ -17,6 +17,8 @@ import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import { Icon } from "~/components/icons/Icon";
 import { ExecutionTableSkeleton } from "~/components/skeleton";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -239,6 +241,7 @@ export default function Executions() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.FLOW_EXECUTE}>
             <div className={"header"}>Executions</div>
 
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
@@ -378,6 +381,7 @@ export default function Executions() {
                     )}
                 </>
             )}
+            </ProtectedRoute>
         </Container>
     )
 }

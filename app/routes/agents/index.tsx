@@ -11,6 +11,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -85,6 +87,7 @@ export default function Agents() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="header">Agents</div>
             <div className="agents-action-bar">
                 <button className="create-agent-btn" onClick={handleCreateAgent}>
@@ -155,6 +158,7 @@ export default function Agents() {
                     ))}
                 </div>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

@@ -5,6 +5,8 @@ import {useAuth} from "~/context/auth/use";
 import {useOrganisation} from "~/context/organisation/use";
 import useCookieToken from "~/components/cookie";
 import {Icon} from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 import "./index.css";
 import {
     fetchPlans, fetchSubscription, fetchQuota,
@@ -636,16 +638,19 @@ export default function Billing() {
     if (loading) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.BILLING_VIEW}>
                 <div className="header">Billing</div>
                 <div className="billing-page">
                     <div className="billing-empty">Loading...</div>
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.BILLING_VIEW}>
             <div className="header">Billing</div>
 
             {notification && (
@@ -1236,6 +1241,7 @@ export default function Billing() {
                     </>
                 )}
             </div>
+            </ProtectedRoute>
         </Container>
     );
 }
