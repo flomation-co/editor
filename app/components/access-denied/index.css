@@ -1,0 +1,58 @@
+.access-denied {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    color: var(--text-secondary, #999);
+    gap: 8px;
+}
+
+.access-denied-icon {
+    font-size: 48px;
+    color: var(--text-tertiary, #555);
+    margin-bottom: 8px;
+}
+
+.access-denied h2 {
+    font-size: 24px;
+    color: var(--text-primary, #fff);
+    margin: 0;
+}
+
+.access-denied p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.access-denied-permission code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-primary, #ccc);
+}
+
+.access-denied-contact {
+    color: var(--text-tertiary, #666);
+    font-size: 13px !important;
+}
+
+.access-denied-link {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary, #fff);
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.access-denied-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}

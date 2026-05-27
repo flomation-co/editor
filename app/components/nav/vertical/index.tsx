@@ -85,11 +85,15 @@ export function VerticalNav(props: VerticalNavProps) {
                         <>
                             <div className={"menu-section-header"}>Automate</div>
                             <div className={"menu-section-list"}>
-                                <NavLink to={"/flow"} className={"menu-section-list-item"} onClick={() => {setCurrentlyActive("flows")}} data-tooltip-id="nav-tip" data-tooltip-content="Flows" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="arrows-split-up-and-left" /></div><span className={"menu-section-list-item-label"}>Flows</span></NavLink>
+                                {(hasPermission(PERMISSIONS.FLOW_CREATE) || hasPermission(PERMISSIONS.FLOW_EDIT) || hasPermission(PERMISSIONS.FLOW_EXECUTE)) && (
+                                    <NavLink to={"/flow"} className={"menu-section-list-item"} onClick={() => {setCurrentlyActive("flows")}} data-tooltip-id="nav-tip" data-tooltip-content="Flows" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="arrows-split-up-and-left" /></div><span className={"menu-section-list-item-label"}>Flows</span></NavLink>
+                                )}
                                 {hasPermission(PERMISSIONS.AGENT_VIEW) && (
                                     <NavLink to={"/agent"} className={"menu-section-list-item"} onClick={() => {setCurrentlyActive("agents")}} data-tooltip-id="nav-tip" data-tooltip-content="Agents" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="robot" /></div><span className={"menu-section-list-item-label"}>Agents</span></NavLink>
                                 )}
-                                <NavLink to={"/execution"} className={"menu-section-list-item"} onClick={() => {setCurrentlyActive("execution")}} data-tooltip-id="nav-tip" data-tooltip-content="Executions" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="play" /></div><span className={"menu-section-list-item-label"}>Executions</span></NavLink>
+                                {hasPermission(PERMISSIONS.FLOW_EXECUTE) && (
+                                    <NavLink to={"/execution"} className={"menu-section-list-item"} onClick={() => {setCurrentlyActive("execution")}} data-tooltip-id="nav-tip" data-tooltip-content="Executions" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="play" /></div><span className={"menu-section-list-item-label"}>Executions</span></NavLink>
+                                )}
                             </div>
                         </>
                     )}
@@ -138,7 +142,9 @@ export function VerticalNav(props: VerticalNavProps) {
 
                 <div className={"vertical-nav-bottom-section"}>
                     <div className={"menu-section-list"}>
-                        <NavLink to={"/billing"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Billing" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="dollar-sign" /></div><span className={"menu-section-list-item-label"}>Billing</span></NavLink>
+                        {(hasPermission(PERMISSIONS.BILLING_VIEW) || hasPermission(PERMISSIONS.BILLING_MANAGE)) && (
+                            <NavLink to={"/billing"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Billing" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="dollar-sign" /></div><span className={"menu-section-list-item-label"}>Billing</span></NavLink>
+                        )}
                         <Link to={"https://discord.gg/y3Td3kw5tA"} className={"menu-section-list-item"} target={"_blank"} data-tooltip-id="nav-tip" data-tooltip-content="Community" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="discord" /></div><span className={"menu-section-list-item-label"}>Community <Icon name="arrow-up-right-from-square" /></span></Link>
                         <NavLink to={"/status"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="System Status" data-tooltip-place="right">
                             <div className={"menu-section-list-icon"}>

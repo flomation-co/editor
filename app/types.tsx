@@ -305,6 +305,24 @@ export type GroupMember = {
     added_at?: string
 }
 
+export type AgentGroupMember = {
+    agent_id: string;
+    name: string;
+    description?: string;
+    status: string;
+    added_at?: string;
+};
+
+export type OrganisationAgentMember = {
+    agent_id: string;
+    name: string;
+    description?: string;
+    status: string;
+    owner_id: string;
+    owner_name: string;
+    created_at: string;
+};
+
 export type UserPermissions = {
     role: string,
     permissions: string[],

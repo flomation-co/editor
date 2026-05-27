@@ -10,6 +10,8 @@ import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -120,10 +122,12 @@ export default function Queues() {
     if (!currentOrg) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.RUNNER_MANAGE}>
                 <div className={"header"}>Queues</div>
                 <div className={"queue-empty"}>
                     <p>Select an organisation to manage queues.</p>
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
@@ -135,6 +139,7 @@ export default function Queues() {
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.RUNNER_MANAGE}>
             <div className={"header"}>Queues</div>
 
             {isAdmin && (
@@ -253,6 +258,7 @@ export default function Queues() {
                     Are you sure you want to remove <strong>{confirmRemoveRunner.name}</strong> from this queue?
                 </Modal>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

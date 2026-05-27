@@ -2,8 +2,8 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
-import type {Group, GroupMember, OrganisationMember} from "~/types";
-import {PERMISSION_CATEGORIES} from "~/types";
+import type {Group, GroupMember, AgentGroupMember, OrganisationMember, Agent} from "~/types";
+import {PERMISSION_CATEGORIES, PERMISSIONS} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
@@ -11,6 +11,7 @@ import Modal from "~/components/modal";
 import {toast} from "react-toastify";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -28,8 +29,11 @@ export default function Groups() {
     const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
     const [newGroupName, setNewGroupName] = useState("");
     const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+    const [groupAgentMembers, setGroupAgentMembers] = useState<AgentGroupMember[]>([]);
     const [orgMembers, setOrgMembers] = useState<OrganisationMember[]>([]);
+    const [orgAgents, setOrgAgents] = useState<Agent[]>([]);
     const [selectedMemberId, setSelectedMemberId] = useState("");
+    const [selectedAgentId, setSelectedAgentId] = useState("");
     const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<string | null>(null);
 
     const API_URL = config("AUTOMATE_API_URL");
@@ -48,8 +52,13 @@ export default function Groups() {
         api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/group/${groupId}/member`, {
             headers: { Authorization: "Bearer " + token }
         })
-            .then(res => { if (res.data) setGroupMembers(res.data); })
-            .catch(() => setGroupMembers([]));
+            .then(res => {
+                if (res.data) {
+                    setGroupMembers(res.data.users || []);
+                    setGroupAgentMembers(res.data.agents || []);
+                }
+            })
+            .catch(() => { setGroupMembers([]); setGroupAgentMembers([]); });
     };
 
     const fetchOrgMembers = () => {
@@ -57,13 +66,27 @@ export default function Groups() {
         api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/member`, {
             headers: { Authorization: "Bearer " + token }
         })
-            .then(res => { if (res.data) setOrgMembers(res.data); })
+            .then(res => {
+                if (res.data) {
+                    setOrgMembers(res.data.members || []);
+                }
+            })
             .catch(() => setOrgMembers([]));
+    };
+
+    const fetchOrgAgents = () => {
+        if (!currentOrg) return;
+        api.get(`${API_URL}/api/v1/agent`, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(res => { if (res.data) setOrgAgents(res.data); })
+            .catch(() => setOrgAgents([]));
     };
 
     useEffect(() => {
         fetchGroups();
         fetchOrgMembers();
+        fetchOrgAgents();
     }, [currentOrg]);
 
     useEffect(() => {
@@ -71,6 +94,7 @@ export default function Groups() {
             fetchGroupMembers(expandedGroupId);
         } else {
             setGroupMembers([]);
+            setGroupAgentMembers([]);
         }
     }, [expandedGroupId]);
 
@@ -157,15 +181,44 @@ export default function Groups() {
             .catch(err => console.error("Unable to remove member", err));
     };
 
+    const addAgentToGroup = (groupId: string) => {
+        if (!currentOrg || !selectedAgentId) return;
+        api.post(`${API_URL}/api/v1/organisation/${currentOrg.id}/group/${groupId}/agent`, {
+            agent_id: selectedAgentId,
+        }, {
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                setSelectedAgentId("");
+                fetchGroupMembers(groupId);
+                fetchGroups();
+            })
+            .catch(err => console.error("Unable to add agent to group", err));
+    };
+
+    const removeAgentFromGroup = (groupId: string, agentId: string) => {
+        if (!currentOrg) return;
+        api.delete(`${API_URL}/api/v1/organisation/${currentOrg.id}/group/${groupId}/agent/${agentId}`, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                fetchGroupMembers(groupId);
+                fetchGroups();
+            })
+            .catch(err => console.error("Unable to remove agent from group", err));
+    };
+
     if (!currentOrg) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
                 <div className={"header"}>Teams</div>
                 <div className={"groups-section"}>
                     <p className={"groups-description"}>
                         Switch to an organisation to manage teams.
                     </p>
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
@@ -174,9 +227,13 @@ export default function Groups() {
     const availableMembers = orgMembers.filter(
         m => !groupMembers.some(gm => gm.user_id === m.user_id)
     );
+    const availableAgents = orgAgents.filter(
+        a => !groupAgentMembers.some(gam => gam.agent_id === a.id)
+    );
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
             <div className={"header"}>Teams</div>
 
             <div className={"groups-section"}>
@@ -293,6 +350,47 @@ export default function Groups() {
                                             )}
                                         </div>
 
+                                        {/* Agents */}
+                                        <div className={"group-members"}>
+                                            <div className={"group-members-header"}>
+                                                <Icon name="robot" /> Agents
+                                            </div>
+                                            {groupAgentMembers.length > 0 && (
+                                                <div className={"group-members-list"}>
+                                                    {groupAgentMembers.map(agent => (
+                                                        <div key={agent.agent_id} className={"group-member-row"}>
+                                                            <Icon name="robot" />
+                                                            <span className={"member-name"}>{agent.name}</span>
+                                                            <span className={`agent-status-badge ${agent.status}`}>
+                                                                <span className={"agent-status-dot"} />
+                                                                {agent.status}
+                                                            </span>
+                                                            <button className={"remove-btn"} onClick={() => removeAgentFromGroup(group.id, agent.agent_id)}>
+                                                                <Icon name="xmark" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {availableAgents.length > 0 && (
+                                                <div className={"group-add-member"}>
+                                                    <select
+                                                        value={selectedAgentId}
+                                                        onChange={e => setSelectedAgentId(e.target.value)}
+                                                    >
+                                                        <option value="">Select agent to add...</option>
+                                                        {availableAgents.map(a => (
+                                                            <option key={a.id} value={a.id}>{a.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button onClick={() => addAgentToGroup(group.id)} disabled={!selectedAgentId}>
+                                                        <Icon name="plus" /> Add
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         {/* Settings */}
                                         <div className={"group-settings-row"}>
                                             <label>
@@ -333,6 +431,7 @@ export default function Groups() {
                     Are you sure you want to delete this team? All members and permissions will be removed.
                 </Modal>
             )}
+            </ProtectedRoute>
         </Container>
     );
 }

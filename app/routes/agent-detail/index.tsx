@@ -16,6 +16,8 @@ import AgentSchedulePanel from "./schedule-panel";
 import SlackPermissionChecker from "./slack-permissions";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -334,9 +336,11 @@ export default function AgentDetail() {
     if (loading) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
                     <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
                 </div>
+                </ProtectedRoute>
             </Container>
         );
     }
@@ -344,13 +348,16 @@ export default function AgentDetail() {
     if (!agent) {
         return (
             <Container>
+                <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="agent-empty-state">Agent not found.</div>
+                </ProtectedRoute>
             </Container>
         );
     }
 
     return (
         <Container>
+            <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="agent-detail">
                 <div className="agent-detail-header">
                     <div className="agent-detail-title">
@@ -904,6 +911,7 @@ export default function AgentDetail() {
                     <AgentAuditPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
                 )}
             </div>
+            </ProtectedRoute>
         </Container>
     );
 }

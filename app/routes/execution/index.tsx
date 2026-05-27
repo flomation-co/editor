@@ -17,6 +17,8 @@ import ExecutionFlowView, { type ExecutionFlowViewHandle } from "~/components/ex
 import NodeInspector from "~/components/executionFlowView/NodeInspector";
 import DataInspector from "~/components/dataInspector";
 import { Icon } from "~/components/icons/Icon";
+import ProtectedRoute from "~/components/protected-route";
+import {PERMISSIONS} from "~/types";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -272,6 +274,7 @@ export default function ExecutionDetail() {
 
     return (
         <Container noPadding>
+            <ProtectedRoute permission={PERMISSIONS.FLOW_EXECUTE}>
             {exec && (
                 <div className="exec-page">
                     {/* ── Compact header bar ── */}
@@ -406,6 +409,7 @@ export default function ExecutionDetail() {
                     </div>
                 </div>
             )}
+            </ProtectedRoute>
         </Container>
     )
 }
