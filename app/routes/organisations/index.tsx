@@ -3,7 +3,7 @@ import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
 import {useAuth} from "~/context/auth/use";
-import type {OrganisationMember, OrganisationInvite} from "~/types";
+import type {OrganisationMember, OrganisationInvite, OrganisationAgentMember} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
@@ -27,6 +27,7 @@ export default function Organisations() {
 
     const [newOrgName, setNewOrgName] = useState("");
     const [members, setMembers] = useState<OrganisationMember[]>([]);
+    const [agentMembers, setAgentMembers] = useState<OrganisationAgentMember[]>([]);
     const [invites, setInvites] = useState<OrganisationInvite[]>([]);
     const [inviteEmail, setInviteEmail] = useState("");
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -39,8 +40,13 @@ export default function Organisations() {
         api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/member`, {
             headers: { Authorization: "Bearer " + token }
         })
-            .then(res => { if (res.data) setMembers(res.data); })
-            .catch(() => setMembers([]));
+            .then(res => {
+                if (res.data) {
+                    setMembers(res.data.members || []);
+                    setAgentMembers(res.data.agents || []);
+                }
+            })
+            .catch(() => { setMembers([]); setAgentMembers([]); });
     };
 
     const fetchInvites = () => {
@@ -220,6 +226,29 @@ export default function Organisations() {
                     ))}
                 </div>
             </div>
+
+            {agentMembers.length > 0 && (
+                <div className={"org-section"}>
+                    <div className={"org-section-header"}>Agents</div>
+                    <div className={"org-members-list"}>
+                        {agentMembers.map(agent => (
+                            <div key={agent.agent_id} className={"org-member-row"}>
+                                <div className={"org-agent-icon"}>
+                                    <Icon name="robot" />
+                                </div>
+                                <div className={"org-member-name"}>
+                                    <span>{agent.name}</span>
+                                    <span className={"org-member-email"}>Owned by {agent.owner_name}</span>
+                                </div>
+                                <span className={`org-agent-status ${agent.status}`}>
+                                    <span className={"org-agent-status-dot"} />
+                                    {agent.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {isAdmin && (
                 <div className={"org-section"}>
