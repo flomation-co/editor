@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useImperativeHandle, forwardRef } from 'react';
+import React, { useCallback, useEffect, useState, useMemo, useImperativeHandle, forwardRef } from 'react';
 import {
     ReactFlow,
     ReactFlowProvider,
@@ -23,7 +23,7 @@ export type ExecutionFlowViewHandle = {
 
 type ExecutionFlowViewProps = {
     floId: string;
-    nodeStatuses: Map<string, NodeStatus>;
+    nodeStatuses: Map<string, NodeStatus[]>;
     onNodeClick: (nodeId: string) => void;
 };
 
@@ -105,22 +105,30 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
     }, [floId]);
 
     // Derive final nodes by merging base nodes with current execution statuses.
-    // This recalculates whenever baseNodes, nodeStatuses, or onNodeClick changes —
-    // no stale closures, no race conditions.
+    // Uses the LATEST status from each node's iteration array for visual display.
     const nodes = useMemo(() => {
-        return baseNodes.map(node => ({
-            ...node,
-            data: {
-                ...node.data,
-                executionStatus: nodeStatuses.has(node.id)
-                    ? nodeStatuses.get(node.id)!.status
-                    : 'pending',
-                nodeStatusData: nodeStatuses.get(node.id) ?? null,
-                onNodeClick,
-                nodeId: node.id,
-            },
-        }));
+        return baseNodes.map(node => {
+            const iterations = nodeStatuses.get(node.id);
+            const latest = iterations && iterations.length > 0 ? iterations[iterations.length - 1] : null;
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    executionStatus: latest ? latest.status : 'pending',
+                    nodeStatusData: latest,
+                    iterationCount: iterations ? iterations.length : 0,
+                    onNodeClick,
+                    nodeId: node.id,
+                },
+            };
+        });
     }, [baseNodes, nodeStatuses, onNodeClick]);
+
+    // Helper to get the latest status from a node's iteration array
+    const getLatestStatus = useCallback((nodeId: string): NodeStatus | undefined => {
+        const iterations = nodeStatuses.get(nodeId);
+        return iterations && iterations.length > 0 ? iterations[iterations.length - 1] : undefined;
+    }, [nodeStatuses]);
 
     // Style edges: mute untaken branches + all downstream, animate active edges
     const styledEdges = useMemo(() => {
@@ -129,7 +137,7 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
         // Step 1: find directly untaken edges (from conditional/switch outputs)
         const untakenTargets = new Set<string>();
         for (const edge of edges) {
-            const sourceStatus = nodeStatuses.get(edge.source);
+            const sourceStatus = getLatestStatus(edge.source);
             if (!sourceStatus?.outputs || !edge.sourceHandle) continue;
 
             const sourceType = baseNodes.find(n => n.id === edge.source)?.data?.config?.type;
@@ -167,8 +175,8 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
 
         // Step 3: style each edge
         return edges.map(edge => {
-            const targetStatus = nodeStatuses.get(edge.target);
-            const sourceStatus = nodeStatuses.get(edge.source);
+            const targetStatus = getLatestStatus(edge.target);
+            const sourceStatus = getLatestStatus(edge.source);
 
             // Mute if either end is in the untaken subgraph, or if this
             // specific edge comes from an unmatched conditional/switch handle
@@ -206,7 +214,7 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
 
             return edge;
         });
-    }, [edges, nodeStatuses, baseNodes]);
+    }, [edges, nodeStatuses, baseNodes, getLatestStatus]);
 
     return (
         <div className="execution-flow-container">
