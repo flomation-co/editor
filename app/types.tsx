@@ -383,7 +383,7 @@ export type Agent = {
 }
 
 export type AgentChannel = {
-    type: 'telegram' | 'slack' | 'email' | 'webhook' | 'facebook_messenger',
+    type: 'telegram' | 'slack' | 'email' | 'webhook' | 'facebook_messenger' | 'twilio_sms' | 'twilio_voice',
     config: Record<string, any>
 }
 

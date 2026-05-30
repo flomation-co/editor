@@ -14,6 +14,7 @@ import AgentUsersPanel from "./users-panel";
 import AgentAuditPanel from "./audit-panel";
 import AgentSchedulePanel from "./schedule-panel";
 import SlackPermissionChecker from "./slack-permissions";
+import TwilioStatusChecker from "./twilio-status";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
@@ -595,6 +596,7 @@ export default function AgentDetail() {
                                             {ch.type === 'email' && <Icon name="envelope" style={{ color: '#EA4335', fontSize: 16 }} />}
                                             {ch.type === 'facebook_messenger' && <Icon name="facebook" style={{ color: '#1877F2', fontSize: 18 }} />}
                                             {ch.type === 'webhook' && <Icon name="robot" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
+                                            {(ch.type === 'twilio_sms' || ch.type === 'twilio_voice') && <Icon name="phone" style={{ color: '#F22F46', fontSize: 16 }} />}
                                             <select
                                                 className="agent-form-input"
                                                 style={{ width: 'auto', padding: '4px 10px' }}
@@ -610,6 +612,8 @@ export default function AgentDetail() {
                                                 <option value="email">Email</option>
                                                 <option value="facebook_messenger">Facebook Messenger</option>
                                                 <option value="webhook">Webhook</option>
+                                                <option value="twilio_sms">Twilio SMS</option>
+                                                <option value="twilio_voice">Twilio Voice</option>
                                             </select>
                                         </div>
                                         <button className="agent-action-btn delete" style={{ padding: '4px 8px' }}
@@ -835,6 +839,217 @@ export default function AgentDetail() {
                                                     style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text' }}
                                                 />
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'twilio_sms' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Account SID</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.account_sid || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, account_sid: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Auth Token</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.auth_token || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, auth_token: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Your Twilio auth token"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Phone Number (E.164)</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.phone_number || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, phone_number: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="+19876543210"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label">SMS Webhook URL</label>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        readOnly
+                                                        value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/twilio/sms/${id}`}
+                                                        style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.06)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            borderRadius: 6,
+                                                            padding: '8px 10px',
+                                                            cursor: 'pointer',
+                                                            color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
+                                                            fontSize: 13,
+                                                            transition: 'color 0.2s',
+                                                        }}
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/twilio/sms/${id}`
+                                                            );
+                                                            setUrlCopied(true);
+                                                            setTimeout(() => setUrlCopied(false), 2000);
+                                                        }}
+                                                    >
+                                                        <Icon name={urlCopied ? "check" : "copy"} />
+                                                    </button>
+                                                </div>
+                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                    Set this as the <strong>Messaging Webhook URL</strong> for your Twilio phone number in the <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" style={{ color: '#F22F46' }}>Twilio Console</a>.
+                                                </span>
+                                            </div>
+
+                                            <TwilioStatusChecker baseUrl={baseUrl} headers={headers} />
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'twilio_voice' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Account SID</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.account_sid || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, account_sid: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Auth Token</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.auth_token || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, auth_token: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Your Twilio auth token"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Phone Number (E.164)</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.phone_number || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, phone_number: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="+19876543210"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Greeting Text</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.greeting_text || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, greeting_text: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Hello, how can I help you today?"
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 12 }}>
+                                                <div className="agent-form-group" style={{ marginBottom: 12, flex: 1 }}>
+                                                    <label className="agent-form-label">Max Turns</label>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        type="number"
+                                                        value={ch.config?.max_turns || 50}
+                                                        onChange={e => {
+                                                            const updated = [...channels];
+                                                            updated[idx] = { ...ch, config: { ...ch.config, max_turns: parseInt(e.target.value) || 50 } };
+                                                            setChannels(updated);
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="agent-form-group" style={{ marginBottom: 12, flex: 1 }}>
+                                                    <label className="agent-form-label">Silence Duration (ms)</label>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        type="number"
+                                                        value={ch.config?.silence_duration_ms || 1500}
+                                                        onChange={e => {
+                                                            const updated = [...channels];
+                                                            updated[idx] = { ...ch, config: { ...ch.config, silence_duration_ms: parseInt(e.target.value) || 1500 } };
+                                                            setChannels(updated);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 0 }}>
+                                                <label className="agent-form-label">Voice Webhook URL</label>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        readOnly
+                                                        value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/twilio/voice/${id}`}
+                                                        style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.06)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            borderRadius: 6,
+                                                            padding: '8px 10px',
+                                                            cursor: 'pointer',
+                                                            color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
+                                                            fontSize: 13,
+                                                            transition: 'color 0.2s',
+                                                        }}
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/twilio/voice/${id}`
+                                                            );
+                                                            setUrlCopied(true);
+                                                            setTimeout(() => setUrlCopied(false), 2000);
+                                                        }}
+                                                    >
+                                                        <Icon name={urlCopied ? "check" : "copy"} />
+                                                    </button>
+                                                </div>
+                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                    Set this as the <strong>Voice Webhook URL</strong> for your Twilio phone number in the <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" style={{ color: '#F22F46' }}>Twilio Console</a>.
+                                                </span>
+                                            </div>
+                                            <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(242,47,70,0.06)', border: '1px solid rgba(242,47,70,0.15)', borderRadius: 6, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                                                <Icon name="info-circle" style={{ marginRight: 6, color: '#F22F46' }} />
+                                                Voice calls require a flow with a <strong>Twilio Voice Trigger</strong> and <strong>Voice Session</strong> node wired to STT → AI → TTS → Send Audio actions.
+                                            </div>
+
+                                            <TwilioStatusChecker baseUrl={baseUrl} headers={headers} />
                                         </div>
                                     )}
                                 </div>

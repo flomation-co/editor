@@ -16,6 +16,8 @@ import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProp
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 import WebhookSecretProperty from "~/components/propertyMenu/webhookSecretProperty";
 import FacebookPageProperty from "~/components/propertyMenu/facebookPageProperty";
+import VoiceSelectorProperty from "~/components/propertyMenu/voiceSelectorProperty";
+import ModelSelectorProperty from "~/components/propertyMenu/modelSelectorProperty";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
@@ -327,6 +329,50 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     value={localValues[i.name] ?? i.value ?? ""}
                                                     required={i.required}
                                                     credentialName={credentialName}
+                                                    environmentId={props.environmentId}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            );
+                                        }
+
+                                        // Special case: voice_id on ElevenLabs TTS — dynamic voice dropdown
+                                        if (i.name === "voice_id" && (
+                                            props.node.data.label === "elevenlabs/text_to_speech"
+                                        )) {
+                                            const apiKeyInput = props.node.data.config.inputs.find((x: any) => x.name === "api_key");
+                                            const apiKeyValue = localValues["api_key"] ?? apiKeyInput?.value ?? "";
+
+                                            return (
+                                                <VoiceSelectorProperty
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    value={localValues[i.name] ?? i.value ?? ""}
+                                                    required={i.required}
+                                                    apiKeyValue={apiKeyValue}
+                                                    environmentId={props.environmentId}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            );
+                                        }
+
+                                        // Special case: model_id on ElevenLabs TTS — dynamic model dropdown
+                                        if (i.name === "model_id" && (
+                                            props.node.data.label === "elevenlabs/text_to_speech"
+                                        )) {
+                                            const apiKeyInput = props.node.data.config.inputs.find((x: any) => x.name === "api_key");
+                                            const apiKeyValue = localValues["api_key"] ?? apiKeyInput?.value ?? "";
+
+                                            return (
+                                                <ModelSelectorProperty
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    value={localValues[i.name] ?? i.value ?? ""}
+                                                    required={i.required}
+                                                    apiKeyValue={apiKeyValue}
                                                     environmentId={props.environmentId}
                                                     onValueChange={onValueChange}
                                                 />

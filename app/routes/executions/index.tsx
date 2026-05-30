@@ -47,6 +47,8 @@ const TRIGGER_ICONS: Record<string, any> = {
     'facebook-messenger': "facebook",
     'facebook-feed': "facebook",
     'linkedin-poll': "linkedin",
+    'twilio-sms': "comment-sms",
+    'twilio-voice': "phone-volume",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -66,6 +68,8 @@ const TRIGGER_LABELS: Record<string, string> = {
     'facebook-messenger': 'Messenger',
     'facebook-feed': 'Facebook Feed',
     'linkedin-poll': 'LinkedIn',
+    'twilio-sms': 'Twilio SMS',
+    'twilio-voice': 'Twilio Voice',
 };
 
 function triggerIcon(type?: string): any {

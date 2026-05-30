@@ -63,9 +63,12 @@ function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'vide
     const sizeKB = Math.round((data.length * 3) / 4 / 1024);
 
     if (type === 'audio') {
+        // Key on base64 hash to force re-mount when iteration changes —
+        // browsers cache <audio> sources and ignore src attribute updates.
+        const audioKey = data.slice(-32);
         return (
             <div className="ni-media">
-                <audio controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
+                <audio key={audioKey} controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
                     <source src={base64} type={mimeType} />
                 </audio>
                 <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
