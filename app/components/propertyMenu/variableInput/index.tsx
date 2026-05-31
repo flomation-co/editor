@@ -316,10 +316,10 @@ const VariableInput = (props: VariableInputProps) => {
                     ? `variable-pill variable-pill--${seg.category}`
                     : "variable-pill variable-pill--invalid";
 
-                // Show human-readable labels for parent output references:
-                // - Scoped (nodeId.output) → "${Node Name > output}"
-                // - Flat (output) → "${Parent Name > output}" if source exists
-                let displayText = seg.value;
+                // Determine human-readable label for parent output references:
+                // - Scoped (nodeId.output) → "Node Name > output"
+                // - Flat (output) → "Parent Name > output" if source exists
+                let displayLabel: string | undefined;
                 if (seg.valid && seg.category === "input") {
                     const matched = props.variables.find(
                         (v) => v.insertName === seg.varName
@@ -327,13 +327,25 @@ const VariableInput = (props: VariableInputProps) => {
                         (v) => v.category === "input" && v.name === seg.varName && v.source
                     );
                     if (matched?.source) {
-                        displayText = "${" + matched.source + " > " + matched.name + "}";
+                        displayLabel = matched.source + " > " + matched.name;
                     }
+                }
+
+                // The pill renders the RAW variable text (same char count as
+                // the input layer) to keep character positions aligned. When a
+                // human-readable label is available, the raw text is hidden via
+                // font-size:0 and the label is shown via a ::after pseudo-element.
+                if (displayLabel) {
+                    return (
+                        <span key={i} className={`${pillClass} variable-pill--labeled`} data-display={displayLabel}>
+                            {seg.value}
+                        </span>
+                    );
                 }
 
                 return (
                     <span key={i} className={pillClass}>
-                        {displayText}
+                        {seg.value}
                     </span>
                 );
             }
@@ -385,6 +397,9 @@ const VariableInput = (props: VariableInputProps) => {
                 onBlur={handleBlur}
                 onClick={handleClick}
                 type={props.multiline ? undefined : "text"}
+                spellCheck={false}
+                autoCorrect="off"
+                autoCapitalize="off"
             />
             {secretWarning && (
                 <div className="variable-secret-warning">
