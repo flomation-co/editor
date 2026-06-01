@@ -49,6 +49,7 @@ const TRIGGER_ICONS: Record<string, any> = {
     'linkedin-poll': "linkedin",
     'twilio-sms': "comment-sms",
     'twilio-voice': "phone-volume",
+    'google-drive': "google",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -70,6 +71,7 @@ const TRIGGER_LABELS: Record<string, string> = {
     'linkedin-poll': 'LinkedIn',
     'twilio-sms': 'Twilio SMS',
     'twilio-voice': 'Twilio Voice',
+    'google-drive': 'Google Drive',
 };
 
 function triggerIcon(type?: string): any {
