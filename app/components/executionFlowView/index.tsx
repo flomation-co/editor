@@ -188,6 +188,11 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
                 return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
             }
 
+            // Suspended: amber glow with slow pulse
+            if (targetStatus?.status === 'suspended') {
+                return { ...edge, animated: true, style: { stroke: '#f59e0b', strokeWidth: 2 } };
+            }
+
             // Completed successfully: bright green trace
             const sourceCompleted = sourceStatus?.status === 'success' || sourceStatus?.status === 'failed';
             if (sourceCompleted && targetStatus && targetStatus.status === 'success') {

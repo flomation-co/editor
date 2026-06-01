@@ -101,6 +101,31 @@
     cursor: not-allowed;
 }
 
+.resume-button {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s ease;
+}
+
+.resume-button:hover {
+    opacity: 0.85;
+}
+
+.resume-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ── Metadata chips ── */
 .exec-meta-bar {
     display: flex;
@@ -137,6 +162,119 @@
     background: rgba(139, 0, 222, 0.08);
     border-color: rgba(139, 0, 222, 0.3);
     color: #b49eed;
+}
+
+.exec-meta-chip--clickable {
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exec-meta-chip--clickable:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.exec-meta-suspend-count {
+    color: #fbbf24;
+    font-weight: 500;
+    margin-left: 2px;
+}
+
+/* ── Live timer chip ── */
+.exec-meta-chip--live {
+    color: #2dd4bf;
+    border-color: rgba(0, 170, 156, 0.2);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Timing segments pane ── */
+.exec-timing-pane {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.exec-timing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.exec-timing-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.exec-timing-total {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.exec-timing-segments {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exec-timing-segment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.exec-timing-segment-index {
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    min-width: 20px;
+}
+
+.exec-timing-segment-status {
+    font-weight: 500;
+    min-width: 70px;
+}
+
+.exec-timing-segment--suspended .exec-timing-segment-status {
+    color: #fbbf24;
+}
+
+.exec-timing-segment--success .exec-timing-segment-status {
+    color: #4ade80;
+}
+
+.exec-timing-segment--fail .exec-timing-segment-status {
+    color: #f87171;
+}
+
+.exec-timing-segment-duration {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.exec-timing-segment-times {
+    color: rgba(255, 255, 255, 0.3);
+    flex: 1;
+}
+
+.exec-timing-segment-runner {
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 10px;
+}
+
+.exec-timing-empty {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    padding: 4px 0;
 }
 
 /* ── Flow area — fills remaining space ── */

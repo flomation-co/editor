@@ -196,6 +196,11 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                         <Icon name="xmark" style={{ fontSize: '9px' }} />
                     </div>
                 )}
+                {status === 'suspended' && (
+                    <div className="exec-node-status-badge exec-node-status-badge--suspended">
+                        <Icon name="pause" style={{ fontSize: '8px' }} />
+                    </div>
+                )}
             </div>
 
             {/* CSS-only hover tooltip — .exec-node-hover-wrap:hover makes this visible */}

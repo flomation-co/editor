@@ -38,6 +38,8 @@ export default function ExecutionDetail() {
     const [ exec, setExec ] = useState<Execution>();
     const [ isRerunning, setIsRerunning ] = useState<boolean>(false);
     const [ isCancelling, setIsCancelling ] = useState<boolean>(false);
+    const [ isResuming, setIsResuming ] = useState<boolean>(false);
+    const [ showTimingPane, setShowTimingPane ] = useState<boolean>(false);
     const { showToast } = useToast();
 
     const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
@@ -125,6 +127,27 @@ export default function ExecutionDetail() {
                 showToast("Failed to cancel execution", "error");
             })
             .finally(() => setIsCancelling(false));
+    };
+
+    const resumeExecution = () => {
+        if (!exec || isResuming) return;
+        setIsResuming(true);
+
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + `/api/v1/execution/${executionID}/resume`;
+
+        api.post(url, null, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                showToast("Execution resumed");
+                queryExecutionState();
+            })
+            .catch(error => {
+                console.error(error);
+                showToast("Failed to resume execution", "error");
+            })
+            .finally(() => setIsResuming(false));
     };
 
     // Initial fetch
@@ -285,12 +308,17 @@ export default function ExecutionDetail() {
                             <div className="exec-header-status"><ExecuteState state={exec.execution_status} completionState={exec.completion_status} /></div>
                         </div>
                         <div className="exec-header-right">
+                            {exec.execution_status === "suspended" && (
+                                <button className="resume-button" onClick={resumeExecution} disabled={isResuming}>
+                                    <Icon name={isResuming ? "spinner" : "play"} spin={isResuming} /> Resume
+                                </button>
+                            )}
                             {exec.completion_status === "pending" && (
                                 <button className="cancel-button" onClick={cancelExecution} disabled={isCancelling}>
                                     <Icon name={isCancelling? "spinner" : "ban"} spin={isCancelling} /> Cancel
                                 </button>
                             )}
-                            {exec.completion_status !== "pending" && (
+                            {exec.completion_status !== "pending" && exec.execution_status !== "suspended" && (
                                 <button className="rerun-button" onClick={rerunExecution} disabled={isRerunning}>
                                     <Icon name={isRerunning? "spinner" : "rotate-right"} spin={isRerunning} /> Re-run
                                 </button>
@@ -312,12 +340,60 @@ export default function ExecutionDetail() {
                             </span>
                         )}
                         {exec.completion_status !== 'pending' && getEffectiveDuration() > 0 && (
-                            <span className="exec-meta-chip">{friendlyDuration(getEffectiveDuration())}</span>
+                            <span
+                                className="exec-meta-chip exec-meta-chip--clickable"
+                                onClick={() => setShowTimingPane(!showTimingPane)}
+                                title="Click to view execution timing segments"
+                            >
+                                <Icon name="clock" /> {friendlyDuration(getEffectiveDuration())}
+                                {(exec as any).suspend_count > 0 && (
+                                    <span className="exec-meta-suspend-count">({(exec as any).suspend_count} pause{(exec as any).suspend_count !== 1 ? 's' : ''})</span>
+                                )}
+                            </span>
                         )}
                         {(exec.runner_name || exec.runner_id) && (
                             <span className="exec-meta-chip">{exec.runner_name || exec.runner_id}</span>
                         )}
                     </div>
+
+                    {/* ── Timing segments pane ── */}
+                    {showTimingPane && (exec as any).segments && (
+                        <div className="exec-timing-pane">
+                            <div className="exec-timing-header">
+                                <span className="exec-timing-title">Execution Segments</span>
+                                <span className="exec-timing-total">
+                                    Total billed: {friendlyDuration((exec as any).billing_duration || getEffectiveDuration())}
+                                </span>
+                            </div>
+                            <div className="exec-timing-segments">
+                                {(() => {
+                                    try {
+                                        const segments = typeof (exec as any).segments === 'string'
+                                            ? JSON.parse((exec as any).segments)
+                                            : (exec as any).segments;
+                                        if (!Array.isArray(segments) || segments.length === 0) {
+                                            return <div className="exec-timing-empty">No segments recorded</div>;
+                                        }
+                                        return segments.map((seg: any, i: number) => (
+                                            <div key={i} className={`exec-timing-segment exec-timing-segment--${seg.status}`}>
+                                                <span className="exec-timing-segment-index">#{i + 1}</span>
+                                                <span className="exec-timing-segment-status">{seg.status}</span>
+                                                <span className="exec-timing-segment-duration">{friendlyDuration(seg.duration_ms)}</span>
+                                                <span className="exec-timing-segment-times">
+                                                    {formatDateString(seg.started_at)} → {formatDateString(seg.ended_at)}
+                                                </span>
+                                                {seg.runner_id && (
+                                                    <span className="exec-timing-segment-runner">{seg.runner_id}</span>
+                                                )}
+                                            </div>
+                                        ));
+                                    } catch {
+                                        return <div className="exec-timing-empty">Unable to parse segments</div>;
+                                    }
+                                })()}
+                            </div>
+                        </div>
+                    )}
 
                     {/* ── Flow visualisation (fills remaining space) ── */}
                     <div className="exec-flow-area">
