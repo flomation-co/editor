@@ -66,6 +66,21 @@
     box-shadow: 0 0 14px 2px rgba(239, 68, 68, 0.2);
 }
 
+.exec-node--suspended {
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 20px 4px rgba(245, 158, 11, 0.2);
+    animation: exec-suspend-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes exec-suspend-pulse {
+    0%, 100% {
+        box-shadow: 0 0 14px 4px rgba(245, 158, 11, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 24px 8px rgba(245, 158, 11, 0.35);
+    }
+}
+
 /* ── Status badge ── */
 .exec-node-status-badge {
     position: absolute;
@@ -93,6 +108,11 @@
 
 .exec-node-status-badge--failed {
     background: #ef4444;
+    color: #fff;
+}
+
+.exec-node-status-badge--suspended {
+    background: #f59e0b;
     color: #fff;
 }
 

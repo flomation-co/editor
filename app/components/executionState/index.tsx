@@ -5,6 +5,7 @@ export enum ExecutionStateValue {
     'created',
     'allocated',
     'running',
+    'suspended',
     'executed'
 }
 
@@ -12,7 +13,8 @@ export enum CompletionStateValue {
     'unknown',
     'success',
     'fail',
-    'cancel'
+    'cancel',
+    'suspended'
 }
 
 type ExecutionStateProps = {
@@ -24,6 +26,7 @@ const ExecutionLabels = [
     'Queued',
     'Allocated',
     'Running',
+    'Suspended',
     'Executed'
 ];
 
@@ -31,13 +34,15 @@ const CompletionLabels = [
     'Pending',
     'Success',
     'Failed',
-    'Cancelled'
+    'Cancelled',
+    'Suspended'
 ];
 
 const ExecutionTooltips = [
     "The execution has been created and is awaiting allocation to a runner",
     "The execution has been allocated to a runner, the flow should begin shortly",
     "The flow is running",
+    "The flow is suspended and awaiting resumption",
     "The flow has finished"
 ];
 
@@ -45,7 +50,8 @@ const CompletionTooltips = [
     "The execution is pending",
     "The execution has completed successfully",
     "The execution has failed",
-    "The execution has been cancelled"
+    "The execution has been cancelled",
+    "The execution is suspended — click Resume to continue"
 ];
 
 export function ExecuteState(props : ExecutionStateProps) {
@@ -57,6 +63,12 @@ export function ExecuteState(props : ExecutionStateProps) {
         setTooltipValue(CompletionTooltips[CompletionStateValue[props.completionState]]);
 
         switch (ExecutionStateValue[props.state]) {
+            case ExecutionStateValue.suspended:
+                setStateLabel("Suspended");
+                setStateClass("execution-state-label execution-state-suspended");
+                setTooltipValue("The execution is suspended — click Resume to continue");
+                break;
+
             case ExecutionStateValue.executed:
                 setStateLabel(CompletionLabels[CompletionStateValue[props.completionState]]);
                 switch (CompletionStateValue[props.completionState]) {
@@ -74,6 +86,11 @@ export function ExecuteState(props : ExecutionStateProps) {
 
                     case CompletionStateValue.cancel:
                         setStateClass("execution-state-label execution-state-cancelled")
+                        break;
+
+                    case CompletionStateValue.suspended:
+                        setStateLabel("Suspended");
+                        setStateClass("execution-state-label execution-state-suspended")
                         break;
                 }
 

@@ -5,7 +5,7 @@ export type NodeStatus = {
     id: string;
     action: string;
     label: string;
-    status: 'pending' | 'running' | 'success' | 'failed';
+    status: 'pending' | 'running' | 'success' | 'failed' | 'suspended';
     inputs?: Record<string, any>;
     outputs?: Record<string, any>;
     error?: string;
