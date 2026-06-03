@@ -245,6 +245,7 @@ Deploy to Sandbox:
       }
       RCFG
         sudo chown flomation:flomation /opt/flomation/editor/build/client/run-config.js
+        sudo systemctl reset-failed flomation-editor
         sudo systemctl restart flomation-editor
       DEPLOY
 
@@ -271,7 +272,7 @@ Deploy to Live:
   when: manual
   script:
     - mkdir -p ~/.ssh && echo "${OVH_LIVE_DEPLOY_KEY}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-    - ssh -o StrictHostKeyChecking=no ubuntu@${OVH_HOST} "sudo apt update && sudo apt install -y ${PACKAGE} && sudo systemctl restart ${SERVICE}"
+    - ssh -o StrictHostKeyChecking=no ubuntu@${OVH_HOST} "sudo apt update && sudo apt install -y ${PACKAGE} && sudo systemctl reset-failed ${SERVICE} && sudo systemctl restart ${SERVICE}"
 
 sync-to-github:
   extends: .sync-to-github-template
