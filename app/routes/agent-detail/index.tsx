@@ -597,6 +597,7 @@ export default function AgentDetail() {
                                             {ch.type === 'facebook_messenger' && <Icon name="facebook" style={{ color: '#1877F2', fontSize: 18 }} />}
                                             {ch.type === 'webhook' && <Icon name="robot" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16 }} />}
                                             {(ch.type === 'twilio_sms' || ch.type === 'twilio_voice') && <Icon name="phone" style={{ color: '#F22F46', fontSize: 16 }} />}
+                                            {ch.type === 'teams' && <Icon name="microsoft" style={{ color: '#6264A7', fontSize: 16 }} />}
                                             <select
                                                 className="agent-form-input"
                                                 style={{ width: 'auto', padding: '4px 10px' }}
@@ -614,6 +615,7 @@ export default function AgentDetail() {
                                                 <option value="webhook">Webhook</option>
                                                 <option value="twilio_sms">Twilio SMS</option>
                                                 <option value="twilio_voice">Twilio Voice</option>
+                                                <option value="teams">Microsoft Teams</option>
                                             </select>
                                         </div>
                                         <button className="agent-action-btn delete" style={{ padding: '4px 8px' }}
@@ -1050,6 +1052,78 @@ export default function AgentDetail() {
                                             </div>
 
                                             <TwilioStatusChecker baseUrl={baseUrl} headers={headers} />
+                                        </div>
+                                    )}
+
+                                    {ch.type === 'teams' && (
+                                        <div style={{ marginTop: 12 }}>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Bot App ID</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    value={ch.config?.app_id || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, app_id: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Azure App Registration Client ID"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Bot App Password</label>
+                                                <input
+                                                    className="agent-form-input"
+                                                    type="password"
+                                                    value={ch.config?.app_password || ''}
+                                                    onChange={e => {
+                                                        const updated = [...channels];
+                                                        updated[idx] = { ...ch, config: { ...ch.config, app_password: e.target.value } };
+                                                        setChannels(updated);
+                                                    }}
+                                                    placeholder="Azure App Registration Client Secret"
+                                                />
+                                            </div>
+                                            <div className="agent-form-group" style={{ marginBottom: 12 }}>
+                                                <label className="agent-form-label">Bot Messaging Endpoint</label>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <input
+                                                        className="agent-form-input"
+                                                        readOnly
+                                                        value={`${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/teams/${id}`}
+                                                        style={{ color: 'rgba(255,255,255,0.5)', cursor: 'text', flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.06)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            borderRadius: 6,
+                                                            padding: '8px 10px',
+                                                            cursor: 'pointer',
+                                                            color: urlCopied ? '#00aa9c' : 'rgba(255,255,255,0.5)',
+                                                            fontSize: 13,
+                                                            transition: 'color 0.2s',
+                                                        }}
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(
+                                                                `${config("LAUNCH_URL", "https://your-launch-instance")}/webhook/teams/${id}`
+                                                            );
+                                                            setUrlCopied(true);
+                                                            setTimeout(() => setUrlCopied(false), 2000);
+                                                        }}
+                                                    >
+                                                        <Icon name={urlCopied ? "check" : "copy"} />
+                                                    </button>
+                                                </div>
+                                                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                                                    Set this as the <strong>Messaging endpoint</strong> in your Azure Bot resource under <strong>Configuration</strong>.
+                                                </span>
+                                            </div>
+                                            <div style={{ padding: '10px 14px', background: 'rgba(98,100,167,0.08)', border: '1px solid rgba(98,100,167,0.2)', borderRadius: 6, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+                                                <Icon name="info-circle" style={{ marginRight: 6, color: '#6264A7' }} />
+                                                Create an <strong>Azure Bot</strong> resource, enable the <strong>Teams channel</strong>, and set the messaging endpoint above. The bot will receive messages from 1:1 chats, group chats, and @mentions in channels.
+                                            </div>
                                         </div>
                                     )}
                                 </div>

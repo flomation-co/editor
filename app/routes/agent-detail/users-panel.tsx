@@ -19,6 +19,7 @@ const CHANNEL_ICONS: Record<string, {label: string; colour: string}> = {
     slack: {label: "Slack", colour: "#E01E5A"},
     email: {label: "Email", colour: "#EA4335"},
     webhook: {label: "Webhook", colour: "rgba(255,255,255,0.4)"},
+    teams: {label: "Teams", colour: "#6264A7"},
 };
 
 export default function AgentUsersPanel({agentId, apiUrl, token}: Props) {
