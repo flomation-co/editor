@@ -96,8 +96,11 @@
    The human-readable label is shown via a ::after pseudo-element
    positioned on top. */
 .variable-pill--labeled {
-    color: transparent;
     position: relative;
+    color: transparent;
+    /* Hide the raw text and background so only the ::after label is visible */
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 .variable-pill--labeled::after {
@@ -111,6 +114,11 @@
     font-weight: 500;
     white-space: nowrap;
     pointer-events: none;
+    /* Give the label its own pill styling */
+    background: var(--pill-bg);
+    box-shadow: var(--pill-shadow);
+    border-radius: 3px;
+    padding: 0 2px;
 }
 
 .variable-pill--secrets {
@@ -118,6 +126,8 @@
     box-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
     color: #d4a3f9;
     --pill-color: #d4a3f9;
+    --pill-bg: rgba(139, 0, 222, 0.35);
+    --pill-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
 }
 
 .variable-pill--env {
@@ -125,6 +135,8 @@
     box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
     color: #6ee7d8;
     --pill-color: #6ee7d8;
+    --pill-bg: rgba(0, 170, 156, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
 }
 
 .variable-pill--input {
@@ -132,6 +144,8 @@
     box-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
     color: #7fc8f0;
     --pill-color: #7fc8f0;
+    --pill-bg: rgba(72, 171, 224, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
 }
 
 .variable-pill--flow {
@@ -139,6 +153,8 @@
     box-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
     color: #f59e0b;
     --pill-color: #f59e0b;
+    --pill-bg: rgba(234, 155, 9, 0.15);
+    --pill-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
 }
 
 .variable-pill--credentials {
@@ -146,6 +162,8 @@
     box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
     color: #fbbf24;
     --pill-color: #fbbf24;
+    --pill-bg: rgba(245, 158, 11, 0.25);
+    --pill-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
 }
 
 .variable-pill--invalid {
@@ -153,6 +171,8 @@
     box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
     color: #ff6b6b;
     --pill-color: #ff6b6b;
+    --pill-bg: rgba(190, 0, 0, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
 }
 
 /* Autocomplete dropdown */
@@ -226,6 +246,8 @@
     box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
     color: #2dd4bf;
     --pill-color: #2dd4bf;
+    --pill-bg: rgba(45, 212, 191, 0.15);
+    --pill-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
 }
 
 .variable-autocomplete-badge--var {
