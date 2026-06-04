@@ -80,14 +80,15 @@ function IconInner({
       const [aw, ah, ad] = badge;
 
       // Render in a normalised 100x100 viewBox
-      // Base icon occupies the full area
-      // Badge sits in the bottom-right corner at ~40% size with a bg circle
-      const badgeSize = 44;
-      const badgeX = 100 - badgeSize + 2;
-      const badgeY = 100 - badgeSize + 2;
+      // Base icon at ~75% in the top-left area
+      // Badge at ~55% in the bottom-right with a bg circle for contrast
+      const baseScale = 0.72;
+      const badgeSize = 52;
+      const badgeX = 100 - badgeSize;
+      const badgeY = 100 - badgeSize;
       const badgeCX = badgeX + badgeSize / 2;
       const badgeCY = badgeY + badgeSize / 2;
-      const badgePad = 3;
+      const badgePad = 4;
 
       return (
         <svg
@@ -101,8 +102,8 @@ function IconInner({
           aria-hidden={!title}
         >
           {title && <title>{title}</title>}
-          {/* Base icon — full area */}
-          <g transform={`translate(0,0) scale(${100 / bw},${100 / bh})`}>
+          {/* Base icon — top-left area at 72% */}
+          <g transform={`scale(${(100 * baseScale) / bw},${(100 * baseScale) / bh})`}>
             <path d={bd} fill={colour} />
           </g>
           {/* Badge background circle */}
