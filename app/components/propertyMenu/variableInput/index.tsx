@@ -59,7 +59,7 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
             varName = inner;
             valid = true;
             if (scopedMatch.source) {
-                displayLabel = scopedMatch.source + " > " + scopedMatch.name;
+                displayLabel = "${" + scopedMatch.source + " > " + scopedMatch.name + "}";
             }
         } else {
             const dotIndex = inner.indexOf(".");
@@ -82,7 +82,7 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
                     (v) => v.category === "input" && v.name === varName && v.source
                 );
                 if (matched?.source) {
-                    displayLabel = matched.source + " > " + matched.name;
+                    displayLabel = "${" + matched.source + " > " + matched.name + "}";
                 }
             }
         }

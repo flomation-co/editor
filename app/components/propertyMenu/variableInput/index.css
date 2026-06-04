@@ -82,12 +82,11 @@
    character positions exactly aligned with the transparent input layer */
 .variable-pill {
     display: inline;
-    border-radius: 3px;
+    border-radius: 4px;
     font-size: inherit;
     line-height: inherit;
     font-weight: 500;
-    /* Use box-shadow for the "border" effect — doesn't affect layout */
-    padding: 0;
+    padding: 1px 4px;
     border: none;
 }
 
