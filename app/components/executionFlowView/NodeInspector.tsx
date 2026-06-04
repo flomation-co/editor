@@ -9,7 +9,26 @@ type NodeInspectorProps = {
     onClose: () => void;
 };
 
-const SENSITIVE_KEYS = /secret|password|key|token|credential|auth/i;
+const SENSITIVE_KEYS = /secret|password|key|token|credential|auth|access_token|refresh_token|api_key|apikey/i;
+
+// Detect values that look like tokens/secrets even if the key doesn't match
+const SENSITIVE_VALUE_PATTERNS = [
+    /^eyJ[a-zA-Z0-9_-]{20,}\./,          // JWT tokens
+    /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,    // Stripe/API keys
+    /^xox[bpsa]-[a-zA-Z0-9-]{20,}/,       // Slack tokens
+    /^AKIA[A-Z0-9]{16}/,                   // AWS access keys
+    /^ghp_[a-zA-Z0-9]{20,}/,              // GitHub PATs
+    /^glpat-[a-zA-Z0-9_-]{20,}/,          // GitLab tokens
+];
+
+function isSensitiveValue(value: any): boolean {
+    if (typeof value !== 'string' || value.length < 20) return false;
+    return SENSITIVE_VALUE_PATTERNS.some(p => p.test(value));
+}
+
+function isSensitive(key: string, value: any): boolean {
+    return SENSITIVE_KEYS.test(key) || value === '********' || isSensitiveValue(value);
+}
 
 // Try to parse JSON strings into objects for proper rendering.
 // Handles values that were stringified by the old executor.
@@ -178,7 +197,9 @@ function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?
                         {keys.map(k => (
                             <div key={k} className="ni-tree-row">
                                 <span className="ni-tree-key">{k}</span>
-                                <InspectorValue value={parsed[k]} depth={depth + 1} />
+                                {isSensitive(k, parsed[k])
+                                    ? <span className="ni-val ni-val--obfuscated">********</span>
+                                    : <InspectorValue value={parsed[k]} depth={depth + 1} keyName={k} />}
                             </div>
                         ))}
                     </div>
@@ -253,7 +274,7 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                                 <div key={key} className="ni-entry">
                                     <div className="ni-entry-key">{key}</div>
                                     <div className="ni-entry-value">
-                                        {SENSITIVE_KEYS.test(key) || value === '********'
+                                        {isSensitive(key, value)
                                             ? <span className="ni-val ni-val--obfuscated">********</span>
                                             : <InspectorValue value={value} keyName={key} />}
                                     </div>
@@ -273,7 +294,9 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                                 <div key={key} className="ni-entry">
                                     <div className="ni-entry-key">{key}</div>
                                     <div className="ni-entry-value">
-                                        <InspectorValue value={value} keyName={key} />
+                                        {isSensitive(key, value)
+                                            ? <span className="ni-val ni-val--obfuscated">********</span>
+                                            : <InspectorValue value={value} keyName={key} />}
                                     </div>
                                 </div>
                             ))}
