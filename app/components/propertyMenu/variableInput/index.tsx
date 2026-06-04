@@ -232,15 +232,23 @@ const VariableInput = (props: VariableInputProps) => {
     // Sync the input element's value to displayText
     useEffect(() => {
         const input = inputRef.current;
+        const highlight = highlightRef.current;
         if (!input) return;
         if (input.value !== displayText) {
-            // Preserve cursor position proportionally
             const cursorPos = input.selectionStart ?? 0;
             const rawPos = displayPosToRaw(cursorPos, toRaw);
             suppressNextChange.current = true;
             input.value = displayText;
             const newDisplayPos = rawPosToDisplay(rawPos, toRaw);
             input.setSelectionRange(newDisplayPos, newDisplayPos);
+        }
+        // Always sync scroll after value changes — setting input.value
+        // programmatically doesn't fire the scroll event
+        if (highlight) {
+            requestAnimationFrame(() => {
+                highlight.scrollTop = input.scrollTop;
+                highlight.scrollLeft = input.scrollLeft;
+            });
         }
     }, [displayText, toRaw]);
 

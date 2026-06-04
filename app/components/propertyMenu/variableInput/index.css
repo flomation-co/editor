@@ -17,7 +17,6 @@
     /* Single-line: no wrapping, scroll on overflow */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* Multiline variants restore wrapping */
@@ -55,7 +54,7 @@
     resize: both;
 }
 
-/* Input layer sits on top with transparent text */
+/* Input layer sits on top with transparent text — scrolls on overflow */
 .variable-input-field {
     position: relative;
     z-index: 1;
@@ -63,6 +62,7 @@
     color: transparent;
     caret-color: #fff;
     outline: none;
+    overflow: auto;
 }
 
 .variable-input-field::placeholder {
