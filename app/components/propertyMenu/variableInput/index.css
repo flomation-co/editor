@@ -95,32 +95,6 @@
    (color: transparent) to maintain alignment with the input layer.
    The human-readable label is shown via a ::after pseudo-element
    positioned on top. */
-.variable-pill--labeled {
-    position: relative;
-    color: transparent;
-    /* Hide the raw text and background so only the ::after label is visible */
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.variable-pill--labeled::after {
-    content: attr(data-display);
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--pill-color, #7fc8f0);
-    font-size: inherit;
-    line-height: inherit;
-    font-weight: 500;
-    white-space: nowrap;
-    pointer-events: none;
-    /* Give the label its own pill styling */
-    background: var(--pill-bg);
-    box-shadow: var(--pill-shadow);
-    border-radius: 3px;
-    padding: 0 2px;
-}
-
 .variable-pill--secrets {
     background: rgba(139, 0, 222, 0.35);
     box-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);

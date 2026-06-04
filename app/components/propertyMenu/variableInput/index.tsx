@@ -331,21 +331,12 @@ const VariableInput = (props: VariableInputProps) => {
                     }
                 }
 
-                // The pill renders the RAW variable text (same char count as
-                // the input layer) to keep character positions aligned. When a
-                // human-readable label is available, the raw text is hidden via
-                // font-size:0 and the label is shown via a ::after pseudo-element.
-                if (displayLabel) {
-                    return (
-                        <span key={i} className={`${pillClass} variable-pill--labeled`} data-display={displayLabel}>
-                            {seg.value}
-                        </span>
-                    );
-                }
-
+                // Show the friendly label directly when available.
+                // The highlight layer is purely visual — cursor positioning
+                // is handled by the transparent input layer underneath.
                 return (
                     <span key={i} className={pillClass}>
-                        {seg.value}
+                        {displayLabel || seg.value}
                     </span>
                 );
             }
