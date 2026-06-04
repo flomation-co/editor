@@ -4,7 +4,7 @@ import { iconPaths, iconAliases, type IconName } from "./paths";
 export type { IconName } from "./paths";
 
 export interface IconProps {
-  /** Icon name — accepts canonical names and FA-style aliases */
+  /** Icon name — accepts canonical names, FA-style aliases, and composite "base+badge" format */
   name: string;
   /** CSS size string applied to width and height (default: "1em") */
   size?: string;
@@ -36,11 +36,17 @@ function injectSpinStyle() {
   spinStyleInjected = true;
 }
 
+function resolveIcon(name: string): [number, number, string] | undefined {
+  const resolved = (iconAliases[name as keyof typeof iconAliases] ?? name) as IconName;
+  return iconPaths[resolved];
+}
+
 /**
  * Renders an inline SVG icon by name.
  *
- * Replaces FontAwesomeIcon throughout the editor. Accepts the same
- * kebab-case icon names used in action manifests and FA imports.
+ * Supports composite icons using "base+badge" format (e.g., "gmail+paper-plane").
+ * The base icon renders at full size and the badge renders as a small overlay
+ * in the bottom-right corner with a circular background.
  */
 function IconInner({
   name,
@@ -52,18 +58,74 @@ function IconInner({
   title,
   spin,
 }: IconProps) {
-  // Resolve aliases
-  const resolved = (iconAliases[name as keyof typeof iconAliases] ?? name) as IconName;
-  const entry = iconPaths[resolved];
+  const dim = px ? `${px}px` : size ?? "1em";
+
+  if (spin) injectSpinStyle();
+
+  const mergedStyle: CSSProperties = {
+    display: "inline-block",
+    verticalAlign: "-0.125em",
+    ...style,
+    ...(spin ? { animation: "icon-spin 1s linear infinite" } : {}),
+  };
+
+  // Composite icon: "base+badge" format
+  if (name.includes("+")) {
+    const [baseName, badgeName] = name.split("+", 2);
+    const base = resolveIcon(baseName);
+    const badge = resolveIcon(badgeName);
+
+    if (base && badge) {
+      const [bw, bh, bd] = base;
+      const [aw, ah, ad] = badge;
+
+      // Render in a normalised 100x100 viewBox
+      // Base icon occupies the full area
+      // Badge sits in the bottom-right corner at ~40% size with a bg circle
+      const badgeSize = 44;
+      const badgeX = 100 - badgeSize + 2;
+      const badgeY = 100 - badgeSize + 2;
+      const badgeCX = badgeX + badgeSize / 2;
+      const badgeCY = badgeY + badgeSize / 2;
+      const badgePad = 3;
+
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 100 100"
+          width={dim}
+          height={dim}
+          className={className}
+          style={mergedStyle}
+          role={title ? "img" : "presentation"}
+          aria-hidden={!title}
+        >
+          {title && <title>{title}</title>}
+          {/* Base icon — full area */}
+          <g transform={`translate(0,0) scale(${100 / bw},${100 / bh})`}>
+            <path d={bd} fill={colour} />
+          </g>
+          {/* Badge background circle */}
+          <circle cx={badgeCX} cy={badgeCY} r={badgeSize / 2 + badgePad} fill="var(--node-bg, #1a1025)" />
+          {/* Badge icon */}
+          <g transform={`translate(${badgeX},${badgeY}) scale(${badgeSize / aw},${badgeSize / ah})`}>
+            <path d={ad} fill={colour} />
+          </g>
+        </svg>
+      );
+    }
+  }
+
+  // Single icon
+  const entry = resolveIcon(name);
 
   if (!entry) {
-    // Fallback: render a simple question-mark circle for unknown icons
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512 512"
-        width={px ? `${px}px` : size ?? "1em"}
-        height={px ? `${px}px` : size ?? "1em"}
+        width={dim}
+        height={dim}
         fill={colour}
         className={className}
         style={{ display: "inline-block", verticalAlign: "-0.125em", ...style }}
@@ -78,16 +140,6 @@ function IconInner({
   }
 
   const [w, h, d] = entry;
-  const dim = px ? `${px}px` : size ?? "1em";
-
-  if (spin) injectSpinStyle();
-
-  const mergedStyle: CSSProperties = {
-    display: "inline-block",
-    verticalAlign: "-0.125em",
-    ...style,
-    ...(spin ? { animation: "icon-spin 1s linear infinite" } : {}),
-  };
 
   return (
     <svg
