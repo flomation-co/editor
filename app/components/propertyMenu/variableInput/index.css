@@ -17,7 +17,6 @@
     /* Single-line: no wrapping, scroll on overflow */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* Multiline variants restore wrapping */
@@ -55,7 +54,7 @@
     resize: both;
 }
 
-/* Input layer sits on top with transparent text */
+/* Input layer sits on top with transparent text — scrolls on overflow */
 .variable-input-field {
     position: relative;
     z-index: 1;
@@ -63,6 +62,7 @@
     color: transparent;
     caret-color: #fff;
     outline: none;
+    overflow: auto;
 }
 
 .variable-input-field::placeholder {
@@ -86,7 +86,8 @@
     font-size: inherit;
     line-height: inherit;
     font-weight: 500;
-    /* Use box-shadow for the "border" effect — doesn't affect layout */
+    /* Zero padding/margin to keep character positions aligned with input layer.
+       box-shadow provides the visual pill outline without affecting layout. */
     padding: 0;
     border: none;
 }
@@ -95,64 +96,58 @@
    (color: transparent) to maintain alignment with the input layer.
    The human-readable label is shown via a ::after pseudo-element
    positioned on top. */
-.variable-pill--labeled {
-    color: transparent;
-    position: relative;
-}
-
-.variable-pill--labeled::after {
-    content: attr(data-display);
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--pill-color, #7fc8f0);
-    font-size: inherit;
-    line-height: inherit;
-    font-weight: 500;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
 .variable-pill--secrets {
     background: rgba(139, 0, 222, 0.35);
-    box-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
+    box-shadow: 0 0 0 2px rgba(139, 0, 222, 0.6);
     color: #d4a3f9;
     --pill-color: #d4a3f9;
+    --pill-bg: rgba(139, 0, 222, 0.35);
+    --pill-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
 }
 
 .variable-pill--env {
     background: rgba(0, 170, 156, 0.3);
-    box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
+    box-shadow: 0 0 0 2px rgba(0, 170, 156, 0.5);
     color: #6ee7d8;
     --pill-color: #6ee7d8;
+    --pill-bg: rgba(0, 170, 156, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
 }
 
 .variable-pill--input {
     background: rgba(72, 171, 224, 0.3);
-    box-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
+    box-shadow: 0 0 0 2px rgba(72, 171, 224, 0.5);
     color: #7fc8f0;
     --pill-color: #7fc8f0;
+    --pill-bg: rgba(72, 171, 224, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
 }
 
 .variable-pill--flow {
     background: rgba(234, 155, 9, 0.15);
-    box-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
+    box-shadow: 0 0 0 2px rgba(234, 155, 9, 0.3);
     color: #f59e0b;
     --pill-color: #f59e0b;
+    --pill-bg: rgba(234, 155, 9, 0.15);
+    --pill-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
 }
 
 .variable-pill--credentials {
     background: rgba(245, 158, 11, 0.25);
-    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
     color: #fbbf24;
     --pill-color: #fbbf24;
+    --pill-bg: rgba(245, 158, 11, 0.25);
+    --pill-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
 }
 
 .variable-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
-    box-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
+    box-shadow: 0 0 0 2px rgba(190, 0, 0, 0.6);
     color: #ff6b6b;
     --pill-color: #ff6b6b;
+    --pill-bg: rgba(190, 0, 0, 0.3);
+    --pill-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
 }
 
 /* Autocomplete dropdown */
@@ -223,9 +218,11 @@
 
 .variable-pill--var {
     background: rgba(45, 212, 191, 0.15);
-    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
+    box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.3);
     color: #2dd4bf;
     --pill-color: #2dd4bf;
+    --pill-bg: rgba(45, 212, 191, 0.15);
+    --pill-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
 }
 
 .variable-autocomplete-badge--var {

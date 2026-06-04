@@ -25,6 +25,7 @@ type VariableInputProps = {
 type ParsedSegment = {
     type: "text" | "variable";
     value: string;
+    display: string;
     category?: string;
     varName?: string;
     valid?: boolean;
@@ -32,19 +33,18 @@ type ParsedSegment = {
 
 function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[] {
     const segments: ParsedSegment[] = [];
-    // Match ${secrets.NAME}, ${env.NAME}, or ${bare_name} (parent outputs)
     const regex = /\$\{([\w.-]+)}/g;
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
     while ((match = regex.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            segments.push({ type: "text", value: text.slice(lastIndex, match.index) });
+            const t = text.slice(lastIndex, match.index);
+            segments.push({ type: "text", value: t, display: t });
         }
 
         const inner = match[1];
 
-        // Check if the full reference matches a scoped parent output (nodeId.output)
         const scopedMatch = variables.find(
             (v) => v.category === "input" && v.insertName === inner
         );
@@ -52,21 +52,22 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
         let category: string;
         let varName: string;
         let valid: boolean;
+        let displayLabel: string | undefined;
 
         if (scopedMatch) {
-            // Scoped parent reference — treat as valid input
             category = "input";
             varName = inner;
             valid = true;
+            if (scopedMatch.source) {
+                displayLabel = "${" + scopedMatch.source + " > " + scopedMatch.name + "}";
+            }
         } else {
             const dotIndex = inner.indexOf(".");
             if (dotIndex >= 0) {
                 category = inner.slice(0, dotIndex);
                 varName = inner.slice(dotIndex + 1);
-                // Normalise "secret" → "secrets" to match the variable items
                 if (category === "secret") category = "secrets";
             } else {
-                // Bare name — parent output
                 category = "input";
                 varName = inner;
             }
@@ -74,11 +75,22 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
             valid = variables.some(
                 (v) => v.category === category && (v.name === varName || v.insertName === varName)
             );
+
+            // Check for friendly label on valid parent outputs
+            if (valid && category === "input") {
+                const matched = variables.find(
+                    (v) => v.category === "input" && v.name === varName && v.source
+                );
+                if (matched?.source) {
+                    displayLabel = "${" + matched.source + " > " + matched.name + "}";
+                }
+            }
         }
 
         segments.push({
             type: "variable",
             value: match[0],
+            display: displayLabel || match[0],
             category,
             varName,
             valid,
@@ -88,10 +100,62 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
     }
 
     if (lastIndex < text.length) {
-        segments.push({ type: "text", value: text.slice(lastIndex) });
+        const t = text.slice(lastIndex);
+        segments.push({ type: "text", value: t, display: t });
     }
 
     return segments;
+}
+
+/** Build the display string and a mapping from display positions to raw positions */
+function buildDisplayMapping(segments: ParsedSegment[]) {
+    let displayText = "";
+    let rawOffset = 0;
+    let displayOffset = 0;
+    // Map from display offset → raw offset for each segment boundary
+    const toRaw: { displayStart: number; displayEnd: number; rawStart: number; rawEnd: number }[] = [];
+
+    for (const seg of segments) {
+        const rawLen = seg.value.length;
+        const displayLen = seg.display.length;
+        toRaw.push({
+            displayStart: displayOffset,
+            displayEnd: displayOffset + displayLen,
+            rawStart: rawOffset,
+            rawEnd: rawOffset + rawLen,
+        });
+        displayText += seg.display;
+        rawOffset += rawLen;
+        displayOffset += displayLen;
+    }
+
+    return { displayText, toRaw };
+}
+
+function displayPosToRaw(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
+    for (const m of mapping) {
+        if (pos <= m.displayStart) return m.rawStart;
+        if (pos <= m.displayEnd) {
+            // Proportional mapping within segment
+            const ratio = (pos - m.displayStart) / (m.displayEnd - m.displayStart || 1);
+            return Math.round(m.rawStart + ratio * (m.rawEnd - m.rawStart));
+        }
+    }
+    // Past end
+    const last = mapping[mapping.length - 1];
+    return last ? last.rawEnd : pos;
+}
+
+function rawPosToDisplay(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
+    for (const m of mapping) {
+        if (pos <= m.rawStart) return m.displayStart;
+        if (pos <= m.rawEnd) {
+            const ratio = (pos - m.rawStart) / (m.rawEnd - m.rawStart || 1);
+            return Math.round(m.displayStart + ratio * (m.displayEnd - m.displayStart));
+        }
+    }
+    const last = mapping[mapping.length - 1];
+    return last ? last.displayEnd : pos;
 }
 
 type AutocompleteState = {
@@ -112,6 +176,7 @@ const VariableInput = (props: VariableInputProps) => {
         insertStart: -1,
     });
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const suppressNextChange = useRef(false);
 
     const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
@@ -159,6 +224,34 @@ const VariableInput = (props: VariableInputProps) => {
         [value, props.variables]
     );
 
+    const { displayText, toRaw } = useMemo(
+        () => buildDisplayMapping(segments),
+        [segments]
+    );
+
+    // Sync the input element's value to displayText
+    useEffect(() => {
+        const input = inputRef.current;
+        const highlight = highlightRef.current;
+        if (!input) return;
+        if (input.value !== displayText) {
+            const cursorPos = input.selectionStart ?? 0;
+            const rawPos = displayPosToRaw(cursorPos, toRaw);
+            suppressNextChange.current = true;
+            input.value = displayText;
+            const newDisplayPos = rawPosToDisplay(rawPos, toRaw);
+            input.setSelectionRange(newDisplayPos, newDisplayPos);
+        }
+        // Always sync scroll after value changes — setting input.value
+        // programmatically doesn't fire the scroll event
+        if (highlight) {
+            requestAnimationFrame(() => {
+                highlight.scrollTop = input.scrollTop;
+                highlight.scrollLeft = input.scrollLeft;
+            });
+        }
+    }, [displayText, toRaw]);
+
     const filteredVariables = useMemo(() => {
         if (!autocomplete.visible) return [];
         const lower = autocomplete.filter.toLowerCase();
@@ -174,16 +267,14 @@ const VariableInput = (props: VariableInputProps) => {
     }, [filteredVariables.length]);
 
     const checkForAutocomplete = useCallback(
-        (text: string, cursorPos: number) => {
-            // Look backwards from cursor for an unclosed ${
-            const before = text.slice(0, cursorPos);
+        (rawText: string, rawCursorPos: number) => {
+            const before = rawText.slice(0, rawCursorPos);
             const openIndex = before.lastIndexOf("${");
             if (openIndex === -1) {
                 setAutocomplete((prev) => ({ ...prev, visible: false }));
                 return;
             }
 
-            // Check there's no closing } between ${ and cursor
             const between = before.slice(openIndex + 2);
             if (between.includes("}")) {
                 setAutocomplete((prev) => ({ ...prev, visible: false }));
@@ -192,7 +283,6 @@ const VariableInput = (props: VariableInputProps) => {
 
             const filter = between;
 
-            // Position the dropdown using viewport coordinates for fixed positioning
             if (inputRef.current) {
                 const inputRect = inputRef.current.getBoundingClientRect();
                 const dropdownWidth = 300;
@@ -200,14 +290,12 @@ const VariableInput = (props: VariableInputProps) => {
                 const viewportWidth = window.innerWidth;
                 const viewportHeight = window.innerHeight;
 
-                // Clamp horizontal position so dropdown stays within viewport
                 let x = inputRect.left;
                 if (x + dropdownWidth > viewportWidth) {
                     x = viewportWidth - dropdownWidth - 8;
                 }
                 if (x < 8) x = 8;
 
-                // If not enough space below, show above
                 let y = inputRect.bottom + 4;
                 if (y + dropdownMaxHeight > viewportHeight) {
                     y = inputRect.top - dropdownMaxHeight - 4;
@@ -229,11 +317,10 @@ const VariableInput = (props: VariableInputProps) => {
     const insertVariable = useCallback(
         (variable: VariableItem) => {
             const before = value.slice(0, autocomplete.insertStart);
-            const afterCursor = inputRef.current
-                ? value.slice(inputRef.current.selectionStart || 0)
-                : "";
-            // Parent outputs use bare ${name}, secrets/env use ${category.name}
-            // Scoped parent refs use insertName (node ID-based) for stability
+            // Find raw cursor position from display cursor
+            const displayCursorPos = inputRef.current?.selectionStart ?? 0;
+            const rawCursorPos = displayPosToRaw(displayCursorPos, toRaw);
+            const afterCursor = value.slice(rawCursorPos);
             const varName = variable.insertName || variable.name;
             const insertion = variable.category === "input"
                 ? `\${${varName}}`
@@ -242,25 +329,67 @@ const VariableInput = (props: VariableInputProps) => {
             setValue(newValue);
             setAutocomplete((prev) => ({ ...prev, visible: false }));
 
-            // Restore focus and cursor position
             requestAnimationFrame(() => {
                 if (inputRef.current) {
                     inputRef.current.focus();
-                    const newPos = before.length + insertion.length;
-                    inputRef.current.setSelectionRange(newPos, newPos);
+                    // Position cursor after the inserted variable in display space
+                    const newSegments = parseSegments(newValue, props.variables);
+                    const newMapping = buildDisplayMapping(newSegments);
+                    const rawPos = before.length + insertion.length;
+                    const newDisplayPos = rawPosToDisplay(rawPos, newMapping.toRaw);
+                    inputRef.current.value = newMapping.displayText;
+                    inputRef.current.setSelectionRange(newDisplayPos, newDisplayPos);
                 }
             });
         },
-        [value, autocomplete.insertStart]
+        [value, autocomplete.insertStart, toRaw, props.variables]
     );
 
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const newValue = e.target.value;
-            setValue(newValue);
-            checkForAutocomplete(newValue, e.target.selectionStart || 0);
+            if (suppressNextChange.current) {
+                suppressNextChange.current = false;
+                return;
+            }
+
+            const inputEl = e.target;
+            const newDisplayValue = inputEl.value;
+            const displayCursorPos = inputEl.selectionStart ?? 0;
+
+            // Find what changed: diff the old displayText vs newDisplayValue
+            // to determine the edit in raw space
+            const oldDisplay = displayText;
+
+            // Find common prefix and suffix
+            let prefixLen = 0;
+            while (prefixLen < oldDisplay.length && prefixLen < newDisplayValue.length && oldDisplay[prefixLen] === newDisplayValue[prefixLen]) {
+                prefixLen++;
+            }
+            let suffixLen = 0;
+            while (
+                suffixLen < (oldDisplay.length - prefixLen) &&
+                suffixLen < (newDisplayValue.length - prefixLen) &&
+                oldDisplay[oldDisplay.length - 1 - suffixLen] === newDisplayValue[newDisplayValue.length - 1 - suffixLen]
+            ) {
+                suffixLen++;
+            }
+
+            const deletedDisplayLen = oldDisplay.length - prefixLen - suffixLen;
+            const insertedDisplay = newDisplayValue.slice(prefixLen, newDisplayValue.length - suffixLen);
+
+            // Map the edit range to raw space
+            const rawEditStart = displayPosToRaw(prefixLen, toRaw);
+            const rawEditEnd = displayPosToRaw(prefixLen + deletedDisplayLen, toRaw);
+
+            // Apply the edit to the raw value
+            const newRaw = value.slice(0, rawEditStart) + insertedDisplay + value.slice(rawEditEnd);
+            setValue(newRaw);
+
+            // Check autocomplete on the new raw value at the mapped cursor
+            const rawCursorPos = rawEditStart + insertedDisplay.length;
+            checkForAutocomplete(newRaw, rawCursorPos);
         },
-        [checkForAutocomplete]
+        [displayText, value, toRaw, checkForAutocomplete]
     );
 
     const handleKeyDown = useCallback(
@@ -289,7 +418,6 @@ const VariableInput = (props: VariableInputProps) => {
     );
 
     const handleBlur = useCallback((e: React.FocusEvent) => {
-        // Delay to allow click on autocomplete item
         setTimeout(() => {
             if (
                 autocompleteRef.current &&
@@ -304,9 +432,11 @@ const VariableInput = (props: VariableInputProps) => {
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-            checkForAutocomplete(value, target.selectionStart || 0);
+            const displayCursorPos = target.selectionStart ?? 0;
+            const rawCursorPos = displayPosToRaw(displayCursorPos, toRaw);
+            checkForAutocomplete(value, rawCursorPos);
         },
-        [value, checkForAutocomplete]
+        [value, toRaw, checkForAutocomplete]
     );
 
     const renderHighlight = () => {
@@ -316,41 +446,13 @@ const VariableInput = (props: VariableInputProps) => {
                     ? `variable-pill variable-pill--${seg.category}`
                     : "variable-pill variable-pill--invalid";
 
-                // Determine human-readable label for parent output references:
-                // - Scoped (nodeId.output) → "Node Name > output"
-                // - Flat (output) → "Parent Name > output" if source exists
-                let displayLabel: string | undefined;
-                if (seg.valid && seg.category === "input") {
-                    const matched = props.variables.find(
-                        (v) => v.insertName === seg.varName
-                    ) || props.variables.find(
-                        (v) => v.category === "input" && v.name === seg.varName && v.source
-                    );
-                    if (matched?.source) {
-                        displayLabel = matched.source + " > " + matched.name;
-                    }
-                }
-
-                // The pill renders the RAW variable text (same char count as
-                // the input layer) to keep character positions aligned. When a
-                // human-readable label is available, the raw text is hidden via
-                // font-size:0 and the label is shown via a ::after pseudo-element.
-                if (displayLabel) {
-                    return (
-                        <span key={i} className={`${pillClass} variable-pill--labeled`} data-display={displayLabel}>
-                            {seg.value}
-                        </span>
-                    );
-                }
-
                 return (
                     <span key={i} className={pillClass}>
-                        {seg.value}
+                        {seg.display}
                     </span>
                 );
             }
-            // Preserve spaces and newlines
-            return <span key={i}>{seg.value}</span>;
+            return <span key={i}>{seg.display}</span>;
         });
     };
 
@@ -359,14 +461,14 @@ const VariableInput = (props: VariableInputProps) => {
     const secretWarning = useMemo(() => {
         if (!value || value.includes('${secrets.') || value.includes('${secret.')) return null;
         const patterns = [
-            /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,          // Stripe/API keys
-            /^(ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/,  // GitHub tokens
-            /^xox[bpsa]-[a-zA-Z0-9-]+/,                  // Slack tokens
-            /^AKIA[A-Z0-9]{16}/,                          // AWS access keys
-            /^eyJ[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]+/,   // JWT tokens
-            /^glpat-[a-zA-Z0-9_-]{20,}/,                 // GitLab tokens
-            /^[a-f0-9]{40,64}$/,                          // Long hex strings (API keys/hashes)
-            /^-----BEGIN (RSA |EC )?PRIVATE KEY/,          // Private keys
+            /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,
+            /^(ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/,
+            /^xox[bpsa]-[a-zA-Z0-9-]+/,
+            /^AKIA[A-Z0-9]{16}/,
+            /^eyJ[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]+/,
+            /^glpat-[a-zA-Z0-9_-]{20,}/,
+            /^[a-f0-9]{40,64}$/,
+            /^-----BEGIN (RSA |EC )?PRIVATE KEY/,
         ];
         const trimmed = value.trim();
         if (trimmed.length < 20) return null;
@@ -384,14 +486,13 @@ const VariableInput = (props: VariableInputProps) => {
                 aria-hidden="true"
             >
                 {renderHighlight()}
-                {/* Trailing space so highlight div matches input sizing */}
                 <span>&nbsp;</span>
             </div>
             <InputElement
                 ref={inputRef as any}
                 className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""}`}
                 placeholder={props.placeholder}
-                value={value}
+                defaultValue={displayText}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}

@@ -60,8 +60,9 @@ const providerScopes: Record<string, ScopeGroup[]> = {
         ]},
         { group: "Outlook Mail", scopes: [
             { scope: "Mail.Read", label: "Read" },
-            { scope: "Mail.Send", label: "Send" },
+            { scope: "Mail.ReadBasic", label: "Read basic" },
             { scope: "Mail.ReadWrite", label: "Read/write" },
+            { scope: "Mail.Send", label: "Send" },
         ]},
         { group: "Calendar", scopes: [
             { scope: "Calendars.Read", label: "Read" },
@@ -70,12 +71,16 @@ const providerScopes: Record<string, ScopeGroup[]> = {
         { group: "OneDrive", scopes: [
             { scope: "Files.Read", label: "Read" },
             { scope: "Files.ReadWrite", label: "Read/write" },
+            { scope: "Files.ReadWrite.All", label: "Full access (all files)" },
         ]},
-        { group: "SharePoint & Teams", scopes: [
-            { scope: "Sites.Read.All", label: "Read SharePoint sites" },
-            { scope: "Teams.ReadBasic.All", label: "Read Teams" },
-            { scope: "Chat.Read", label: "Read chats" },
+        { group: "Teams", scopes: [
+            { scope: "Team.ReadBasic.All", label: "Read teams" },
+            { scope: "Channel.ReadBasic.All", label: "Read channels" },
+            { scope: "ChannelMessage.Send", label: "Send channel messages" },
             { scope: "Chat.ReadWrite", label: "Read/write chats" },
+        ]},
+        { group: "SharePoint", scopes: [
+            { scope: "Sites.ReadWrite.All", label: "Read/write sites" },
         ]},
     ],
     github: [
