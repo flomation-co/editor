@@ -18,7 +18,6 @@ compile:
 	cp tsconfig.json build/
 	cp -r app/ build/app
 	cp -r public/ build/public
-	rm build/public/run-config.js
 	npm i react-router@7.7.0
 	cd build && npm i
 	cd build && npm ci
