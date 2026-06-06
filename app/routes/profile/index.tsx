@@ -21,7 +21,7 @@ type Tab = "account" | "security" | "identities";
 
 type UserIdentity = {
     user_id: string;
-    organisation_id: string;
+    organisation_id: string | null;
     channel_type: string;
     external_id: string;
     display_name?: string | null;
@@ -137,17 +137,14 @@ export default function Profile() {
 
     const addIdentity = () => {
         if (!token) return;
-        if (!currentOrg) {
-            showToast("Select an organisation in the header first", "error");
-            return;
-        }
         if (!newIdentity.channel_type || !newIdentity.external_id.trim()) {
             showToast("Channel and external ID are required", "error");
             return;
         }
         const url = config("AUTOMATE_API_URL");
         api.post(url + "/api/v1/user/identity", {
-            organisation_id: currentOrg.id,
+            // currentOrg=null → personal mode (org omitted; backend stores NULL).
+            organisation_id: currentOrg?.id ?? null,
             channel_type: newIdentity.channel_type,
             external_id: newIdentity.external_id.trim(),
             display_name: newIdentity.display_name.trim() || undefined,
@@ -174,8 +171,10 @@ export default function Profile() {
     const deleteIdentity = (i: UserIdentity) => {
         if (!token) return;
         const url = config("AUTOMATE_API_URL");
+        // Empty organisation_id query param targets a personal-mode row
+        // on the backend (the COALESCE-based WHERE clause treats '' == NULL).
         const qs = new URLSearchParams({
-            organisation_id: i.organisation_id,
+            organisation_id: i.organisation_id ?? "",
             channel_type: i.channel_type,
             external_id: i.external_id,
         }).toString();
@@ -358,19 +357,19 @@ export default function Profile() {
 
                 {activeTab === "identities" && (
                     <>
-                        {!currentOrg ? (
-                            <div className="profile-card">
-                                <div className="profile-section-label">No Organisation Selected</div>
-                                <div className="profile-meta">
-                                    Channel identities are scoped to an organisation. Switch to one in the header context selector to declare or manage your identities.
-                                </div>
-                            </div>
-                        ) : (
+                        {(() => {
+                            const scopeLabel = currentOrg ? currentOrg.name : "your personal account";
+                            const visibleIdentities = identities.filter(i =>
+                                currentOrg ? i.organisation_id === currentOrg.id : i.organisation_id === null
+                            );
+                            return (
                             <>
                                 <div className="profile-card">
-                                    <div className="profile-section-label">Declare a Channel Identity in {currentOrg.name}</div>
+                                    <div className="profile-section-label">Declare a Channel Identity in {scopeLabel}</div>
                                     <div className="profile-meta" style={{ marginBottom: 12 }}>
-                                        Agents in this organisation will recognise you by the channel handles you declare here. Switch organisations in the header to manage identities elsewhere.
+                                        {currentOrg
+                                            ? "Agents in this organisation will recognise you by the channel handles you declare here. Switch organisations in the header to manage identities elsewhere."
+                                            : "Your personal agents will recognise you by the channel handles you declare here. Switch to an organisation in the header to manage identities there."}
                                     </div>
                                     <div className="profile-field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                         <select
@@ -405,16 +404,18 @@ export default function Profile() {
                                 </div>
 
                                 <div className="profile-card">
-                                    <div className="profile-section-label">Declared in {currentOrg.name}</div>
+                                    <div className="profile-section-label">Declared in {scopeLabel}</div>
                                     {loadingIdentities && (
                                         <div className="profile-meta">Loading...</div>
                                     )}
-                                    {!loadingIdentities && identities.filter(i => i.organisation_id === currentOrg.id).length === 0 && (
-                                        <div className="profile-meta">No identities declared in this organisation yet.</div>
+                                    {!loadingIdentities && visibleIdentities.length === 0 && (
+                                        <div className="profile-meta">
+                                            {currentOrg ? "No identities declared in this organisation yet." : "No personal identities declared yet."}
+                                        </div>
                                     )}
-                                    {!loadingIdentities && identities.filter(i => i.organisation_id === currentOrg.id).length > 0 && (
+                                    {!loadingIdentities && visibleIdentities.length > 0 && (
                                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                            {identities.filter(i => i.organisation_id === currentOrg.id).map(i => {
+                                            {visibleIdentities.map(i => {
                                                 const channel = CHANNEL_OPTIONS.find(o => o.value === i.channel_type);
                                                 return (
                                                     <div key={`${i.channel_type}-${i.external_id}`} style={{
@@ -446,7 +447,8 @@ export default function Profile() {
                                     )}
                                 </div>
                             </>
-                        )}
+                            );
+                        })()}
                     </>
                 )}
             </div>
