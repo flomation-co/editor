@@ -2,6 +2,7 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import React, {useEffect, useState} from "react";
 import {useAuth} from "~/context/auth/use";
+import {useOrganisation} from "~/context/organisation/use";
 import type {AuthUser} from "~/types";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
@@ -80,6 +81,7 @@ function parseUserAgent(ua: string | null): string {
 export default function Profile() {
     const config = useConfig();
     const auth = useAuth();
+    const { currentOrg } = useOrganisation();
     const token = useCookieToken();
     const { showToast } = useToast();
 
@@ -90,8 +92,11 @@ export default function Profile() {
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [identities, setIdentities] = useState<UserIdentity[]>([]);
     const [loadingIdentities, setLoadingIdentities] = useState(false);
-    const [newIdentity, setNewIdentity] = useState<{ organisation_id: string; channel_type: string; external_id: string; display_name: string }>({
-        organisation_id: "",
+    // Identity declarations target the currently-selected organisation in
+    // the header context. Personal mode (currentOrg=null) shows an empty
+    // state instead of the form, since identities are inherently org-scoped
+    // per migration 83.
+    const [newIdentity, setNewIdentity] = useState<{ channel_type: string; external_id: string; display_name: string }>({
         channel_type: "slack",
         external_id: "",
         display_name: "",
@@ -127,23 +132,22 @@ export default function Profile() {
     useEffect(() => {
         if (activeTab !== "identities" || !token) return;
         reloadIdentities();
-        // Default the org dropdown to the user's first org so the form
-        // is usable without an extra click.
-        if (user?.organisations?.length && !newIdentity.organisation_id) {
-            setNewIdentity(s => ({ ...s, organisation_id: user.organisations![0].id }));
-        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, token, user]);
+    }, [activeTab, token, currentOrg?.id]);
 
     const addIdentity = () => {
         if (!token) return;
-        if (!newIdentity.organisation_id || !newIdentity.channel_type || !newIdentity.external_id.trim()) {
-            showToast("Organisation, channel and external ID are required", "error");
+        if (!currentOrg) {
+            showToast("Select an organisation in the header first", "error");
+            return;
+        }
+        if (!newIdentity.channel_type || !newIdentity.external_id.trim()) {
+            showToast("Channel and external ID are required", "error");
             return;
         }
         const url = config("AUTOMATE_API_URL");
         api.post(url + "/api/v1/user/identity", {
-            organisation_id: newIdentity.organisation_id,
+            organisation_id: currentOrg.id,
             channel_type: newIdentity.channel_type,
             external_id: newIdentity.external_id.trim(),
             display_name: newIdentity.display_name.trim() || undefined,
@@ -354,75 +358,63 @@ export default function Profile() {
 
                 {activeTab === "identities" && (
                     <>
-                        <div className="profile-card">
-                            <div className="profile-section-label">Declare a Channel Identity</div>
-                            <div className="profile-meta" style={{ marginBottom: 12 }}>
-                                Agents recognise you by your declared channel handles. Identities are scoped to a single organisation — declare separately for each org you want recognition in.
-                            </div>
-                            <div className="profile-field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <select
-                                        className="profile-input"
-                                        value={newIdentity.organisation_id}
-                                        onChange={e => setNewIdentity(s => ({ ...s, organisation_id: e.target.value }))}
-                                        disabled={!user?.organisations?.length}
-                                        style={{ minWidth: 180, flex: "1 1 180px" }}
-                                    >
-                                        {(!user?.organisations || user.organisations.length === 0) && (
-                                            <option value="">No organisations</option>
-                                        )}
-                                        {user?.organisations?.map(o => (
-                                            <option key={o.id} value={o.id}>{o.name}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        className="profile-input"
-                                        value={newIdentity.channel_type}
-                                        onChange={e => setNewIdentity(s => ({ ...s, channel_type: e.target.value }))}
-                                        style={{ minWidth: 160, flex: "1 1 160px" }}
-                                    >
-                                        {CHANNEL_OPTIONS.map(o => (
-                                            <option key={o.value} value={o.value}>{o.label}</option>
-                                        ))}
-                                    </select>
+                        {!currentOrg ? (
+                            <div className="profile-card">
+                                <div className="profile-section-label">No Organisation Selected</div>
+                                <div className="profile-meta">
+                                    Channel identities are scoped to an organisation. Switch to one in the header context selector to declare or manage your identities.
                                 </div>
-                                <input
-                                    className="profile-input"
-                                    placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
-                                    value={newIdentity.external_id}
-                                    onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
-                                />
-                                <input
-                                    className="profile-input"
-                                    placeholder="Display name (optional)"
-                                    value={newIdentity.display_name}
-                                    onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
-                                />
-                                <button
-                                    className="profile-btn profile-btn--primary"
-                                    onClick={addIdentity}
-                                    disabled={!user?.organisations?.length}
-                                    style={{ alignSelf: "flex-start" }}
-                                >
-                                    <Icon name="plus" /> Add Identity
-                                </button>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="profile-card">
+                                    <div className="profile-section-label">Declare a Channel Identity in {currentOrg.name}</div>
+                                    <div className="profile-meta" style={{ marginBottom: 12 }}>
+                                        Agents in this organisation will recognise you by the channel handles you declare here. Switch organisations in the header to manage identities elsewhere.
+                                    </div>
+                                    <div className="profile-field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <select
+                                            className="profile-input"
+                                            value={newIdentity.channel_type}
+                                            onChange={e => setNewIdentity(s => ({ ...s, channel_type: e.target.value }))}
+                                        >
+                                            {CHANNEL_OPTIONS.map(o => (
+                                                <option key={o.value} value={o.value}>{o.label}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            className="profile-input"
+                                            placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
+                                            value={newIdentity.external_id}
+                                            onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
+                                        />
+                                        <input
+                                            className="profile-input"
+                                            placeholder="Display name (optional)"
+                                            value={newIdentity.display_name}
+                                            onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
+                                        />
+                                        <button
+                                            className="profile-btn profile-btn--primary"
+                                            onClick={addIdentity}
+                                            style={{ alignSelf: "flex-start" }}
+                                        >
+                                            <Icon name="plus" /> Add Identity
+                                        </button>
+                                    </div>
+                                </div>
 
-                        {(user?.organisations || []).map(org => {
-                            const orgIdentities = identities.filter(i => i.organisation_id === org.id);
-                            return (
-                                <div key={org.id} className="profile-card">
-                                    <div className="profile-section-label">{org.name}</div>
+                                <div className="profile-card">
+                                    <div className="profile-section-label">Declared in {currentOrg.name}</div>
                                     {loadingIdentities && (
                                         <div className="profile-meta">Loading...</div>
                                     )}
-                                    {!loadingIdentities && orgIdentities.length === 0 && (
-                                        <div className="profile-meta">No identities declared in this organisation.</div>
+                                    {!loadingIdentities && identities.filter(i => i.organisation_id === currentOrg.id).length === 0 && (
+                                        <div className="profile-meta">No identities declared in this organisation yet.</div>
                                     )}
-                                    {!loadingIdentities && orgIdentities.length > 0 && (
+                                    {!loadingIdentities && identities.filter(i => i.organisation_id === currentOrg.id).length > 0 && (
                                         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                            {orgIdentities.map(i => {
+                                            {identities.filter(i => i.organisation_id === currentOrg.id).map(i => {
                                                 const channel = CHANNEL_OPTIONS.find(o => o.value === i.channel_type);
                                                 return (
                                                     <div key={`${i.channel_type}-${i.external_id}`} style={{
@@ -453,8 +445,8 @@ export default function Profile() {
                                         </div>
                                     )}
                                 </div>
-                            );
-                        })}
+                            </>
+                        )}
                     </>
                 )}
             </div>
