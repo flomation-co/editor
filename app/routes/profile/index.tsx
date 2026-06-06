@@ -359,8 +359,12 @@ export default function Profile() {
                     <>
                         {(() => {
                             const scopeLabel = currentOrg ? currentOrg.name : "your personal account";
+                            // Personal-mode rows arrive with organisation_id either explicitly
+                            // null (current API) or undefined (older API that omitted the field
+                            // via json:",omitempty") — match both so a server version skew
+                            // can't hide the row entirely.
                             const visibleIdentities = identities.filter(i =>
-                                currentOrg ? i.organisation_id === currentOrg.id : i.organisation_id === null
+                                currentOrg ? i.organisation_id === currentOrg.id : !i.organisation_id
                             );
                             return (
                             <>
