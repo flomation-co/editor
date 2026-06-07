@@ -32,6 +32,7 @@ export type ExecutionNodeData = {
     };
     executionStatus?: string;
     nodeStatusData?: NodeStatus | null;
+    iterationCount?: number;
     onNodeClick?: (nodeId: string) => void;
     nodeId?: string;
 };
@@ -48,6 +49,7 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
     const type = data?.config?.type ?? 2;
     const colours = NODE_COLOURS[type] ?? NODE_COLOURS[2];
     const status = data?.executionStatus ?? 'pending';
+    const iterationCount = data?.iterationCount ?? 0;
     const nodeStatus = data?.nodeStatusData ?? null;
     const isTrigger = type === 1;
     const isConditional = type === 4;
@@ -200,6 +202,9 @@ const ExecutionNode = memo(({ data }: { data: ExecutionNodeData }) => {
                     <div className="exec-node-status-badge exec-node-status-badge--suspended">
                         <Icon name="pause" style={{ fontSize: '8px' }} />
                     </div>
+                )}
+                {iterationCount > 1 && (
+                    <div className="exec-node-iteration-badge">&times;{iterationCount}</div>
                 )}
             </div>
 
