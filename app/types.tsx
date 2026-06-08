@@ -59,6 +59,8 @@ export type Execution = {
     parent_execution_id?: string,
     agent_id?: string,
     credit_cost_pence?: number,
+    triggering_user_id?: string,
+    triggering_user_display_name?: string,
 }
 
 export type Flo = {

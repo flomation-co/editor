@@ -312,6 +312,7 @@ export default function Executions() {
                                     <th className={"table-column-hide-sm"}>Execution #</th>
                                     <th className={"table-column-hide-sm"}>Started</th>
                                     <th className={"table-column-hide-sm"}>Trigger</th>
+                                    <th className={"table-column-hide-sm"}>Triggered by</th>
                                     <th className={"table-column-hide-sm"}>Status</th>
                                     <th className={"table-column-hide-sm"}>Duration</th>
                                     <th className={"table-column-hide-sm"}>Cost</th>
@@ -345,6 +346,9 @@ export default function Executions() {
                                                         <Icon name={triggerIcon(exec.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
                                                     </span>
                                                     <Tooltip id={"tooltip-trigger-" + exec.id} />
+                                                </td>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>
+                                                    {exec.triggering_user_display_name ?? (exec.triggering_user_id ? <span style={{fontFamily: 'monospace', fontSize: 11, opacity: 0.6}}>{exec.triggering_user_id.slice(0, 8)}…</span> : '—')}
                                                 </td>
                                                 <td className={"table-column-hide-sm"}>
                                                     <Link to={{pathname: "/execution/" + exec.id}}>
