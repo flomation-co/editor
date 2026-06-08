@@ -37,7 +37,7 @@ type UserIdentity = {
 // Channels without oauth still use the typed external_id input.
 // (R3 Phase 2 lands Google; the others come in follow-up commits.)
 const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { provider: string; label: string } }[] = [
-    { value: "slack", label: "Slack", icon: "slack" },
+    { value: "slack", label: "Slack", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
     { value: "telegram", label: "Telegram", icon: "telegram" },
     { value: "teams", label: "Microsoft Teams", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
     { value: "email", label: "Email (Google)", icon: "envelope", oauth: { provider: "google", label: "Connect with Google" } },
