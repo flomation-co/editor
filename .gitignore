@@ -9,3 +9,7 @@
 .env
 .env*
 *.zip
+
+# Generated at startup from public/run-config.js.template by start-editor.sh —
+# contains per-environment URLs (localhost in dev, deployed hosts in prod).
+/public/run-config.js

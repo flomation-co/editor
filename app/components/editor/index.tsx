@@ -644,6 +644,8 @@ export function Editor(props : EditorProps) {
         { name: "system_prompt", category: "flow", source: "Agent / Flow Settings" },
         { name: "agent_id", category: "flow", source: "Agent" },
         { name: "agent_user_id", category: "flow", source: "Agent" },
+        { name: "user_id", category: "flow", source: "Agent" },
+        { name: "identities", category: "flow", source: "Agent" },
         { name: "conversation_id", category: "flow", source: "Agent" },
         { name: "trigger_source", category: "flow", source: "Agent" },
         { name: "channel_type", category: "flow", source: "Agent Channel" },
