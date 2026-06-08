@@ -31,11 +31,16 @@ type UserIdentity = {
 
 // Channel types that an end-user can sensibly declare an identity for.
 // Drives the dropdown in the "Add identity" form and the per-row icon.
-const CHANNEL_OPTIONS: { value: string; label: string; icon: string }[] = [
+//
+// The `oauth` field, when set, names the OAuth provider that resolves
+// this channel's external_id via a popup flow instead of a typed input.
+// Channels without oauth still use the typed external_id input.
+// (R3 Phase 2 lands Google; the others come in follow-up commits.)
+const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { provider: string; label: string } }[] = [
     { value: "slack", label: "Slack", icon: "slack" },
     { value: "telegram", label: "Telegram", icon: "telegram" },
     { value: "teams", label: "Microsoft Teams", icon: "microsoft" },
-    { value: "email", label: "Email", icon: "envelope" },
+    { value: "email", label: "Email (Google)", icon: "envelope", oauth: { provider: "google", label: "Connect with Google" } },
     { value: "facebook_messenger", label: "Facebook Messenger", icon: "facebook" },
     { value: "twilio_sms", label: "Twilio SMS", icon: "phone" },
     { value: "twilio_voice", label: "Twilio Voice", icon: "phone" },
@@ -166,6 +171,38 @@ export default function Profile() {
                     showToast("Failed to add identity", "error");
                 }
             });
+    };
+
+    // Opens the Launch identity OAuth popup for the channel's configured
+    // provider. The popup completes the OAuth flow at the provider, Launch
+    // writes the resolved user_identity row via its internal API endpoint,
+    // and the popup closes — we poll for that closure here and refetch.
+    const startOAuthIdentity = (channelType: string, provider: string) => {
+        if (!token) return;
+        const launchUrl = config("LAUNCH_URL", "");
+        if (!launchUrl) {
+            showToast("LAUNCH_URL is not configured — set it in run-config.js", "error");
+            return;
+        }
+        const params = new URLSearchParams({ channel_type: channelType });
+        if (currentOrg) {
+            params.set("organisation_id", currentOrg.id);
+        }
+        const url = `${launchUrl}/auth/${provider}/identity?${params.toString()}`;
+        const popup = window.open(url, `${provider}-identity-oauth`, "width=500,height=700,scrollbars=yes");
+        if (!popup) {
+            showToast("Could not open OAuth popup — check your browser's popup blocker", "error");
+            return;
+        }
+        const timer = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(timer);
+                // The popup writes the identity server-side via Launch → API,
+                // so we just refetch to surface the new row (or no change if
+                // the user cancelled the consent screen).
+                setTimeout(() => reloadIdentities(), 500);
+            }
+        }, 500);
     };
 
     const deleteIdentity = (i: UserIdentity) => {
@@ -385,25 +422,45 @@ export default function Profile() {
                                                 <option key={o.value} value={o.value}>{o.label}</option>
                                             ))}
                                         </select>
-                                        <input
-                                            className="profile-input"
-                                            placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
-                                            value={newIdentity.external_id}
-                                            onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
-                                        />
-                                        <input
-                                            className="profile-input"
-                                            placeholder="Display name (optional)"
-                                            value={newIdentity.display_name}
-                                            onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
-                                        />
-                                        <button
-                                            className="profile-btn profile-btn--primary"
-                                            onClick={addIdentity}
-                                            style={{ alignSelf: "flex-start" }}
-                                        >
-                                            <Icon name="plus" /> Add Identity
-                                        </button>
+                                        {(() => {
+                                            const channel = CHANNEL_OPTIONS.find(o => o.value === newIdentity.channel_type);
+                                            if (channel?.oauth) {
+                                                // OAuth channel: external_id + display_name are resolved by the provider, no typed input.
+                                                return (
+                                                    <button
+                                                        className="profile-btn profile-btn--primary"
+                                                        onClick={() => startOAuthIdentity(newIdentity.channel_type, channel.oauth!.provider)}
+                                                        style={{ alignSelf: "flex-start" }}
+                                                    >
+                                                        <Icon name={channel.icon} /> {channel.oauth.label}
+                                                    </button>
+                                                );
+                                            }
+                                            // Typed flow for channels not yet wired through OAuth.
+                                            return (
+                                                <>
+                                                    <input
+                                                        className="profile-input"
+                                                        placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
+                                                        value={newIdentity.external_id}
+                                                        onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
+                                                    />
+                                                    <input
+                                                        className="profile-input"
+                                                        placeholder="Display name (optional)"
+                                                        value={newIdentity.display_name}
+                                                        onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
+                                                    />
+                                                    <button
+                                                        className="profile-btn profile-btn--primary"
+                                                        onClick={addIdentity}
+                                                        style={{ alignSelf: "flex-start" }}
+                                                    >
+                                                        <Icon name="plus" /> Add Identity
+                                                    </button>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
 
