@@ -42,8 +42,8 @@ const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { p
     { value: "teams", label: "Microsoft Teams", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
     { value: "email", label: "Google", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
     { value: "facebook_messenger", label: "Facebook Messenger", icon: "facebook" },
-    { value: "twilio_sms", label: "Twilio SMS", icon: "phone" },
-    { value: "twilio_voice", label: "Twilio Voice", icon: "phone" },
+    { value: "mobile", label: "Mobile", icon: "phone" },
+    { value: "phone", label: "Phone", icon: "phone-volume" },
     { value: "linkedin", label: "LinkedIn", icon: "linkedin" },
 ];
 
