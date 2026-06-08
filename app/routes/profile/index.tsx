@@ -1,6 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useAuth} from "~/context/auth/use";
 import {useOrganisation} from "~/context/organisation/use";
 import type {AuthUser} from "~/types";
@@ -36,16 +36,87 @@ type UserIdentity = {
 // this channel's external_id via a popup flow instead of a typed input.
 // Channels without oauth still use the typed external_id input.
 // (R3 Phase 2 lands Google; the others come in follow-up commits.)
-const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { provider: string; label: string } }[] = [
-    { value: "slack", label: "Slack", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
-    { value: "telegram", label: "Telegram", icon: "telegram" },
-    { value: "teams", label: "Microsoft Teams", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
-    { value: "email", label: "Google", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
-    { value: "facebook_messenger", label: "Facebook", icon: "facebook", oauth: { provider: "facebook", label: "Connect with Facebook" } },
-    { value: "mobile", label: "Mobile", icon: "phone" },
-    { value: "phone", label: "Phone", icon: "phone-volume" },
-    { value: "linkedin", label: "LinkedIn", icon: "linkedin", oauth: { provider: "linkedin", label: "Connect with LinkedIn" } },
+const CHANNEL_OPTIONS: { value: string; label: string; description: string; icon: string; oauth?: { provider: string; label: string } }[] = [
+    { value: "slack", label: "Slack", description: "Workspace messages, mentions, and DMs", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
+    { value: "telegram", label: "Telegram", description: "Telegram bot conversations", icon: "telegram" },
+    { value: "teams", label: "Microsoft Teams", description: "Teams channel messages and direct chats", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
+    { value: "email", label: "Google", description: "Email-based interactions via your Google account", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
+    { value: "facebook_messenger", label: "Facebook", description: "Facebook Messenger conversations", icon: "facebook", oauth: { provider: "facebook", label: "Connect with Facebook" } },
+    { value: "mobile", label: "Mobile", description: "SMS or voice — your choice at verification time", icon: "phone" },
+    { value: "phone", label: "Phone", description: "Voice calls only (typically a landline)", icon: "phone-volume" },
+    { value: "linkedin", label: "LinkedIn", description: "LinkedIn messages, posts, and comments", icon: "linkedin", oauth: { provider: "linkedin", label: "Connect with LinkedIn" } },
 ];
+
+type ChannelOption = typeof CHANNEL_OPTIONS[number];
+
+// Rich dropdown for the channel-type picker on the Identities tab. The
+// native <select> can't render per-option icons or descriptions, so this
+// is a small co-located component: a trigger button showing the
+// currently-selected option, and a popover panel rendering icon + label
+// + description per row. Click-outside and ESC close the panel.
+function ChannelTypeDropdown({ value, options, onChange }: {
+    value: string;
+    options: ChannelOption[];
+    onChange: (v: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const selected = options.find(o => o.value === value) ?? options[0];
+
+    useEffect(() => {
+        if (!open) return;
+        const onDocMouseDown = (e: MouseEvent) => {
+            if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onDocMouseDown);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDocMouseDown);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
+
+    return (
+        <div className="rich-dropdown" ref={rootRef}>
+            <button
+                type="button"
+                className="rich-dropdown__trigger"
+                onClick={() => setOpen(o => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+            >
+                <Icon name={selected.icon} />
+                <span className="rich-dropdown__trigger-label">{selected.label}</span>
+                <Icon name={open ? "chevron-up" : "chevron-down"} />
+            </button>
+            {open && (
+                <div className="rich-dropdown__panel" role="listbox">
+                    {options.map(o => (
+                        <button
+                            key={o.value}
+                            type="button"
+                            role="option"
+                            aria-selected={o.value === value}
+                            className={`rich-dropdown__option${o.value === value ? " rich-dropdown__option--selected" : ""}`}
+                            onClick={() => { onChange(o.value); setOpen(false); }}
+                        >
+                            <span className="rich-dropdown__option-icon"><Icon name={o.icon} /></span>
+                            <span className="rich-dropdown__option-text">
+                                <span className="rich-dropdown__option-label">{o.label}</span>
+                                <span className="rich-dropdown__option-description">{o.description}</span>
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 type LoginEntry = {
     id: string;
@@ -426,15 +497,11 @@ export default function Profile() {
                                             : "Your personal agents will recognise you by the channel handles you declare here. Switch to an organisation in the header to manage identities there."}
                                     </div>
                                     <div className="profile-field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                        <select
-                                            className="profile-input"
+                                        <ChannelTypeDropdown
                                             value={newIdentity.channel_type}
-                                            onChange={e => setNewIdentity(s => ({ ...s, channel_type: e.target.value }))}
-                                        >
-                                            {CHANNEL_OPTIONS.map(o => (
-                                                <option key={o.value} value={o.value}>{o.label}</option>
-                                            ))}
-                                        </select>
+                                            options={CHANNEL_OPTIONS}
+                                            onChange={v => setNewIdentity(s => ({ ...s, channel_type: v }))}
+                                        />
                                         {(() => {
                                             const channel = CHANNEL_OPTIONS.find(o => o.value === newIdentity.channel_type);
                                             if (channel?.oauth) {
