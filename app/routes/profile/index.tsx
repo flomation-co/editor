@@ -36,14 +36,14 @@ type UserIdentity = {
 // this channel's external_id via a popup flow instead of a typed input.
 // Channels without oauth still use the typed external_id input.
 // (R3 Phase 2 lands Google; the others come in follow-up commits.)
-const CHANNEL_OPTIONS: { value: string; label: string; description: string; icon: string; oauth?: { provider: string; label: string } }[] = [
+const CHANNEL_OPTIONS: { value: string; label: string; description: string; icon: string; inputPlaceholder?: string; oauth?: { provider: string; label: string } }[] = [
     { value: "slack", label: "Slack", description: "Workspace messages, mentions, and DMs", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
-    { value: "telegram", label: "Telegram", description: "Telegram bot conversations", icon: "telegram" },
+    { value: "telegram", label: "Telegram", description: "Telegram bot conversations", icon: "telegram", inputPlaceholder: "@yourhandle or numeric chat ID (e.g. 123456789)" },
     { value: "teams", label: "Microsoft Teams", description: "Teams channel messages and direct chats", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
     { value: "email", label: "Google", description: "Email-based interactions via your Google account", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
     { value: "facebook_messenger", label: "Facebook", description: "Facebook Messenger conversations", icon: "facebook", oauth: { provider: "facebook", label: "Connect with Facebook" } },
-    { value: "mobile", label: "Mobile", description: "SMS or voice — your choice at verification time", icon: "phone" },
-    { value: "phone", label: "Phone", description: "Voice calls only (typically a landline)", icon: "phone-volume" },
+    { value: "mobile", label: "Mobile", description: "SMS or voice — your choice at verification time", icon: "phone", inputPlaceholder: "Phone number in international format (e.g. +447700900123)" },
+    { value: "phone", label: "Phone", description: "Voice calls only (typically a landline)", icon: "phone-volume", inputPlaceholder: "Phone number in international format (e.g. +442079460000)" },
     { value: "linkedin", label: "LinkedIn", description: "LinkedIn messages, posts, and comments", icon: "linkedin", oauth: { provider: "linkedin", label: "Connect with LinkedIn" } },
 ];
 
@@ -521,7 +521,7 @@ export default function Profile() {
                                                 <>
                                                     <input
                                                         className="profile-input"
-                                                        placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
+                                                        placeholder={channel.inputPlaceholder ?? "External ID"}
                                                         value={newIdentity.external_id}
                                                         onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
                                                     />
