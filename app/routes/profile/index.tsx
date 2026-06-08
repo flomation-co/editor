@@ -41,10 +41,10 @@ const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { p
     { value: "telegram", label: "Telegram", icon: "telegram" },
     { value: "teams", label: "Microsoft Teams", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
     { value: "email", label: "Google", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
-    { value: "facebook_messenger", label: "Facebook Messenger", icon: "facebook" },
+    { value: "facebook_messenger", label: "Facebook", icon: "facebook", oauth: { provider: "facebook", label: "Connect with Facebook" } },
     { value: "mobile", label: "Mobile", icon: "phone" },
     { value: "phone", label: "Phone", icon: "phone-volume" },
-    { value: "linkedin", label: "LinkedIn", icon: "linkedin" },
+    { value: "linkedin", label: "LinkedIn", icon: "linkedin", oauth: { provider: "linkedin", label: "Connect with LinkedIn" } },
 ];
 
 type LoginEntry = {
