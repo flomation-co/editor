@@ -594,3 +594,55 @@ i/* Media players for audio/image/video */
     font-size: 12px;
     font-style: italic;
 }
+
+/* ── Node Inspector Iteration Counter ── */
+.node-inspector-iteration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.node-inspector-iteration button {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.node-inspector-iteration button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.node-inspector-iteration button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* ── Iteration badge on execution nodes ── */
+.exec-node-iteration-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: #460070;
+    color: #fff;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 5;
+    line-height: 1.4;
+    pointer-events: none;
+}

@@ -6,6 +6,9 @@ import { Icon } from "~/components/icons/Icon";
 type NodeInspectorProps = {
     nodeId: string;
     status: NodeStatus;
+    iterations?: NodeStatus[];
+    currentIteration?: number;
+    onIterationChange?: (index: number) => void;
     onClose: () => void;
 };
 
@@ -221,7 +224,7 @@ function humaniseActionLabel(label: string): string {
         .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-export default function NodeInspector({ nodeId, status, onClose }: NodeInspectorProps) {
+export default function NodeInspector({ nodeId, status, iterations, currentIteration, onIterationChange, onClose }: NodeInspectorProps) {
     const statusLabel = status.status.charAt(0).toUpperCase() + status.status.slice(1);
     const badgeClass = `node-inspector-badge node-inspector-badge--${status.status}`;
 
@@ -243,6 +246,24 @@ export default function NodeInspector({ nodeId, status, onClose }: NodeInspector
                         <Icon name="xmark" />
                     </button>
                 </div>
+
+                {iterations && iterations.length > 1 && onIterationChange && currentIteration !== undefined && (
+                    <div className="node-inspector-iteration">
+                        <button
+                            disabled={currentIteration === 0}
+                            onClick={() => onIterationChange(currentIteration - 1)}
+                        >
+                            <Icon name="chevron-left" />
+                        </button>
+                        <span>Iteration {currentIteration + 1} of {iterations.length}</span>
+                        <button
+                            disabled={currentIteration === iterations.length - 1}
+                            onClick={() => onIterationChange(currentIteration + 1)}
+                        >
+                            <Icon name="chevron-right" />
+                        </button>
+                    </div>
+                )}
 
                 <div className="node-inspector-meta">
                     <span className={badgeClass}>

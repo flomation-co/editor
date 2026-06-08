@@ -43,8 +43,9 @@ export default function ExecutionDetail() {
     const { showToast } = useToast();
 
     const [ streamingLogs, setStreamingLogs ] = useState<string[]>([]);
-    const [ nodeStatuses, setNodeStatuses ] = useState<Map<string, NodeStatus>>(new Map());
+    const [ nodeStatuses, setNodeStatuses ] = useState<Map<string, NodeStatus[]>>(new Map());
     const [ selectedNodeId, setSelectedNodeId ] = useState<string | null>(null);
+    const [ selectedIteration, setSelectedIteration ] = useState<number>(-1);
 
     const [ detailPanelOpen, setDetailPanelOpen ] = useState<boolean>(false);
     const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
@@ -61,6 +62,7 @@ export default function ExecutionDetail() {
         setStreamingLogs([]);
         setNodeStatuses(new Map());
         setSelectedNodeId(null);
+        setSelectedIteration(-1);
         setDetailPanelOpen(false);
         setIsRerunning(false);
     }, [executionID]);
@@ -186,8 +188,20 @@ export default function ExecutionDetail() {
                     const nodeData = JSON.parse(event.data) as NodeStatus;
                     setNodeStatuses(prev => {
                         const next = new Map(prev);
-                        const existing = next.get(nodeData.id);
-                        next.set(nodeData.id, { ...existing, ...nodeData });
+                        const existing = next.get(nodeData.id) || [];
+                        if (nodeData.status === 'running') {
+                            // "running" events start a new iteration — append a new entry
+                            next.set(nodeData.id, [...existing, nodeData]);
+                        } else {
+                            // Completion events update the last entry (the running one)
+                            if (existing.length > 0 && existing[existing.length - 1].status === 'running') {
+                                const updated = [...existing];
+                                updated[updated.length - 1] = { ...updated[updated.length - 1], ...nodeData };
+                                next.set(nodeData.id, updated);
+                            } else {
+                                next.set(nodeData.id, [...existing, nodeData]);
+                            }
+                        }
                         return next;
                     });
                 } catch (e) {
@@ -222,25 +236,61 @@ export default function ExecutionDetail() {
         };
     }, [ exec?.completion_status, executionID ]);
 
-    // Populate node statuses from persisted results (completed/historical executions)
+    // Populate node statuses from persisted results (completed/historical executions).
+    // Parse __NODE__ events from logs to recover per-iteration data.
     useEffect(() => {
-        if (exec?.result?.node_results) {
-            const map = new Map<string, NodeStatus>();
-            for (const [id, nr] of Object.entries(exec.result.node_results as Record<string, NodeStatus>)) {
-                map.set(id, nr);
-            }
-            setNodeStatuses(map);
+        if (!exec?.result) return;
+
+        const map = new Map<string, NodeStatus[]>();
+
+        // First, try to extract iterations from raw logs
+        const logStr = exec.result.logs || '';
+        if (logStr) {
+            logStr.split('\n').forEach((line: string) => {
+                if (!line.startsWith('__NODE__:')) return;
+                try {
+                    const data = JSON.parse(line.substring(9)) as NodeStatus;
+                    const existing = map.get(data.id) || [];
+                    if (data.status === 'running') {
+                        existing.push(data);
+                    } else {
+                        // Merge completion into the last running entry for this node
+                        if (existing.length > 0 && existing[existing.length - 1].status === 'running') {
+                            existing[existing.length - 1] = { ...existing[existing.length - 1], ...data };
+                        } else {
+                            existing.push(data);
+                        }
+                    }
+                    map.set(data.id, existing);
+                } catch { /* skip unparseable lines */ }
+            });
         }
+
+        // Fall back to node_results for any nodes not found in logs
+        if (exec.result.node_results) {
+            for (const [id, nr] of Object.entries(exec.result.node_results as Record<string, NodeStatus>)) {
+                if (!map.has(id)) {
+                    map.set(id, [nr]);
+                }
+            }
+        }
+
+        setNodeStatuses(map);
     }, [exec?.result]);
 
-    const handleNodeClick = useCallback((nodeId: string) => {
+    const handleNodeClick = useCallback((nodeId: string, iterationIndex?: number) => {
         setSelectedNodeId(nodeId);
+        // Default to the last iteration (-1 signals "show latest")
+        setSelectedIteration(iterationIndex !== undefined ? iterationIndex : -1);
     }, []);
 
-    const focusNode = useCallback((nodeId: string) => {
+    const focusNode = useCallback((nodeId: string, iterationIndex?: number) => {
         if (flowViewRef.current) {
             flowViewRef.current.focusNode(nodeId);
         }
+        // Also select the node and iteration so the inspector opens
+        setSelectedNodeId(nodeId);
+        setSelectedIteration(iterationIndex !== undefined ? iterationIndex : -1);
     }, []);
 
     function formatDateString(date) {
@@ -405,13 +455,22 @@ export default function ExecutionDetail() {
                         />
 
                         {/* ── Node inspector overlay ── */}
-                        {selectedNodeId && nodeStatuses.has(selectedNodeId) && (
-                            <NodeInspector
-                                nodeId={selectedNodeId}
-                                status={nodeStatuses.get(selectedNodeId)!}
-                                onClose={() => setSelectedNodeId(null)}
-                            />
-                        )}
+                        {selectedNodeId && nodeStatuses.has(selectedNodeId) && (() => {
+                            const iterations = nodeStatuses.get(selectedNodeId)!;
+                            const currentIdx = selectedIteration < 0 || selectedIteration >= iterations.length
+                                ? iterations.length - 1
+                                : selectedIteration;
+                            return (
+                                <NodeInspector
+                                    nodeId={selectedNodeId}
+                                    status={iterations[currentIdx]}
+                                    iterations={iterations}
+                                    currentIteration={currentIdx}
+                                    onIterationChange={setSelectedIteration}
+                                    onClose={() => { setSelectedNodeId(null); setSelectedIteration(-1); }}
+                                />
+                            );
+                        })()}
 
                         {/* ── Quick-access tab buttons (bottom of flow area) ── */}
                         {!detailPanelOpen && (

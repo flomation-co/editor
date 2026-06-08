@@ -13,7 +13,7 @@ type LogEntry = {
 type LogOutputProps = {
     logs?: any;
     streamingLines?: string[];
-    onNodeClick?: (nodeId: string) => void;
+    onNodeClick?: (nodeId: string, iterationIndex?: number) => void;
 };
 
 const SEVERITY_ORDER: Record<string, number> = {
@@ -138,7 +138,7 @@ function ObjectTree({ data, depth = 0 }: { data: any; depth?: number }) {
     return <span className="log-val">{String(data)}</span>;
 }
 
-function LogEntryRow({ entry, onNodeClick }: { entry: LogEntry; onNodeClick?: (nodeId: string) => void }) {
+function LogEntryRow({ entry, iterationIndex, onNodeClick }: { entry: LogEntry; iterationIndex?: number; onNodeClick?: (nodeId: string, iterationIndex?: number) => void }) {
     const [expanded, setExpanded] = useState(false);
 
     const level = (entry.level || 'info').toLowerCase();
@@ -151,7 +151,7 @@ function LogEntryRow({ entry, onNodeClick }: { entry: LogEntry; onNodeClick?: (n
 
     const handleClick = () => {
         if (isClickable) {
-            onNodeClick!(nodeId as string);
+            onNodeClick!(nodeId as string, iterationIndex);
         } else if (hasExtra) {
             setExpanded(!expanded);
         }
@@ -167,7 +167,7 @@ function LogEntryRow({ entry, onNodeClick }: { entry: LogEntry; onNodeClick?: (n
                     <span className="log-entry-error"> {entry.error}</span>
                 )}
                 {isClickable && (
-                    <span className="log-entry-node-link" onClick={(e) => { e.stopPropagation(); onNodeClick!(nodeId as string); }} title="Focus node">
+                    <span className="log-entry-node-link" onClick={(e) => { e.stopPropagation(); onNodeClick!(nodeId as string, iterationIndex); }} title="Focus node">
                         <Icon name="location-arrow" />
                     </span>
                 )}
@@ -201,6 +201,42 @@ export function LogOutput({ logs, streamingLines, onNodeClick }: LogOutputProps)
     const [autoScroll, setAutoScroll] = useState(true);
     const [filter, setFilter] = useState<string>('');
     const [minLevel, setMinLevel] = useState<string>('debug');
+
+    // Build a map from log line index to node iteration index, so clicking a
+    // log line opens the correct iteration in the inspector.
+    const nodeIterationMap = useMemo<Map<number, { nodeId: string; iteration: number }>>(() => {
+        const map = new Map<number, { nodeId: string; iteration: number }>();
+        if (!logs?.logs) return map;
+        const counts = new Map<string, number>();
+        const lines = logs.logs.split('\n');
+        let logIdx = 0;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.startsWith('__NODE__:')) {
+                try {
+                    const data = JSON.parse(line.substring(9));
+                    if (data.status === 'running') {
+                        const prev = counts.get(data.id) || 0;
+                        counts.set(data.id, prev + 1);
+                    }
+                } catch { /* skip */ }
+                continue; // __NODE__ lines are filtered from display
+            }
+            if (line.startsWith('__STATUS__:')) continue;
+            if (!line.trim()) continue;
+            // Try to extract a node ID from this log line
+            try {
+                const parsed = JSON.parse(line);
+                const nid = parsed.id || parsed.node;
+                if (nid) {
+                    const iter = (counts.get(nid) || 1) - 1;
+                    map.set(logIdx, { nodeId: nid, iteration: iter });
+                }
+            } catch { /* not JSON, skip */ }
+            logIdx++;
+        }
+        return map;
+    }, [logs?.logs]);
 
     // Parse completed execution logs
     const completedEntries = useMemo<LogEntry[]>(() => {
@@ -282,9 +318,17 @@ export function LogOutput({ logs, streamingLines, onNodeClick }: LogOutputProps)
                 {allEntries.length === 0 && (
                     <div className="log-viewer-empty">No log entries{filter ? ' matching filter' : ''}</div>
                 )}
-                {allEntries.map((entry, i) => (
-                    <LogEntryRow key={i} entry={entry} onNodeClick={onNodeClick} />
-                ))}
+                {allEntries.map((entry, i) => {
+                    const iterInfo = nodeIterationMap.get(i);
+                    return (
+                        <LogEntryRow
+                            key={i}
+                            entry={entry}
+                            iterationIndex={iterInfo?.iteration}
+                            onNodeClick={onNodeClick}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
