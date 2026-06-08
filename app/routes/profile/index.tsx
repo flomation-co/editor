@@ -1,6 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useAuth} from "~/context/auth/use";
 import {useOrganisation} from "~/context/organisation/use";
 import type {AuthUser} from "~/types";
@@ -31,16 +31,92 @@ type UserIdentity = {
 
 // Channel types that an end-user can sensibly declare an identity for.
 // Drives the dropdown in the "Add identity" form and the per-row icon.
-const CHANNEL_OPTIONS: { value: string; label: string; icon: string }[] = [
-    { value: "slack", label: "Slack", icon: "slack" },
-    { value: "telegram", label: "Telegram", icon: "telegram" },
-    { value: "teams", label: "Microsoft Teams", icon: "microsoft" },
-    { value: "email", label: "Email", icon: "envelope" },
-    { value: "facebook_messenger", label: "Facebook Messenger", icon: "facebook" },
-    { value: "twilio_sms", label: "Twilio SMS", icon: "phone" },
-    { value: "twilio_voice", label: "Twilio Voice", icon: "phone" },
-    { value: "linkedin", label: "LinkedIn", icon: "linkedin" },
+//
+// The `oauth` field, when set, names the OAuth provider that resolves
+// this channel's external_id via a popup flow instead of a typed input.
+// Channels without oauth still use the typed external_id input.
+// (R3 Phase 2 lands Google; the others come in follow-up commits.)
+const CHANNEL_OPTIONS: { value: string; label: string; description: string; icon: string; inputPlaceholder?: string; oauth?: { provider: string; label: string } }[] = [
+    { value: "slack", label: "Slack", description: "Workspace messages, mentions, and DMs", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
+    { value: "telegram", label: "Telegram", description: "Telegram bot conversations", icon: "telegram", inputPlaceholder: "@yourhandle or numeric chat ID (e.g. 123456789)" },
+    { value: "microsoft", label: "Microsoft", description: "Teams, Outlook, and other Microsoft surfaces", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
+    { value: "email", label: "Google", description: "Email-based interactions via your Google account", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
+    { value: "facebook_messenger", label: "Facebook", description: "Facebook Messenger conversations", icon: "facebook", oauth: { provider: "facebook", label: "Connect with Facebook" } },
+    { value: "mobile", label: "Mobile", description: "SMS or voice — your choice at verification time", icon: "phone", inputPlaceholder: "Phone number in international format (e.g. +447700900123)" },
+    { value: "phone", label: "Phone", description: "Voice calls only (typically a landline)", icon: "phone-volume", inputPlaceholder: "Phone number in international format (e.g. +442079460000)" },
+    { value: "linkedin", label: "LinkedIn", description: "LinkedIn messages, posts, and comments", icon: "linkedin", oauth: { provider: "linkedin", label: "Connect with LinkedIn" } },
 ];
+
+type ChannelOption = typeof CHANNEL_OPTIONS[number];
+
+// Rich dropdown for the channel-type picker on the Identities tab. The
+// native <select> can't render per-option icons or descriptions, so this
+// is a small co-located component: a trigger button showing the
+// currently-selected option, and a popover panel rendering icon + label
+// + description per row. Click-outside and ESC close the panel.
+function ChannelTypeDropdown({ value, options, onChange }: {
+    value: string;
+    options: ChannelOption[];
+    onChange: (v: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const selected = options.find(o => o.value === value) ?? options[0];
+
+    useEffect(() => {
+        if (!open) return;
+        const onDocMouseDown = (e: MouseEvent) => {
+            if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onDocMouseDown);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDocMouseDown);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
+
+    return (
+        <div className="rich-dropdown" ref={rootRef}>
+            <button
+                type="button"
+                className="rich-dropdown__trigger"
+                onClick={() => setOpen(o => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+            >
+                <Icon name={selected.icon} />
+                <span className="rich-dropdown__trigger-label">{selected.label}</span>
+                <Icon name={open ? "chevron-up" : "chevron-down"} />
+            </button>
+            {open && (
+                <div className="rich-dropdown__panel" role="listbox">
+                    {options.map(o => (
+                        <button
+                            key={o.value}
+                            type="button"
+                            role="option"
+                            aria-selected={o.value === value}
+                            className={`rich-dropdown__option${o.value === value ? " rich-dropdown__option--selected" : ""}`}
+                            onClick={() => { onChange(o.value); setOpen(false); }}
+                        >
+                            <span className="rich-dropdown__option-icon"><Icon name={o.icon} /></span>
+                            <span className="rich-dropdown__option-text">
+                                <span className="rich-dropdown__option-label">{o.label}</span>
+                                <span className="rich-dropdown__option-description">{o.description}</span>
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 type LoginEntry = {
     id: string;
@@ -166,6 +242,51 @@ export default function Profile() {
                     showToast("Failed to add identity", "error");
                 }
             });
+    };
+
+    // Opens the Launch identity OAuth popup for the channel's configured
+    // provider. The popup completes the OAuth flow at the provider, Launch
+    // writes the resolved user_identity row via its internal API endpoint,
+    // and the popup closes — we poll for that closure here and refetch.
+    const startOAuthIdentity = (channelType: string, provider: string) => {
+        if (!token) return;
+        // Prefer the locally-reachable TRIGGER_URL for the popup
+        // navigation (browser → Launch is direct, no public DNS needed)
+        // and fall back to LAUNCH_URL (the public OAuth callback URL).
+        // In production both keys hold the same value; in local dev
+        // TRIGGER_URL points at http://localhost:9999 and LAUNCH_URL
+        // points at the ngrok tunnel so the OAuth provider can call
+        // back. The redirect_uri sent to the OAuth provider is still
+        // built server-side from public_url.
+        const launchUrl = config("TRIGGER_URL", "") || config("LAUNCH_URL", "");
+        if (!launchUrl) {
+            showToast("Neither TRIGGER_URL nor LAUNCH_URL is configured — set them in run-config.js", "error");
+            return;
+        }
+        const params = new URLSearchParams({ channel_type: channelType });
+        if (currentOrg) {
+            params.set("organisation_id", currentOrg.id);
+        }
+        // Cookie-based auth works in production where editor and Launch
+        // share a parent domain. In dev (cross-origin) the cookie can't
+        // reach Launch, so we additionally pass the JWT as a query
+        // parameter and Launch falls back to it.
+        params.set("token", token);
+        const url = `${launchUrl}/auth/${provider}/identity?${params.toString()}`;
+        const popup = window.open(url, `${provider}-identity-oauth`, "width=500,height=700,scrollbars=yes");
+        if (!popup) {
+            showToast("Could not open OAuth popup — check your browser's popup blocker", "error");
+            return;
+        }
+        const timer = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(timer);
+                // The popup writes the identity server-side via Launch → API,
+                // so we just refetch to surface the new row (or no change if
+                // the user cancelled the consent screen).
+                setTimeout(() => reloadIdentities(), 500);
+            }
+        }, 500);
     };
 
     const deleteIdentity = (i: UserIdentity) => {
@@ -376,34 +497,44 @@ export default function Profile() {
                                             : "Your personal agents will recognise you by the channel handles you declare here. Switch to an organisation in the header to manage identities there."}
                                     </div>
                                     <div className="profile-field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                        <select
-                                            className="profile-input"
+                                        <ChannelTypeDropdown
                                             value={newIdentity.channel_type}
-                                            onChange={e => setNewIdentity(s => ({ ...s, channel_type: e.target.value }))}
-                                        >
-                                            {CHANNEL_OPTIONS.map(o => (
-                                                <option key={o.value} value={o.value}>{o.label}</option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            className="profile-input"
-                                            placeholder="External ID (e.g. U01ABC, @yourhandle, you@example.com)"
-                                            value={newIdentity.external_id}
-                                            onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
+                                            options={CHANNEL_OPTIONS}
+                                            onChange={v => setNewIdentity(s => ({ ...s, channel_type: v }))}
                                         />
-                                        <input
-                                            className="profile-input"
-                                            placeholder="Display name (optional)"
-                                            value={newIdentity.display_name}
-                                            onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
-                                        />
-                                        <button
-                                            className="profile-btn profile-btn--primary"
-                                            onClick={addIdentity}
-                                            style={{ alignSelf: "flex-start" }}
-                                        >
-                                            <Icon name="plus" /> Add Identity
-                                        </button>
+                                        {(() => {
+                                            const channel = CHANNEL_OPTIONS.find(o => o.value === newIdentity.channel_type);
+                                            if (channel?.oauth) {
+                                                // OAuth channel: external_id + display_name are resolved by the provider, no typed input.
+                                                return (
+                                                    <button
+                                                        className="profile-btn profile-btn--primary"
+                                                        onClick={() => startOAuthIdentity(newIdentity.channel_type, channel.oauth!.provider)}
+                                                        style={{ alignSelf: "flex-start" }}
+                                                    >
+                                                        <Icon name={channel.icon} /> {channel.oauth.label}
+                                                    </button>
+                                                );
+                                            }
+                                            // Typed flow for channels not yet wired through OAuth.
+                                            return (
+                                                <>
+                                                    <input
+                                                        className="profile-input"
+                                                        placeholder={channel.inputPlaceholder ?? "External ID"}
+                                                        value={newIdentity.external_id}
+                                                        onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
+                                                    />
+                                                    <button
+                                                        className="profile-btn profile-btn--primary"
+                                                        onClick={addIdentity}
+                                                        style={{ alignSelf: "flex-start" }}
+                                                    >
+                                                        <Icon name="plus" /> Add Identity
+                                                    </button>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
 
