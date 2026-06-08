@@ -179,15 +179,28 @@ export default function Profile() {
     // and the popup closes — we poll for that closure here and refetch.
     const startOAuthIdentity = (channelType: string, provider: string) => {
         if (!token) return;
-        const launchUrl = config("LAUNCH_URL", "");
+        // Prefer the locally-reachable TRIGGER_URL for the popup
+        // navigation (browser → Launch is direct, no public DNS needed)
+        // and fall back to LAUNCH_URL (the public OAuth callback URL).
+        // In production both keys hold the same value; in local dev
+        // TRIGGER_URL points at http://localhost:9999 and LAUNCH_URL
+        // points at the ngrok tunnel so the OAuth provider can call
+        // back. The redirect_uri sent to the OAuth provider is still
+        // built server-side from public_url.
+        const launchUrl = config("TRIGGER_URL", "") || config("LAUNCH_URL", "");
         if (!launchUrl) {
-            showToast("LAUNCH_URL is not configured — set it in run-config.js", "error");
+            showToast("Neither TRIGGER_URL nor LAUNCH_URL is configured — set them in run-config.js", "error");
             return;
         }
         const params = new URLSearchParams({ channel_type: channelType });
         if (currentOrg) {
             params.set("organisation_id", currentOrg.id);
         }
+        // Cookie-based auth works in production where editor and Launch
+        // share a parent domain. In dev (cross-origin) the cookie can't
+        // reach Launch, so we additionally pass the JWT as a query
+        // parameter and Launch falls back to it.
+        params.set("token", token);
         const url = `${launchUrl}/auth/${provider}/identity?${params.toString()}`;
         const popup = window.open(url, `${provider}-identity-oauth`, "width=500,height=700,scrollbars=yes");
         if (!popup) {
