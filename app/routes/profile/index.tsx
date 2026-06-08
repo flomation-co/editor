@@ -525,12 +525,6 @@ export default function Profile() {
                                                         value={newIdentity.external_id}
                                                         onChange={e => setNewIdentity(s => ({ ...s, external_id: e.target.value }))}
                                                     />
-                                                    <input
-                                                        className="profile-input"
-                                                        placeholder="Display name (optional)"
-                                                        value={newIdentity.display_name}
-                                                        onChange={e => setNewIdentity(s => ({ ...s, display_name: e.target.value }))}
-                                                    />
                                                     <button
                                                         className="profile-btn profile-btn--primary"
                                                         onClick={addIdentity}
