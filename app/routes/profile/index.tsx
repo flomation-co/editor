@@ -40,7 +40,7 @@ const CHANNEL_OPTIONS: { value: string; label: string; icon: string; oauth?: { p
     { value: "slack", label: "Slack", icon: "slack", oauth: { provider: "slack", label: "Connect with Slack" } },
     { value: "telegram", label: "Telegram", icon: "telegram" },
     { value: "teams", label: "Microsoft Teams", icon: "microsoft", oauth: { provider: "microsoft", label: "Connect with Microsoft" } },
-    { value: "email", label: "Email (Google)", icon: "envelope", oauth: { provider: "google", label: "Connect with Google" } },
+    { value: "email", label: "Google", icon: "google", oauth: { provider: "google", label: "Connect with Google" } },
     { value: "facebook_messenger", label: "Facebook Messenger", icon: "facebook" },
     { value: "twilio_sms", label: "Twilio SMS", icon: "phone" },
     { value: "twilio_voice", label: "Twilio Voice", icon: "phone" },
