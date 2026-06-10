@@ -1,0 +1,176 @@
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  backdrop-filter: blur(8px);
+  animation: welcomeFadeIn 0.3s ease-out;
+}
+
+.welcome-panel {
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  width: 560px;
+  max-width: 92vw;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(70, 0, 112, 0.2);
+  animation: welcomeSlideUp 0.35s ease-out;
+}
+
+.welcome-header {
+  padding: 24px 28px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-icon {
+  width: 28px;
+  height: 28px;
+  color: #c084fc;
+  flex-shrink: 0;
+}
+
+.welcome-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.welcome-body {
+  padding: 8px 28px 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.welcome-form {
+  padding: 16px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.welcome-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.welcome-field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.welcome-field-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.welcome-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #e5e7eb;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.welcome-input:focus {
+  border-color: #c084fc;
+}
+
+.welcome-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(192, 132, 252, 0.06);
+  border: 1px solid rgba(192, 132, 252, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.welcome-checkbox-row:hover {
+  background: rgba(192, 132, 252, 0.09);
+}
+
+.welcome-checkbox {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: #c084fc;
+  flex-shrink: 0;
+}
+
+.welcome-checkbox-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.welcome-checkbox-subtext {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 3px;
+}
+
+.welcome-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.welcome-btn-primary {
+  background: linear-gradient(135deg, #460070, #6a0099);
+  color: #fff;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.welcome-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.welcome-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@keyframes welcomeFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes welcomeSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

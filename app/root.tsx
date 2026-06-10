@@ -19,6 +19,7 @@ import PermissionsProvider from "~/context/permissions/provider";
 import {ToastProvider} from "~/components/toast";
 import CookieBanner from "~/components/cookieBanner";
 import EulaModal from "~/components/eulaModal";
+import WelcomeModal from "~/components/welcomeModal";
 import TutorialProvider from "~/context/tutorial/provider";
 import TutorialOverlay from "~/components/tutorial";
 
@@ -69,6 +70,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <CookieBanner />
         <AuthProvider>
           <EulaModal />
+          <WelcomeModal />
           <TutorialProvider>
             <TutorialOverlay />
             <OrganisationProvider>
