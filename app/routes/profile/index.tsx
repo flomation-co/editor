@@ -17,7 +17,7 @@ import { Icon } from "~/components/icons/Icon";
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-type Tab = "account" | "security" | "identities";
+type Tab = "account" | "security" | "identities" | "communications";
 
 type UserIdentity = {
     user_id: string;
@@ -334,6 +334,33 @@ export default function Profile() {
             .catch(() => showToast("Failed to save profile", "error"));
     };
 
+    // Marketing opt-in toggle on the Communications tab. The optimistic
+    // update lets the switch flip instantly; on failure we roll back
+    // and surface a toast. EmailOctopus sync happens server-side via
+    // the retry poller — the user's UI never waits on EO.
+    const setMarketingOptIn = (next: boolean) => {
+        if (!user || !token) return;
+        const previous = user.marketing_opt_in ?? false;
+        auth.setUser({ ...user, marketing_opt_in: next });
+
+        const url = config("AUTOMATE_API_URL");
+        api.post(
+            url + "/api/v1/user/marketing-opt-in",
+            { marketing_opt_in: next },
+            { headers: { "Content-Type": "application/json", Authorization: "Bearer " + token } }
+        )
+            .then(() => {
+                showToast(
+                    next ? "You're subscribed to marketing updates" : "You've unsubscribed",
+                    "success"
+                );
+            })
+            .catch(() => {
+                auth.setUser({ ...user, marketing_opt_in: previous });
+                showToast("Couldn't update preference, please try again", "error");
+            });
+    };
+
     return (
         <Container>
             <div className={"header"}>Settings</div>
@@ -357,6 +384,12 @@ export default function Profile() {
                         onClick={() => setActiveTab("identities")}
                     >
                         <Icon name="address-card" /> Identities
+                    </button>
+                    <button
+                        className={`profile-tab ${activeTab === "communications" ? "active" : ""}`}
+                        onClick={() => setActiveTab("communications")}
+                    >
+                        <Icon name="envelope" /> Communications
                     </button>
                 </div>
 
@@ -585,6 +618,46 @@ export default function Profile() {
                             );
                         })()}
                     </>
+                )}
+
+                {activeTab === "communications" && (
+                    <div className="profile-card">
+                        <div className="profile-section-label">Marketing Emails</div>
+                        <div className="profile-meta" style={{ marginBottom: 16 }}>
+                            Occasional product updates and tips. We'll never share your email with anyone, and you can unsubscribe at any time.
+                        </div>
+                        <div
+                            className="profile-field"
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: 16,
+                            }}
+                        >
+                            <div>
+                                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
+                                    {user?.marketing_opt_in
+                                        ? "You're subscribed to marketing updates"
+                                        : "You're not subscribed"}
+                                </div>
+                                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4 }}>
+                                    {user?.email_address || "—"}
+                                </div>
+                            </div>
+                            <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", gap: 8 }}>
+                                <input
+                                    type="checkbox"
+                                    checked={user?.marketing_opt_in ?? false}
+                                    onChange={(e) => setMarketingOptIn(e.target.checked)}
+                                    style={{ width: 18, height: 18, accentColor: "#c084fc", cursor: "pointer" }}
+                                />
+                                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)" }}>
+                                    {user?.marketing_opt_in ? "Subscribed" : "Subscribe"}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                 )}
             </div>
         </Container>
