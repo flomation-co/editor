@@ -14,8 +14,9 @@ const FLAG_CREATE_FLOW    = 2;
 const FLAG_EXECUTE_FLOW   = 4;
 const FLAG_CONFIGURE_ENV  = 8;
 const FLAG_INVITE_TEAM    = 16;
+const FLAG_ENABLE_MFA     = 32;
 
-const ALL_FLAGS = FLAG_PROFILE_NAME | FLAG_CREATE_FLOW | FLAG_EXECUTE_FLOW | FLAG_CONFIGURE_ENV | FLAG_INVITE_TEAM;
+const ALL_FLAGS = FLAG_PROFILE_NAME | FLAG_CREATE_FLOW | FLAG_EXECUTE_FLOW | FLAG_CONFIGURE_ENV | FLAG_INVITE_TEAM | FLAG_ENABLE_MFA;
 
 interface ChecklistItem {
     flag: number;
@@ -64,6 +65,17 @@ const ITEMS: ChecklistItem[] = [
         description: "Share Flomation with your colleagues and start collaborating.",
         icon: "user-group",
         action: "share",
+    },
+    {
+        flag: FLAG_ENABLE_MFA,
+        label: "Enable MFA",
+        description: "Add an authenticator app to protect your account with additional security",
+        // Linked to Sentinel rather than the editor — MFA setup is owned
+        // by the identity service. The link is rewritten at render time
+        // using config(\"LOGIN_URL\") below.
+        link: "/mfa",
+        linkLabel: "Set up MFA",
+        icon: "shield-halved",
     },
 ];
 
@@ -137,11 +149,30 @@ export default function ChecklistWidget() {
             );
         }
 
+        if (!(currentFlags & FLAG_ENABLE_MFA)) {
+            // Sentinel owns MFA state, so the editor calls its
+            // /api/mfa/status endpoint with the user's JWT cookie
+            // (withCredentials lets the browser send the
+            // flomation-token cookie cross-origin).
+            const loginURL = config("LOGIN_URL");
+            if (loginURL) {
+                checks.push(
+                    api.get(`${loginURL}/api/mfa/status`, { withCredentials: true })
+                        .then(res => {
+                            if (res.data && res.data.enabled === true) {
+                                newFlags |= FLAG_ENABLE_MFA;
+                            }
+                        })
+                        .catch(() => {})
+                );
+            }
+        }
+
         Promise.all(checks).then(() => {
             if (newFlags !== currentFlags) {
                 setFlags(newFlags);
                 const added = newFlags & ~currentFlags;
-                for (let bit = 1; bit <= 16; bit <<= 1) {
+                for (let bit = 1; bit <= ALL_FLAGS; bit <<= 1) {
                     if (added & bit) {
                         api.post(`${url}/api/v1/user/checklist`, { flag: bit }, { headers }).catch(() => {});
                     }
@@ -208,9 +239,25 @@ export default function ChecklistWidget() {
                                 <div className="checklist-item-desc">{item.description}</div>
                             </div>
                             {item.link && !done && (
-                                <Link to={item.link} className="checklist-item-link">
-                                    {item.linkLabel} →
-                                </Link>
+                                // MFA's link points at the Sentinel /mfa
+                                // page, which lives on a different origin.
+                                // Render an absolute anchor for that case
+                                // and a same-origin React Router Link for
+                                // every other item.
+                                item.flag === FLAG_ENABLE_MFA ? (
+                                    <a
+                                        href={`${config("LOGIN_URL") || ""}${item.link}`}
+                                        className="checklist-item-link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.linkLabel} →
+                                    </a>
+                                ) : (
+                                    <Link to={item.link} className="checklist-item-link">
+                                        {item.linkLabel} →
+                                    </Link>
+                                )
                             )}
                             {item.action === "share" && !done && (
                                 <button className="checklist-item-link checklist-share-btn" onClick={() => setShowShare(!showShare)}>
