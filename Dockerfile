@@ -1,26 +1,29 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
+FROM node:22-alpine AS deps
 WORKDIR /app
+COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:20-alpine AS production-dependencies-env
-COPY ./.npmrc /app/
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
-
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+FROM deps AS build
+COPY . .
 RUN npm run build
 
-FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
+FROM node:22-alpine
+RUN addgroup -S flomation && adduser -S flomation -G flomation
 WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/build ./build
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+# The entrypoint writes run-config.js into build/client at startup
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    chown flomation:flomation /app/build/client
 
-EXPOSE 3000
+USER flomation
+ENV PORT=8080
+EXPOSE 8080
 
-CMD ["npm", "run", "start"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q --spider "http://127.0.0.1:${PORT}/" || exit 1
+
+ENTRYPOINT ["docker-entrypoint.sh"]

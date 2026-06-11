@@ -2,3 +2,15 @@
 build
 node_modules
 README.md
+.git
+.gitignore
+.gitlab-ci.yml
+.idea
+.vite
+.claude
+.npmrc
+Dockerfile*
+Makefile
+LICENCE.md
+start-editor.sh
+build.zip
