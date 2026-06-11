@@ -821,9 +821,13 @@ export function Editor(props : EditorProps) {
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     const hasValidationErrors = useMemo(() => {
-        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
-        // Prefixes that are always valid (runtime variables, not environment-dependent)
-        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.', 'credentials.'];
+        const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.', 'credentials.', 'user.'];
+        // Prefixes that are always valid (runtime variables, not environment-dependent).
+        // ${user.X} populates from the executing user's profile at execution
+        // bootstrap — the editor has no way to "preview" the values, but
+        // they're always resolvable at runtime so they should never block
+        // manual execution.
+        const runtimePrefixes = ['flow.', 'var.', 'loop.', 'trigger.', 'credentials.', 'user.'];
 
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
