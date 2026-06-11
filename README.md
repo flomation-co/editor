@@ -46,36 +46,26 @@ npm run build
 
 ### Docker Deployment
 
-This template includes three Dockerfiles optimized for different package managers:
+Base image: `dhi.io/node:26-alpine-dev` (DHI only tracks Node 26). Runs as non-root `flomation` user.
+CI publishes the image to [Docker Hub](https://hub.docker.com/r/flomationco/flomation-editor)
+as `flomationco/flomation-editor:{1.0.<pipeline>,latest}` on every `main` pipeline.
 
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
+The container generates `build/client/run-config.js` from environment variables
+on every start (see `docker-entrypoint.sh`): `AUTOMATE_API_URL`,
+`BILLING_API_URL`, `TRIGGER_URL`, `LOGIN_URL`, `LAUNCH_URL`.
 
 ```bash
-# For npm
-docker build -t my-app .
+# Build (pulling the DHI base requires `docker login dhi.io`; without DHI
+# credentials, fall back to the public base):
+docker build -t flomationco/flomation-editor .
+docker build --build-arg NODE_IMAGE=node:26-alpine -t flomationco/flomation-editor .
 
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+# Run
+docker run -p 8080:8080 \
+  -e AUTOMATE_API_URL=https://api.dev.flomation.app \
+  -e LOGIN_URL=https://id.dev.flomation.app \
+  flomationco/flomation-editor
 ```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
 
 ### DIY Deployment
 
