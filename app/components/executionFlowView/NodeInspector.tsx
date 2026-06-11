@@ -45,24 +45,37 @@ function maybeParseJson(value: any): any {
 }
 
 // Detect base64-encoded media from the value and/or the key name.
-function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | null; mimeType: string } {
+//
+// Detection precedence — earlier wins:
+//   1. data: URI prefix (data:image/, data:application/pdf, etc.)
+//   2. Base64 magic-byte signatures — work regardless of the key name. PDF
+//      ("JVBERi0…" = "%PDF-1."), PNG ("iVBOR"), JPEG ("/9j/"), GIF, WebP.
+//   3. Key-name heuristics — used for formats without a reliable base64
+//      signature (audio, video) or as a fallback for PDF when the header
+//      wasn't sniffable.
+function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | 'pdf' | null; mimeType: string } {
     const lk = key.toLowerCase();
 
-    // Check by key name patterns
+    // 1. Data URI prefix
+    if (value.startsWith('data:audio/')) return { type: 'audio', mimeType: value.split(';')[0].replace('data:', '') };
+    if (value.startsWith('data:image/')) return { type: 'image', mimeType: value.split(';')[0].replace('data:', '') };
+    if (value.startsWith('data:video/')) return { type: 'video', mimeType: value.split(';')[0].replace('data:', '') };
+    if (value.startsWith('data:application/pdf')) return { type: 'pdf', mimeType: 'application/pdf' };
+
+    // 2. Raw base64 magic bytes — fires regardless of key name
+    if (value.length > 200 && /^[A-Za-z0-9+/]/.test(value)) {
+        if (value.startsWith('JVBERi0')) return { type: 'pdf', mimeType: 'application/pdf' };
+        if (value.startsWith('iVBOR')) return { type: 'image', mimeType: 'image/png' };
+        if (value.startsWith('/9j/')) return { type: 'image', mimeType: 'image/jpeg' };
+        if (value.startsWith('R0lGOD')) return { type: 'image', mimeType: 'image/gif' };
+        if (value.startsWith('UklGR')) return { type: 'image', mimeType: 'image/webp' };
+    }
+
+    // 3. Key-name heuristics for formats whose base64 prefix is too variable
+    //    (audio/video codecs differ wildly) or as a fallback.
     if (lk.includes('audio') || lk.includes('voice') || lk.includes('speech') || lk.includes('tts')) {
         if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
             return { type: 'audio', mimeType: lk.includes('ogg') ? 'audio/ogg' : 'audio/mpeg' };
-        }
-    }
-    if (lk.includes('image') || lk.includes('photo') || lk.includes('screenshot') || lk.includes('thumbnail')) {
-        if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
-            // Detect format from base64 header
-            const mimeType = value.startsWith('/9j/') ? 'image/jpeg'
-                : value.startsWith('iVBOR') ? 'image/png'
-                : value.startsWith('R0lGOD') ? 'image/gif'
-                : value.startsWith('UklGR') ? 'image/webp'
-                : 'image/png';
-            return { type: 'image', mimeType };
         }
     }
     if (lk.includes('video')) {
@@ -70,19 +83,46 @@ function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'v
             return { type: 'video', mimeType: 'video/mp4' };
         }
     }
-
-    // Check by data URI prefix
-    if (value.startsWith('data:audio/')) return { type: 'audio', mimeType: value.split(';')[0].replace('data:', '') };
-    if (value.startsWith('data:image/')) return { type: 'image', mimeType: value.split(';')[0].replace('data:', '') };
-    if (value.startsWith('data:video/')) return { type: 'video', mimeType: value.split(';')[0].replace('data:', '') };
+    if (lk.includes('image') || lk.includes('photo') || lk.includes('screenshot') || lk.includes('thumbnail')) {
+        if (lk.includes('base64') || (value.length > 200 && /^[A-Za-z0-9+/=]/.test(value))) {
+            return { type: 'image', mimeType: 'image/png' };
+        }
+    }
+    if (lk.includes('pdf')) {
+        return { type: 'pdf', mimeType: 'application/pdf' };
+    }
 
     return { type: null, mimeType: '' };
 }
 
-function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'video'; mimeType: string; data: string }) {
+// extensionFor returns a file extension suitable for the download attribute
+// so saved files open in the right viewer without manual renaming.
+function extensionFor(mimeType: string): string {
+    if (mimeType === 'application/pdf') return 'pdf';
+    if (mimeType === 'image/png') return 'png';
+    if (mimeType === 'image/jpeg') return 'jpg';
+    if (mimeType === 'image/gif') return 'gif';
+    if (mimeType === 'image/webp') return 'webp';
+    if (mimeType === 'audio/mpeg') return 'mp3';
+    if (mimeType === 'audio/ogg') return 'ogg';
+    if (mimeType === 'video/mp4') return 'mp4';
+    return 'bin';
+}
+
+function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image' | 'video' | 'pdf'; mimeType: string; data: string; keyName: string }) {
     // Strip data URI prefix if present, otherwise assume raw base64
     const base64 = data.startsWith('data:') ? data : `data:${mimeType};base64,${data}`;
     const sizeKB = Math.round((data.length * 3) / 4 / 1024);
+    const filename = `${keyName || 'output'}.${extensionFor(mimeType)}`;
+
+    const downloadRow = (
+        <div className="ni-media-footer">
+            <a className="ni-download-btn" href={base64} download={filename}>
+                <Icon name="file-arrow-down" /> Download
+            </a>
+            <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+        </div>
+    );
 
     if (type === 'audio') {
         // Key on base64 hash to force re-mount when iteration changes —
@@ -93,7 +133,7 @@ function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'vide
                 <audio key={audioKey} controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
                     <source src={base64} type={mimeType} />
                 </audio>
-                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+                {downloadRow}
             </div>
         );
     }
@@ -106,7 +146,7 @@ function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'vide
                     alt="output"
                     style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6, marginTop: 4 }}
                 />
-                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+                {downloadRow}
             </div>
         );
     }
@@ -117,7 +157,24 @@ function MediaPlayer({ type, mimeType, data }: { type: 'audio' | 'image' | 'vide
                 <video controls preload="metadata" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6 }}>
                     <source src={base64} type={mimeType} />
                 </video>
-                <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
+                {downloadRow}
+            </div>
+        );
+    }
+
+    if (type === 'pdf') {
+        // <embed> renders the PDF inline using the browser's native viewer.
+        // data: URIs work in Chrome/Safari/Firefox for embedded PDFs;
+        // mobile Safari falls through to a placeholder + the download
+        // button as a fallback.
+        return (
+            <div className="ni-media">
+                <embed
+                    src={base64}
+                    type="application/pdf"
+                    style={{ width: '100%', height: 480, borderRadius: 6, marginTop: 4, border: '1px solid rgba(255,255,255,0.08)' }}
+                />
+                {downloadRow}
             </div>
         );
     }
@@ -144,11 +201,11 @@ function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?
     if (typeof parsed === 'string') {
         if (parsed === '********') return <span className="ni-val ni-val--obfuscated">********</span>;
 
-        // Detect and render media content (audio, image, video)
+        // Detect and render media content (audio, image, video, pdf)
         if (keyName && parsed.length > 100) {
             const media = detectMedia(keyName, parsed);
             if (media.type) {
-                return <MediaPlayer type={media.type} mimeType={media.mimeType} data={parsed} />;
+                return <MediaPlayer type={media.type} mimeType={media.mimeType} data={parsed} keyName={keyName} />;
             }
         }
 

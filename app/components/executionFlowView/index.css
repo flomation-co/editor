@@ -489,11 +489,11 @@
 .ni-val--empty { color: rgba(255, 255, 255, 0.2); }
 .ni-hint { color: rgba(255, 255, 255, 0.2); font-size: 11px; margin-left: 4px; }
 
-i/* Media players for audio/image/video */
+/* Media players for audio/image/video/pdf */
 .ni-media {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     padding: 4px 0;
 }
 .ni-media audio { border-radius: 6px; }
@@ -504,6 +504,32 @@ i/* Media players for audio/image/video */
 .ni-media video {
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(0, 0, 0, 0.3);
+}
+.ni-media embed {
+    background: #fff;
+}
+.ni-media-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ni-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(0, 170, 156, 0.15);
+    border: 1px solid rgba(0, 170, 156, 0.4);
+    border-radius: 5px;
+    color: #2dd4bf;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ni-download-btn:hover {
+    background: rgba(0, 170, 156, 0.25);
+    border-color: rgba(0, 170, 156, 0.6);
 }
 
 /* Collapsible tree for arrays/objects */
