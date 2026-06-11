@@ -217,16 +217,15 @@ publish:
       - ./build.zip
 
 # Builds the editor image from source and pushes
-# flomationco/flomation-editor:{VERSION,latest} to Docker Hub. The Go services
-# use .build-docker-dhi-buildx-template, but that template requires a prebuilt
-# binary (BINARY_FILE_PATTERN) and a dhi.io base image — neither applies to an
-# npm build on a public node:alpine base. So this extends the plain buildx
-# template for the dind/buildx/docker.io-login setup and overrides script to
-# drop the binary handling. PACKAGE_NAME comes from inject-metadata's dotenv;
+# flomationco/flomation-editor:{VERSION,latest} to Docker Hub. Extends the dhi
+# template for its dind/buildx setup and dual login (dhi.io for the hardened
+# node base, docker.io for the push), but overrides script: the template's
+# version requires a prebuilt binary (BINARY_FILE_PATTERN), which doesn't
+# apply to an npm build. PACKAGE_NAME comes from inject-metadata's dotenv;
 # DOCKER_REGISTRY_REPO, DOCKERHUB_USERNAME and DOCKER_HUB_PUSH_TOKEN are
 # group-level CI/CD variables.
 build-docker:
-  extends: .build-docker-buildx-template
+  extends: .build-docker-dhi-buildx-template
   only:
     - main
   needs:

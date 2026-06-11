@@ -1,4 +1,8 @@
-FROM node:22-alpine AS deps
+# Pulling the DHI base requires `docker login dhi.io`. For local builds
+# without DHI credentials: docker build --build-arg NODE_IMAGE=node:22-alpine .
+ARG NODE_IMAGE=dhi.io/node:22-alpine3.23-dev
+
+FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -7,7 +11,7 @@ FROM deps AS build
 COPY . .
 RUN npm run build
 
-FROM node:22-alpine
+FROM ${NODE_IMAGE}
 RUN addgroup -S flomation && adduser -S flomation -G flomation
 WORKDIR /app
 ENV NODE_ENV=production
