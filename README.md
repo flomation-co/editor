@@ -46,7 +46,7 @@ npm run build
 
 ### Docker Deployment
 
-Base image: `dhi.io/node:26-alpine3.23-dev` (DHI only tracks Node 26). Runs as non-root `flomation` user.
+Base image: `dhi.io/node:26-alpine-dev` (DHI only tracks Node 26). Runs as non-root `flomation` user.
 CI publishes the image to [Docker Hub](https://hub.docker.com/r/flomationco/flomation-editor)
 as `flomationco/flomation-editor:{1.0.<pipeline>,latest}` on every `main` pipeline.
 

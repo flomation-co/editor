@@ -1,6 +1,6 @@
 # Pulling the DHI base requires `docker login dhi.io`. For local builds
 # without DHI credentials: docker build --build-arg NODE_IMAGE=node:26-alpine .
-ARG NODE_IMAGE=dhi.io/node:26-alpine3.23-dev
+ARG NODE_IMAGE=dhi.io/node:26-alpine-dev
 
 FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
