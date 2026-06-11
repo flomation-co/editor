@@ -1,0 +1,86 @@
+.property-menu-select {
+    position: relative;
+    flex: 1;
+}
+
+.property-menu-select-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    text-align: left;
+    transition: border-color 0.1s ease, background 0.1s ease;
+    box-sizing: border-box;
+}
+
+.property-menu-select-trigger:hover {
+    background: #1c2536;
+    border-color: rgba(139, 0, 222, 0.4);
+}
+
+.property-menu-select-trigger.open,
+.property-menu-select-trigger:focus {
+    border-color: rgba(0, 170, 156, 0.5);
+}
+
+.property-menu-select-placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.property-menu-select-chevron {
+    flex-shrink: 0;
+    margin-left: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.15s ease;
+}
+
+.property-menu-select-trigger.open .property-menu-select-chevron {
+    transform: rotate(180deg);
+    color: #2dd4bf;
+}
+
+.property-menu-select-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 10001;
+    padding: 4px;
+}
+
+.property-menu-select-list::-webkit-scrollbar { width: 4px; }
+.property-menu-select-list::-webkit-scrollbar-track { background: transparent; }
+.property-menu-select-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+
+.property-menu-select-option {
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #d1d5db;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.property-menu-select-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.property-menu-select-option.active {
+    background: rgba(0, 170, 156, 0.15);
+    color: #2dd4bf;
+}

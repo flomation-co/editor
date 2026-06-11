@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
+import VariablePicker from "~/components/propertyMenu/variablePicker";
 
 type PropertyProps = {
     nodeId: string;
@@ -13,34 +14,46 @@ type PropertyProps = {
 }
 
 const StringProperty = (props: PropertyProps) => {
-    const [ value, setValue ] = useState<string>(props.value);
+    const [value, setValue] = useState<string>(props.value);
 
     useEffect(() => {
         if (props.onValueChange) {
             props.onValueChange(props.name, value);
         }
-    }, [ value ]);
+    }, [value]);
 
     useEffect(() => {
-        setValue(props.value)
-    }, [ props.nodeId ]);
+        setValue(props.value);
+    }, [props.nodeId]);
 
     return (
-        <div className={"property-menu-input-row"} key={props.name} >
-            <div className={"property-menu-input-name"} >{props.label ? props.label : props.name}{props.required && <span className="property-menu-required"> *</span>}</div>
-            <VariableInput
-                nodeId={props.nodeId}
-                name={props.name}
-                placeholder={props.placeholder}
-                label={props.label}
-                value={value}
-                required={props.required}
-                multiline={false}
-                variables={props.variables ?? []}
-                onValueChange={(_, v) => setValue(v)}
-            />
+        <div className={"property-menu-input-row"} key={props.name}>
+            <div className={"property-menu-input-name"}>
+                {props.label ? props.label : props.name}
+                {props.required && <span className="property-menu-required"> *</span>}
+            </div>
+            <div className="variable-mode-row">
+                <VariableInput
+                    nodeId={props.nodeId}
+                    name={props.name}
+                    placeholder={props.placeholder}
+                    label={props.label}
+                    value={value}
+                    required={props.required}
+                    multiline={false}
+                    variables={props.variables ?? []}
+                    onValueChange={(_, v) => setValue(v)}
+                />
+                <VariablePicker
+                    value={value}
+                    variables={props.variables ?? []}
+                    onSelect={(ref) => setValue((prev) => prev + ref)}
+                    onClear={() => setValue("")}
+                    alwaysButton={true}
+                />
+            </div>
         </div>
-    )
-}
+    );
+};
 
 export default StringProperty;

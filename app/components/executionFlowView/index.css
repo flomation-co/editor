@@ -480,8 +480,8 @@
 }
 
 /* Value types */
-.ni-val { color: #e5e7eb; word-break: break-all; }
-.ni-val--string { color: #a5d6a7; }
+.ni-val { color: #e5e7eb; word-break: break-word; }
+.ni-val--string { color: #a5d6a7; white-space: pre-wrap; }
 .ni-val--number { color: #90caf9; }
 .ni-val--bool { color: #ce93d8; }
 .ni-val--null { color: rgba(255, 255, 255, 0.25); font-style: italic; }

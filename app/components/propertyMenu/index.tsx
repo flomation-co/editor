@@ -18,6 +18,10 @@ import WebhookSecretProperty from "~/components/propertyMenu/webhookSecretProper
 import FacebookPageProperty from "~/components/propertyMenu/facebookPageProperty";
 import VoiceSelectorProperty from "~/components/propertyMenu/voiceSelectorProperty";
 import ModelSelectorProperty from "~/components/propertyMenu/modelSelectorProperty";
+import DateTimeProperty from "~/components/propertyMenu/dateTimeProperty";
+import MultiSelectProperty from "~/components/propertyMenu/multiSelectProperty";
+import "~/components/propertyMenu/multiSelectProperty/index.css";
+import "~/components/propertyMenu/selectProperty/index.css";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
@@ -265,7 +269,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             if (!i.visible_when.values.includes(refValue)) return null;
                                         }
 
-                                        if (i.options && i.options.length > 0) {
+                                        if (i.options && i.options.length > 0 && i.type !== "multi_select") {
                                             return (
                                                 <SelectProperty
                                                     nodeId={props.node.data.id}
@@ -467,6 +471,36 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={props.node.data.id + "-" + i.name}
                                                         value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            case "datetime":
+                                                return (
+                                                    <DateTimeProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            case "multi_select":
+                                                return (
+                                                    <MultiSelectProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        options={i.options || []}
                                                         required={i.required}
                                                         variables={props.variables}
                                                         onValueChange={onValueChange}

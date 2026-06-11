@@ -7,6 +7,14 @@ type VariablePickerProps = {
     variables: VariableItem[];
     onSelect: (variableRef: string) => void;
     onClear: () => void;
+    /** When true, never switch to the chip-mode "selected variable" display —
+     *  used for text inputs where the picker is an insertion tool rather than a
+     *  full-value replacement. */
+    alwaysButton?: boolean;
+    /** When true, the toggle is rendered as a free-standing pill — rounded on
+     *  all corners, separate from any field. Used for inputs (like checkbox
+     *  groups) where there's no field edge to merge into. */
+    standalone?: boolean;
 };
 
 function parseVariableRef(val: string): { category: string; name: string } | null {
@@ -27,6 +35,7 @@ const VariablePicker = (props: VariablePickerProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
     const toggleRef = useRef<HTMLButtonElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const parsed = parseVariableRef(props.value);
     const isVariable = parsed !== null;
@@ -93,7 +102,49 @@ const VariablePicker = (props: VariablePickerProps) => {
         }
     }, [filtered, selectedIndex, handleSelect]);
 
-    if (isVariable) {
+    // Measure the trigger button and recompute dropdown position so it stays
+    // glued to the button when the user scrolls or resizes. Capture-phase
+    // listener catches scrolls on nested scroll containers (e.g. the property
+    // menu's own scroll area) that wouldn't otherwise reach window.
+    const computePosition = useCallback(() => {
+        if (!toggleRef.current) return;
+        const rect = toggleRef.current.getBoundingClientRect();
+        const dropdownWidth = dropdownRef.current?.offsetWidth || 280;
+        const dropdownHeight = dropdownRef.current?.offsetHeight || 350;
+
+        let left = rect.right - dropdownWidth;
+        if (left < 8) left = 8;
+        if (left + dropdownWidth > window.innerWidth - 8) {
+            left = window.innerWidth - dropdownWidth - 8;
+        }
+
+        let top = rect.bottom + 4;
+        if (top + dropdownHeight > window.innerHeight - 8) {
+            const above = rect.top - dropdownHeight - 4;
+            if (above >= 8) top = above;
+            else top = Math.max(8, window.innerHeight - dropdownHeight - 8);
+        }
+
+        setDropdownPos({top, left});
+    }, []);
+
+    useEffect(() => {
+        if (!open) return;
+        computePosition();
+        // Re-measure after the dropdown has rendered (first measurement may
+        // have used the 280px fallback before the actual content rendered).
+        const raf = requestAnimationFrame(computePosition);
+        const onScrollOrResize = () => computePosition();
+        window.addEventListener("scroll", onScrollOrResize, true);
+        window.addEventListener("resize", onScrollOrResize);
+        return () => {
+            cancelAnimationFrame(raf);
+            window.removeEventListener("scroll", onScrollOrResize, true);
+            window.removeEventListener("resize", onScrollOrResize);
+        };
+    }, [open, computePosition]);
+
+    if (isVariable && !props.alwaysButton) {
         const pillClass = isValid
             ? `vp-pill vp-pill--${parsed!.category}`
             : "vp-pill vp-pill--invalid";
@@ -120,29 +171,14 @@ const VariablePicker = (props: VariablePickerProps) => {
             <button
                 ref={toggleRef}
                 type="button"
-                className="variable-mode-toggle"
-                onClick={() => {
-                    if (!open && toggleRef.current) {
-                        const rect = toggleRef.current.getBoundingClientRect();
-                        const dropdownWidth = 240;
-                        let left = rect.right - dropdownWidth;
-                        if (left < 8) left = 8;
-                        if (left + dropdownWidth > window.innerWidth) left = window.innerWidth - dropdownWidth - 8;
-                        let top = rect.bottom + 4;
-                        if (top + 350 > window.innerHeight) {
-                            top = rect.top - 350 - 4;
-                            if (top < 8) top = 8;
-                        }
-                        setDropdownPos({top, left});
-                    }
-                    setOpen(!open);
-                }}
+                className={`variable-mode-toggle ${props.standalone ? "variable-mode-toggle--standalone" : ""}`}
+                onClick={() => setOpen(!open)}
                 title="Use a variable"
             >
-                {"{x}"}
+                {"$"}
             </button>
             {open && (
-                <div className="vp-dropdown" style={{top: dropdownPos.top, left: dropdownPos.left}}>
+                <div ref={dropdownRef} className="vp-dropdown" style={{top: dropdownPos.top, left: dropdownPos.left}}>
                     <input
                         ref={searchRef}
                         className="vp-search"

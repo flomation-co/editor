@@ -1,6 +1,8 @@
 .vp-container {
     position: relative;
     flex-shrink: 0;
+    display: flex;
+    align-items: stretch;
 }
 
 /* Selected variable display — replaces the native input */
@@ -84,13 +86,15 @@
 .vp-dropdown {
     position: fixed;
     z-index: 10000;
-    min-width: 240px;
+    width: 280px;
+    max-width: calc(100vw - 16px);
     background: #1a1a2e;
     border: 1px solid rgba(139, 0, 222, 0.3);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     padding: 4px;
     animation: floatIn 0.1s ease-out;
+    box-sizing: border-box;
 }
 
 .vp-search {

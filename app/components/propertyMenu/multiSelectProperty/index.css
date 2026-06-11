@@ -1,0 +1,19 @@
+.property-menu-multi-select {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.property-menu-multi-select-row {
+    position: relative;
+    min-height: 25px;
+    display: flex;
+    align-items: center;
+}
+
+.property-menu-multi-select-row .property-menu-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    user-select: none;
+}

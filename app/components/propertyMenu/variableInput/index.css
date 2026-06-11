@@ -249,37 +249,54 @@
     white-space: nowrap;
 }
 
-/* Variable mode toggle for non-text inputs */
+/* Variable mode toggle for non-text inputs.
+   Picker is attached flush to the field — no gap, button stretches to field
+   height, left-rounded corners removed and a -1px margin overlaps the
+   field's right border to hide the seam. */
 .variable-mode-row {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    align-items: stretch;
+    gap: 0;
     width: 100%;
 }
 
 .variable-mode-row > input,
 .variable-mode-row > select,
 .variable-mode-row > .property-menu-input-inline-row,
-.variable-mode-row > .variable-input-container {
+.variable-mode-row > .variable-input-container,
+.variable-mode-row > .property-menu-select,
+.variable-mode-row > .property-menu-multi-select {
     flex: 1;
     min-width: 0;
 }
 
+/* Square off the right side of the field next to the picker so they merge */
+.variable-mode-row > input,
+.variable-mode-row > .property-menu-select .property-menu-select-trigger,
+.variable-mode-row > .variable-input-container .variable-input-highlight,
+.variable-mode-row > .variable-input-container .variable-input-field {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .variable-mode-toggle {
     flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    min-height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
+    border-radius: 0 6px 6px 0;
     border: 1px solid rgba(107, 114, 128, 0.5);
+    border-left: none;
+    margin-left: -1px;
     background: #17202e;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.45);
     cursor: pointer;
-    font-size: 10px;
+    font-size: 18px;
     font-weight: 700;
     font-family: monospace;
+    line-height: 1;
     transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     padding: 0;
 }
@@ -288,6 +305,15 @@
     background: rgba(139, 0, 222, 0.15);
     border-color: rgba(139, 0, 222, 0.4);
     color: #d4a3f9;
+}
+
+/* Standalone variant: free-standing pill next to a checkbox group / similar */
+.variable-mode-toggle--standalone {
+    border-radius: 6px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    margin-left: 8px;
+    align-self: flex-start;
+    height: 36px;
 }
 
 .variable-mode-toggle--active {

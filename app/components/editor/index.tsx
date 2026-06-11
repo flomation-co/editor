@@ -1261,7 +1261,13 @@ export function Editor(props : EditorProps) {
                                             environmentId={environment || undefined}
                                             onValueChange={onValueChange}
                                             onNameChange={onNameChange}
-                                            onDismiss={() => {setPropertyMenuVisible(false); setPropertyNode(null); setDragging(false); setPropertyExpanded(false);}}
+                                            onDismiss={() => {
+                                                setPropertyMenuVisible(false);
+                                                setPropertyNode(null);
+                                                setDragging(false);
+                                                setPropertyExpanded(false);
+                                                setNodes((nds: any[]) => nds.map(n => ({...n, selected: false})));
+                                            }}
                                             onNodeDelete={onNodeDelete}
                                             expanded={propertyExpanded}
                                             onToggleExpand={() => setPropertyExpanded(prev => !prev)}
