@@ -205,6 +205,32 @@
     user-select: none;
 }
 
+.fb-toggle-label--prominent {
+    align-items: flex-start;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+}
+.fb-toggle-label--prominent strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.fb-toggle-label--prominent .fb-toggle-desc {
+    display: block;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 400;
+}
+.fb-toggle-label--prominent code {
+    background: rgba(244, 114, 182, 0.15);
+    color: #f9a8d4;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .fb-toggle-label input[type="checkbox"] {
     -webkit-appearance: none;
     -moz-appearance: none;

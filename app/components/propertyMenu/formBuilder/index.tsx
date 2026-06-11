@@ -9,6 +9,8 @@ type FormComponent = {
     placeholder: string;
     required: boolean;
     order: number;
+    read_only?: boolean;
+    default_value?: string;
 }
 
 type FormPage = {
@@ -19,6 +21,9 @@ type FormDefinition = {
     title: string;
     description: string;
     pages: FormPage[];
+    // Require Sentinel session cookie to view/submit. Enables ${user.X}
+    // substitution at render time.
+    require_login?: boolean;
 }
 
 type Props = {
@@ -44,9 +49,10 @@ const FormBuilder = (props: Props) => {
                 title: parsed.title || "Untitled Form",
                 description: parsed.description || "",
                 pages: parsed.pages || [{components: []}],
+                require_login: parsed.require_login || false,
             };
         } catch {
-            return {title: "Untitled Form", description: "", pages: [{components: []}]};
+            return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
         }
     });
 
@@ -170,6 +176,22 @@ const FormBuilder = (props: Props) => {
                         onChange={e => updateForm({description: e.target.value})}
                     />
                 </div>
+                <div className="fb-field-row">
+                    <label className="fb-toggle-label fb-toggle-label--prominent">
+                        <input
+                            type="checkbox"
+                            checked={form.require_login || false}
+                            onChange={e => updateForm({require_login: e.target.checked})}
+                        />
+                        <span>
+                            <strong>Require login</strong>
+                            <span className="fb-toggle-desc">
+                                Users must be signed in to view or submit. Enables
+                                <code>{" ${user.X} "}</code>substitution in labels and default values.
+                            </span>
+                        </span>
+                    </label>
+                </div>
             </div>
 
             {form.pages.map((page, pageIndex) => (
@@ -246,6 +268,15 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {placeholder: e.target.value})}
                                         />
                                     </div>
+                                    <div className="fb-field-group fb-full-width">
+                                        <span className="fb-field-group-label">Default Value</span>
+                                        <input
+                                            className="fb-input fb-input-sm"
+                                            value={comp.default_value || ""}
+                                            placeholder="Static text or ${user.first_name}, ${query.ref}, etc."
+                                            onChange={e => updateField(pageIndex, fieldIndex, {default_value: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="fb-component-footer">
                                     <label className="fb-toggle-label">
@@ -255,6 +286,14 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {required: e.target.checked})}
                                         />
                                         Required
+                                    </label>
+                                    <label className="fb-toggle-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={comp.read_only || false}
+                                            onChange={e => updateField(pageIndex, fieldIndex, {read_only: e.target.checked})}
+                                        />
+                                        Read-only
                                     </label>
                                     <span className="fb-field-name">{comp.name}</span>
                                 </div>
