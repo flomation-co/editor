@@ -132,6 +132,15 @@
     --pill-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
 }
 
+.variable-pill--user {
+    background: rgba(244, 114, 182, 0.15);
+    box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.3);
+    color: #f9a8d4;
+    --pill-color: #f9a8d4;
+    --pill-bg: rgba(244, 114, 182, 0.15);
+    --pill-shadow: 0 0 0 1px rgba(244, 114, 182, 0.3);
+}
+
 .variable-pill--credentials {
     background: rgba(245, 158, 11, 0.25);
     box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
