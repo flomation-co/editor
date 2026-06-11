@@ -53,7 +53,7 @@ function maybeParseJson(value: any): any {
 //   3. Key-name heuristics — used for formats without a reliable base64
 //      signature (audio, video) or as a fallback for PDF when the header
 //      wasn't sniffable.
-function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | 'pdf' | null; mimeType: string } {
+function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | 'pdf' | 'gpx' | null; mimeType: string } {
     const lk = key.toLowerCase();
 
     // 1. Data URI prefix
@@ -69,6 +69,11 @@ function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'v
         if (value.startsWith('/9j/')) return { type: 'image', mimeType: 'image/jpeg' };
         if (value.startsWith('R0lGOD')) return { type: 'image', mimeType: 'image/gif' };
         if (value.startsWith('UklGR')) return { type: 'image', mimeType: 'image/webp' };
+    }
+
+    // 2a. Plain-text formats with obvious signatures
+    if (value.length > 50 && value.trimStart().startsWith('<?xml') && value.includes('<gpx')) {
+        return { type: 'gpx', mimeType: 'application/gpx+xml' };
     }
 
     // 3. Key-name heuristics for formats whose base64 prefix is too variable
@@ -91,6 +96,9 @@ function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'v
     if (lk.includes('pdf')) {
         return { type: 'pdf', mimeType: 'application/pdf' };
     }
+    if (lk.includes('gpx')) {
+        return { type: 'gpx', mimeType: 'application/gpx+xml' };
+    }
 
     return { type: null, mimeType: '' };
 }
@@ -99,6 +107,7 @@ function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'v
 // so saved files open in the right viewer without manual renaming.
 function extensionFor(mimeType: string): string {
     if (mimeType === 'application/pdf') return 'pdf';
+    if (mimeType === 'application/gpx+xml') return 'gpx';
     if (mimeType === 'image/png') return 'png';
     if (mimeType === 'image/jpeg') return 'jpg';
     if (mimeType === 'image/gif') return 'gif';
@@ -109,16 +118,25 @@ function extensionFor(mimeType: string): string {
     return 'bin';
 }
 
-function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image' | 'video' | 'pdf'; mimeType: string; data: string; keyName: string }) {
-    // Strip data URI prefix if present, otherwise assume raw base64
-    const base64 = data.startsWith('data:') ? data : `data:${mimeType};base64,${data}`;
-    const sizeKB = Math.round((data.length * 3) / 4 / 1024);
+function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image' | 'video' | 'pdf' | 'gpx'; mimeType: string; data: string; keyName: string }) {
+    // GPX is text — the value is the raw XML, not base64. Build a UTF-8
+    // data URL so the download preserves Unicode characters like accented
+    // place names. Sizing uses byte length of the encoded UTF-8.
+    const isText = type === 'gpx';
+    const downloadHref = isText
+        ? `data:${mimeType};charset=utf-8,${encodeURIComponent(data)}`
+        : (data.startsWith('data:') ? data : `data:${mimeType};base64,${data}`);
+    const base64 = downloadHref;
+    const sizeKB = isText
+        ? Math.round(new TextEncoder().encode(data).length / 1024)
+        : Math.round((data.length * 3) / 4 / 1024);
     const filename = `${keyName || 'output'}.${extensionFor(mimeType)}`;
 
+    const downloadLabel = type === 'gpx' ? 'Download GPX' : 'Download';
     const downloadRow = (
         <div className="ni-media-footer">
-            <a className="ni-download-btn" href={base64} download={filename}>
-                <Icon name="file-arrow-down" /> Download
+            <a className="ni-download-btn" href={downloadHref} download={filename}>
+                <Icon name="file-arrow-down" /> {downloadLabel}
             </a>
             <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
         </div>
@@ -174,6 +192,20 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
                     type="application/pdf"
                     style={{ width: '100%', height: 480, borderRadius: 6, marginTop: 4, border: '1px solid rgba(255,255,255,0.08)' }}
                 />
+                {downloadRow}
+            </div>
+        );
+    }
+
+    if (type === 'gpx') {
+        // GPX is text — show a scrollable XML preview and the download
+        // button. Truncation prevents very long routes (1000s of trkpt
+        // lines) from dominating the inspector; the full document is
+        // still saved via Download.
+        const preview = data.length > 1200 ? data.slice(0, 1200) + '\n…' : data;
+        return (
+            <div className="ni-media">
+                <pre className="ni-text-preview">{preview}</pre>
                 {downloadRow}
             </div>
         );
