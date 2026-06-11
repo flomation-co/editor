@@ -654,6 +654,28 @@ export function Editor(props : EditorProps) {
         { name: "page_access_token", category: "flow", source: "Facebook Messenger" },
     ];
 
+    // Extended user profile fields, surfaced as ${user.X} via the
+    // executor's ExecutionContext.UserVariables map. Populated server-
+    // side at bootstrap so flows always see the executing user's
+    // profile snapshot (and the composed full_name / full_address).
+    const USER_VARIABLES: VariableItem[] = [
+        { name: "id", category: "user", source: "User Profile" },
+        { name: "name", category: "user", source: "User Profile" },
+        { name: "email", category: "user", source: "User Profile" },
+        { name: "salutation", category: "user", source: "User Profile" },
+        { name: "first_name", category: "user", source: "User Profile" },
+        { name: "last_name", category: "user", source: "User Profile" },
+        { name: "full_name", category: "user", source: "User Profile" },
+        { name: "job_title", category: "user", source: "User Profile" },
+        { name: "address_line_1", category: "user", source: "User Address" },
+        { name: "address_line_2", category: "user", source: "User Address" },
+        { name: "city", category: "user", source: "User Address" },
+        { name: "region", category: "user", source: "User Address" },
+        { name: "postcode", category: "user", source: "User Address" },
+        { name: "country", category: "user", source: "User Address" },
+        { name: "full_address", category: "user", source: "User Address" },
+    ];
+
     // Canonical trigger data variables injected by Launch when an agent
     // receives a message via any channel (Slack, Telegram, webhook, or
     // commitment wake-up). These are auto-wired from trigger node outputs.
@@ -672,7 +694,7 @@ export function Editor(props : EditorProps) {
 
     // Derive parent node outputs for the selected property node
     const allVariables = useMemo<VariableItem[]>(() => {
-        const items: VariableItem[] = [...FLOW_VARIABLES, ...AGENT_TRIGGER_VARIABLES, ...envVariables];
+        const items: VariableItem[] = [...FLOW_VARIABLES, ...USER_VARIABLES, ...AGENT_TRIGGER_VARIABLES, ...envVariables];
 
         // Add ${var.X} variables from Set Variable nodes in the flow
         for (const n of nodes as any[]) {

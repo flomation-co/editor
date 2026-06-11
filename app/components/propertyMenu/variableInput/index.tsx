@@ -3,7 +3,7 @@ import "./index.css";
 
 export type VariableItem = {
     name: string;
-    category: "secrets" | "env" | "input" | "flow" | "var" | "credentials";
+    category: "secrets" | "env" | "input" | "flow" | "var" | "credentials" | "user";
     /** Optional label shown in autocomplete (e.g. parent node name) */
     source?: string;
     /** If set, this value is inserted instead of name. Used for scoped parent references where the display name is human-readable but the insert value uses node IDs. */

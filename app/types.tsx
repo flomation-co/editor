@@ -225,6 +225,17 @@ export type AuthUser = {
     onboarding_completed_at?: string,
     checklist_flags?: number,
     welcome_completed_at?: string,
+    // Extended profile fields surfaced in flows as ${user.X}.
+    salutation?: string,
+    first_name?: string,
+    last_name?: string,
+    job_title?: string,
+    address_line_1?: string,
+    address_line_2?: string,
+    city?: string,
+    region?: string,
+    postcode?: string,
+    country?: string,
 }
 
 export type EulaResponse = {

@@ -163,6 +163,19 @@ export default function Profile() {
 
     const [user, setUser] = useState<AuthUser | null>();
     const [name, setName] = useState<string>("");
+    // Extended profile fields — surfaced in flows as ${user.X}. State
+    // mirrors the AuthUser so the form is editable without round-
+    // tripping through auth.setUser on every keystroke.
+    const [salutation, setSalutation] = useState<string>("");
+    const [firstName, setFirstName] = useState<string>("");
+    const [lastName, setLastName] = useState<string>("");
+    const [jobTitle, setJobTitle] = useState<string>("");
+    const [addressLine1, setAddressLine1] = useState<string>("");
+    const [addressLine2, setAddressLine2] = useState<string>("");
+    const [city, setCity] = useState<string>("");
+    const [region, setRegion] = useState<string>("");
+    const [postcode, setPostcode] = useState<string>("");
+    const [country, setCountry] = useState<string>("");
     const [activeTab, setActiveTab] = useState<Tab>("account");
     const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
@@ -180,6 +193,21 @@ export default function Profile() {
 
     useEffect(() => { setUser(auth.user); }, [auth]);
     useEffect(() => { setName(user?.name || ""); }, [user]);
+
+    // Sync personal-detail state when the user loads or is refreshed
+    // (e.g. after saveProfile updates auth.setUser).
+    useEffect(() => {
+        setSalutation(user?.salutation || "");
+        setFirstName(user?.first_name || "");
+        setLastName(user?.last_name || "");
+        setJobTitle(user?.job_title || "");
+        setAddressLine1(user?.address_line_1 || "");
+        setAddressLine2(user?.address_line_2 || "");
+        setCity(user?.city || "");
+        setRegion(user?.region || "");
+        setPostcode(user?.postcode || "");
+        setCountry(user?.country || "");
+    }, [user]);
 
     useEffect(() => {
         if (activeTab !== "security" || !token) return;
@@ -334,6 +362,32 @@ export default function Profile() {
             .catch(() => showToast("Failed to save profile", "error"));
     };
 
+    // Personal details + address — separate save path because the
+    // server uses a dedicated UpdateUserProfile statement that touches
+    // only profile columns. Display name continues to flow through the
+    // existing saveProfile/UpdateUser path so we don't conflate writes.
+    const savePersonalDetails = () => {
+        if (!user) return;
+        const url = config("AUTOMATE_API_URL");
+        const payload = {
+            salutation, first_name: firstName, last_name: lastName,
+            job_title: jobTitle,
+            address_line_1: addressLine1, address_line_2: addressLine2,
+            city, region, postcode, country,
+        };
+
+        api.put(url + "/api/v1/user/profile", payload, {
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }
+        })
+            .then(response => {
+                if (response) {
+                    auth.setUser(response.data);
+                    showToast("Personal details saved", "success");
+                }
+            })
+            .catch(() => showToast("Failed to save personal details", "error"));
+    };
+
     // Marketing opt-in toggle on the Communications tab. The optimistic
     // update lets the switch flip instantly; on failure we roll back
     // and surface a toast. EmailOctopus sync happens server-side via
@@ -429,6 +483,142 @@ export default function Profile() {
                             <div className="profile-actions">
                                 <button className="profile-btn profile-btn--primary" onClick={saveProfile} disabled={!user}>
                                     <Icon name="floppy-disk" /> Save
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="profile-card">
+                            <div className="profile-section-label">Personal Details</div>
+                            <div className="profile-section-desc">
+                                These fields are available within flows as <code>{"${user.salutation}"}</code>,
+                                <code>{" ${user.first_name}"}</code>, <code>{" ${user.full_name}"}</code> etc.
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Salutation</label>
+                                <select
+                                    className="profile-input"
+                                    value={salutation}
+                                    onChange={e => setSalutation(e.target.value)}
+                                >
+                                    <option value="">—</option>
+                                    <option value="Mr">Mr</option>
+                                    <option value="Mrs">Mrs</option>
+                                    <option value="Ms">Ms</option>
+                                    <option value="Mx">Mx</option>
+                                    <option value="Dr">Dr</option>
+                                    <option value="Prof">Prof</option>
+                                </select>
+                            </div>
+
+                            <div className="profile-field-row">
+                                <div className="profile-field">
+                                    <label className="profile-label">First Name</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="First name"
+                                        value={firstName}
+                                        onChange={e => setFirstName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="profile-field">
+                                    <label className="profile-label">Last Name</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="Last name"
+                                        value={lastName}
+                                        onChange={e => setLastName(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Job Title</label>
+                                <input
+                                    type="text"
+                                    className="profile-input"
+                                    placeholder="Software Engineer"
+                                    value={jobTitle}
+                                    onChange={e => setJobTitle(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="profile-section-label profile-section-label--inline">Address</div>
+                            <div className="profile-section-desc">
+                                Available individually (e.g. <code>{"${user.city}"}</code>) or pre-formatted
+                                as <code>{"${user.full_address}"}</code>.
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Address Line 1</label>
+                                <input
+                                    type="text"
+                                    className="profile-input"
+                                    placeholder="Street and number"
+                                    value={addressLine1}
+                                    onChange={e => setAddressLine1(e.target.value)}
+                                />
+                            </div>
+                            <div className="profile-field">
+                                <label className="profile-label">Address Line 2</label>
+                                <input
+                                    type="text"
+                                    className="profile-input"
+                                    placeholder="Apartment, suite, etc. (optional)"
+                                    value={addressLine2}
+                                    onChange={e => setAddressLine2(e.target.value)}
+                                />
+                            </div>
+                            <div className="profile-field-row">
+                                <div className="profile-field">
+                                    <label className="profile-label">City</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="City"
+                                        value={city}
+                                        onChange={e => setCity(e.target.value)}
+                                    />
+                                </div>
+                                <div className="profile-field">
+                                    <label className="profile-label">Region / County</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="County or state"
+                                        value={region}
+                                        onChange={e => setRegion(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="profile-field-row">
+                                <div className="profile-field">
+                                    <label className="profile-label">Postcode</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="SW1A 2AA"
+                                        value={postcode}
+                                        onChange={e => setPostcode(e.target.value)}
+                                    />
+                                </div>
+                                <div className="profile-field">
+                                    <label className="profile-label">Country</label>
+                                    <input
+                                        type="text"
+                                        className="profile-input"
+                                        placeholder="United Kingdom"
+                                        value={country}
+                                        onChange={e => setCountry(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="profile-actions">
+                                <button className="profile-btn profile-btn--primary" onClick={savePersonalDetails} disabled={!user}>
+                                    <Icon name="floppy-disk" /> Save Personal Details
                                 </button>
                             </div>
                         </div>
