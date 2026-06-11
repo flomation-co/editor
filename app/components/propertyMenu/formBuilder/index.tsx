@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from "react";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
+import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
 
 type FormComponent = {
     name: string;
@@ -27,7 +28,9 @@ type FormDefinition = {
 }
 
 type Props = {
+    nodeId: string;
     value: string;
+    variables?: VariableItem[];
     onChange: (value: string) => void;
 }
 
@@ -159,21 +162,26 @@ const FormBuilder = (props: Props) => {
             <div className="fb-section">
                 <div className="fb-field-row">
                     <label className="fb-label">Form Title</label>
-                    <input
-                        type="text"
-                        className="fb-input"
+                    <VariableInput
+                        nodeId={`${props.nodeId}-title`}
+                        name="form_title"
+                        placeholder=""
+                        label="Form Title"
                         value={form.title}
-                        onChange={e => updateForm({title: e.target.value})}
+                        variables={props.variables || []}
+                        onValueChange={(_, v) => updateForm({title: v})}
                     />
                 </div>
                 <div className="fb-field-row">
                     <label className="fb-label">Description</label>
-                    <input
-                        type="text"
-                        className="fb-input"
-                        value={form.description}
+                    <VariableInput
+                        nodeId={`${props.nodeId}-description`}
+                        name="form_description"
                         placeholder="Optional description"
-                        onChange={e => updateForm({description: e.target.value})}
+                        label="Description"
+                        value={form.description}
+                        variables={props.variables || []}
+                        onValueChange={(_, v) => updateForm({description: v})}
                     />
                 </div>
                 <div className="fb-field-row">
@@ -243,11 +251,14 @@ const FormBuilder = (props: Props) => {
                                 <div className="fb-component-grid">
                                     <div className="fb-field-group">
                                         <span className="fb-field-group-label">Label</span>
-                                        <input
-                                            className="fb-input fb-input-sm"
-                                            value={comp.label}
+                                        <VariableInput
+                                            nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-label`}
+                                            name={`label-${comp.name}`}
                                             placeholder="Display label"
-                                            onChange={e => updateField(pageIndex, fieldIndex, {label: e.target.value})}
+                                            label="Label"
+                                            value={comp.label}
+                                            variables={props.variables || []}
+                                            onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {label: v})}
                                         />
                                     </div>
                                     <div className="fb-field-group">
@@ -261,20 +272,26 @@ const FormBuilder = (props: Props) => {
                                     </div>
                                     <div className="fb-field-group fb-full-width">
                                         <span className="fb-field-group-label">Placeholder</span>
-                                        <input
-                                            className="fb-input fb-input-sm"
-                                            value={comp.placeholder}
+                                        <VariableInput
+                                            nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-placeholder`}
+                                            name={`placeholder-${comp.name}`}
                                             placeholder="Hint text shown to user"
-                                            onChange={e => updateField(pageIndex, fieldIndex, {placeholder: e.target.value})}
+                                            label="Placeholder"
+                                            value={comp.placeholder}
+                                            variables={props.variables || []}
+                                            onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {placeholder: v})}
                                         />
                                     </div>
                                     <div className="fb-field-group fb-full-width">
                                         <span className="fb-field-group-label">Default Value</span>
-                                        <input
-                                            className="fb-input fb-input-sm"
-                                            value={comp.default_value || ""}
+                                        <VariableInput
+                                            nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-default`}
+                                            name={`default-${comp.name}`}
                                             placeholder="Static text or ${user.first_name}, ${query.ref}, etc."
-                                            onChange={e => updateField(pageIndex, fieldIndex, {default_value: e.target.value})}
+                                            label="Default Value"
+                                            value={comp.default_value || ""}
+                                            variables={props.variables || []}
+                                            onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {default_value: v})}
                                         />
                                     </div>
                                 </div>

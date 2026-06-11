@@ -290,7 +290,9 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             return (
                                                 <FormBuilder
                                                     key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
                                                     value={i.value || "{}"}
+                                                    variables={props.variables}
                                                     onChange={(val) => onValueChange(i.name, val)}
                                                 />
                                             );
