@@ -1,12 +1,12 @@
 NAMESPACE			= flomation.app/automate/ui
 DATE				= $(shell date -u +%Y%m%d_%H%M%S)
-NAME				?= ui
+NAME				?= flomation-editor
 
 BRANCH 				:= $(shell git rev-parse --abbrev-ref HEAD)
 GITHASH 			?= $(shell git rev-parse HEAD)
 CI_PIPELINE_ID 		?= dev
 VERSION 			?= 1.0.${CI_PIPELINE_ID}
-REGISTRY 			?= local
+REGISTRY 			?= flomationco
 
 compile:
 	rm -rf build/
@@ -26,8 +26,6 @@ compile:
 	cd build && zip -r ../build.zip .
 
 docker-compile:
-	rm -rf build/
-	npm run build
 	docker build . -t ${REGISTRY}/${NAME}:latest -t ${REGISTRY}/${NAME}:${GITHASH}
 
 lint:
@@ -37,8 +35,7 @@ test:
 	go test ./... -coverprofile cover.out
 	go tool cover -func cover.out
 
-publish:
-	aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${REGISTRY}
+docker-publish:
 	docker push ${REGISTRY}/${NAME}:latest
 	docker push ${REGISTRY}/${NAME}:${GITHASH}
 

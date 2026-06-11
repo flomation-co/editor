@@ -12,6 +12,7 @@ stages:
   - deb-publish
   - publish
   - sync
+  - docker
   - Development
   - Sandbox
   - Production
@@ -214,6 +215,38 @@ publish:
     policy: pull
     paths:
       - ./build.zip
+
+# Builds the editor image from source and pushes
+# flomationco/flomation-editor:{VERSION,latest} to Docker Hub. The Go services
+# use .build-docker-dhi-buildx-template, but that template requires a prebuilt
+# binary (BINARY_FILE_PATTERN) and a dhi.io base image — neither applies to an
+# npm build on a public node:alpine base. So this extends the plain buildx
+# template for the dind/buildx/docker.io-login setup and overrides script to
+# drop the binary handling. PACKAGE_NAME comes from inject-metadata's dotenv;
+# DOCKER_REGISTRY_REPO, DOCKERHUB_USERNAME and DOCKER_HUB_PUSH_TOKEN are
+# group-level CI/CD variables.
+build-docker:
+  extends: .build-docker-buildx-template
+  only:
+    - main
+  needs:
+    - inject-metadata
+  script:
+    - export IMAGE_NAME="${DOCKER_REGISTRY_REPO}/${PACKAGE_NAME}"
+    - echo "Building Docker image with supply chain attestations..."
+    - echo "  Image name - ${IMAGE_NAME}"
+    - echo "  Version - ${VERSION}"
+    - echo "  Tags - ${VERSION}, latest"
+    - |
+      docker buildx build \
+        --platform linux/amd64 \
+        --tag "${IMAGE_NAME}:${VERSION}" \
+        --tag "${IMAGE_NAME}:latest" \
+        --sbom=true \
+        --provenance=mode=max \
+        --push \
+        --file "${DOCKERFILE_PATH}" \
+        "${DOCKER_BUILD_CONTEXT}"
 
 Deploy to DEV:
   stage: Development
