@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
+import VariablePicker from "~/components/propertyMenu/variablePicker";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyProps = {
@@ -46,17 +47,26 @@ const TextProperty = (props: PropertyProps) => {
                     <Icon name="expand" />
                 </button>
             </div>
-            <VariableInput
-                nodeId={props.nodeId}
-                name={props.name}
-                placeholder={props.placeholder}
-                label={props.label}
-                value={value}
-                required={props.required}
-                multiline={true}
-                variables={props.variables ?? []}
-                onValueChange={(_, v) => setValue(v)}
-            />
+            <div className="variable-mode-row">
+                <VariableInput
+                    nodeId={props.nodeId}
+                    name={props.name}
+                    placeholder={props.placeholder}
+                    label={props.label}
+                    value={value}
+                    required={props.required}
+                    multiline={true}
+                    variables={props.variables ?? []}
+                    onValueChange={(_, v) => setValue(v)}
+                />
+                <VariablePicker
+                    value={value}
+                    variables={props.variables ?? []}
+                    onSelect={(ref) => setValue((prev) => prev + ref)}
+                    onClear={() => setValue("")}
+                    alwaysButton={true}
+                />
+            </div>
 
             {popupOpen && (
                 <div className="text-popup-overlay" onClick={() => setPopupOpen(false)}>

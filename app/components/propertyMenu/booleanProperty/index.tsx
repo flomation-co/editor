@@ -65,6 +65,7 @@ const BooleanProperty = (props: PropertyProps) => {
                         variables={props.variables ?? []}
                         onSelect={(ref) => setValue(ref)}
                         onClear={() => setValue(false)}
+                        standalone={true}
                     />
                 </div>
             )}
