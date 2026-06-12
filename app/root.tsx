@@ -71,18 +71,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <EulaModal />
           <WelcomeModal />
-          <TutorialProvider>
-            <TutorialOverlay />
-            <OrganisationProvider>
-            <PermissionsProvider>
-              <ToastProvider>
-                {children}
-                <ScrollRestoration />
-                <Scripts />
-              </ToastProvider>
-            </PermissionsProvider>
-          </OrganisationProvider>
-          </TutorialProvider>
+          {/* ToastProvider sits above TutorialProvider so the tutorial
+              (and anything else above the route tree) can surface
+              feedback when an API call fails. */}
+          <ToastProvider>
+            <TutorialProvider>
+              <TutorialOverlay />
+              <OrganisationProvider>
+                <PermissionsProvider>
+                  {children}
+                  <ScrollRestoration />
+                  <Scripts />
+                </PermissionsProvider>
+              </OrganisationProvider>
+            </TutorialProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
