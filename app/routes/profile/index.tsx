@@ -355,7 +355,13 @@ export default function Profile() {
         })
             .then(response => {
                 if (response) {
-                    auth.setUser(response.data);
+                    // Merge over the existing user rather than replace.
+                    // Any field the server omits (omitempty drops nil
+                    // pointer timestamps like onboarding_completed_at /
+                    // welcome_completed_at) keeps its prior value, so
+                    // unrelated client-side state isn't clobbered by a
+                    // save that didn't touch those columns.
+                    auth.setUser({ ...user, ...response.data });
                     showToast("Profile saved", "success");
                 }
             })
@@ -381,7 +387,12 @@ export default function Profile() {
         })
             .then(response => {
                 if (response) {
-                    auth.setUser(response.data);
+                    // Merge, don't replace — this endpoint re-reads the
+                    // user from the DB before returning, so a naive
+                    // replace would clobber optimistic client state
+                    // (the prime offender being `onboarding_completed_at`
+                    // after Skip — see TutorialProvider).
+                    auth.setUser({ ...user, ...response.data });
                     showToast("Personal details saved", "success");
                 }
             })
