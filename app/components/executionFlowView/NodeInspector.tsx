@@ -229,6 +229,32 @@ function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?
         if (parsed.length > 200 && depth > 1) {
             return <span className="ni-val ni-val--string">{parsed.slice(0, 197)}...</span>;
         }
+
+        // Multi-line strings — typically code, logs, or structured
+        // text — render as a line-numbered monospace block at the
+        // top level. The "Line 88:17" callouts in script error
+        // messages line up cleanly against the gutter, which is the
+        // whole point of doing this at the inspector layer.
+        if (depth === 0 && parsed.includes('\n')) {
+            const lines = parsed.split('\n');
+            if (lines.length >= 2) {
+                return (
+                    <div className="ni-code-block">
+                        <div className="ni-code-gutter" aria-hidden="true">
+                            {lines.map((_, i) => (
+                                <div key={i} className="ni-code-line-no">{i + 1}</div>
+                            ))}
+                        </div>
+                        <pre className="ni-code-content">
+                            {lines.map((line, i) => (
+                                <div key={i} className="ni-code-line">{line || '​'}</div>
+                            ))}
+                        </pre>
+                    </div>
+                );
+            }
+        }
+
         return <span className="ni-val ni-val--string">{parsed}</span>;
     }
 

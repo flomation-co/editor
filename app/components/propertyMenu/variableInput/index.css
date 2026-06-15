@@ -75,7 +75,95 @@
 
 .variable-input-field--multiline {
     min-height: 100px;
-    resize: both;
+    /* Vertical only — horizontal resize would break the highlight
+       overlay's character-position alignment with the textarea
+       cursor, and the property menu's column has a fixed width
+       anyway so x-resize has no useful destination. */
+    resize: vertical;
+}
+
+/* Monospace variant — used by ConnectionTypeCode-typed inputs.
+   Both the textarea AND the highlight overlay use the same font
+   so the inline variable pills stay positioned over the exact
+   characters they're meant to overlay. Without matching fonts the
+   pills would drift right of their underlying text. */
+.variable-input-field--monospace,
+.variable-input-highlight--monospace {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    tab-size: 4;
+}
+
+/* Prism syntax-highlighting palette. Aligned with the editor's
+   variable-pill colour assignments so a script reads as a coherent
+   extension of the rest of the property menu:
+     - keywords / control flow → purple (matches secrets pill)
+     - strings → teal (matches env pill)
+     - functions → blue (matches input pill)
+     - numbers → amber (matches flow pill)
+     - comments → muted white
+   All token spans MUST inherit the parent font/padding/margin so
+   character positions stay in lockstep with the underlying
+   textarea cursor — the same alignment rule variable pills follow. */
+.code-token {
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.code-token--keyword,
+.code-token--builtin,
+.code-token--class-name,
+.code-token--important {
+    color: #d4a3f9;
+    font-weight: 600;
+}
+
+.code-token--string,
+.code-token--char,
+.code-token--regex,
+.code-token--attr-value {
+    color: #6ee7d8;
+}
+
+.code-token--number,
+.code-token--boolean,
+.code-token--symbol {
+    color: #fbbf24;
+}
+
+.code-token--function {
+    color: #7fc8f0;
+}
+
+.code-token--comment,
+.code-token--doc-comment {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+}
+
+.code-token--operator,
+.code-token--punctuation {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.code-token--decorator,
+.code-token--annotation {
+    color: #f9a8d4;
+}
+
+.code-token--variable,
+.code-token--property,
+.code-token--attr-name {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.code-token--tag {
+    color: #fdba74;
 }
 
 /* Variable pills in the highlight layer — no padding/border to keep
@@ -267,6 +355,20 @@
     align-items: stretch;
     gap: 0;
     width: 100%;
+}
+
+/* Multiline row: when the input is a tall textarea, the $ picker
+   button should stay anchored at the top of the row rather than
+   stretching to the textarea's full height. Without this override
+   the button visually inflates into a tall pill that dominates
+   the field — see the screenshot in the conversation. */
+.variable-mode-row--multiline {
+    align-items: flex-start;
+}
+
+.variable-mode-row--multiline > .variable-mode-toggle {
+    height: 36px;
+    align-self: flex-start;
 }
 
 .variable-mode-row > input,

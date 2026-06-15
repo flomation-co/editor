@@ -11,6 +11,16 @@ type PropertyProps = {
     value: string;
     required?: boolean;
     variables?: VariableItem[];
+    /** When true, the textarea (and the expand-popup textarea) render
+     *  in a monospace font — used for script-source inputs declared
+     *  with ConnectionTypeCode. */
+    monospace?: boolean;
+    /** Prism grammar identifier (e.g. "python", "javascript", "bash").
+     *  When set, the highlight overlay tokenises code segments with
+     *  this grammar and colour-renders them inline. Implies
+     *  monospace=true for layout consistency — the overlay tokens
+     *  need the same character width as the textarea cursor. */
+    language?: string;
     onValueChange?: (property: string, value: any) => void;
 }
 
@@ -18,6 +28,12 @@ const TextProperty = (props: PropertyProps) => {
     const [ value, setValue ] = useState<string>(props.value);
     const [ popupOpen, setPopupOpen ] = useState(false);
     const [ popupValue, setPopupValue ] = useState("");
+    // remountKey forces the inline VariableInput to unmount/remount
+    // when the popup commits a new value. VariableInput is
+    // uncontrolled (defaultValue + internal state + ref-managed
+    // textarea), so changes pushed from the popup wouldn't otherwise
+    // materialise in the inline view without this bump.
+    const [ remountKey, setRemountKey ] = useState(0);
 
     useEffect(() => {
         if (props.onValueChange) {
@@ -36,6 +52,7 @@ const TextProperty = (props: PropertyProps) => {
 
     const savePopup = () => {
         setValue(popupValue);
+        setRemountKey(k => k + 1);
         setPopupOpen(false);
     };
 
@@ -47,8 +64,9 @@ const TextProperty = (props: PropertyProps) => {
                     <Icon name="expand" />
                 </button>
             </div>
-            <div className="variable-mode-row">
+            <div className="variable-mode-row variable-mode-row--multiline">
                 <VariableInput
+                    key={`inline-${props.nodeId}-${remountKey}`}
                     nodeId={props.nodeId}
                     name={props.name}
                     placeholder={props.placeholder}
@@ -56,6 +74,8 @@ const TextProperty = (props: PropertyProps) => {
                     value={value}
                     required={props.required}
                     multiline={true}
+                    monospace={props.monospace || !!props.language}
+                    language={props.language}
                     variables={props.variables ?? []}
                     onValueChange={(_, v) => setValue(v)}
                 />
@@ -75,13 +95,28 @@ const TextProperty = (props: PropertyProps) => {
                             <span>{props.label || props.name}</span>
                             <button className="text-popup-close" onClick={() => setPopupOpen(false)}>&times;</button>
                         </div>
-                        <textarea
-                            className="text-popup-textarea"
-                            value={popupValue}
-                            onChange={e => setPopupValue(e.target.value)}
-                            placeholder={props.placeholder}
-                            autoFocus
-                        />
+                        {/* The popup uses the same VariableInput as the
+                            inline field so syntax highlighting, variable
+                            pills, the secret detector and the cursor-aligned
+                            overlay all behave consistently between the two
+                            views. Keyed by popupOpen so it remounts fresh
+                            when re-opened, picking up the latest value. */}
+                        <div className={`text-popup-input ${props.monospace || props.language ? "text-popup-input--monospace" : ""}`}>
+                            <VariableInput
+                                key={`popup-${props.nodeId}`}
+                                nodeId={`popup-${props.nodeId}`}
+                                name={props.name}
+                                placeholder={props.placeholder}
+                                label={props.label}
+                                value={popupValue}
+                                required={props.required}
+                                multiline={true}
+                                monospace={props.monospace || !!props.language}
+                                language={props.language}
+                                variables={props.variables ?? []}
+                                onValueChange={(_, v) => setPopupValue(v)}
+                            />
+                        </div>
                         <div className="text-popup-footer">
                             <button className="text-popup-cancel" onClick={() => setPopupOpen(false)}>Cancel</button>
                             <button className="text-popup-save" onClick={savePopup}>Apply</button>
