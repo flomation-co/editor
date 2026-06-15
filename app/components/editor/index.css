@@ -482,6 +482,17 @@
     border-color: rgba(239,68,68,0.25);
 }
 
+/* Node-level red outline when any field inside contains a value that
+   the secret detector has flagged as a literal token. Stronger
+   border + a soft red glow so the bad node is visible on the canvas
+   even without opening the property menu. Overrides the amber
+   "missing required" state at the React level (see customNode/index.tsx)
+   because a leaked literal is the worse problem of the two. */
+.flo-node--secret-error {
+    border-color: rgba(239,68,68,0.75);
+    box-shadow: 0 0 0 1px rgba(239,68,68,0.35), 0 0 14px rgba(239,68,68,0.25);
+}
+
 /* ── Icon badge ── */
 .node-icon-badge {
     width: 32px;

@@ -364,3 +364,18 @@
     height: 14px;
     display: block;
 }
+
+/* Visible error message under the input. Mirrors the tooltip text so
+   users who don't hover (mobile / keyboard / sighted-but-fast) still
+   get the explanation. role="alert" makes screen readers announce it
+   when it appears. */
+.variable-input-secret-message {
+    color: #ef4444;
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 4px;
+}
