@@ -59,6 +59,40 @@
     color: #f9a8d4;
 }
 
+/* Credentials = orange (per the brand colour assignment recorded in
+   CLAUDE.md). The previous omission made every credentials chip
+   render with no background/border — readable text but visually
+   undifferentiated from a literal value, which is exactly what the
+   pill is supposed to prevent. */
+.vp-pill--credentials {
+    background: rgba(249, 115, 22, 0.18);
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    color: #fdba74;
+}
+
+/* var/loop/trigger pills round out the namespace catalogue. They
+   don't currently appear in chip-mode (these namespaces resolve
+   to bare references in older flows), but defining them here means
+   any future picker-mode input that uses them gets a coherent look
+   instead of falling back to the unstyled default. */
+.vp-pill--var {
+    background: rgba(34, 211, 238, 0.15);
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    color: #67e8f9;
+}
+
+.vp-pill--loop {
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #c4b5fd;
+}
+
+.vp-pill--trigger {
+    background: rgba(132, 204, 22, 0.15);
+    border: 1px solid rgba(132, 204, 22, 0.35);
+    color: #bef264;
+}
+
 .vp-pill--invalid {
     background: rgba(190, 0, 0, 0.3);
     border: 1px solid rgba(190, 0, 0, 0.6);
@@ -175,6 +209,26 @@
     color: #f9a8d4;
 }
 
+.vp-badge--credentials {
+    background: rgba(249, 115, 22, 0.22);
+    color: #fdba74;
+}
+
+.vp-badge--var {
+    background: rgba(34, 211, 238, 0.2);
+    color: #67e8f9;
+}
+
+.vp-badge--loop {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c4b5fd;
+}
+
+.vp-badge--trigger {
+    background: rgba(132, 204, 22, 0.2);
+    color: #bef264;
+}
+
 .vp-name {
     color: #e0e0e0;
     font-size: 12px;
@@ -189,4 +243,30 @@
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
     text-align: center;
+}
+
+/* Lifecycle status for non-active credentials. Sits at the right
+   edge of the row (auto-margin-left) and uses an amber/red palette
+   so it reads as "attention needed". The native title attribute on
+   the element carries the explanatory tooltip. */
+.vp-status {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: help;
+}
+
+.vp-status--pending {
+    background: rgba(251, 191, 36, 0.18);
+    color: #fbbf24;
+}
+
+.vp-status--error {
+    background: rgba(239, 68, 68, 0.18);
+    color: #ef4444;
 }

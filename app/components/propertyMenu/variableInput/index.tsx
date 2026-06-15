@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { Icon } from "~/components/icons/Icon";
+import { detectSecret } from "~/lib/secretDetection";
 import "./index.css";
 
 export type VariableItem = {
@@ -8,6 +10,14 @@ export type VariableItem = {
     source?: string;
     /** If set, this value is inserted instead of name. Used for scoped parent references where the display name is human-readable but the insert value uses node IDs. */
     insertName?: string;
+    /** For credentials only — the lifecycle state of the underlying
+     *  OAuth credential. "pending" means the user created the row
+     *  but hasn't finished the OAuth handshake; "error" means the
+     *  refresh poller couldn't exchange the refresh token. Both
+     *  states are still selectable in the picker so the user can
+     *  see what they have, but the dropdown badges them so the
+     *  status is visible at the point of choice. */
+    status?: "active" | "pending" | "error";
 };
 
 type VariableInputProps = {
@@ -458,28 +468,16 @@ const VariableInput = (props: VariableInputProps) => {
 
     const InputElement = props.multiline ? "textarea" : "input";
 
-    const secretWarning = useMemo(() => {
-        if (!value || value.includes('${secrets.') || value.includes('${secret.')) return null;
-        const patterns = [
-            /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,
-            /^(ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{20,}/,
-            /^xox[bpsa]-[a-zA-Z0-9-]+/,
-            /^AKIA[A-Z0-9]{16}/,
-            /^eyJ[a-zA-Z0-9_-]{20,}\.[a-zA-Z0-9_-]+/,
-            /^glpat-[a-zA-Z0-9_-]{20,}/,
-            /^[a-f0-9]{40,64}$/,
-            /^-----BEGIN (RSA |EC )?PRIVATE KEY/,
-        ];
-        const trimmed = value.trim();
-        if (trimmed.length < 20) return null;
-        for (const p of patterns) {
-            if (p.test(trimmed)) return "This value looks like a secret or API key. Consider using ${secrets.name} instead.";
-        }
-        return null;
-    }, [value]);
+    // Use the shared detector so this surface and NodeInspector can't
+    // drift. See app/lib/secretDetection.ts for the pattern catalogue
+    // and the rules about which references are exempt.
+    const secretWarning = useMemo(() => detectSecret(value), [value]);
 
     return (
-        <div className="variable-input-container" ref={containerRef}>
+        <div
+            className={`variable-input-container ${secretWarning ? "variable-input-container--has-secret" : ""}`}
+            ref={containerRef}
+        >
             <div
                 ref={highlightRef}
                 className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""}`}
@@ -490,7 +488,7 @@ const VariableInput = (props: VariableInputProps) => {
             </div>
             <InputElement
                 ref={inputRef as any}
-                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""}`}
+                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
                 placeholder={props.placeholder}
                 defaultValue={displayText}
                 onChange={handleChange}
@@ -503,9 +501,18 @@ const VariableInput = (props: VariableInputProps) => {
                 autoCapitalize="off"
             />
             {secretWarning && (
-                <div className="variable-secret-warning">
-                    &#x26A0; {secretWarning}
-                </div>
+                // Native title attribute is the tooltip — keeps this
+                // surface dependency-free. The icon sits inside the
+                // input's right padding via absolute positioning so
+                // it doesn't disrupt the existing flex layout.
+                <span
+                    className="variable-input-secret-icon"
+                    title={secretWarning}
+                    aria-label={secretWarning}
+                    role="img"
+                >
+                    <Icon name="warning" />
+                </span>
             )}
             {autocomplete.visible && filteredVariables.length > 0 && (
                 <div

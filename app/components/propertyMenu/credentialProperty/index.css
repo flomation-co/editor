@@ -1,0 +1,59 @@
+/* Credential picker — picker-only input for fields that take a
+   managed credential or environment secret. Visually mirrors the
+   single-row .variable-mode-row used by StringProperty: placeholder
+   area on the left, the standard thin $ tab on the right edge,
+   joined into one continuous control. */
+
+.credential-property {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* The empty-state row is itself clickable — see the onClick handler
+   in CredentialProperty. cursor:pointer applies to the whole row to
+   signal that, including the placeholder area where StringProperty
+   would normally render a text input. */
+.credential-property-empty {
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Placeholder area sits where StringProperty's text input would.
+   Mirrors the input field's geometry (.variable-input-field) so the
+   joined $ tab attaches the same way — right edge of the placeholder
+   has no border-radius and is overlapped by the tab's -1px left
+   margin, exactly like a real input. */
+.credential-property-placeholder {
+    flex: 1;
+    min-height: 36px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    background: #17202e;
+    color: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px 0 0 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    user-select: none;
+}
+
+.credential-property-empty:hover .credential-property-placeholder,
+.credential-property-empty:focus-visible .credential-property-placeholder {
+    border-color: rgba(139, 0, 222, 0.4);
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(139, 0, 222, 0.04);
+}
+
+/* Keyboard focus ring on the row itself — accessibility for users
+   who tab to the control. Match the same purple as the hover state
+   to stay consistent. */
+.credential-property-empty:focus-visible {
+    outline: none;
+}
+
+.credential-property-empty:focus-visible .credential-property-placeholder {
+    box-shadow: 0 0 0 2px rgba(139, 0, 222, 0.35);
+}
