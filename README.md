@@ -1,58 +1,106 @@
-# Welcome to React Router!
+# Flomation Editor
 
-A modern, production-ready template for building full-stack React applications using React Router.
+> Visual web app for building, running, and monitoring automation workflows ("flos").
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Overview
 
-## Features
+The Flomation Editor is the user-facing front end for the Flomation Automate platform.
+It is a [React Router 7](https://reactrouter.com/) (framework mode, server-side
+rendered) application written in TypeScript and styled with TailwindCSS. The flo editor
+canvas is built on [React Flow](https://reactflow.dev/) (`@xyflow/react`).
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+The editor talks to the API
+for all data, to the identity service for authentication, and to the
+Launch service for
+trigger URLs. Backend endpoints are injected at runtime (not baked into the bundle) via a
+generated `run-config.js` — see [Configuration](#configuration).
 
-## Getting Started
+Key areas of the app:
 
-### Installation
+- **Flo editor** — drag-and-drop graph editor for building workflows
+- **Dashboards & boards** — customisable widget boards (including public, shareable boards)
+- **Executions** — live and historical execution runs with log and state inspection
+- **Triggers, runners, queues** — manage how and where flos run
+- **Environments** — manage per-environment properties and secrets
+- **Organisations, teams, billing, usage** — account and tenancy management
 
-Install the dependencies:
+## Prerequisites
+
+- Node.js 20+ (the production image tracks Node 26)
+- npm
+- Docker (optional, for containerised builds and deployment)
+
+## Installation
 
 ```bash
+# Clone the repository
+git clone <repo-url> && cd editor
+
+# Install dependencies
 npm install
 ```
 
-### Development
+## Configuration
 
-Start the development server with HMR:
+Backend service URLs are provided to the client at runtime through a `run-config.js`
+file loaded by `app/root.tsx`, which populates `window.properties`. In the container this
+file is generated on every start by `docker-entrypoint.sh` from the following environment
+variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AUTOMATE_API_URL` | Base URL of the Flomation API | `http://localhost:8080` |
+| `BILLING_API_URL` | Base URL of the billing API | `http://localhost:9085` |
+| `TRIGGER_URL` | Base URL for trigger endpoints | `http://localhost:8081` |
+| `LOGIN_URL` | Identity / login service URL | `http://localhost:8081` |
+| `LAUNCH_URL` | Base URL of the Launch service | `http://localhost:8081` |
+| `PORT` | Port the server listens on | `8080` |
+
+For local development, copy `public/run-config.js.template` to `public/run-config.js` and
+fill in the URLs you want to develop against.
+
+## Usage
 
 ```bash
+# Start the dev server with HMR (defaults to port 5174)
 npm run dev
+
+# Type-check the project
+npm run typecheck
+
+# Create a production build
+npm run build
+
+# Serve the production build (defaults to port 8080)
+npm start
 ```
 
-Your application will be available at `http://localhost:5173`.
+During development the app is available at `http://localhost:5174`.
 
-## Building for Production
-
-Create a production build:
+## Development
 
 ```bash
-npm run build
+# Build a versioned, self-contained bundle (build/ + build.zip) — used by CI
+make compile
+
+# Build the Docker image
+make docker-compile
 ```
 
-## Deployment
+The production build output lives in `build/`:
 
-### Docker Deployment
+```
+build/
+├── client/    # Static assets (run-config.js is generated here at startup)
+└── server/    # Server-side render code
+```
 
-Base image: `dhi.io/node:26-alpine-dev` (DHI only tracks Node 26). Runs as non-root `flomation` user.
-CI publishes the image to [Docker Hub](https://hub.docker.com/r/flomationco/flomation-editor)
-as `flomationco/flomation-editor:{1.0.<pipeline>,latest}` on every `main` pipeline.
+## Docker
 
-The container generates `build/client/run-config.js` from environment variables
-on every start (see `docker-entrypoint.sh`): `AUTOMATE_API_URL`,
-`BILLING_API_URL`, `TRIGGER_URL`, `LOGIN_URL`, `LAUNCH_URL`.
+Base image: `dhi.io/node:26-alpine-dev` (DHI only tracks Node 26). Runs as a non-root
+`flomation` user with a health check on `/`. CI publishes the image to
+[Docker Hub](https://hub.docker.com/r/flomationco/flomation-editor) as
+`flomationco/flomation-editor:{1.0.<pipeline>,latest}` on every `main` pipeline.
 
 ```bash
 # Build (pulling the DHI base requires `docker login dhi.io`; without DHI
@@ -67,24 +115,31 @@ docker run -p 8080:8080 \
   flomationco/flomation-editor
 ```
 
-### DIY Deployment
+The container regenerates `build/client/run-config.js` from the environment variables
+above on every start (see `docker-entrypoint.sh`).
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
+## Project Structure
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+.
+├── app/
+│   ├── root.tsx              # App shell; loads run-config.js into window.properties
+│   ├── routes.ts             # Route table
+│   ├── routes/               # Page routes (dashboard, editor, executions, …)
+│   ├── components/           # Reusable UI (editor canvas, nodes, modals, widgets)
+│   ├── context/              # React context providers (auth, organisation, permissions)
+│   ├── lib/                  # API client, billing, export, utilities
+│   └── app.css               # Global styles
+├── public/                   # Static assets and run-config.js template
+├── docker-entrypoint.sh      # Generates run-config.js, then starts the server
+├── react-router.config.ts    # React Router config (SSR enabled)
+├── vite.config.ts            # Vite / build config
+├── tailwind.config.ts        # TailwindCSS config
+├── Dockerfile
+├── Makefile
+└── package.json
 ```
 
-## Styling
+## Licence
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+MIT — Flomation LTD. See [LICENCE.md](LICENCE.md).
