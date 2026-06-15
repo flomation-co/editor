@@ -7,6 +7,7 @@ import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 import { Icon } from "~/components/icons/Icon";
 
 import api from "~/lib/api";
+import { detectSecret } from "~/lib/secretDetection";
 import {toast} from "react-toastify";
 
 import Container from "~/components/container";
@@ -952,6 +953,39 @@ export function Editor(props : EditorProps) {
         });
     }, [nodes, edges, allVariables]);
 
+    // Block execution when any field holds a value that looks like a
+    // literal secret. The per-field warning (red outline + warning
+    // icon + tooltip) shows the user *where* the problem is; this
+    // memo surfaces the *first* offender so the disabled execute
+    // button can carry a specific message naming which field and
+    // node need fixing. Without this gate it would still be
+    // possible to save and run a flow with a hardcoded token —
+    // exactly the leak the warning is meant to prevent.
+    const flowSecretError = useMemo<string | null>(() => {
+        for (const node of nodes as any[]) {
+            const inputs = node.data?.config?.inputs;
+            if (!Array.isArray(inputs)) continue;
+            for (const i of inputs) {
+                if (typeof i.value !== 'string') continue;
+                if (detectSecret(i.value)) {
+                    const nodeLabel = node.data?.label || node.id;
+                    const fieldLabel = i.label || i.name;
+                    return `"${fieldLabel}" on ${nodeLabel} looks like a literal secret — store it in environment secrets and reference it as \${secrets.NAME} before executing.`;
+                }
+            }
+        }
+        return null;
+    }, [nodes]);
+
+    // Combined gate. The two checks have different shapes (one is
+    // boolean, one carries a message) so we expose them separately
+    // and join them at the call sites — that way each disable point
+    // can render the message it cares about.
+    const executionBlocked = hasValidationErrors || flowSecretError !== null;
+    const executionBlockedReason = flowSecretError
+        ? flowSecretError
+        : (hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo");
+
     const defaultEdgeOptions = useMemo(() => {
         return {
             type: "simplebezier",
@@ -1020,7 +1054,7 @@ export function Editor(props : EditorProps) {
     }
 
     function handleExecuteClick() {
-        if (!id || isTriggering || hasValidationErrors) return;
+        if (!id || isTriggering || executionBlocked) return;
         const inputs = getManualTriggerInputs();
         if (inputs.length > 0) {
             // Pre-fill with default values
@@ -1233,9 +1267,9 @@ export function Editor(props : EditorProps) {
                                 {id && (
                                     <a
                                         onClick={handleExecuteClick}
-                                        className={`flo-editor-property-action-button${hasValidationErrors ? ' flo-editor-property-action-button--disabled' : ''}`}
+                                        className={`flo-editor-property-action-button${executionBlocked ? ' flo-editor-property-action-button--disabled' : ''}`}
                                         data-tooltip-id={"tooltip-action-execute"}
-                                        data-tooltip-content={hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo"}
+                                        data-tooltip-content={executionBlockedReason}
                                         data-tooltip-place={"bottom"}
                                     >
                                         <Icon name="play" /> <span className={"hide-sm"}>Execute Flo</span>

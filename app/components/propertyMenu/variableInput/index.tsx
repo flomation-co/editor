@@ -501,18 +501,25 @@ const VariableInput = (props: VariableInputProps) => {
                 autoCapitalize="off"
             />
             {secretWarning && (
-                // Native title attribute is the tooltip — keeps this
-                // surface dependency-free. The icon sits inside the
-                // input's right padding via absolute positioning so
-                // it doesn't disrupt the existing flex layout.
-                <span
-                    className="variable-input-secret-icon"
-                    title={secretWarning}
-                    aria-label={secretWarning}
-                    role="img"
-                >
-                    <Icon name="warning" />
-                </span>
+                <>
+                    {/* Inline icon sits inside the input's right
+                        padding via absolute positioning so it doesn't
+                        disrupt the existing flex layout. The native
+                        title attribute provides the tooltip — the
+                        message text below carries the same content for
+                        users who don't hover. */}
+                    <span
+                        className="variable-input-secret-icon"
+                        title={secretWarning}
+                        aria-label={secretWarning}
+                        role="img"
+                    >
+                        <Icon name="warning" />
+                    </span>
+                    <div className="variable-input-secret-message" role="alert">
+                        {secretWarning}
+                    </div>
+                </>
             )}
             {autocomplete.visible && filteredVariables.length > 0 && (
                 <div
