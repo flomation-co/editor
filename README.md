@@ -2,20 +2,6 @@
 
 > Visual web app for building, running, and monitoring automation workflows ("flos").
 
-## The Flomation Automate platform
-
-Flomation Automate lets non-technical, front-of-house users build and run automation
-workflows ("flos") from a visual editor. This repository is one of five services that
-make up the platform:
-
-| Service | Role |
-|---------|------|
-| [API](https://gitlab.tooling.flomation.app/flomation/automate/api) | Backend REST API — manages flos, executions, runners, and environments/secrets |
-| **Editor** (this repository) | Visual web app for building, running, and monitoring flos |
-| [Launch](https://gitlab.tooling.flomation.app/flomation/automate/launch) | Ingress service — turns external events (webhooks, QR scans, forms, pixels) into trigger fires |
-| [Runner](https://gitlab.tooling.flomation.app/flomation/automate/runner) | Remote agent — polls the API for pending executions and runs them |
-| [Executor](https://gitlab.tooling.flomation.app/flomation/automate/executor) | Runtime engine — executes a flo's node graph and reports results |
-
 ## Overview
 
 The Flomation Editor is the user-facing front end for the Flomation Automate platform.
@@ -42,8 +28,6 @@ Key areas of the app:
 
 - Node.js 20+ (the production image tracks Node 26)
 - npm
-- A running [Flomation API](https://gitlab.tooling.flomation.app/flomation/automate/api)
-  and identity service to point the editor at
 - Docker (optional, for containerised builds and deployment)
 
 ## Installation
