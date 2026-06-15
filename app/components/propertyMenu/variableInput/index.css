@@ -331,13 +331,36 @@
     color: #d4a3f9;
 }
 
-.variable-secret-warning {
-    font-size: 11px;
-    color: #fbbf24;
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.2);
-    border-radius: 4px;
-    padding: 4px 8px;
-    margin-top: 4px;
-    line-height: 1.4;
+/* Replaces the previous inline yellow-box warning. When the shared
+   detector flags a value as secret-shaped, the input itself takes a
+   red outline and a small warning icon sits in the right padding.
+   The tooltip is the icon's native title attribute — accessible,
+   keyboard-discoverable on focus, zero extra dependencies. */
+.variable-input-container--has-secret {
+    position: relative;
+}
+
+.variable-input-field--has-secret {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35) inset;
+    padding-right: 32px;
+}
+
+.variable-input-secret-icon {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    pointer-events: auto;
+    cursor: help;
+}
+
+.variable-input-secret-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
 }

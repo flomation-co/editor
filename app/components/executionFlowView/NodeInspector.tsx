@@ -2,6 +2,12 @@ import React from 'react';
 import type { NodeStatus } from "~/types";
 import { useState } from "react";
 import { Icon } from "~/components/icons/Icon";
+// isSensitive (key-name + value) lives in lib/secretDetection so this
+// surface stays in lock-step with the property-menu warning. Adding
+// a new pattern in one place is enough — both render-time
+// obfuscation here and edit-time warning in VariableInput pick it
+// up together.
+import { isSensitive } from "~/lib/secretDetection";
 
 type NodeInspectorProps = {
     nodeId: string;
@@ -11,27 +17,6 @@ type NodeInspectorProps = {
     onIterationChange?: (index: number) => void;
     onClose: () => void;
 };
-
-const SENSITIVE_KEYS = /secret|password|key|token|credential|auth|access_token|refresh_token|api_key|apikey/i;
-
-// Detect values that look like tokens/secrets even if the key doesn't match
-const SENSITIVE_VALUE_PATTERNS = [
-    /^eyJ[a-zA-Z0-9_-]{20,}\./,          // JWT tokens
-    /^(sk|pk|rk)[-_][a-zA-Z0-9]{20,}/,    // Stripe/API keys
-    /^xox[bpsa]-[a-zA-Z0-9-]{20,}/,       // Slack tokens
-    /^AKIA[A-Z0-9]{16}/,                   // AWS access keys
-    /^ghp_[a-zA-Z0-9]{20,}/,              // GitHub PATs
-    /^glpat-[a-zA-Z0-9_-]{20,}/,          // GitLab tokens
-];
-
-function isSensitiveValue(value: any): boolean {
-    if (typeof value !== 'string' || value.length < 20) return false;
-    return SENSITIVE_VALUE_PATTERNS.some(p => p.test(value));
-}
-
-function isSensitive(key: string, value: any): boolean {
-    return SENSITIVE_KEYS.test(key) || value === '********' || isSensitiveValue(value);
-}
 
 // Try to parse JSON strings into objects for proper rendering.
 // Handles values that were stringified by the old executor.

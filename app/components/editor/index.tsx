@@ -203,8 +203,20 @@ export function Editor(props : EditorProps) {
                 items.push({ name: s.name, category: "secrets" });
             });
             credentials.forEach((c: any) => {
-                if (c.name && c.status === 'active') {
-                    items.push({ name: c.name, category: "credentials", source: c.provider_name || c.provider_slug });
+                // Surface every credential regardless of status. A pending
+                // credential (OAuth not yet completed) used to be hidden,
+                // which made users think their newly-created credential
+                // had vanished. The picker dropdown badges non-active
+                // credentials so the state is visible at the point of
+                // selection. Action runtime will still fail loudly if
+                // they pick a pending one and run the flow.
+                if (c.name) {
+                    items.push({
+                        name: c.name,
+                        category: "credentials",
+                        source: c.provider_name || c.provider_slug,
+                        status: c.status,
+                    });
                 }
             });
 

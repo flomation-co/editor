@@ -17,11 +17,28 @@ type VariablePickerProps = {
     standalone?: boolean;
 };
 
+// KNOWN_NAMESPACES is the closed set of namespace prefixes the editor
+// recognises as first-class. Anything else falls into the "bare"
+// reference bucket and is treated as an input (parent node output).
+//
+// "secret" and "credential" (singular) are accepted as aliases of
+// their plural counterparts because both forms exist in older saved
+// flows and the runtime substitution layer accepts both — see
+// CLAUDE.md's "Variable substitution" note.
+const KNOWN_NAMESPACES = "secrets|secret|env|flow|var|user|credentials|credential|loop|trigger";
+const PREFIXED_RE = new RegExp(`^\\$\\{(${KNOWN_NAMESPACES})\\.(.+)}$`);
+
 function parseVariableRef(val: string): { category: string; name: string } | null {
     if (typeof val !== "string") return null;
-    // Match ${secrets.NAME}, ${env.NAME}, or ${bare_name}
-    const prefixed = val.match(/^\$\{(secrets|env)\.(.+)}$/);
-    if (prefixed) return { category: prefixed[1], name: prefixed[2] };
+    const prefixed = val.match(PREFIXED_RE);
+    if (prefixed) {
+        let cat = prefixed[1];
+        // Normalise the singular aliases to the canonical plural
+        // category names used everywhere in the editor.
+        if (cat === "secret") cat = "secrets";
+        if (cat === "credential") cat = "credentials";
+        return { category: cat, name: prefixed[2] };
+    }
     const bare = val.match(/^\$\{([\w.-]+)}$/);
     if (bare) return { category: "input", name: bare[1] };
     return null;
@@ -149,10 +166,20 @@ const VariablePicker = (props: VariablePickerProps) => {
             ? `vp-pill vp-pill--${parsed!.category}`
             : "vp-pill vp-pill--invalid";
 
+        // Display the full ${namespace.name} form so the chip reads
+        // as a complete reference at a glance — consistent with the
+        // inline VariableInput pill, which has always shown the
+        // ${...} wrapping. We deliberately don't try to share the
+        // inline pill's CSS here: that surface depends on zero
+        // padding/margin to keep the textarea cursor aligned with
+        // the visible characters (see CLAUDE.md memory on variable
+        // pill layout). The chip is a free-standing component with
+        // no cursor to align to, so it can carry the more polished
+        // border/background look.
         return (
             <div className="vp-selected">
                 <span className={pillClass}>
-                    {parsed!.category}.{parsed!.name}
+                    {`\${${parsed!.category}.${parsed!.name}}`}
                 </span>
                 <button
                     type="button"
@@ -206,6 +233,24 @@ const VariablePicker = (props: VariablePickerProps) => {
                                     {v.category}
                                 </span>
                                 <span className="vp-name">{v.name}</span>
+                                {/* Lifecycle badge for credentials in a
+                                    non-active state. Lets the user see
+                                    at the point of choice that the
+                                    credential they're about to pick
+                                    isn't yet usable — without hiding
+                                    it altogether. */}
+                                {v.status && v.status !== "active" && (
+                                    <span
+                                        className={`vp-status vp-status--${v.status}`}
+                                        title={
+                                            v.status === "pending"
+                                                ? "OAuth handshake not yet completed — finish the connection on the Credentials page before this credential can be used."
+                                                : "The credential failed to refresh — check the Credentials page for the error."
+                                        }
+                                    >
+                                        {v.status}
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>

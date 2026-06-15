@@ -5,6 +5,7 @@ import type {NodeDefinition, Trigger} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import TextProperty from "~/components/propertyMenu/textProperty";
 import StringProperty from "~/components/propertyMenu/stringProperty";
+import CredentialProperty from "~/components/propertyMenu/credentialProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
 import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
 import FormBuilder from "~/components/propertyMenu/formBuilder";
@@ -445,6 +446,41 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            // Picker-only inputs for credential and secret
+                                            // slots. The component pre-filters the variable
+                                            // list to the allowed categories — secret slots
+                                            // accept managed credentials (since they also
+                                            // resolve to a token) but credential slots
+                                            // reject literal secrets (no refresh path).
+                                            case "credential":
+                                                return (
+                                                    <CredentialProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        kind="credential"
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+                                            case "secret":
+                                                return (
+                                                    <CredentialProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        kind="secret"
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
