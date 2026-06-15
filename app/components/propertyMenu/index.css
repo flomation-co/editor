@@ -253,26 +253,20 @@
     cursor: pointer;
 }
 
-.text-popup-textarea {
+/* Container for the popup's embedded VariableInput. The inner
+   VariableInput brings its own border / background / highlight
+   overlay; this wrapper just provides the layout box (margin from
+   the popup edges, fixed minimum height so the editing area is
+   useful even on short content). */
+.text-popup-input {
     display: block;
-    width: calc(100% - 40px);
-    height: 240px;
     margin: 16px 20px;
-    padding: 12px;
-    background: var(--primary-background);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: var(--primary-font-colour);
-    font-size: 14px;
-    font-family: monospace;
-    line-height: 1.5;
-    resize: vertical;
-    outline: none;
-    box-sizing: border-box;
+    min-height: 240px;
 }
 
-.text-popup-textarea:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+.text-popup-input .variable-input-container,
+.text-popup-input .variable-input-field--multiline {
+    min-height: 240px;
 }
 
 .text-popup-footer {

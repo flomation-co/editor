@@ -201,6 +201,10 @@
     left: 50%;
     transform: translateX(-50%);
     margin-top: 10px;
+    /* High z-index within the hovered node's stacking context.
+       This alone isn't enough — see the :has() rule below — but
+       it does ensure the tooltip wins against any internal node
+       chrome. */
     z-index: 1000;
     min-width: 220px;
     max-width: 300px;
@@ -211,6 +215,18 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0,0,0,0.5);
     pointer-events: none;
     font-family: 'Inter', sans-serif;
+}
+
+/* ReactFlow wraps each node in a .react-flow__node element with its
+   own transform — which creates an isolated stacking context. The
+   tooltip's z-index only governs ordering WITHIN that context, so
+   adjacent nodes (each with their own stacking context) can render
+   above the tooltip when their content extends into the same region.
+   Lifting the hovered node's entire wrapper above its siblings is
+   the fix — :has() is supported by Chrome 105+, Firefox 121+, and
+   Safari 15.4+, all well within our target. */
+.react-flow__node:has(.exec-node-hover-wrap:hover) {
+    z-index: 5000 !important;
 }
 
 /* Show on hover — pure CSS, no JS state needed */
@@ -322,7 +338,13 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 100;
+    /* ReactFlow renders node wrappers with their own z-index
+       stacking context (~1000). The inspector at z-index: 100 was
+       sitting behind the nodes — visible only where the canvas
+       was empty. Bumping above 1000 lifts the whole overlay (and
+       its backdrop blur) above the node layer so the inspector
+       reads as a true modal. */
+    z-index: 5000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -487,6 +509,64 @@
 .ni-val--null { color: rgba(255, 255, 255, 0.25); font-style: italic; }
 .ni-val--obfuscated { color: rgba(255, 255, 255, 0.2); letter-spacing: 2px; }
 .ni-val--empty { color: rgba(255, 255, 255, 0.2); }
+
+/* Line-numbered code block for multi-line string values in the
+   inspector. Gutter sits at the left in a separate column so the
+   number column can't be selected/copied along with the source —
+   user-select: none on the gutter only. The content pane shares
+   the same line-height/font so each numbered row visually aligns
+   row-for-row with its source line. */
+.ni-code-block {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+    margin-top: 4px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.ni-code-gutter {
+    background: rgba(255, 255, 255, 0.025);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 8px 10px 8px 12px;
+    color: rgba(255, 255, 255, 0.3);
+    text-align: right;
+    user-select: none;
+    min-width: 36px;
+}
+
+.ni-code-line-no {
+    /* Bare div per line — line-height already gives row alignment;
+       no padding so the digit stays vertically registered with the
+       matching content row. */
+    padding: 0;
+}
+
+.ni-code-content {
+    margin: 0;
+    padding: 8px 12px;
+    color: #d4d4d4;
+    background: transparent;
+    overflow-x: auto;
+    white-space: pre;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.ni-code-line {
+    padding: 0;
+    /* Empty lines collapse to height 0 unless we give them a
+       zero-width-space sentinel content. The component does that
+       at the JSX level — this rule just makes sure the row has a
+       definite height even without that fallback. */
+    min-height: 1em;
+}
 .ni-hint { color: rgba(255, 255, 255, 0.2); font-size: 11px; margin-left: 4px; }
 
 /* Media players for audio/image/video/pdf */

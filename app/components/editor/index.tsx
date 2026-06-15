@@ -692,6 +692,34 @@ export function Editor(props : EditorProps) {
     // Canonical trigger data variables injected by Launch when an agent
     // receives a message via any channel (Slack, Telegram, webhook, or
     // commitment wake-up). These are auto-wired from trigger node outputs.
+    // projectCodeNodeOutputs reads the user-declared "Outputs"
+    // key/value array on a Python / JavaScript code node and adds
+    // each declared key to the supplied items list. The same shape
+    // the runtime executor uses (actions/script/common.go:
+    // BuildOutputs) so editor autocomplete matches runtime exactly.
+    //
+    // Accepts the raw input value (which may be a string-encoded
+    // JSON, an array of {key,value} objects, or undefined) and a
+    // source label for display in the picker dropdown.
+    const projectCodeNodeOutputs = (
+        rawValue: any,
+        items: VariableItem[],
+        sourceLabel: string,
+    ) => {
+        if (!rawValue) return;
+        let parsed: any = rawValue;
+        if (typeof rawValue === 'string') {
+            try { parsed = JSON.parse(rawValue); } catch { return; }
+        }
+        if (!Array.isArray(parsed)) return;
+        for (const row of parsed) {
+            if (!row || typeof row !== 'object') continue;
+            const name = (row.key || row.name || '').toString().trim();
+            if (!name) continue;
+            items.push({ name, category: "input", source: sourceLabel });
+        }
+    };
+
     const AGENT_TRIGGER_VARIABLES: VariableItem[] = [
         { name: "content", category: "input", source: "Agent Channel" },
         { name: "sender", category: "input", source: "Agent Channel" },
@@ -757,6 +785,21 @@ export function Editor(props : EditorProps) {
                         // Invalid form definition JSON — skip
                     }
                 }
+            }
+
+            // Add user-declared outputs from code nodes (Python /
+            // JavaScript) as available variables. The "outputs" input
+            // is a key/value array — each row's Key becomes a top-
+            // level output name on the node, mirroring exactly what
+            // the executor produces at runtime (see
+            // actions/script/common.go: BuildOutputs).
+            const isCodeNode =
+                n.data?.label === 'script/python' || n.data?.label === 'script/javascript' ||
+                n.type === 'script/python' || n.type === 'script/javascript';
+            if (isCodeNode) {
+                const outDecl = n.data?.config?.inputs?.find((i: any) => i.name === 'outputs');
+                const sourceLabel = n.data?.label === 'script/python' ? 'Python Output' : 'JavaScript Output';
+                projectCodeNodeOutputs(outDecl?.value, items, sourceLabel);
             }
         }
 
@@ -901,6 +944,26 @@ export function Editor(props : EditorProps) {
                                     }
                                 }
                             } catch { /* skip */ }
+                        }
+                    }
+                    // Add user-declared outputs from Python /
+                    // JavaScript code nodes. Same shape as the
+                    // global autocomplete projection — kept in sync
+                    // by both call-sites going through the same
+                    // helper. Without this, downstream nodes that
+                    // reference a code-node's declared output would
+                    // fail required-field validation even though
+                    // the variable IS resolvable at runtime.
+                    if (
+                        pn.data?.label === 'script/python' || pn.data?.label === 'script/javascript' ||
+                        pn.type === 'script/python' || pn.type === 'script/javascript'
+                    ) {
+                        const outDecl = pn.data?.config?.inputs?.find((i: any) => i.name === 'outputs');
+                        const stagingItems: VariableItem[] = [];
+                        projectCodeNodeOutputs(outDecl?.value, stagingItems, 'Code');
+                        for (const it of stagingItems) {
+                            nodeVarNames.add(it.name);
+                            nodeVarNames.add(pid + "." + it.name);
                         }
                     }
                     // Walk through pass-through nodes (conditional, loop, switch)

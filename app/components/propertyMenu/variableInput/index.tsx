@@ -1,6 +1,19 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Icon } from "~/components/icons/Icon";
 import { detectSecret } from "~/lib/secretDetection";
+// Prism import sequence matters: the core must come first, then any
+// languages that depend on `clike` (JavaScript, Bash) before the
+// language files themselves. Importing each language file registers
+// its grammar on the shared Prism.languages object via side-effect.
+import Prism from "prismjs";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-bash";
+// Pre-stub support — registering the grammars now so adding a SQL
+// or YAML code-typed input later is a zero-line editor change.
+import "prismjs/components/prism-sql";
+import "prismjs/components/prism-yaml";
 import "./index.css";
 
 export type VariableItem = {
@@ -28,6 +41,16 @@ type VariableInputProps = {
     value: string;
     required?: boolean;
     multiline?: boolean;
+    /** When true, the input/textarea uses a monospace stack. Highlight
+     *  overlay also switches to monospace so the inline variable pills
+     *  stay aligned with the underlying characters. Used by
+     *  ConnectionTypeCode-typed inputs (script source). */
+    monospace?: boolean;
+    /** Prism grammar identifier (python / javascript / bash / sql /
+     *  yaml). When set, plain-text segments between ${...} variable
+     *  references are tokenised and colour-rendered into the
+     *  highlight overlay. Variable pill rendering is unchanged. */
+    language?: string;
     variables: VariableItem[];
     onValueChange?: (property: string, value: any) => void;
 };
@@ -175,6 +198,42 @@ type AutocompleteState = {
     filter: string;
     insertStart: number;
 };
+
+// renderPrismTokens walks a Prism token tree and emits React spans
+// with token-type class names. Each leaf token keeps zero
+// padding/margin (enforced in CSS) so character positions in the
+// overlay remain byte-for-byte aligned with the textarea cursor —
+// the same constraint variable pills already follow.
+//
+// Prism tokens are either plain strings (no highlighting) or
+// objects with a `type` string and a content payload that may
+// itself be a string, another token, or a nested array. We recurse
+// to preserve nested classifications (e.g. interpolation expressions
+// inside a template literal).
+function renderPrismTokens(tokens: (string | Prism.Token)[], keyPrefix: string = ""): React.ReactNode {
+    return tokens.map((tok, i) => {
+        const key = keyPrefix + i;
+        if (typeof tok === "string") {
+            return <span key={key}>{tok}</span>;
+        }
+        const types = ([tok.type] as string[])
+            .concat(Array.isArray(tok.alias) ? tok.alias : (tok.alias ? [tok.alias] : []))
+            .filter(Boolean)
+            .map((t) => `code-token--${t}`)
+            .join(" ");
+        const className = `code-token ${types}`;
+        const content = tok.content;
+        if (typeof content === "string") {
+            return <span key={key} className={className}>{content}</span>;
+        }
+        const inner = Array.isArray(content) ? content : [content];
+        return (
+            <span key={key} className={className}>
+                {renderPrismTokens(inner as (string | Prism.Token)[], key + ".")}
+            </span>
+        );
+    });
+}
 
 const VariableInput = (props: VariableInputProps) => {
     const [value, setValue] = useState<string>(props.value || "");
@@ -449,6 +508,14 @@ const VariableInput = (props: VariableInputProps) => {
         [value, toRaw, checkForAutocomplete]
     );
 
+    // Resolved grammar for the current language. Undefined when no
+    // language is set (regular text fields) or when the requested
+    // grammar isn't loaded — both cases fall through to plain text.
+    const grammar = useMemo(() => {
+        if (!props.language) return null;
+        return Prism.languages[props.language] ?? null;
+    }, [props.language]);
+
     const renderHighlight = () => {
         return segments.map((seg, i) => {
             if (seg.type === "variable") {
@@ -460,6 +527,16 @@ const VariableInput = (props: VariableInputProps) => {
                     <span key={i} className={pillClass}>
                         {seg.display}
                     </span>
+                );
+            }
+            // Plain-text segment. Tokenise with Prism when a grammar
+            // is loaded; otherwise fall through to a single span
+            // preserving the original whitespace.
+            if (grammar) {
+                return (
+                    <React.Fragment key={i}>
+                        {renderPrismTokens(Prism.tokenize(seg.display, grammar))}
+                    </React.Fragment>
                 );
             }
             return <span key={i}>{seg.display}</span>;
@@ -480,7 +557,7 @@ const VariableInput = (props: VariableInputProps) => {
         >
             <div
                 ref={highlightRef}
-                className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""}`}
+                className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""} ${props.monospace ? "variable-input-highlight--monospace" : ""}`}
                 aria-hidden="true"
             >
                 {renderHighlight()}
@@ -488,7 +565,7 @@ const VariableInput = (props: VariableInputProps) => {
             </div>
             <InputElement
                 ref={inputRef as any}
-                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
+                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${props.monospace ? "variable-input-field--monospace" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
                 placeholder={props.placeholder}
                 defaultValue={displayText}
                 onChange={handleChange}

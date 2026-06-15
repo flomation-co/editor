@@ -45,6 +45,28 @@ const INPUT_TYPES = [
     {value: "text", label: "Multiline Text"},
 ];
 
+// languageFromNodeLabel picks the Prism grammar identifier for a
+// code-typed input based on the owning action's label. Centralised
+// here so adding a new ConnectionTypeCode-using action (e.g. SQL
+// query, YAML config) is one line — drop in the mapping and the
+// editor automatically highlights its code field.
+//
+// Future-proofing: when we eventually add a Language field on
+// Connection itself (per the recommended migration in the design),
+// the call-site here will be replaced with a direct read of that
+// field. Keeping the helper small and obvious makes that swap a
+// one-line change rather than a refactor.
+const NODE_LABEL_LANGUAGE: Record<string, string> = {
+    "script/python": "python",
+    "script/javascript": "javascript",
+    "script/bash": "bash",
+};
+
+function languageFromNodeLabel(label?: string): string | undefined {
+    if (!label) return undefined;
+    return NODE_LABEL_LANGUAGE[label];
+}
+
 function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string; inputs: any[]; onInputsChange: (inputs: any[]) => void}) {
     // Local state so changes render immediately without waiting for parent re-render
     const [localInputs, setLocalInputs] = useState<any[]>(inputs || []);
@@ -446,6 +468,31 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         value={i.value}
                                                         required={i.required}
                                                         variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            // Script source code (Python /
+                                            // JavaScript / Bash / future
+                                            // runtimes). Same multiline
+                                            // shape as Text, monospace font,
+                                            // and Prism-driven syntax
+                                            // highlighting when the action
+                                            // label tells us which language
+                                            // grammar to use.
+                                            case "code":
+                                                return (
+                                                    <TextProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        monospace={true}
+                                                        language={languageFromNodeLabel(props.node.data.label)}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
