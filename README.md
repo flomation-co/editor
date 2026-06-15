@@ -9,9 +9,9 @@ It is a [React Router 7](https://reactrouter.com/) (framework mode, server-side
 rendered) application written in TypeScript and styled with TailwindCSS. The flo editor
 canvas is built on [React Flow](https://reactflow.dev/) (`@xyflow/react`).
 
-The editor talks to the [API](https://gitlab.tooling.flomation.app/flomation/automate/api)
+The editor talks to the API
 for all data, to the identity service for authentication, and to the
-[Launch](https://gitlab.tooling.flomation.app/flomation/automate/launch) service for
+Launch service for
 trigger URLs. Backend endpoints are injected at runtime (not baked into the bundle) via a
 generated `run-config.js` — see [Configuration](#configuration).
 
