@@ -493,6 +493,16 @@
     box-shadow: 0 0 0 1px rgba(239,68,68,0.35), 0 0 14px rgba(239,68,68,0.25);
 }
 
+/* Node-level red outline for unresolved variable references. Same
+   red as the secret state but slightly less glow — "this won't
+   run" rather than "this is a security incident". Per-node tooltip
+   (set via the title attribute on the node wrapper) names the
+   specific field + reference so the user can fix without hunting. */
+.flo-node--unresolved {
+    border-color: rgba(239,68,68,0.7);
+    box-shadow: 0 0 0 1px rgba(239,68,68,0.25), 0 0 10px rgba(239,68,68,0.18);
+}
+
 /* ── Icon badge ── */
 .node-icon-badge {
     width: 32px;
@@ -615,9 +625,18 @@
 }
 
 .node-name-warning {
-    color: #e6a817;
+    color: #e6a817;  /* amber default — used by --required */
     margin-right: 4px;
     font-size: 10px;
+}
+
+/* Severity-tiered warning icon colour. Secret + unresolved both
+   render red on the node outline, so the icon colour matches
+   so the same visual language carries through to the node-name
+   label as well. */
+.node-name-warning--unresolved,
+.node-name-warning--secret {
+    color: #ef4444;
 }
 
 .node-label {

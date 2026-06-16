@@ -8,6 +8,7 @@ import { Icon } from "~/components/icons/Icon";
 
 import api from "~/lib/api";
 import { detectSecret } from "~/lib/secretDetection";
+import { ValidationProvider, type ValidationProblem } from "~/components/editor/validationContext";
 import {toast} from "react-toastify";
 
 import Container from "~/components/container";
@@ -876,7 +877,18 @@ export function Editor(props : EditorProps) {
         return items;
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
-    const hasValidationErrors = useMemo(() => {
+    // validationProblems is the single source of truth for "is this
+    // flow runnable" across the whole editor surface:
+    //   - executionBlocked (Execute button + handleExecuteClick gate)
+    //   - executionBlockedReason (Execute button tooltip)
+    //   - customNode rendering (per-node red/amber outline + tooltip)
+    //
+    // Each entry is keyed by node id and carries the highest-severity
+    // problem on that node. Severity ordering: secret > unresolved
+    // > required. A node with multiple problems shows only the
+    // worst, on the principle that you fix the security issue before
+    // worrying about a missing field.
+    const validationProblems = useMemo<Map<string, ValidationProblem>>(() => {
         const validPrefixes = ['secrets.', 'secret.', 'env.', 'flow.', 'var.', 'loop.', 'trigger.', 'credentials.', 'user.'];
         // Prefixes that are always valid (runtime variables, not environment-dependent).
         // ${user.X} populates from the executing user's profile at execution
@@ -892,17 +904,55 @@ export function Editor(props : EditorProps) {
             return input.visible_when.values.includes(refValue);
         };
 
-        return nodes.some((node: any) => {
+        const problems = new Map<string, ValidationProblem>();
+        const labelOf = (node: any) => node.data?.label || node.type || node.id;
+
+        // Helper to record a problem at the right severity. Already-
+        // present higher-severity problems win, so this is safe to
+        // call in any order.
+        const record = (nodeId: string, candidate: ValidationProblem) => {
+            const rank = { required: 0, unresolved: 1, secret: 2 } as const;
+            const existing = problems.get(nodeId);
+            if (!existing || rank[candidate.kind] > rank[existing.kind]) {
+                problems.set(nodeId, candidate);
+            }
+        };
+
+        nodes.forEach((node: any) => {
             const inputs = node.data?.config?.inputs;
-            if (!inputs) return false;
+            if (!inputs) return;
+
+            // Literal secrets are checked on EVERY node including
+            // triggers — there's no situation where pasting a
+            // hardcoded token into any field is OK.
+            for (const i of inputs) {
+                if (typeof i.value === 'string' && detectSecret(i.value)) {
+                    record(node.id, {
+                        kind: "secret",
+                        fieldName: i.name,
+                        fieldLabel: i.label || i.name,
+                        detail: `"${i.label || i.name}" on ${labelOf(node)} looks like a literal secret — store it in environment secrets and reference it as \${secrets.NAME} before executing.`,
+                    });
+                }
+            }
 
             // Skip required-field validation for trigger nodes — their inputs are provided at execution time
             const isTrigger = node.type?.startsWith("trigger/") || node.data?.label?.startsWith("trigger/");
-            if (isTrigger) return false;
+            if (isTrigger) return;
 
-            // Check required fields (only visible ones)
-            const hasRequiredEmpty = inputs.some((i: any) => i.required && isInputVisible(i, inputs) && (!i.value || (typeof i.value === 'string' && i.value.trim() === '')));
-            if (hasRequiredEmpty) return true;
+            // Required-field check
+            for (const i of inputs) {
+                if (!i.required) continue;
+                if (!isInputVisible(i, inputs)) continue;
+                if (!i.value || (typeof i.value === 'string' && i.value.trim() === '')) {
+                    record(node.id, {
+                        kind: "required",
+                        fieldName: i.name,
+                        fieldLabel: i.label || i.name,
+                        detail: `Required field "${i.label || i.name}" on ${labelOf(node)} is empty.`,
+                    });
+                }
+            }
 
             // Build the full set of valid variables for this specific node
             // by walking ancestors (same logic as allVariables, but per-node)
@@ -994,60 +1044,65 @@ export function Editor(props : EditorProps) {
             };
             walkParents(node.id);
 
-            return inputs.some((i: any) => {
-                if (!isInputVisible(i, inputs)) return false;
-                if (typeof i.value !== 'string') return false;
+            for (const i of inputs) {
+                if (!isInputVisible(i, inputs)) continue;
+                if (typeof i.value !== 'string') continue;
                 const refs = i.value.match(/\$\{([^{}]+)\}/g);
-                if (!refs) return false;
-                return refs.some((ref: string) => {
+                if (!refs) continue;
+                for (const ref of refs) {
                     const name = ref.slice(2, -1);
                     // Runtime variables (flow, var, loop, trigger) are always valid
-                    if (runtimePrefixes.some(p => name.startsWith(p))) return false;
+                    if (runtimePrefixes.some(p => name.startsWith(p))) continue;
                     // Environment-dependent variables (secrets, env) must exist
                     // in the current environment's variables list
                     if (validPrefixes.some(p => name.startsWith(p))) {
-                        return !allVariables.some(v => `${v.category}.${v.name}` === name ||
+                        const known = allVariables.some(v => `${v.category}.${v.name}` === name ||
                             (v.category === 'secrets' && `secret.${v.name}` === name));
+                        if (!known) {
+                            record(node.id, {
+                                kind: "unresolved",
+                                fieldName: i.name,
+                                fieldLabel: i.label || i.name,
+                                detail: `Field "${i.label || i.name}" on ${labelOf(node)} references \${${name}} but that variable doesn't exist in this environment.`,
+                            });
+                        }
+                        continue;
                     }
-                    if (nodeVarNames.has(name)) return false;
-                    return true; // unresolvable variable
-                });
-            });
-        });
-    }, [nodes, edges, allVariables]);
-
-    // Block execution when any field holds a value that looks like a
-    // literal secret. The per-field warning (red outline + warning
-    // icon + tooltip) shows the user *where* the problem is; this
-    // memo surfaces the *first* offender so the disabled execute
-    // button can carry a specific message naming which field and
-    // node need fixing. Without this gate it would still be
-    // possible to save and run a flow with a hardcoded token —
-    // exactly the leak the warning is meant to prevent.
-    const flowSecretError = useMemo<string | null>(() => {
-        for (const node of nodes as any[]) {
-            const inputs = node.data?.config?.inputs;
-            if (!Array.isArray(inputs)) continue;
-            for (const i of inputs) {
-                if (typeof i.value !== 'string') continue;
-                if (detectSecret(i.value)) {
-                    const nodeLabel = node.data?.label || node.id;
-                    const fieldLabel = i.label || i.name;
-                    return `"${fieldLabel}" on ${nodeLabel} looks like a literal secret — store it in environment secrets and reference it as \${secrets.NAME} before executing.`;
+                    if (nodeVarNames.has(name)) continue;
+                    // Truly unresolvable — name doesn't match any
+                    // namespace, any parent output, or any ancestor
+                    // scoped reference. Most common cause is a typo
+                    // or a stale ${input.X} that should have been a
+                    // bare ${X}.
+                    record(node.id, {
+                        kind: "unresolved",
+                        fieldName: i.name,
+                        fieldLabel: i.label || i.name,
+                        detail: `Field "${i.label || i.name}" on ${labelOf(node)} references \${${name}} but nothing in the flow produces that output.`,
+                    });
                 }
             }
-        }
-        return null;
-    }, [nodes]);
+        });
+        return problems;
+    }, [nodes, edges, allVariables]);
 
-    // Combined gate. The two checks have different shapes (one is
-    // boolean, one carries a message) so we expose them separately
-    // and join them at the call sites — that way each disable point
-    // can render the message it cares about.
-    const executionBlocked = hasValidationErrors || flowSecretError !== null;
-    const executionBlockedReason = flowSecretError
-        ? flowSecretError
-        : (hasValidationErrors ? "Complete all required fields before executing" : "Execute Flo");
+    // Pick the highest-severity problem across the whole flow for
+    // the Execute button tooltip + the handleExecuteClick gate.
+    // Severity rank lifted from the same ordering the validation
+    // map uses internally: secret > unresolved > required.
+    const firstProblem = useMemo<ValidationProblem | null>(() => {
+        const rank = { required: 0, unresolved: 1, secret: 2 } as const;
+        let best: ValidationProblem | null = null;
+        for (const p of validationProblems.values()) {
+            if (!best || rank[p.kind] > rank[best.kind]) best = p;
+        }
+        return best;
+    }, [validationProblems]);
+
+    const executionBlocked = firstProblem !== null;
+    const executionBlockedReason = firstProblem
+        ? firstProblem.detail
+        : "Execute Flo";
 
     const defaultEdgeOptions = useMemo(() => {
         return {
@@ -1344,6 +1399,7 @@ export function Editor(props : EditorProps) {
                         <div className={"flo-editor"}>
                             <div className={"flo-editor-graph"} ref={graphRef}>
                                 <ReactFlowProvider>
+                                    <ValidationProvider value={validationProblems}>
                                     <ReactFlow
                                         onClick={(e) => {onContextMenuClose(e); setDragging(false)}}
                                         onContextMenu={onContextMenuOpen}
@@ -1373,6 +1429,7 @@ export function Editor(props : EditorProps) {
                                             )}
                                         </>
                                     </ReactFlow>
+                                    </ValidationProvider>
                                 </ReactFlowProvider>
                                 {menuVisible && (
                                     <ContextMenu

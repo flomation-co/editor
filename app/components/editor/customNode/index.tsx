@@ -6,6 +6,7 @@ import {LabeledHandle} from "~/components/labeled-handle";
 import { BaseNode } from "~/components/base-node";
 import { Icon } from "~/components/icons/Icon";
 import { detectSecret } from "~/lib/secretDetection";
+import { useValidationProblem } from "~/components/editor/validationContext";
 
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
@@ -95,39 +96,61 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
         });
     }, [data?.config?.inputs]);
 
-    // Whole-node red outline when any field contains a literal-secret
-    // value. Surfaces on the canvas even when the property menu is
-    // closed, so the user spots tainted nodes at a glance instead of
-    // having to click through each one. Wins over the amber "missing
-    // required" state — a literal secret is the worse problem and
-    // should dominate the visual.
-    const hasLiteralSecret = useMemo(() => {
-        if (!data?.config?.inputs) return false;
-        return data.config.inputs.some((i: any) =>
-            typeof i.value === "string" && detectSecret(i.value) !== null
-        );
-    }, [data?.config?.inputs]);
+    // Pull the editor-wide validation problem for this specific
+    // node out of context. The editor computes every node's
+    // problem in one centralised memo (see editor/index.tsx:
+    // validationProblems) so the canvas, the property menu, and
+    // the Execute-button tooltip all stay in sync — no local
+    // re-checking inside each node.
+    //
+    // CustomNode destructures only `data` from its props (ReactFlow
+    // also passes id, type, position, etc. as siblings) so we read
+    // the id from data.id, which the editor sets when it mints
+    // each node.
+    const validationProblem = useValidationProblem(data?.id ?? "");
 
-    const effectiveColours = hasLiteralSecret
+    // Severity ordering for the visual: secret > unresolved >
+    // required > clean. The fallback to hasIncompleteRequired
+    // covers the rare case where the context map hasn't populated
+    // yet (e.g. first render before the editor's memo settles).
+    const effectiveColours = validationProblem?.kind === "secret"
         ? { ...colours, bg: '#ef4444', glow: 'rgba(239,68,68,0.45)' }
-        : hasIncompleteRequired
-            ? { ...colours, bg: '#e6a817', glow: 'rgba(230,168,23,0.35)' }
-            : colours;
-    let effectiveClass = hasLiteralSecret
+        : validationProblem?.kind === "unresolved"
+            ? { ...colours, bg: '#ef4444', glow: 'rgba(239,68,68,0.35)' }
+            : (validationProblem?.kind === "required" || hasIncompleteRequired)
+                ? { ...colours, bg: '#e6a817', glow: 'rgba(230,168,23,0.35)' }
+                : colours;
+    let effectiveClass = validationProblem?.kind === "secret"
         ? `${nodeClass} flo-node--secret-error`
-        : hasIncompleteRequired
-            ? `${nodeClass} flo-node--invalid`
-            : nodeClass;
+        : validationProblem?.kind === "unresolved"
+            ? `${nodeClass} flo-node--unresolved`
+            : (validationProblem?.kind === "required" || hasIncompleteRequired)
+                ? `${nodeClass} flo-node--invalid`
+                : nodeClass;
     if (isAINode) effectiveClass += ' flo-node--ai';
 
     // Multi-handle nodes need rectangular layout, not square
     const isMultiHandle = type === 5 || isAINode;
 
+    // Warning icon shows on any node with a validation problem OR
+    // the legacy missing-required local check. The title attribute
+    // carries the specific reason — hover any broken node on the
+    // canvas to see "Field X on Y references ${Z} but nothing
+    // produces it" or similar, without having to open the property
+    // menu and hunt for the issue.
+    const showWarningIcon = !!validationProblem || hasIncompleteRequired;
+    const warningTitle = validationProblem?.detail || (hasIncompleteRequired
+        ? "One or more required fields are empty."
+        : undefined);
+
     return (
         <>
-            <div className="node-name">
-                {hasIncompleteRequired && (
-                    <Icon name={["fa-solid", "fa-triangle-exclamation"]} className="node-name-warning" />
+            <div className="node-name" title={warningTitle}>
+                {showWarningIcon && (
+                    <Icon
+                        name={["fa-solid", "fa-triangle-exclamation"]}
+                        className={`node-name-warning node-name-warning--${validationProblem?.kind || 'required'}`}
+                    />
                 )}
                 {data.config?.name || data.config?.label || ''}
                 {data.config?.name && data.config?.label && (
@@ -139,6 +162,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
 
             <div
                 className={effectiveClass}
+                title={warningTitle}
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
