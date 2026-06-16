@@ -82,7 +82,17 @@ const HIGH_ENTROPY_BASE64 = /^[A-Za-z0-9+/]{40,}={0,2}$/;
 // null for values that already reference an environment secret or
 // managed credential — those are exactly the safe storage we want
 // people to use.
-export function detectSecret(value: string | undefined | null): string | null {
+//
+// Defensively typed against runtime non-string values: an object-
+// typed input (e.g. the script nodes' inputs_data, common/array_length's
+// `array`) can legitimately carry a native object/array/number into
+// VariableInput, and crashing the property menu with
+// `value.includes is not a function` is the wrong UX. Non-string
+// values can't contain literal secrets at this layer anyway —
+// secrets always arrive as text — so it's safe to short-circuit
+// to null.
+export function detectSecret(value: unknown): string | null {
+    if (typeof value !== "string") return null;
     if (!value) return null;
 
     // Variable references are safe by definition — they aren't the
