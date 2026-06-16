@@ -249,12 +249,28 @@ export default function TutorialOverlay() {
         }
     }
 
+    // Highlight ring sits in the same rect as the spotlight cut-out so it
+    // appears to wrap the target element. pointer-events: none keeps the
+    // underlying control (input, button, etc.) fully interactive — the ring
+    // is purely a visual signal that this is the field in question.
+    const highlightStyle: React.CSSProperties | undefined = targetRect
+        ? {
+              top: targetRect.top,
+              left: targetRect.left,
+              width: targetRect.width,
+              height: targetRect.height,
+          }
+        : undefined;
+
     return (
         <>
             <div
                 className="tutorial-overlay"
                 style={{ clipPath: targetRect ? clipPath : undefined }}
             />
+            {targetRect && (
+                <div className="tutorial-highlight" style={highlightStyle} aria-hidden />
+            )}
             <div className="tutorial-tooltip" style={tooltipStyle}>
                 <div className="tutorial-tooltip-header">
                     <span className="tutorial-step-indicator">

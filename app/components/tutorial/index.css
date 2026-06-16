@@ -1,11 +1,58 @@
 /* ── Spotlight overlay ── */
+/* Dim raised from 0.45 → 0.62 so the field-in-question reads as the
+   focal point of the page rather than "another thing that's a bit
+   brighter than the rest". */
 .tutorial-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.62);
     z-index: 998;
     pointer-events: none;
     animation: tutorialFadeIn 0.3s ease-out;
+}
+
+/* ── Highlight ring ──
+   Sits on top of the spotlight cut-out and gives the target a visible
+   border + outer halo in Flomation teal so the eye lands on it
+   immediately. pointer-events: none ensures the underlying control
+   remains fully interactive — clicks, focus, typing all pass through.
+   The pulse animation breathes the halo to draw attention without
+   being a distracting strobe (cf. prefers-reduced-motion override). */
+.tutorial-highlight {
+    position: fixed;
+    z-index: 998;
+    pointer-events: none;
+    border-radius: 10px;
+    border: 2px solid #00aa9c;
+    box-shadow:
+        0 0 0 4px rgba(0, 170, 156, 0.22),
+        0 0 24px 6px rgba(0, 170, 156, 0.45),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    animation: tutorialHighlightPulse 1.8s ease-in-out infinite,
+               tutorialFadeIn 0.3s ease-out;
+}
+
+@keyframes tutorialHighlightPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 4px rgba(0, 170, 156, 0.22),
+            0 0 24px 6px rgba(0, 170, 156, 0.45),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    50% {
+        box-shadow:
+            0 0 0 6px rgba(0, 170, 156, 0.32),
+            0 0 36px 10px rgba(0, 170, 156, 0.60),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    }
+}
+
+/* Respect users who've opted out of motion — keep the ring visible but
+   drop the breathing animation. */
+@media (prefers-reduced-motion: reduce) {
+    .tutorial-highlight {
+        animation: tutorialFadeIn 0.3s ease-out;
+    }
 }
 
 /* ── Tooltip card ── */
