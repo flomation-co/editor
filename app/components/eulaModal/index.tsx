@@ -67,7 +67,16 @@ export default function EulaModal() {
       );
 
       if (user) {
-        setUser({ ...user, eula_version: eula.version });
+        // Stamp eula_accepted_at alongside eula_version so the
+        // post-EULA WelcomeModal's gate (which keys off
+        // eula_accepted_at, not eula_version) opens on the same
+        // render. Without this the user falls straight through
+        // to Shepherding and the welcome modal never shows.
+        setUser({
+          ...user,
+          eula_version: eula.version,
+          eula_accepted_at: new Date().toISOString(),
+        });
       }
       setVisible(false);
     } catch {
