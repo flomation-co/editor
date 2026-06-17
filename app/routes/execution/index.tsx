@@ -189,14 +189,27 @@ export default function ExecutionDetail() {
                     setNodeStatuses(prev => {
                         const next = new Map(prev);
                         const existing = next.get(nodeData.id) || [];
+                        const last = existing.length > 0 ? existing[existing.length - 1] : null;
                         if (nodeData.status === 'running') {
-                            // "running" events start a new iteration — append a new entry
-                            next.set(nodeData.id, [...existing, nodeData]);
+                            // A `running` event arriving after `suspended` is a
+                            // RESUME of the same logical iteration — not a new
+                            // one. Replace the suspended entry instead of
+                            // appending. This stops Pause/Wait nodes from
+                            // showing a misleading ×2 badge after every
+                            // suspend/resume cycle (the iteration badge is for
+                            // Loop nodes, not for paused-then-resumed nodes).
+                            if (last?.status === 'suspended') {
+                                const updated = [...existing];
+                                updated[updated.length - 1] = nodeData;
+                                next.set(nodeData.id, updated);
+                            } else {
+                                next.set(nodeData.id, [...existing, nodeData]);
+                            }
                         } else {
                             // Completion events update the last entry (the running one)
-                            if (existing.length > 0 && existing[existing.length - 1].status === 'running') {
+                            if (last?.status === 'running') {
                                 const updated = [...existing];
-                                updated[updated.length - 1] = { ...updated[updated.length - 1], ...nodeData };
+                                updated[updated.length - 1] = { ...last, ...nodeData };
                                 next.set(nodeData.id, updated);
                             } else {
                                 next.set(nodeData.id, [...existing, nodeData]);
@@ -251,12 +264,20 @@ export default function ExecutionDetail() {
                 try {
                     const data = JSON.parse(line.substring(9)) as NodeStatus;
                     const existing = map.get(data.id) || [];
+                    const last = existing.length > 0 ? existing[existing.length - 1] : null;
                     if (data.status === 'running') {
-                        existing.push(data);
+                        // `running` after `suspended` is a resume of the same
+                        // iteration — replace, don't append. See the matching
+                        // SSE handler above for the full rationale.
+                        if (last?.status === 'suspended') {
+                            existing[existing.length - 1] = data;
+                        } else {
+                            existing.push(data);
+                        }
                     } else {
                         // Merge completion into the last running entry for this node
-                        if (existing.length > 0 && existing[existing.length - 1].status === 'running') {
-                            existing[existing.length - 1] = { ...existing[existing.length - 1], ...data };
+                        if (last?.status === 'running') {
+                            existing[existing.length - 1] = { ...last, ...data };
                         } else {
                             existing.push(data);
                         }
