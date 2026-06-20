@@ -201,3 +201,125 @@
     color: rgba(255, 255, 255, 0.3);
     font-size: 12px;
 }
+/* ─── Source tabs ──────────────────────────────────────────────── */
+
+.voice-tabs {
+    display: flex;
+    gap: 0;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.voice-tab {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    padding: 7px 10px;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: color 0.1s ease, background 0.1s ease;
+}
+
+.voice-tab:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.voice-tab--active {
+    background: rgba(0, 170, 156, 0.15);
+    color: #00aa9c;
+}
+
+.voice-tab--active:hover {
+    background: rgba(0, 170, 156, 0.2);
+    color: #00aa9c;
+}
+
+/* ─── Marketplace-specific rows ───────────────────────────────── */
+
+.voice-option-desc {
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+    /* Cap at two lines so a verbose description doesn't dominate the
+       dropdown — full description appears in the title attribute via
+       hover should we ever want it. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.voice-option-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.voice-add-btn {
+    background: rgba(0, 170, 156, 0.1);
+    border: 1px solid rgba(0, 170, 156, 0.3);
+    color: #00aa9c;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.1s ease, color 0.1s ease;
+    white-space: nowrap;
+}
+
+.voice-add-btn:hover {
+    background: rgba(0, 170, 156, 0.2);
+    color: #00d4c2;
+}
+
+.voice-add-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.voice-load-more {
+    width: calc(100% - 16px);
+    margin: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.voice-load-more:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.voice-loading-row {
+    padding: 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.voice-category--shared {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
