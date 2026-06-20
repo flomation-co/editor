@@ -30,6 +30,41 @@ import {
 } from '@xyflow/react';
 
 import CustomNode from "~/components/editor/customNode";
+import GroupNode from "~/components/editor/groupNode";
+import { getLayoutedElements } from "~/components/editor/autoLayout";
+
+// Internal node type for the visual grouping primitive. Picked
+// short so it doesn't collide with any plugin name produced by the
+// API manifest (every real plugin uses a "category/name" shape).
+const GROUP_NODE_TYPE = "group";
+
+// orderParentsFirst rearranges a node array so every node carrying
+// a parentId appears AFTER its parent. React Flow v12 requires this
+// invariant or it silently fails to render the child — a particularly
+// nasty bug because the underlying state is correct, only the
+// rendered DOM is missing. We apply this defensively at load time
+// (a flow saved with the wrong order self-heals on reopen) and at
+// reparent time (a freshly-dropped child gets sorted into place).
+function orderParentsFirst(nodes: any[]): any[] {
+    const byId = new Map<string, any>();
+    for (const n of nodes) byId.set(n.id, n);
+
+    const out: any[] = [];
+    const placed = new Set<string>();
+
+    // depth-first walk so a chain of nested parents (group inside
+    // group, if we ever support that) still terminates correctly.
+    const visit = (n: any) => {
+        if (placed.has(n.id)) return;
+        if (n.parentId && byId.has(n.parentId) && !placed.has(n.parentId)) {
+            visit(byId.get(n.parentId));
+        }
+        out.push(n);
+        placed.add(n.id);
+    };
+    for (const n of nodes) visit(n);
+    return out;
+}
 import {NodeCategoryType, useDebounce} from "~/types";
 import PropertyMenu from "~/components/propertyMenu";
 import useConfig from "~/components/config";
@@ -256,7 +291,10 @@ export function Editor(props : EditorProps) {
                         zoom: response.data ? response.data.scale : 1
                     });
                     const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
-                    const loadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    const rawLoadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
+                    // Defensive ordering pass — see orderParentsFirst
+                    // for the React Flow v12 invariant this protects.
+                    const loadedNodes = orderParentsFirst(rawLoadedNodes);
                     setEdges(loadedEdges);
                     setNodes(loadedNodes);
                     lastSavedHashRef.current = JSON.stringify({ nodes: loadedNodes, edges: loadedEdges });
@@ -462,6 +500,125 @@ export function Editor(props : EditorProps) {
         setRfInstance(rf);
     }, [ setRfInstance, viewport ]);
 
+    // Reparent a node when the user drops it into (or out of) a
+    // group's bounds. Tier-1 grouping is purely visual but the
+    // experience requires this: drop a tool node onto an expanded
+    // group and it should "stick" to that group. We do it on drag
+    // stop rather than during the drag to avoid fighting React
+    // Flow's position updates mid-gesture.
+    const onNodeDragStopReparent = useCallback((_event: any, node: any) => {
+        if (node.type === GROUP_NODE_TYPE) return; // groups never get reparented onto other groups
+
+        // Find any expanded group whose flow-space bounds contain
+        // the dropped node's position. We use the node's TOP-LEFT
+        // coordinate as the hit test point; refining to centre or
+        // overlap area is possible later but top-left is what users
+        // visually drag.
+        const candidates = (nodes as any[]).filter(n =>
+            n.type === GROUP_NODE_TYPE && n.data?.collapsed === false
+        );
+
+        // Read the group's true rendered size from `measured` first
+        // (React Flow's authoritative cache after NodeResizer fires),
+        // then fall back to style and top-level width/height. The
+        // earlier version read only style.width/height — if the user
+        // resized via NodeResizer and the new size landed on a
+        // different field, the hit-test would still use the original
+        // 400×240 box and silently miss drops in the new area.
+        const hit = candidates.find(g => {
+            const w = g.measured?.width ?? (g.style?.width as number) ?? g.width ?? 400;
+            const h = g.measured?.height ?? (g.style?.height as number) ?? g.height ?? 240;
+            const gx = g.position.x;
+            const gy = g.position.y;
+            // Node positions are relative to the parent when parentId
+            // is set, so reconstruct absolute coordinates for the
+            // currently-parented case.
+            let ax = node.position.x;
+            let ay = node.position.y;
+            if (node.parentId) {
+                const parent = (nodes as any[]).find(p => p.id === node.parentId);
+                if (parent) {
+                    ax += parent.position.x;
+                    ay += parent.position.y;
+                }
+            }
+            return ax >= gx && ax <= gx + w && ay >= gy && ay <= gy + h;
+        });
+
+        // Compute the next parentId. Three cases:
+        //  - landed in a group, wasn't parented to it before → reparent
+        //  - landed outside any group, was previously parented → unparent
+        //  - no change → bail
+        const currentParent: string | undefined = node.parentId;
+        const nextParent: string | undefined = hit?.id;
+        if (currentParent === nextParent) return;
+
+        setNodes(prev => {
+            const rewritten = prev.map((n: any) => {
+            if (n.id !== node.id) return n;
+            if (nextParent) {
+                // React Flow expects child positions to be relative
+                // to the parent when parentId is set.
+                const parentNode = prev.find((p: any) => p.id === nextParent);
+                const px = parentNode?.position.x ?? 0;
+                const py = parentNode?.position.y ?? 0;
+                // If we already had a parent, n.position was relative
+                // to THAT parent — convert to absolute first, then to
+                // the new parent's relative space.
+                let absX = n.position.x;
+                let absY = n.position.y;
+                if (currentParent) {
+                    const old = prev.find((p: any) => p.id === currentParent);
+                    if (old) {
+                        absX += old.position.x;
+                        absY += old.position.y;
+                    }
+                }
+                // Deliberately NOT setting extent: "parent".
+                // The constraint would prevent the user from
+                // dragging a child back out of the group — which
+                // is the only natural way to remove it without
+                // a context-menu affordance. The child still moves
+                // with the group because parentId makes positions
+                // relative; it just isn't visually clamped.
+                return {
+                    ...n,
+                    parentId: nextParent,
+                    position: { x: absX - px, y: absY - py },
+                };
+            }
+            // Unparent: convert relative back to absolute.
+            const old = currentParent ? prev.find((p: any) => p.id === currentParent) : undefined;
+            const absX = n.position.x + (old?.position.x ?? 0);
+            const absY = n.position.y + (old?.position.y ?? 0);
+            const { parentId, extent, ...rest } = n;
+            return { ...rest, position: { x: absX, y: absY } };
+        });
+
+            // React Flow v12 requires children to appear AFTER
+            // their parent in the nodes array — otherwise the child
+            // node either renders at the wrong coordinates or
+            // disappears entirely. When the user drops an existing
+            // (older) node onto a freshly-added (newer) group, the
+            // child's index is BELOW the parent's, so we reorder
+            // here. Only the dragged node needs to move; sibling
+            // order between unrelated nodes is preserved.
+            if (nextParent) {
+                const parentIdx = rewritten.findIndex((n: any) => n.id === nextParent);
+                const childIdx = rewritten.findIndex((n: any) => n.id === node.id);
+                if (parentIdx >= 0 && childIdx >= 0 && childIdx < parentIdx) {
+                    const [child] = rewritten.splice(childIdx, 1);
+                    // After splicing the child out, parent's index
+                    // is now (parentIdx - 1). Insert child at
+                    // (parentIdx - 1 + 1) = parentIdx so the child
+                    // sits immediately after its parent.
+                    rewritten.splice(parentIdx, 0, child);
+                }
+            }
+            return rewritten;
+        });
+    }, [ nodes, setNodes ]);
+
     const debouncedMove = useCallback(useDebounce((e) => {
         if (rfInstance) {
             const vp = rfInstance.getViewport();
@@ -567,7 +724,11 @@ export function Editor(props : EditorProps) {
 
 
     const onSelectionChange = useCallback((n) => {
-        if (n.nodes.length == 1 && rfInstance) {
+        // Group nodes have no plugin config and therefore no
+        // property surface — selecting one shouldn't open the
+        // property menu (it would render as an empty wrapper).
+        // The group's inline header input handles renaming.
+        if (n.nodes.length == 1 && rfInstance && n.nodes[0].type !== GROUP_NODE_TYPE) {
             setPropertyNode((prev) => {
                 if (prev && prev.id === n.nodes[0].id) {
                     return prev;
@@ -630,6 +791,16 @@ export function Editor(props : EditorProps) {
     const onNameChange = useCallback((id: string, value: any) => {
         setNodes((prev) => prev.map((node) => {
             if (node.id !== id) return node;
+            // Group nodes have no plugin config — they store their
+            // display name directly on data.label. Normal action
+            // nodes store it on data.config.label (the manifest
+            // wraps the action definition under config).
+            if (node.type === GROUP_NODE_TYPE) {
+                return {
+                    ...node,
+                    data: { ...node.data, label: value },
+                };
+            }
             return {
                 ...node,
                 data: {
@@ -1110,11 +1281,117 @@ export function Editor(props : EditorProps) {
         }
     }, []);
 
+    // Hover-to-focus state for the edge-dimming UX. When a node is
+    // hovered, edges that touch it get the flo-edge-highlighted class
+    // and pop to full opacity; everything else stays at the muted
+    // baseline defined in index.css. Tracked on the editor root so
+    // the displayEdges memo below can react without each node
+    // bubbling state through.
+    const [ hoveredNodeId, setHoveredNodeId ] = useState<string | null>(null);
+
+    const onNodeMouseEnter = useCallback((_event: unknown, node: { id: string }) => {
+        setHoveredNodeId(node.id);
+    }, []);
+
+    const onNodeMouseLeave = useCallback(() => {
+        setHoveredNodeId(null);
+    }, []);
+
+    // collapsedGroups is the set of group node IDs that are currently
+    // collapsed. Every group node carries its own `data.collapsed`
+    // flag; this memo flattens that into a Set so the display memos
+    // can answer "is this node inside a collapsed group?" in O(1).
+    const collapsedGroups = useMemo(() => {
+        const s = new Set<string>();
+        for (const n of nodes as any[]) {
+            if (n.type === GROUP_NODE_TYPE && n.data?.collapsed !== false) {
+                s.add(n.id);
+            }
+        }
+        return s;
+    }, [nodes]);
+
+    // displayNodes hides children that belong to a collapsed group.
+    // The group's own dimensions are swapped on the source node by
+    // GroupNode's toggle handler (which also stashes the expanded
+    // size in data.expandedWidth/Height for restoration on expand),
+    // so no dimension override is needed here.
+    const displayNodes = useMemo(() => {
+        if (collapsedGroups.size === 0) return nodes;
+        return (nodes as any[]).map(n => {
+            if (n.parentId && collapsedGroups.has(n.parentId)) {
+                return { ...n, hidden: true };
+            }
+            return n;
+        });
+    }, [nodes, collapsedGroups]);
+
+    // displayEdges is the edges array we hand to ReactFlow. Three
+    // transformations layered on top of the canonical edges:
+    //   1) When a group is collapsed, any edge touching a hidden
+    //      child gets its endpoint(s) rewritten to point at the
+    //      group node itself so the wire visually terminates at the
+    //      collapsed pill instead of vanishing. Edges fully inside a
+    //      collapsed group disappear entirely — they would render as
+    //      a self-loop on the group, which is noise.
+    //   2) The hover-focus highlight class is added to edges that
+    //      touch the hovered node.
+    //   3) Everything else passes through by reference so React Flow
+    //      doesn't re-render for a no-op.
+    const displayEdges = useMemo(() => {
+        if (collapsedGroups.size === 0 && !hoveredNodeId) return edges;
+
+        // Build a child→groupId map so we can look up a hidden
+        // node's enclosing group in O(1) when rewriting endpoints.
+        const childToGroup = new Map<string, string>();
+        if (collapsedGroups.size > 0) {
+            for (const n of nodes as any[]) {
+                if (n.parentId && collapsedGroups.has(n.parentId)) {
+                    childToGroup.set(n.id, n.parentId);
+                }
+            }
+        }
+
+        const out: any[] = [];
+        for (const e of edges as any[]) {
+            const sourceGroup = childToGroup.get(e.source);
+            const targetGroup = childToGroup.get(e.target);
+
+            // Both endpoints inside the same collapsed group — drop
+            // the edge entirely; it's an internal wire.
+            if (sourceGroup && targetGroup && sourceGroup === targetGroup) {
+                continue;
+            }
+
+            let rewritten = e;
+            if (sourceGroup || targetGroup) {
+                rewritten = {
+                    ...e,
+                    source: sourceGroup ?? e.source,
+                    sourceHandle: sourceGroup ? "out" : e.sourceHandle,
+                    target: targetGroup ?? e.target,
+                    targetHandle: targetGroup ? "in" : e.targetHandle,
+                };
+            }
+
+            if (hoveredNodeId) {
+                const touches = rewritten.source === hoveredNodeId || rewritten.target === hoveredNodeId;
+                if (touches) {
+                    const existing = rewritten.className ? rewritten.className + " " : "";
+                    rewritten = { ...rewritten, className: existing + "flo-edge-highlighted" };
+                }
+            }
+            out.push(rewritten);
+        }
+        return out;
+    }, [edges, nodes, collapsedGroups, hoveredNodeId]);
+
     const nodeTypes = useMemo(() => {
         if (plugins) {
-            let types = {};
+            let types: Record<string, any> = {};
 
             types["input"] = CustomNode;
+            types[GROUP_NODE_TYPE] = GroupNode;
 
             Object.keys(plugins).forEach((k) => {
                 types[k] = CustomNode
@@ -1127,6 +1404,55 @@ export function Editor(props : EditorProps) {
     const toggleSnapToGrid = useCallback(() => {
         setSnapToGrid(!snapToGrid)
     }, [ snapToGrid ])
+
+    // Drop a fresh empty group node onto the canvas. The user can
+    // then expand it and drag existing nodes into its bounds to
+    // parent them, or wire its handles to neighbours and drop nodes
+    // inside later. We start expanded by default so the user can
+    // immediately see the working surface they just created.
+    const addGroup = useCallback(() => {
+        const id = "" + self.crypto.randomUUID();
+        const graphElement = document.querySelector('.react-flow');
+        const rect = graphElement?.getBoundingClientRect();
+        const centreX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        const centreY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+        const position = rfInstance
+            ? rfInstance.screenToFlowPosition({ x: centreX, y: centreY })
+            : { x: 0, y: 0 };
+
+        const newGroup: any = {
+            id,
+            type: GROUP_NODE_TYPE,
+            position: { x: position.x - 200, y: position.y - 120 },
+            // Fixed initial footprint that's roomy enough to drop a
+            // handful of nodes into without immediately resizing.
+            // Users can drag the bottom-right corner to resize later
+            // once we ship that feature.
+            style: { width: 400, height: 240 },
+            data: { id, label: "Group", collapsed: false },
+            sourcePosition: "right",
+            targetPosition: "left",
+        };
+        setNodes(nds => nds.concat(newGroup));
+    }, [ rfInstance, setNodes ]);
+
+    // Auto-arrange the flow using a Dagre layered layout. Particularly
+    // valuable for agent flows where dozens of tool nodes radiate from
+    // the AI node and end up in a starburst — Dagre rearranges them
+    // into a clean left-to-right fan that's actually readable. After
+    // the layout settles we fitView so the user immediately sees the
+    // result rather than panning to wherever the nodes ended up.
+    const autoArrange = useCallback(() => {
+        const { nodes: laidOut } = getLayoutedElements(nodes, edges);
+        setNodes(laidOut);
+        // Give React Flow a tick to paint the new positions before
+        // we ask it to fit them in the viewport.
+        setTimeout(() => {
+            if (rfInstance) {
+                rfInstance.fitView({ padding: 0.2, duration: 400 });
+            }
+        }, 50);
+    }, [ nodes, edges, setNodes, rfInstance ])
 
     const toggleShowMiniMap = useCallback(() => {
         setShowMiniMap(!showMiniMap)
@@ -1370,10 +1696,18 @@ export function Editor(props : EditorProps) {
                                     <Icon name="plus" /> <span>Add Node</span>
                                     <Tooltip id={"tooltip-action-add-node"} />
                                 </div>
+                                <div className={"flo-editor-action-button"} onClick={addGroup} data-tooltip-id={"tooltip-action-add-group"} data-tooltip-content={"Drop an empty group onto the canvas — drag nodes inside, then collapse to tidy"} data-tooltip-place={"bottom"}>
+                                    <Icon name="object-group" /> <span>Add Group</span>
+                                    <Tooltip id={"tooltip-action-add-group"} />
+                                </div>
                                 <div className={"flo-editor-action-divider"}></div>
                                 <div className={snapToGrid ? "flo-editor-action-button flo-editor-action-button-enabled" : "flo-editor-action-button"} onClick={toggleSnapToGrid} data-tooltip-id={"tooltip-action-toggle-snap-to-grid"} data-tooltip-content={"Toggle Snap to Grid"} data-tooltip-place={"bottom"}>
                                     <Icon name="grid" /> <span>Snap to Grid</span>
                                     <Tooltip id={"tooltip-action-toggle-snap-to-grid"} />
+                                </div>
+                                <div className={"flo-editor-action-button"} onClick={autoArrange} data-tooltip-id={"tooltip-action-auto-arrange"} data-tooltip-content={"Auto-arrange nodes — collapses tool starbursts into a clean left-to-right layout"} data-tooltip-place={"bottom"}>
+                                    <Icon name="diagram-project" /> <span>Auto-arrange</span>
+                                    <Tooltip id={"tooltip-action-auto-arrange"} />
                                 </div>
                                 <div className={showMiniMap ? "flo-editor-action-button flo-editor-action-button-enabled" : "flo-editor-action-button"} onClick={toggleShowMiniMap} data-tooltip-id={"tooltip-action-toggle-minimap"} data-tooltip-content={"Toggle Minimap"} data-tooltip-place={"bottom"}>
                                     <Icon name="map" /> <span>Minimap</span>
@@ -1404,8 +1738,8 @@ export function Editor(props : EditorProps) {
                                         onClick={(e) => {onContextMenuClose(e); setDragging(false)}}
                                         onContextMenu={onContextMenuOpen}
                                         colorMode="dark"
-                                        nodes={nodes}
-                                        edges={edges}
+                                        nodes={displayNodes}
+                                        edges={displayEdges}
                                         onNodesChange={onNodesChange}
                                         onEdgesChange={onEdgesChange}
                                         onEdgeDoubleClick={onEdgeDoubleClick}
@@ -1415,7 +1749,9 @@ export function Editor(props : EditorProps) {
                                         onMoveStart={() => {setDragging(true)}}
                                         onMoveEnd={() => {setDragging(false)}}
                                         onNodeDragStart={() => {setPropertyMenuVisible(false); setMenuVisible(false); setDragging(true)}}
-                                        onNodeDragStop={() => {setMenuVisible(false); setDragging(false)}}
+                                        onNodeDragStop={(e, node) => {setMenuVisible(false); setDragging(false); onNodeDragStopReparent(e, node);}}
+                                        onNodeMouseEnter={onNodeMouseEnter}
+                                        onNodeMouseLeave={onNodeMouseLeave}
                                         onSelectionChange={onSelectionChange}
                                         nodeTypes={nodeTypes}
                                         snapToGrid={snapToGrid}
