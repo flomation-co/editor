@@ -383,6 +383,7 @@ export type Agent = {
     orchestrator_flow_id?: string,
     max_concurrent_executions: number,
     idle_timeout_seconds: number,
+    prior_conversation_count?: number,
     channels: AgentChannel[],
     allowed_flow_ids?: string[],
     requires_approval: boolean,
