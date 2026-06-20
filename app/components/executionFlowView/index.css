@@ -767,3 +767,14 @@
     line-height: 1.4;
     pointer-events: none;
 }
+
+.ni-media-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
