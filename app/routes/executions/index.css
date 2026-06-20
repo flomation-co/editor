@@ -136,3 +136,108 @@
     background: rgba(139, 92, 246, 0.2);
     color: #a78bfa;
 }
+
+/* Hierarchical executions list */
+
+.exec-tree-indent {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.exec-tree-expander {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    user-select: none;
+    border-radius: 3px;
+    transition: background 0.1s ease, color 0.1s ease;
+}
+
+.exec-tree-expander:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.exec-tree-rail {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.25);
+    font-family: monospace;
+    margin-right: 4px;
+    pointer-events: none;
+}
+
+.exec-tree-rel {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #a78bfa;
+    background: rgba(139, 92, 246, 0.12);
+    border-radius: 4px;
+}
+
+.flo-table-row--child td {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+/* View-mode toggle (Hierarchical | Flat) — mirrors the auto-refresh
+   button row stylistically so the two control bars feel like one
+   coherent surface. */
+.exec-view-mode-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.exec-view-mode-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.exec-view-mode-options {
+    display: inline-flex;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.exec-view-mode-option {
+    background: transparent;
+    border: 0;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.1s ease, background 0.1s ease;
+}
+
+.exec-view-mode-option:hover {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.exec-view-mode-option--active {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.exec-view-mode-option--active:hover {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
