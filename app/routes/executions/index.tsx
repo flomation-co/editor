@@ -106,12 +106,22 @@ export default function Executions() {
     const [ offset, setOffset ] = useState<number>(0);
     const [ limit, setLimit ] = useState<number>(10);
     const [ disableRightPagination, setDisableRightPagination ] = useState<boolean>(false);
-    const [ hideAgentChildren, setHideAgentChildren ] = useState<boolean>(() => {
+// Hierarchical view: root_only=true on fetch + expand/collapse
+    // per root using lazy /execution-tree/:rootID requests. Default
+    // ON because the flat view fires one row per child every time a
+    // remote-triggered flow runs — the tree compresses that down to
+    // one expandable root row.
+    const [ hierarchical, setHierarchical ] = useState<boolean>(() => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('flomation-hide-agent-execs') === 'true';
+            const stored = localStorage.getItem('flomation-executions-hierarchical');
+            // Default to ON unless the user has explicitly opted out.
+            return stored === null ? true : stored === 'true';
         }
-        return false;
+        return true;
     });
+    const [ expandedRoots, setExpandedRoots ] = useState<Set<string>>(new Set());
+    const [ subtrees, setSubtrees ] = useState<Map<string, Execution[]>>(new Map());
+    const [ loadingTrees, setLoadingTrees ] = useState<Set<string>>(new Set());
 
     const [ width, setWidth ] = useState<number>(0);
     const [ isMobile, setIsMobile ] = useState<boolean>(true);
@@ -160,7 +170,7 @@ export default function Executions() {
             url += "&";
         }
         url += "offset=" + offset + "&limit=" + limit;
-        if (hideAgentChildren) {
+        if (hierarchical) {
             url += "&root_only=true";
         }
 
@@ -179,24 +189,72 @@ export default function Executions() {
             .finally(() => setIsLoading(false));
     };
 
-    // Initial fetch + on filter change
+    // Fetch on mount + on filter change, AND set up the auto-refresh
+    // interval in the same effect. The immediate fetch fires before
+    // the interval starts ticking, so users never see the skeleton
+    // wait for the first interval to roll over.
     useEffect(() => {
         fetchExecutions();
-    }, [search, offset, limit, hideAgentChildren]);
-
-    // Auto-refresh interval
-    useEffect(() => {
         if (refreshInterval === 0) return;
-
         setRefreshCycle(c => c + 1);
-
         const timer = setInterval(() => {
             fetchExecutions();
             setRefreshCycle(c => c + 1);
         }, refreshInterval);
-
         return () => clearInterval(timer);
-    }, [refreshInterval, search, offset, limit, hideAgentChildren]);
+    }, [refreshInterval, search, offset, limit, hierarchical]);
+
+    // Expand a root row, lazy-fetching its subtree the first time.
+    // Subsequent toggles just flip the expanded set — the cached tree
+    // is reused so the user can collapse and re-expand without firing
+    // another network round-trip.
+    const toggleRoot = useCallback(async (rootId: string) => {
+        const isExpanded = expandedRoots.has(rootId);
+        if (isExpanded) {
+            setExpandedRoots(prev => {
+                const next = new Set(prev);
+                next.delete(rootId);
+                return next;
+            });
+            return;
+        }
+        if (!subtrees.has(rootId) && !loadingTrees.has(rootId)) {
+            setLoadingTrees(prev => new Set(prev).add(rootId));
+            const config = useConfig();
+            try {
+                const resp = await api.get(
+                    config("AUTOMATE_API_URL") + '/api/v1/execution-tree/' + rootId,
+                    { headers: { Authorization: "Bearer " + token } },
+                );
+                if (resp) {
+                    setSubtrees(prev => new Map(prev).set(rootId, resp.data));
+                }
+            } catch (err) {
+                console.error("failed to fetch execution tree", err);
+            } finally {
+                setLoadingTrees(prev => {
+                    const next = new Set(prev);
+                    next.delete(rootId);
+                    return next;
+                });
+            }
+        }
+        setExpandedRoots(prev => new Set(prev).add(rootId));
+    }, [expandedRoots, subtrees, loadingTrees, token]);
+
+    // Given a root execution's id, return all descendant rows in the
+    // order they should render (depth-first, by creation time at each
+    // level). Roots return themselves when no tree has been fetched
+    // yet — guarantees the table still renders cleanly during the
+    // async load.
+    function descendantsOf(rootId: string): Execution[] {
+        const tree = subtrees.get(rootId);
+        if (!tree) return [];
+        // The tree already arrives ordered by (depth, created_at)
+        // from the API. The root itself is included; strip it here
+        // because the calling row already renders the root.
+        return tree.filter(e => e.id !== rootId);
+    }
 
     function handleUpdateSearch(term) {
         setSearch(term);
@@ -253,14 +311,35 @@ export default function Executions() {
             <SearchBar value={search} onChange={handleUpdateSearch} placeholder="Search executions..." />
 
             <div className="exec-controls-bar">
-                <label className="exec-agent-filter" title="Hide executions triggered by agents">
-                    <input type="checkbox" checked={hideAgentChildren} onChange={e => {
-                        setHideAgentChildren(e.target.checked);
-                        localStorage.setItem('flomation-hide-agent-execs', String(e.target.checked));
-                    }} />
-                    <span className="exec-agent-filter-slider"></span>
-                    <span className="exec-agent-filter-label">Hide agent executions</span>
-                </label>
+                <div className="exec-view-mode-bar">
+                    <div className="exec-view-mode-label">View</div>
+                    <div className="exec-view-mode-options">
+                        <button
+                            className={`exec-view-mode-option ${hierarchical ? 'exec-view-mode-option--active' : ''}`}
+                            onClick={() => {
+                                if (hierarchical) return;
+                                setHierarchical(true);
+                                localStorage.setItem('flomation-executions-hierarchical', 'true');
+                                setExpandedRoots(new Set());
+                            }}
+                            title="Show top-of-tree executions only — expand a row to see its children"
+                        >
+                            <Icon name="sitemap" /> Hierarchical
+                        </button>
+                        <button
+                            className={`exec-view-mode-option ${!hierarchical ? 'exec-view-mode-option--active' : ''}`}
+                            onClick={() => {
+                                if (!hierarchical) return;
+                                setHierarchical(false);
+                                localStorage.setItem('flomation-executions-hierarchical', 'false');
+                                setExpandedRoots(new Set());
+                            }}
+                            title="Show every execution as a flat list"
+                        >
+                            <Icon name="list" /> Flat
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="exec-refresh-bar">
@@ -323,57 +402,76 @@ export default function Executions() {
                                 </thead>
                                 <tbody>
                                 <>
-                                    {execs?.map((exec, index) => {
-                                        return (
-                                            <tr className={"flo-table-row"} key={exec.id}>
+                                    {execs?.flatMap((exec, index) => {
+                                        const isRoot = !exec.parent_execution_id;
+                                        const showExpander = hierarchical && isRoot && exec.has_children;
+                                        const isExpanded = expandedRoots.has(exec.id);
+                                        const isLoading = loadingTrees.has(exec.id);
+
+                                        const renderRow = (e: Execution, depth: number) => (
+                                            <tr className={"flo-table-row" + (depth > 0 ? " flo-table-row--child" : "")} key={e.id}>
                                                 <td>
-                                                    {exec.agent_id && (
-                                                        <Icon name="robot" style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + exec.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
-                                                    )}
-                                                    <Link to={"/execution/" + exec.id} className={"flo-table-link"}>{exec.name}</Link>
-                                                    <span className={"table-column-hide-sm flo-table-subtext"}>{exec.id}</span>
-                                                    {exec.agent_id && <Tooltip id={"tooltip-agent-" + exec.id} />}
+                                                    <span className="exec-tree-indent" style={{ paddingLeft: depth * 20 }}>
+                                                        {depth === 0 && hierarchical && e.has_children && (
+                                                            <span
+                                                                className="exec-tree-expander"
+                                                                onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); toggleRoot(e.id); }}
+                                                                title={isLoading ? "Loading…" : (expandedRoots.has(e.id) ? "Collapse" : "Expand")}
+                                                            >
+                                                                {isLoading ? "…" : (expandedRoots.has(e.id) ? "▼" : "▶")}
+                                                            </span>
+                                                        )}
+                                                        {depth > 0 && (
+                                                            <span className="exec-tree-rail" aria-hidden="true">└</span>
+                                                        )}
+                                                        {e.agent_id && (
+                                                            <Icon name="robot" style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + e.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
+                                                        )}
+                                                        <Link to={"/execution/" + e.id} className={"flo-table-link"}>{e.name}</Link>
+                                                        <span className={"table-column-hide-sm flo-table-subtext"}>{e.id}</span>
+                                                        {e.parent_relationship && depth > 0 && (
+                                                            <span className="exec-tree-rel" title={"Relationship: " + e.parent_relationship}>{e.parent_relationship}</span>
+                                                        )}
+                                                        {e.agent_id && <Tooltip id={"tooltip-agent-" + e.id} />}
+                                                    </span>
                                                 </td>
-                                                <td className={"table-column-hide-sm flo-table-subdued"}>#{exec.sequence}</td>
+                                                <td className={"table-column-hide-sm flo-table-subdued"}>#{e.sequence}</td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                        <span data-tooltip-id={"tooltip-time-" + exec.id} data-tooltip-content={formatDateString(exec.created_at)} data-tooltip-place={"bottom"}>
-                                                            {formatDate(exec.created_at)}
+                                                        <span data-tooltip-id={"tooltip-time-" + e.id} data-tooltip-content={formatDateString(e.created_at)} data-tooltip-place={"bottom"}>
+                                                            {formatDate(e.created_at)}
                                                         </span>
-                                                    <Tooltip id={"tooltip-time-" + exec.id} />
+                                                    <Tooltip id={"tooltip-time-" + e.id} />
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"} style={{ textAlign: 'center' }}>
-                                                    <span data-tooltip-id={"tooltip-trigger-" + exec.id} data-tooltip-content={triggerLabel(exec.trigger_type)} data-tooltip-place="bottom">
-                                                        <Icon name={triggerIcon(exec.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
+                                                    <span data-tooltip-id={"tooltip-trigger-" + e.id} data-tooltip-content={triggerLabel(e.trigger_type)} data-tooltip-place="bottom">
+                                                        <Icon name={triggerIcon(e.trigger_type)} style={{ fontSize: 14, opacity: 0.6 }} />
                                                     </span>
-                                                    <Tooltip id={"tooltip-trigger-" + exec.id} />
+                                                    <Tooltip id={"tooltip-trigger-" + e.id} />
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    {exec.triggering_user_display_name ?? (exec.triggering_user_id ? <span style={{fontFamily: 'monospace', fontSize: 11, opacity: 0.6}}>{exec.triggering_user_id.slice(0, 8)}…</span> : '—')}
+                                                    {e.triggering_user_display_name ?? (e.triggering_user_id ? <span style={{fontFamily: 'monospace', fontSize: 11, opacity: 0.6}}>{e.triggering_user_id.slice(0, 8)}…</span> : '—')}
                                                 </td>
                                                 <td className={"table-column-hide-sm"}>
-                                                    <Link to={{pathname: "/execution/" + exec.id}}>
-                                                        <ExecuteState state={exec.execution_status} completionState={exec.completion_status} />
+                                                    <Link to={{pathname: "/execution/" + e.id}}>
+                                                        <ExecuteState state={e.execution_status} completionState={e.completion_status} />
                                                     </Link>
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    {exec.completion_status === 'pending' && exec.execution_status !== 'created'
-                                                        ? <LiveDuration createdAt={exec.created_at} formatter={friendlyDuration} />
-                                                        : exec.execution_status === 'created'
+                                                    {e.completion_status === 'pending' && e.execution_status !== 'created'
+                                                        ? <LiveDuration createdAt={e.created_at} formatter={friendlyDuration} />
+                                                        : e.execution_status === 'created'
                                                             ? '—'
-                                                            : friendlyDuration(effectiveDuration(exec))}
+                                                            : friendlyDuration(effectiveDuration(e))}
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
-                                                    {exec.credit_cost_pence ? (
+                                                    {e.credit_cost_pence ? (
                                                         <span style={{color: "#fbbf24", fontWeight: 500}}>
-                                                            £{(exec.credit_cost_pence / 100).toFixed(2)}
+                                                            £{(e.credit_cost_pence / 100).toFixed(2)}
                                                         </span>
                                                     ) : null}
                                                 </td>
                                                 <td>
-                                                    {/*<button disabled={true || r.state != "active"} className={"table-button"}>
-                                            <Icon name="pencil" /> Edit
-                                        </button>*/}
-                                                    <Link className={"table-button"} to={{pathname: "/execution/" + exec.id}}>
+                                                    <Link className={"table-button"} to={{pathname: "/execution/" + e.id}}>
                                                         <Icon name="eye" /> <span>View</span>
                                                     </Link>
                                                     <button className={"table-button"} disabled={true}>
@@ -381,7 +479,15 @@ export default function Executions() {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        )
+                                        );
+
+                                        const rows: any[] = [ renderRow(exec, 0) ];
+                                        if (showExpander && isExpanded) {
+                                            for (const child of descendantsOf(exec.id)) {
+                                                rows.push(renderRow(child, child.depth ?? 1));
+                                            }
+                                        }
+                                        return rows;
                                     })}
                                 </>
                                 </tbody>

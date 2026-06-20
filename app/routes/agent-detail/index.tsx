@@ -52,6 +52,7 @@ export default function AgentDetail() {
     const [aiApiKey, setAiApiKey] = useState('');
     const [maxConcurrent, setMaxConcurrent] = useState(3);
     const [idleTimeout, setIdleTimeout] = useState(3600);
+    const [priorConversationCount, setPriorConversationCount] = useState(5);
     const [maxPerHour, setMaxPerHour] = useState(100);
     const [requiresApproval, setRequiresApproval] = useState(false);
     const [channels, setChannels] = useState<AgentChannel[]>([]);
@@ -79,6 +80,9 @@ export default function AgentDetail() {
                     setAiApiKey(a.ai_api_key || '');
                     setMaxConcurrent(a.max_concurrent_executions);
                     setIdleTimeout(a.idle_timeout_seconds);
+                    // Default 5 matches the API column default — only
+                    // override when the agent row explicitly set a value.
+                    setPriorConversationCount(typeof a.prior_conversation_count === 'number' ? a.prior_conversation_count : 5);
                     setMaxPerHour(a.max_executions_per_hour);
                     setRequiresApproval(a.requires_approval);
                     setChannels(a.channels || []);
@@ -140,6 +144,7 @@ export default function AgentDetail() {
             ai_api_key: aiApiKey || null,
             max_concurrent_executions: maxConcurrent,
             idle_timeout_seconds: idleTimeout,
+            prior_conversation_count: priorConversationCount,
             max_executions_per_hour: maxPerHour,
             requires_approval: requiresApproval,
             channels: channels,
@@ -392,6 +397,10 @@ export default function AgentDetail() {
                             <div className="agent-form-group">
                                 <label className="agent-form-label">Idle Timeout (seconds)</label>
                                 <input className="agent-form-input" type="number" value={idleTimeout} onChange={e => setIdleTimeout(parseInt(e.target.value) || 0)} min={0} />
+                            </div>
+                            <div className="agent-form-group">
+                                <label className="agent-form-label" title="Number of past conversation summaries surfaced to the agent on every inbound message. Each summary carries a conversation_id the agent can pass to the get_conversation tool to fetch the full history. 0 disables the feature.">Prior Conversations</label>
+                                <input className="agent-form-input" type="number" value={priorConversationCount} onChange={e => setPriorConversationCount(Math.max(0, Math.min(50, parseInt(e.target.value) || 0)))} min={0} max={50} />
                             </div>
                             <div className="agent-form-group">
                                 <label className="agent-form-label">Require Approval</label>

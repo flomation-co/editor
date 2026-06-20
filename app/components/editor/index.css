@@ -1006,3 +1006,177 @@
 .flo-settings-number-input:focus {
     border-color: rgba(0, 170, 156, 0.4);
 }
+/* Edge dimming for hover focus.
+ *
+ * Default opacity is gently muted so dense agent flows (one AI node
+ * with 50+ tool edges) aren't visually overwhelming, but small linear
+ * flows stay perfectly readable. On node hover the connecting edges
+ * snap to full opacity — the user expresses intent by hovering a
+ * node, the graph responds by lighting up just that node's wires.
+ *
+ * Selected edges are exempt: when the user clicks an edge they want
+ * to see it cleanly regardless of where their cursor is.
+ *
+ * The 150ms transition is enough to feel intentional rather than
+ * twitchy when sweeping the mouse across the canvas. */
+.react-flow__edge {
+    opacity: 0.35;
+    transition: opacity 0.15s ease;
+}
+
+.react-flow__edge.flo-edge-highlighted,
+.react-flow__edge.selected {
+    opacity: 1;
+}
+
+/* Visual grouping primitive.
+ *
+ * The container respects the node's width/height set by the editor
+ * so React Flow can render child nodes inside its bounds. Collapsed
+ * state collapses the footprint to a slim pill via fixed dimensions
+ * on .flo-group-node--collapsed.
+ *
+ * The header bar is shared between states — same toggle, same label
+ * — so transitioning between collapsed and expanded feels like the
+ * container is unfurling rather than swapping identity. */
+.flo-group-node {
+    width: 100%;
+    height: 100%;
+    /* A very subtle fill on the expanded state so the group still
+       reads as a defined region without competing with the canvas
+       or the child nodes inside it. Quieter than the original
+       (rgba 0.04 looked grey) but more present than full
+       transparency. */
+    background: rgba(139, 92, 246, 0.02);
+    border: 1px dashed rgba(139, 92, 246, 0.35);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+}
+
+.flo-group-node--selected {
+    border-color: rgba(167, 139, 250, 0.8);
+}
+
+.flo-group-node--collapsed {
+    /* Collapsed state IS just the header — same border, same fill,
+       same chrome. The only difference between collapsed and
+       expanded is whether there's a body extending below. */
+}
+
+.flo-group-node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    /* Fixed height so the header looks identical in collapsed and
+       expanded states. COLLAPSED_HEIGHT in groupNode/index.tsx must
+       match this. */
+    height: 34px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(139, 92, 246, 0.06);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+    user-select: none;
+}
+
+.flo-group-node--collapsed .flo-group-node-header {
+    /* Strip the bottom separator when there's no body underneath.
+       Everything else about the header (height, padding, font,
+       background) stays identical to the expanded state. */
+    border-bottom: 0;
+}
+
+.flo-group-node-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 9px;
+    color: rgba(167, 139, 250, 0.85);
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.flo-group-node-toggle:hover {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.flo-group-node-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flo-group-node-label-input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    outline: none;
+    /* Slight horizontal padding so the label doesn't sit flush
+       against the focus glow on the left, and so a long name has
+       a touch of breathing room before clipping on the right. */
+    padding: 0 8px;
+}
+
+.flo-group-node-label-input:focus {
+    color: #ffffff;
+}
+
+.flo-group-node-handle {
+    background: rgba(167, 139, 250, 0.9);
+    border: 2px solid #0a0a0a;
+    width: 10px;
+    height: 10px;
+}
+
+/* React Flow renders the group container behind its children so
+   pointer events on child nodes still work normally. Children
+   parented to a group keep their own .flo-node styling. */
+.react-flow__node[data-type="group"] {
+    z-index: 0;
+}
+
+/* React Flow ships built-in styling for type="group" nodes — a
+   light grey background + 1px border — because "group" is a name
+   it recognises natively. Our group node provides its own dashed
+   purple border via .flo-group-node, so we need to strip the
+   default wrapper styles or you see a grey rectangle behind the
+   transparent inner div. */
+.react-flow__node.react-flow__node-group,
+.react-flow__node[data-type="group"] {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Resize affordances on selected groups. Subtle purple edges that
+   match the group's dashed border, with slightly more prominent
+   corner handles so the user can spot the drag targets. */
+.flo-group-node-resize-line {
+    border-color: rgba(167, 139, 250, 0.6) !important;
+}
+
+.flo-group-node-resize-handle {
+    background: #a78bfa !important;
+    border: 2px solid #0a0a0a !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 2px !important;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { NodeStatus } from "~/types";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Icon } from "~/components/icons/Icon";
 // isSensitive (key-name + value) lives in lib/secretDetection so this
 // surface stays in lock-step with the property-menu warning. Adding
@@ -103,15 +103,81 @@ function extensionFor(mimeType: string): string {
     return 'bin';
 }
 
+// isRenderableMedia answers "would this value display as a media
+// player (audio/image/video/pdf/gpx) if we let InspectorValue have
+// it?". Used by the inputs/outputs renderer to decide whether the
+// secret-mask should suppress the value or step aside so the media
+// player can render. Without this, large base64 audio/image/video
+// fields get masked as `********` because their values match the
+// HIGH_ENTROPY_BASE64 heuristic, even though the user wants to
+// inspect/play/download them.
+function isRenderableMedia(key: string, value: unknown): boolean {
+    if (typeof value !== 'string' || value.length <= 100) return false;
+    return detectMedia(key, value).type !== null;
+}
+
 function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image' | 'video' | 'pdf' | 'gpx'; mimeType: string; data: string; keyName: string }) {
     // GPX is text — the value is the raw XML, not base64. Build a UTF-8
     // data URL so the download preserves Unicode characters like accented
     // place names. Sizing uses byte length of the encoded UTF-8.
     const isText = type === 'gpx';
-    const downloadHref = isText
-        ? `data:${mimeType};charset=utf-8,${encodeURIComponent(data)}`
-        : (data.startsWith('data:') ? data : `data:${mimeType};base64,${data}`);
-    const base64 = downloadHref;
+
+    // For binary media we ultimately want a blob: URL — large data:
+    // URIs in an <a download> attribute fail silently in Chrome and
+    // Safari above ~200KB, which is exactly the size of any real TTS
+    // audio. The decode itself uses fetch() rather than atob() because
+    // fetch is more tolerant of whitespace, line breaks and padding
+    // edge cases that base64 strings sometimes pick up in transit.
+    //
+    // The decode is asynchronous, so this is a useEffect (not useMemo)
+    // backed by component state. The cleanup revokes any blob URL we
+    // created when the component unmounts or the source data changes.
+    const [mediaUrl, setMediaUrl] = useState<string>('');
+
+    useEffect(() => {
+        if (isText) {
+            setMediaUrl(`data:${mimeType};charset=utf-8,${encodeURIComponent(data)}`);
+            return;
+        }
+        // Already-formed data URIs (e.g. pasted screenshot) — use
+        // directly. The fetch path below would also work but skipping
+        // it avoids a tiny async hop for the common case.
+        if (data.startsWith('data:')) {
+            setMediaUrl(data);
+            return;
+        }
+
+        let cancelled = false;
+        let blobUrl: string | null = null;
+
+        (async () => {
+            try {
+                // fetch() can decode a data: URI of arbitrary size
+                // server-internally and hand us a Blob — no JS-land
+                // memory pressure, no atob() failure modes around
+                // whitespace or padding.
+                const res = await fetch(`data:${mimeType};base64,${data}`);
+                const blob = await res.blob();
+                if (cancelled) return;
+                blobUrl = URL.createObjectURL(blob);
+                setMediaUrl(blobUrl);
+            } catch (err) {
+                // Bad base64 falls back to the raw data URI — the
+                // download and player will likely fail, but at least
+                // we've surfaced *something*.
+                console.warn('[MediaPlayer] failed to build blob URL for', keyName, err);
+                if (!cancelled) setMediaUrl(`data:${mimeType};base64,${data}`);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+        };
+    }, [data, mimeType, keyName, isText]);
+
+    const downloadHref = mediaUrl;
+    const base64 = mediaUrl;
     const sizeKB = isText
         ? Math.round(new TextEncoder().encode(data).length / 1024)
         : Math.round((data.length * 3) / 4 / 1024);
@@ -128,12 +194,25 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     );
 
     if (type === 'audio') {
-        // Key on base64 hash to force re-mount when iteration changes —
-        // browsers cache <audio> sources and ignore src attribute updates.
-        const audioKey = data.slice(-32);
+        // Key on the mediaUrl itself. The blob URL is created
+        // asynchronously by the effect above, so the first render
+        // has mediaUrl="" and the <audio> element tries to load an
+        // empty src. Browsers cache that failed load and ignore
+        // subsequent src changes — keying on the URL forces a fresh
+        // <audio> mount once the blob URL arrives. Empty src skips
+        // rendering entirely to avoid that initial failed-load
+        // state ever happening.
+        if (!mediaUrl) {
+            return (
+                <div className="ni-media">
+                    <div className="ni-media-loading"><Icon name="spinner" spin /> Preparing audio…</div>
+                    {downloadRow}
+                </div>
+            );
+        }
         return (
             <div className="ni-media">
-                <audio key={audioKey} controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
+                <audio key={mediaUrl} controls preload="metadata" style={{ width: '100%', maxWidth: 360, height: 40 }}>
                     <source src={base64} type={mimeType} />
                 </audio>
                 {downloadRow}
@@ -142,9 +221,18 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     }
 
     if (type === 'image') {
+        if (!mediaUrl) {
+            return (
+                <div className="ni-media">
+                    <div className="ni-media-loading"><Icon name="spinner" spin /> Preparing image…</div>
+                    {downloadRow}
+                </div>
+            );
+        }
         return (
             <div className="ni-media">
                 <img
+                    key={mediaUrl}
                     src={base64}
                     alt="output"
                     style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6, marginTop: 4 }}
@@ -155,9 +243,17 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     }
 
     if (type === 'video') {
+        if (!mediaUrl) {
+            return (
+                <div className="ni-media">
+                    <div className="ni-media-loading"><Icon name="spinner" spin /> Preparing video…</div>
+                    {downloadRow}
+                </div>
+            );
+        }
         return (
             <div className="ni-media">
-                <video controls preload="metadata" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6 }}>
+                <video key={mediaUrl} controls preload="metadata" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 6 }}>
                     <source src={base64} type={mimeType} />
                 </video>
                 {downloadRow}
@@ -395,7 +491,7 @@ export default function NodeInspector({ nodeId, status, iterations, currentItera
                                 <div key={key} className="ni-entry">
                                     <div className="ni-entry-key">{key}</div>
                                     <div className="ni-entry-value">
-                                        {isSensitive(key, value)
+                                        {isSensitive(key, value) && !isRenderableMedia(key, value)
                                             ? <span className="ni-val ni-val--obfuscated">********</span>
                                             : <InspectorValue value={value} keyName={key} />}
                                     </div>
@@ -415,7 +511,7 @@ export default function NodeInspector({ nodeId, status, iterations, currentItera
                                 <div key={key} className="ni-entry">
                                     <div className="ni-entry-key">{key}</div>
                                     <div className="ni-entry-value">
-                                        {isSensitive(key, value)
+                                        {isSensitive(key, value) && !isRenderableMedia(key, value)
                                             ? <span className="ni-val ni-val--obfuscated">********</span>
                                             : <InspectorValue value={value} keyName={key} />}
                                     </div>

@@ -51,6 +51,11 @@ export default function ExecutionDetail() {
     const [ detailTab, setDetailTab ] = useState<DetailTab>('outputs');
     const [ elapsedMs, setElapsedMs ] = useState<number>(0);
 
+    // Hierarchy breadcrumb: chain of ancestor executions ordered
+    // root → parent. Empty for top-of-tree executions. Fetched on-
+    // demand whenever the current execution actually has a parent.
+    const [ ancestors, setAncestors ] = useState<Execution[]>([]);
+
     const flowViewRef = useRef<ExecutionFlowViewHandle>(null);
 
     const controller = new AbortController();
@@ -65,7 +70,19 @@ export default function ExecutionDetail() {
         setSelectedIteration(-1);
         setDetailPanelOpen(false);
         setIsRerunning(false);
+        setAncestors([]);
     }, [executionID]);
+
+    // Fetch ancestor chain once the execution loads and we know it
+    // has a parent. Root executions skip the round-trip entirely.
+    useEffect(() => {
+        if (!exec || !exec.parent_execution_id) return;
+        const config = useConfig();
+        const url = config("AUTOMATE_API_URL") + '/api/v1/execution/' + exec.id + '/ancestors';
+        api.get(url, { headers: { Authorization: "Bearer " + token } })
+            .then(resp => { if (resp) setAncestors(resp.data || []); })
+            .catch(err => console.error("failed to fetch ancestors", err));
+    }, [exec?.id, exec?.parent_execution_id]);
 
     const queryExecutionState = () => {
         const config = useConfig();
@@ -287,12 +304,42 @@ export default function ExecutionDetail() {
             });
         }
 
-        // Fall back to node_results for any nodes not found in logs
+        // Overlay node_results onto whatever the log walk gave us.
+        // Two distinct cases:
+        //
+        //   1) Nodes that NEVER appeared in logs (single-execution
+        //      nodes that emitted no streaming event) — node_results
+        //      is the only source we have, so install it as the sole
+        //      iteration.
+        //
+        //   2) Nodes that DID appear in logs — the log entries carry
+        //      truncated inputs/outputs because emitNodeEvent caps
+        //      string values at ~4KB to keep the runner-executor
+        //      stdout pipe from blocking. node_results carries the
+        //      full, untruncated values. We replace the FINAL log
+        //      iteration's value map with the full one, preserving
+        //      any earlier loop iterations (which only exist in
+        //      logs — node_results only stores the latest).
+        //
+        // Without this overlay, a 553KB TTS audio_base64 displays in
+        // the inspector with a "… [truncated, NKB bytes total]"
+        // suffix that breaks Download links, audio playback, and any
+        // downstream rendering that assumes the value is complete.
         if (exec.result.node_results) {
             for (const [id, nr] of Object.entries(exec.result.node_results as Record<string, NodeStatus>)) {
-                if (!map.has(id)) {
+                const existing = map.get(id);
+                if (!existing || existing.length === 0) {
                     map.set(id, [nr]);
+                    continue;
                 }
+                const updated = [...existing];
+                const last = updated[updated.length - 1];
+                updated[updated.length - 1] = {
+                    ...last,
+                    inputs: nr.inputs ?? last.inputs,
+                    outputs: nr.outputs ?? last.outputs,
+                };
+                map.set(id, updated);
             }
         }
 
@@ -371,6 +418,32 @@ export default function ExecutionDetail() {
             <ProtectedRoute permission={PERMISSIONS.FLOW_EXECUTE}>
             {exec && (
                 <div className="exec-page">
+                    {ancestors.length > 0 && (
+                        <div className="exec-breadcrumb" aria-label="Execution hierarchy">
+                            {ancestors.map((a, i) => (
+                                <span key={a.id} className="exec-breadcrumb-segment">
+                                    <Link
+                                        to={"/execution/" + a.id}
+                                        className={"exec-breadcrumb-link" + (i === 0 ? " exec-breadcrumb-link--root" : "")}
+                                        title={a.id}
+                                    >
+                                        {i === 0 && <span className="exec-breadcrumb-root-marker">root:</span>}
+                                        {a.name || a.id.slice(0, 8)}
+                                    </Link>
+                                    <span className="exec-breadcrumb-sep" aria-hidden="true">▸</span>
+                                </span>
+                            ))}
+                            <span className="exec-breadcrumb-current">
+                                {exec.name || exec.id.slice(0, 8)}
+                                {exec.parent_relationship && (
+                                    <span className="exec-breadcrumb-rel" title={"Relationship to parent: " + exec.parent_relationship}>
+                                        {exec.parent_relationship}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+                    )}
+
                     {/* ── Compact header bar ── */}
                     <div className="exec-header">
                         <div className="exec-header-left">
