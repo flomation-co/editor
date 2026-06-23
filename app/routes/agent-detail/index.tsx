@@ -13,6 +13,7 @@ import AgentMemoryPanel from "./memory-panel";
 import AgentUsersPanel from "./users-panel";
 import AgentAuditPanel from "./audit-panel";
 import AgentSchedulePanel from "./schedule-panel";
+import AgentPlansPanel from "./plans-panel";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
@@ -28,7 +29,7 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-type Tab = 'config' | 'schedules' | 'sessions' | 'state' | 'memory' | 'users' | 'audit';
+type Tab = 'config' | 'schedules' | 'sessions' | 'state' | 'memory' | 'plans' | 'users' | 'audit';
 
 
 export default function AgentDetail() {
@@ -308,6 +309,7 @@ export default function AgentDetail() {
                     <button className={`agent-tab ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => setActiveTab('sessions')}>Sessions</button>
                     <button className={`agent-tab ${activeTab === 'state' ? 'active' : ''}`} onClick={() => setActiveTab('state')}>State</button>
                     <button className={`agent-tab ${activeTab === 'memory' ? 'active' : ''}`} onClick={() => setActiveTab('memory')}>Memory</button>
+                    <button className={`agent-tab ${activeTab === 'plans' ? 'active' : ''}`} onClick={() => setActiveTab('plans')}>Plans</button>
                     <button className={`agent-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
                     <button className={`agent-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>Audit Log</button>
                 </div>
@@ -475,6 +477,10 @@ export default function AgentDetail() {
 
                 {activeTab === 'memory' && id && (
                     <AgentMemoryPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
+                )}
+
+                {activeTab === 'plans' && id && (
+                    <AgentPlansPanel agentId={id} apiUrl={config("AUTOMATE_API_URL")} token={token} />
                 )}
 
                 {activeTab === 'users' && id && (

@@ -499,6 +499,61 @@ export type AgentAuditLog = {
     created_at: string;
 }
 
+// Agent Planning M2 — plans/tasks/events surfaced via the public
+// read endpoints in api/internal/http/agent_plan_read.go. Field names
+// match the Go-side JSON tags verbatim so the wire round-trips
+// without translation.
+export type Plan = {
+    id: string;
+    agent_id: string;
+    owner_user_id?: string;
+    organisation_id?: string;
+    created_by_execution_id?: string;
+    title: string;
+    goal: string;
+    status: string;
+    next_check_at?: string;
+    suspend_count: number;
+    created_at: string;
+    updated_at: string;
+    completed_at?: string;
+    cancelled_at?: string;
+    cancelled_reason?: string;
+}
+
+export type PlanTask = {
+    id: string;
+    plan_id: string;
+    name: string;
+    description?: string;
+    task_kind: string;
+    flow_id?: string;
+    flow_revision_id?: string;
+    status: string;
+    depends_on: string[];
+    not_before?: string;
+    inputs_json: any;
+    outputs_json?: any;
+    execution_id?: string;
+    attempt_count: number;
+    last_error?: string;
+    max_attempts: number;
+    timeout_seconds?: number;
+    created_at: string;
+    updated_at: string;
+    started_at?: string;
+    completed_at?: string;
+}
+
+export type PlanEvent = {
+    id: number;
+    plan_id: string;
+    plan_task_id?: string;
+    event_type: string;
+    data: any;
+    created_at: string;
+}
+
 export type AgentUser = {
     id: string;
     agent_id: string;

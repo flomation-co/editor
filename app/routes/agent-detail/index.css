@@ -828,3 +828,30 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+/* Agent Planning M2 — Plans tab */
+
+.agent-plan-item {
+    cursor: pointer;
+}
+
+.agent-plan-item:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.agent-plans-empty {
+    padding: 24px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+}
+
+.agent-plans-error {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: rgba(244,67,54,0.1);
+    border: 1px solid rgba(244,67,54,0.3);
+    border-radius: 8px;
+    color: #fca5a5;
+    font-size: 13px;
+}
