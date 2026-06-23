@@ -1,0 +1,227 @@
+/* Agent Planning M2 commit 4 — plan-detail page. Two-column layout
+   (tasks left, event timeline right) with a fixed header. */
+
+.plan-detail {
+    padding: 24px 32px;
+    color: #fff;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.plan-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 16px;
+    transition: background 0.15s, border-color 0.15s;
+}
+.plan-back-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.plan-detail-header {
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 24px;
+}
+.plan-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+.plan-detail-title-row h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+.plan-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+}
+.plan-detail-goal {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    margin: 4px 0;
+}
+.plan-detail-meta {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    margin-top: 6px;
+}
+.plan-detail-error {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 8px;
+    color: #fca5a5;
+    font-size: 13px;
+}
+
+.plan-detail-body {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+}
+
+.plan-detail-body h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 12px;
+}
+
+/* Left column — task list ----------------------------------------- */
+
+.plan-tasks-panel {
+    min-width: 0;
+}
+
+.plan-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.plan-task-row {
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    transition: background 0.15s, border-color 0.15s;
+}
+.plan-task-row--clickable {
+    cursor: pointer;
+}
+.plan-task-row--clickable:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.plan-task-row-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.plan-task-row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+.plan-task-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+}
+.plan-task-row-chevron {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+}
+
+.plan-task-row-meta {
+    display: flex;
+    gap: 14px;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+.plan-task-kind {
+    font-style: italic;
+}
+.plan-task-after {
+    /* highlights the "after: X, Y" dependency hint */
+    color: rgba(255, 255, 255, 0.65);
+}
+.plan-task-duration {
+    margin-left: auto;
+}
+
+.plan-task-error {
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: rgba(244, 67, 54, 0.08);
+    border-radius: 6px;
+    color: #fca5a5;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Right column — event timeline ----------------------------------- */
+
+.plan-events-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 14px 16px;
+    /* Sticky on tall pages so the timeline stays visible as the
+       user scrolls the task list. Falls back to static positioning
+       on browsers without sticky support. */
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.plan-event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.plan-event-row {
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    font-size: 11px;
+}
+.plan-event-type {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+.plan-event-time {
+    color: rgba(255, 255, 255, 0.4);
+    font-family: monospace;
+    font-size: 10px;
+    margin-top: 2px;
+}
+.plan-event-task {
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: 2px;
+}
+.plan-events-empty {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+    padding: 12px 4px;
+    text-align: center;
+}
+
+/* Narrow viewports: stack the columns. */
+@media (max-width: 900px) {
+    .plan-detail-body {
+        grid-template-columns: 1fr;
+    }
+    .plan-events-panel {
+        position: static;
+        max-height: 320px;
+    }
+}

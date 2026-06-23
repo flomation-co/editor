@@ -40,7 +40,8 @@ export default [
     ...prefix("agent", [
         index("routes/agents/index.tsx", {id: "list-agents"}),
         route(":id", "routes/agent-detail/index.tsx", {id: "view-agent"}),
-        route(":id/session/:sessionId", "routes/agent-session/index.tsx", {id: "view-agent-session"})
+        route(":id/session/:sessionId", "routes/agent-session/index.tsx", {id: "view-agent-session"}),
+        route(":id/plan/:planId", "routes/agent-plan-detail/index.tsx", {id: "view-agent-plan"})
     ]),
 
     ...prefix("execution", [
