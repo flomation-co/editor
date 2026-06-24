@@ -32,6 +32,8 @@ import utc from "dayjs/plugin/utc";
 import {Icon} from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
 import {PERMISSIONS} from "~/types";
+import TaskDetailModal from "./TaskDetailModal";
+import Modal from "~/components/modal";
 import "./index.css";
 
 dayjs.extend(relativeTime);
@@ -79,6 +81,21 @@ export default function AgentPlanDetail() {
     const [events, setEvents] = useState<PlanEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // M3: drill-down modal. The task itself is stored in state
+    // rather than just an id so the modal keeps rendering the
+    // exact snapshot the user clicked, even if SSE patches the
+    // tasks list while the modal is open.
+    const [viewingTask, setViewingTask] = useState<PlanTask | null>(null);
+    // M3: cancel-confirmation dialog. `cancelOpen` controls the
+    // modal mount; `cancelReason` is the optional textarea bound
+    // value; `cancelling` shows a spinner state during the POST.
+    const [cancelOpen, setCancelOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState("");
+    const [cancelling, setCancelling] = useState(false);
+    // M4: Start button state. No confirmation dialog — starting a
+    // draft is benign (transitions to active, begins dispatch). The
+    // `starting` flag prevents double-clicks during the round-trip.
+    const [starting, setStarting] = useState(false);
     const timelineRef = useRef<HTMLDivElement>(null);
 
     const headers = {Authorization: "Bearer " + token, "Content-Type": "application/json"};
@@ -116,6 +133,56 @@ export default function AgentPlanDetail() {
         loadPlan();
         loadEvents();
     }, [loadPlan, loadEvents]);
+
+    // M3 cancel: POST to /agent/:id/plan/:planID/cancel then
+    // refetch. The SSE stream also pushes plan_cancelled +
+    // task_cancelled events so other open tabs converge; the
+    // explicit refetch here makes THIS tab feel snappy without
+    // waiting for the round-trip to the editor's own EventSource.
+    // M4 start: POST to /agent/:id/plan/:planID/start then refetch
+    // so the header status flips immediately. SSE also pushes
+    // plan_started so other open tabs converge.
+    const startPlan = useCallback(() => {
+        if (!agentId || !planId || !apiUrl) return;
+        setStarting(true);
+        api.post(
+            `${apiUrl}/api/v1/agent/${agentId}/plan/${planId}/start`,
+            {},
+            {headers},
+        )
+            .then(() => {
+                loadPlan();
+                loadEvents();
+            })
+            .catch(() => {
+                // Failure is rare (would be 409 already-terminal or
+                // 5xx). Refetch so the page state is honest about
+                // what happened.
+                loadPlan();
+            })
+            .finally(() => setStarting(false));
+    }, [agentId, planId, apiUrl, loadPlan, loadEvents]);
+
+    const cancelPlan = useCallback(() => {
+        if (!agentId || !planId || !apiUrl) return;
+        setCancelling(true);
+        api.post(
+            `${apiUrl}/api/v1/agent/${agentId}/plan/${planId}/cancel`,
+            {reason: cancelReason},
+            {headers},
+        )
+            .then(() => {
+                setCancelOpen(false);
+                setCancelReason("");
+                loadPlan();
+                loadEvents();
+            })
+            .catch(() => {
+                // Keep the dialog open so the user can retry; the
+                // confirmation button will re-enable.
+            })
+            .finally(() => setCancelling(false));
+    }, [agentId, planId, apiUrl, cancelReason, loadPlan, loadEvents]);
 
     // === SSE stream ===
     // Browsers' EventSource can't set Authorization headers, so we
@@ -173,10 +240,14 @@ export default function AgentPlanDetail() {
                 };
 
                 // Each event type lands as a separately-typed SSE event.
+                // plan_started (M4) lands when a draft transitions to
+                // active — the header status flips here, the Start
+                // button disappears, tasks begin appearing as
+                // in_progress.
                 const eventTypes = [
                     "task_started", "task_completed", "task_failed",
                     "task_blocked", "task_cancelled", "task_retry_queued",
-                    "plan_created", "plan_active", "plan_completed",
+                    "plan_created", "plan_started", "plan_active", "plan_completed",
                     "plan_blocked", "plan_failed", "plan_cancelled",
                 ];
                 eventTypes.forEach(t => {
@@ -252,6 +323,34 @@ export default function AgentPlanDetail() {
                             >
                                 {statusLabel}
                             </span>
+                            {/* M4 start button. Visible only when the plan
+                                is a draft. Starting transitions draft →
+                                active and begins dispatching tasks. No
+                                confirmation needed — the action is benign
+                                and the user has already seen the plan via
+                                the AI's summary or the task list above. */}
+                            {plan.status === "draft" && (
+                                <button
+                                    className="plan-start-btn"
+                                    onClick={startPlan}
+                                    disabled={starting}
+                                >
+                                    {starting ? "Starting…" : "Start plan"}
+                                </button>
+                            )}
+                            {/* M3 cancel button. Visible for any non-
+                                terminal plan: drafts (user changed mind
+                                before starting), active (stopping in
+                                flight), and blocked (cancelling a stuck
+                                plan). */}
+                            {(plan.status === "draft" || plan.status === "active" || plan.status === "blocked") && (
+                                <button
+                                    className="plan-cancel-btn"
+                                    onClick={() => setCancelOpen(true)}
+                                >
+                                    Cancel plan
+                                </button>
+                            )}
                         </div>
                         {plan.goal && <div className="plan-detail-goal">{plan.goal}</div>}
                         <div className="plan-detail-meta">
@@ -297,11 +396,27 @@ export default function AgentPlanDetail() {
                                                     </span>
                                                     <strong>{task.name}</strong>
                                                 </div>
-                                                {clickable && (
-                                                    <span className="plan-task-row-chevron">
-                                                        <Icon name="arrow-right" />
-                                                    </span>
-                                                )}
+                                                <div className="plan-task-row-actions">
+                                                    {/* M3 drill-down: opens the modal without
+                                                        navigating. stopPropagation keeps the
+                                                        row's existing chevron-click (which
+                                                        navigates to /execution/:id) intact. */}
+                                                    <button
+                                                        className="plan-task-details-btn"
+                                                        title="View task details"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setViewingTask(task);
+                                                        }}
+                                                    >
+                                                        <Icon name="eye" />
+                                                    </button>
+                                                    {clickable && (
+                                                        <span className="plan-task-row-chevron">
+                                                            <Icon name="arrow-right" />
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="plan-task-row-meta">
                                                 <span className="plan-task-kind">
@@ -352,6 +467,60 @@ export default function AgentPlanDetail() {
                         </div>
                     </div>
                 </div>
+
+                {/* M3 task drill-down. Mounted conditionally on
+                    `viewingTask` because the Modal component only
+                    samples `visible` at mount time — toggle by
+                    mount/unmount rather than prop change. */}
+                {viewingTask && (
+                    <TaskDetailModal
+                        task={viewingTask}
+                        onClose={() => setViewingTask(null)}
+                    />
+                )}
+
+                {/* M3 cancel-confirmation dialog. Optional reason
+                    textarea; submitting POSTs to the M3 cancel
+                    endpoint. Dialog stays open while the request is
+                    in flight so the user sees a spinner state. */}
+                {cancelOpen && (
+                    <Modal
+                        label="Cancel plan?"
+                        footerMessage="Tasks in flight will be marked cancelled. This cannot be undone."
+                        visible={true}
+                        canDismiss={!cancelling}
+                        onDismiss={() => {
+                            setCancelOpen(false);
+                            setCancelReason("");
+                        }}
+                        actions={[
+                            {
+                                label: cancelling ? "Cancelling…" : "Cancel plan",
+                                primary: false,
+                                variant: "danger",
+                                onClick: cancelPlan,
+                            },
+                        ]}
+                    >
+                        <div className="plan-cancel-dialog">
+                            <p>
+                                Cancelling will stop all pending and in-progress tasks for{" "}
+                                <strong>{plan.title}</strong>.
+                            </p>
+                            <label className="plan-cancel-reason-label">
+                                Reason (optional)
+                                <textarea
+                                    className="plan-cancel-reason-input"
+                                    value={cancelReason}
+                                    onChange={e => setCancelReason(e.target.value)}
+                                    placeholder="e.g. requirements changed"
+                                    rows={3}
+                                    disabled={cancelling}
+                                />
+                            </label>
+                        </div>
+                    </Modal>
+                )}
             </ProtectedRoute>
         </Container>
     );

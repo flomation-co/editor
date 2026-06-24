@@ -16,6 +16,12 @@ type ModalProps = {
     canDismiss?: boolean
     onDismiss?: () => void;
     actions?: ButtonActionProps[];
+    // dismissLabel overrides the auto-injected dismiss button's
+    // label. Defaults to "Cancel" so existing callers (delete
+    // confirmations, etc.) keep their current copy. Read-only
+    // modals can pass "Close" so the affordance reads as a plain
+    // dismiss rather than a back-out-of-action.
+    dismissLabel?: string;
 }
 
 export default function Modal(props : ModalProps) {
@@ -61,7 +67,9 @@ export default function Modal(props : ModalProps) {
                         )}
                         <div className="modal-footer">
                             {props.canDismiss && (
-                                <button className="modal-btn-secondary" onClick={(e) => handleDismiss(e)}>Cancel</button>
+                                <button className="modal-btn-secondary" onClick={(e) => handleDismiss(e)}>
+                                    {props.dismissLabel ?? "Cancel"}
+                                </button>
                             )}
 
                             {props.actions?.map((action, idx) => {

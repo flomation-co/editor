@@ -30,6 +30,12 @@
     font-size: 16px;
     font-weight: 600;
     color: #e5e7eb;
+    /* Long titles (e.g. plan-task drill-down: "Task: <task name>")
+       wrap rather than pushing the close button off the right edge.
+       min-width: 0 unlocks shrinking inside the flex header. */
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .modal-close-btn {
@@ -41,6 +47,10 @@
     padding: 4px 8px;
     border-radius: 6px;
     transition: all 0.15s ease;
+    /* Stay anchored on the right even when the title wraps to two
+       lines. */
+    flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .modal-close-btn:hover {
