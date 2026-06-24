@@ -100,6 +100,7 @@ export default function AgentPlansPanel({agentId, apiUrl, token}: Props) {
                     onChange={e => setStatusFilter(e.target.value)}
                 >
                     <option value="">All statuses</option>
+                    <option value="draft">Draft</option>
                     <option value="active">Active</option>
                     <option value="completed">Completed</option>
                     <option value="blocked">Blocked</option>
