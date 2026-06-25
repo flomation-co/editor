@@ -266,6 +266,48 @@ export async function purchaseCredit(token: string, amountPence: number, voucher
     return response.data;
 }
 
+export interface CreditPurchasePreview {
+    amount_pence: number;
+    subtotal_net: number;
+    discount_net: number;
+    vat_amount: number;
+    total_due: number;
+    // vouchers contains both existing account redemptions (preloaded,
+    // subscription-linked, perpetual) AND any manually-entered code that
+    // stacked on top. The server applies flat-first-then-percentage and
+    // returns them in application order. Empty array = no discount.
+    vouchers?: Array<{
+        code: string;
+        label: string;
+        discount_type: string;
+        amount: number;
+    }>;
+    payment_method?: {
+        card_brand: string;
+        card_last4: string;
+    };
+}
+
+/**
+ * Preview a credit top-up — returns the exact breakdown the charge will
+ * use, including any voucher discount and VAT. Throws on invalid voucher
+ * (server returns 400 with a message in response.data.error).
+ */
+export async function previewCreditPurchase(
+    token: string,
+    amountPence: number,
+    voucherCode?: string,
+): Promise<CreditPurchasePreview> {
+    const url = billingBaseURL() + "/api/v1/billing/credit/purchase/preview";
+    const response = await api.post(url, {
+        amount_pence: amountPence,
+        voucher_code: voucherCode || undefined,
+    }, {
+        headers: { "Authorization": "Bearer " + token },
+    });
+    return response.data;
+}
+
 /**
  * Update auto top-up settings.
  */
