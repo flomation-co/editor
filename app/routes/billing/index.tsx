@@ -15,7 +15,8 @@ import {
     type BillingPlan, type BillingSubscription, type QuotaResponse,
     type BillingPlanPrice,
     type CreditAccount, type CreditTransaction,
-    fetchCreditAccount, fetchCreditTransactions, purchaseCredit, updateCreditSettings,
+    fetchCreditAccount, fetchCreditTransactions, purchaseCredit, previewCreditPurchase, updateCreditSettings,
+    type CreditPurchasePreview,
 } from "~/lib/billing";
 import api from "~/lib/api";
 import {billingBaseURL} from "~/lib/billing";
@@ -169,7 +170,26 @@ interface VoucherHistoryItem {
     redeemed_at: string;
     active: boolean;
     preloaded: boolean;
+    // status is the server-computed badge state. Older API responses may
+    // omit it, in which case the renderer falls back to the active/
+    // preloaded booleans to derive a sensible label.
+    status?: "ready" | "used" | "expired";
 }
+
+// VOUCHER_STATUS_LABELS / VOUCHER_STATUS_BADGE_CLASSES are the visible
+// rendering of the three server-side states. Centralised here so a future
+// re-style touches one place rather than every voucher row.
+const VOUCHER_STATUS_LABELS: Record<string, string> = {
+    ready: "READY",
+    used: "USED",
+    expired: "EXPIRED",
+};
+
+const VOUCHER_STATUS_BADGE_CLASSES: Record<string, string> = {
+    ready: "billing-badge--active",
+    used: "billing-badge--cancelled",
+    expired: "billing-badge--expired",
+};
 
 function VoucherHistory({token}: { token: string | null }) {
     const [history, setHistory] = useState<VoucherHistoryItem[]>([]);
@@ -204,9 +224,20 @@ function VoucherHistory({token}: { token: string | null }) {
                     </span>
                     <span className="billing-invoice-date">{formatDate(v.redeemed_at)}</span>
                     <span className="billing-invoice-status">
-                        <span className={`billing-badge ${v.active ? (v.preloaded ? "billing-badge--trialling" : "billing-badge--active") : "billing-badge--cancelled"}`}>
-                            {v.preloaded ? "preloaded" : v.active ? "active" : "used"}
-                        </span>
+                        {(() => {
+                            // Prefer the server-computed `status`; fall
+                            // back to the legacy `active`/`preloaded`
+                            // booleans only if a stale API response is
+                            // missing the new field (deploy-skew safety).
+                            const status = v.status ?? (v.active ? "ready" : "used");
+                            const label = VOUCHER_STATUS_LABELS[status] ?? status.toUpperCase();
+                            const badgeClass = VOUCHER_STATUS_BADGE_CLASSES[status] ?? "billing-badge--cancelled";
+                            return (
+                                <span className={`billing-badge ${badgeClass}`}>
+                                    {label}
+                                </span>
+                            );
+                        })()}
                     </span>
                 </div>
             ))}
@@ -243,6 +274,17 @@ export default function Billing() {
     const [voucherResult, setVoucherResult] = useState<{ success: boolean; message: string } | null>(null);
 
     const [modal, setModal] = useState<ModalState>({visible: false, title: "", message: ""});
+
+    // Top-up confirmation modal — separate from the generic modal because the
+    // voucher input is interactive (Apply re-fetches the preview), which means
+    // the modal body has to react to live state. The generic setModal pattern
+    // snapshots its content at open-time so we'd lose voucher updates if we
+    // tried to share it.
+    const [creditModalOpen, setCreditModalOpen] = useState(false);
+    const [creditPreview, setCreditPreview] = useState<CreditPurchasePreview | null>(null);
+    const [creditVoucherCode, setCreditVoucherCode] = useState("");
+    const [creditVoucherError, setCreditVoucherError] = useState<string | null>(null);
+    const [creditPreviewLoading, setCreditPreviewLoading] = useState(false);
     const [notification, setNotification] = useState<{ message: string; variant: "success" | "error" } | null>(null);
 
     const closeModal = () => setModal(m => ({...m, visible: false}));
@@ -469,6 +511,176 @@ export default function Billing() {
         );
     };
 
+    // refreshCreditPreview fetches the server-calculated breakdown for the
+    // current purchaseAmount + optional voucherCode. On 400 (invalid voucher)
+    // it surfaces the message inline and re-fetches the preview without the
+    // voucher so the user still sees a sensible order summary.
+    const refreshCreditPreview = async (voucherCode?: string) => {
+        if (!token) return;
+        setCreditPreviewLoading(true);
+        setCreditVoucherError(null);
+        try {
+            const preview = await previewCreditPurchase(token, purchaseAmount, voucherCode || undefined);
+            setCreditPreview(preview);
+        } catch (err: unknown) {
+            const msg = (err as {response?: {data?: {error?: string}}})?.response?.data?.error
+                || "Unable to load purchase preview.";
+            if (voucherCode) {
+                setCreditVoucherError(msg);
+                try {
+                    const fallback = await previewCreditPurchase(token, purchaseAmount);
+                    setCreditPreview(fallback);
+                } catch {
+                    // already showing the voucher error; nothing further to do.
+                }
+            } else {
+                notify(msg, "error");
+            }
+        } finally {
+            setCreditPreviewLoading(false);
+        }
+    };
+
+    const openCreditPurchaseModal = async () => {
+        setCreditVoucherCode("");
+        setCreditVoucherError(null);
+        setCreditPreview(null);
+        setCreditModalOpen(true);
+        await refreshCreditPreview();
+    };
+
+    const confirmCreditPurchase = async () => {
+        if (!token) return;
+        setActionLoading(true);
+        try {
+            await purchaseCredit(token, purchaseAmount, creditVoucherCode.trim() || undefined);
+            notify("Credit purchased successfully.", "success");
+            const updated = await fetchCreditAccount(token);
+            setCreditAccount(updated);
+            const txs = await fetchCreditTransactions(token);
+            setCreditTransactions(txs);
+            setCreditModalOpen(false);
+        } catch (err: unknown) {
+            const msg = (err as {response?: {data?: {error?: string}}})?.response?.data?.error
+                || "Failed to purchase credit.";
+            notify(msg, "error");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // buildCreditOrderSummary renders the credit-purchase modal body. It mirrors
+    // the subscription order summary (line items, VAT breakdown, voucher line,
+    // payment method) but adds an interactive voucher input — vouchers are
+    // applied on a per-purchase basis for top-ups, unlike subscriptions where
+    // they're attached at sign-up.
+    const buildCreditOrderSummary = () => {
+        const p = creditPreview;
+        const grossNet = p ? p.subtotal_net : 0;
+        const discountNet = p ? p.discount_net : 0;
+        const vat = p ? p.vat_amount : 0;
+        const totalDue = p ? p.total_due : purchaseAmount;
+        const vouchers = p?.vouchers ?? [];
+        const paymentMethod = p?.payment_method;
+        // The manual code is only "applied" if it's in the vouchers list
+        // — distinguishes between "user typed it and it stacked" vs
+        // "vouchers came purely from existing redemptions". The Remove
+        // button only makes sense for the manual case.
+        const manualCodeEntered = creditVoucherCode.trim();
+        const manualVoucherApplied = manualCodeEntered !== "" &&
+            vouchers.some(v => v.code === manualCodeEntered);
+
+        return (
+            <div className="billing-order-summary">
+                <div className="billing-order-line">
+                    <span className="billing-order-label">Execution credit top-up</span>
+                    <span className="billing-order-value">{formatCurrency(purchaseAmount)}</span>
+                </div>
+                {vouchers.map((v, i) => (
+                    <div key={i} className="billing-order-line billing-order-line--voucher">
+                        <span className="billing-order-label">{v.label}</span>
+                        <span className="billing-order-value">-{formatCurrency(v.amount)}</span>
+                    </div>
+                ))}
+                <div className="billing-order-divider" />
+                <div className="billing-order-line billing-order-line--muted">
+                    <span className="billing-order-label">Subtotal (ex. VAT)</span>
+                    <span className="billing-order-value">{formatCurrency(grossNet - discountNet)}</span>
+                </div>
+                <div className="billing-order-line billing-order-line--muted">
+                    <span className="billing-order-label">VAT (20%)</span>
+                    <span className="billing-order-value">{formatCurrency(vat)}</span>
+                </div>
+                <div className="billing-order-divider" />
+                <div className="billing-order-total">
+                    <span className="billing-order-total-label">Total (inc. VAT)</span>
+                    <span className="billing-order-total-value">{formatCurrency(totalDue)}</span>
+                </div>
+                <div className="billing-order-divider" />
+
+                <div style={{marginTop: 8, marginBottom: 8}}>
+                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 6}}>
+                        Voucher code (optional)
+                    </label>
+                    <div style={{display: "flex", gap: 8}}>
+                        <input
+                            type="text"
+                            className="billing-voucher-input"
+                            style={{flex: 1, textTransform: "uppercase"}}
+                            placeholder="Enter code"
+                            value={creditVoucherCode}
+                            onChange={e => setCreditVoucherCode(e.target.value.toUpperCase())}
+                            disabled={creditPreviewLoading}
+                        />
+                        {manualVoucherApplied ? (
+                            <button
+                                className="billing-btn billing-btn--secondary"
+                                onClick={() => {
+                                    setCreditVoucherCode("");
+                                    refreshCreditPreview();
+                                }}
+                                disabled={creditPreviewLoading}
+                            >
+                                Remove
+                            </button>
+                        ) : (
+                            <button
+                                className="billing-btn billing-btn--secondary"
+                                onClick={() => refreshCreditPreview(creditVoucherCode.trim())}
+                                disabled={creditPreviewLoading || !creditVoucherCode.trim()}
+                            >
+                                {creditPreviewLoading ? "..." : "Apply"}
+                            </button>
+                        )}
+                    </div>
+                    {creditVoucherError && (
+                        <div style={{fontSize: 12, color: "#ef4444", marginTop: 6}}>
+                            {creditVoucherError}
+                        </div>
+                    )}
+                </div>
+
+                <div className="billing-order-divider" />
+                {paymentMethod ? (
+                    <div className="billing-order-line">
+                        <span className="billing-order-label">Payment method</span>
+                        <span className="billing-order-value">
+                            {paymentMethod.card_brand?.toUpperCase()} &bull;&bull;&bull;&bull; {paymentMethod.card_last4}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="billing-order-warning">
+                        <Icon name="exclamation-triangle" />
+                        <span>No payment method on file. Please add a card on the Payment tab first.</span>
+                    </div>
+                )}
+                <div className="billing-order-vat-note">
+                    All prices include VAT. VAT No: 517 5918 67
+                </div>
+            </div>
+        );
+    };
+
     const handleUpgrade = async (plan: BillingPlan) => {
         const price = plan.prices?.[0];
         if (!price || !token) return;
@@ -662,6 +874,20 @@ export default function Billing() {
             )}
 
             <BillingModal modal={modal} onClose={closeModal} />
+
+            <BillingModal
+                modal={{
+                    visible: creditModalOpen,
+                    title: `Purchase ${formatCurrency(purchaseAmount)} Credit`,
+                    content: buildCreditOrderSummary(),
+                    confirmLabel: creditPreview?.payment_method
+                        ? (actionLoading ? "Processing..." : "Confirm Purchase")
+                        : undefined,
+                    variant: "primary",
+                    onConfirm: creditPreview?.payment_method ? confirmCreditPurchase : undefined,
+                }}
+                onClose={() => setCreditModalOpen(false)}
+            />
 
             <div className="billing-page">
                 <div className="billing-tabs">
@@ -1055,23 +1281,7 @@ export default function Billing() {
                             <button
                                 className="billing-btn billing-btn--primary"
                                 disabled={actionLoading || purchaseAmount < 500}
-                                onClick={async () => {
-                                    if (!token) return;
-                                    setActionLoading(true);
-                                    try {
-                                        await purchaseCredit(token, purchaseAmount);
-                                        notify("Credit purchased successfully.", "success");
-                                        const updated = await fetchCreditAccount(token);
-                                        setCreditAccount(updated);
-                                        const txs = await fetchCreditTransactions(token);
-                                        setCreditTransactions(txs);
-                                    } catch (err: unknown) {
-                                        const msg = (err as {response?: {data?: {error?: string}}})?.response?.data?.error || "Failed to purchase credit.";
-                                        notify(msg, "error");
-                                    } finally {
-                                        setActionLoading(false);
-                                    }
-                                }}
+                                onClick={openCreditPurchaseModal}
                             >
                                 {actionLoading ? "Processing..." : `Purchase ${formatCurrency(purchaseAmount)}`}
                             </button>
