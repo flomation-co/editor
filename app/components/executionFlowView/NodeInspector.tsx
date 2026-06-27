@@ -2,6 +2,8 @@ import React from 'react';
 import type { NodeStatus } from "~/types";
 import { useState, useEffect, useMemo } from "react";
 import { Icon } from "~/components/icons/Icon";
+import useCookieToken from "~/components/cookie";
+import useConfig from "~/components/config";
 // isSensitive (key-name + value) lives in lib/secretDetection so this
 // surface stays in lock-step with the property-menu warning. Adding
 // a new pattern in one place is enough — both render-time
@@ -38,8 +40,65 @@ function maybeParseJson(value: any): any {
 //   3. Key-name heuristics — used for formats without a reliable base64
 //      signature (audio, video) or as a fallback for PDF when the header
 //      wasn't sniffable.
+// parseBlobToken extracts the 32-char hex handle and (optional)
+// type/size hints from a flo:blob:HANDLE?size=N&type=mime token.
+// Returns null when the string doesn't match — used both by
+// detectMedia and the MediaPlayer fetch path.
+//
+// Shape mirrors the executor's blobstore.go ParseBlobToken so any
+// canonical token written by the engine round-trips cleanly. We're
+// lenient about the query string (size or type can be absent) but
+// strict about the handle being exactly 32 lowercase hex characters.
+function parseBlobToken(value: string): { handle: string; mime: string; size: number } | null {
+    if (!value.startsWith('flo:blob:')) return null;
+    const body = value.slice('flo:blob:'.length);
+    const queryStart = body.indexOf('?');
+    const handle = queryStart < 0 ? body : body.slice(0, queryStart);
+    if (!/^[0-9a-f]{32}$/.test(handle)) return null;
+    let mime = '';
+    let size = 0;
+    if (queryStart >= 0) {
+        const params = new URLSearchParams(body.slice(queryStart + 1));
+        mime = params.get('type') || '';
+        const sizeStr = params.get('size');
+        if (sizeStr) {
+            const parsed = parseInt(sizeStr, 10);
+            if (!isNaN(parsed)) size = parsed;
+        }
+    }
+    return { handle, mime, size };
+}
+
 function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'video' | 'pdf' | 'gpx' | null; mimeType: string } {
     const lk = key.toLowerCase();
+
+    // 0. Blob reference (executor-tokenised output). The mime hint on
+    //    the token is canonical because the executor wrote it at
+    //    Put() time — we trust it over the key-name heuristics.
+    //    The MediaPlayer fetches the actual bytes from the public
+    //    /api/v1/blob/:handle endpoint when the data is a token.
+    const blob = parseBlobToken(value);
+    if (blob) {
+        const m = blob.mime || '';
+        if (m.startsWith('audio/')) return { type: 'audio', mimeType: m };
+        if (m.startsWith('image/')) return { type: 'image', mimeType: m };
+        if (m.startsWith('video/')) return { type: 'video', mimeType: m };
+        if (m === 'application/pdf') return { type: 'pdf', mimeType: m };
+        if (m === 'application/gpx+xml') return { type: 'gpx', mimeType: m };
+        // No usable mime hint — fall back to key-name heuristics so a
+        // mis-labelled blob still tries to render the right way.
+        if (lk.includes('audio') || lk.includes('voice') || lk.includes('speech') || lk.includes('tts')) {
+            return { type: 'audio', mimeType: 'audio/mpeg' };
+        }
+        if (lk.includes('image') || lk.includes('photo') || lk.includes('screenshot') || lk.includes('thumbnail')) {
+            return { type: 'image', mimeType: 'image/png' };
+        }
+        if (lk.includes('video')) {
+            return { type: 'video', mimeType: 'video/mp4' };
+        }
+        // Unknown mime AND key — render as a generic download badge.
+        return { type: null, mimeType: '' };
+    }
 
     // 1. Data URI prefix
     if (value.startsWith('data:audio/')) return { type: 'audio', mimeType: value.split(';')[0].replace('data:', '') };
@@ -112,7 +171,12 @@ function extensionFor(mimeType: string): string {
 // HIGH_ENTROPY_BASE64 heuristic, even though the user wants to
 // inspect/play/download them.
 function isRenderableMedia(key: string, value: unknown): boolean {
-    if (typeof value !== 'string' || value.length <= 100) return false;
+    if (typeof value !== 'string') return false;
+    // Blob tokens are short (~80 chars) but still resolve to playable
+    // media — skip the length floor for them. Everything else still
+    // needs >100 chars to plausibly be inline base64.
+    if (parseBlobToken(value)) return detectMedia(key, value).type !== null;
+    if (value.length <= 100) return false;
     return detectMedia(key, value).type !== null;
 }
 
@@ -121,6 +185,15 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     // data URL so the download preserves Unicode characters like accented
     // place names. Sizing uses byte length of the encoded UTF-8.
     const isText = type === 'gpx';
+
+    // Blob tokens have to round-trip through the JWT-protected
+    // /api/v1/blob/:handle endpoint — we use the cookie token for
+    // auth and the API base URL from runtime config. The browser
+    // hands us a Blob directly so we can revoke its URL on unmount
+    // the same way as base64-decoded sources.
+    const blobToken = parseBlobToken(data);
+    const cookieToken = useCookieToken();
+    const apiConfig = useConfig();
 
     // For binary media we ultimately want a blob: URL — large data:
     // URIs in an <a download> attribute fail silently in Chrome and
@@ -133,8 +206,12 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     // backed by component state. The cleanup revokes any blob URL we
     // created when the component unmounts or the source data changes.
     const [mediaUrl, setMediaUrl] = useState<string>('');
+    const [fetchError, setFetchError] = useState<string>('');
+    const [actualSize, setActualSize] = useState<number>(blobToken ? blobToken.size : 0);
 
     useEffect(() => {
+        setFetchError('');
+
         if (isText) {
             setMediaUrl(`data:${mimeType};charset=utf-8,${encodeURIComponent(data)}`);
             return;
@@ -152,21 +229,46 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
 
         (async () => {
             try {
-                // fetch() can decode a data: URI of arbitrary size
-                // server-internally and hand us a Blob — no JS-land
-                // memory pressure, no atob() failure modes around
-                // whitespace or padding.
-                const res = await fetch(`data:${mimeType};base64,${data}`);
+                let res: Response;
+                if (blobToken) {
+                    // Blob-token path: fetch from the JWT endpoint and
+                    // let the server pin the Content-Type. We override
+                    // with the token's mime when the response doesn't
+                    // carry one (some proxies strip Content-Type on
+                    // streamed responses), so the <audio>/<video>
+                    // element gets a usable hint either way.
+                    const apiURL = (apiConfig as { AUTOMATE_API_URL?: string })?.AUTOMATE_API_URL ?? '';
+                    res = await fetch(`${apiURL}/api/v1/blob/${blobToken.handle}`, {
+                        headers: cookieToken ? { Authorization: `Bearer ${cookieToken}` } : undefined,
+                    });
+                    if (!res.ok) {
+                        throw new Error(`blob fetch ${res.status}`);
+                    }
+                } else {
+                    // Inline base64 path: fetch() can decode a data:
+                    // URI of arbitrary size server-internally and hand
+                    // us a Blob — no JS-land memory pressure, no
+                    // atob() failure modes around whitespace or padding.
+                    res = await fetch(`data:${mimeType};base64,${data}`);
+                }
                 const blob = await res.blob();
                 if (cancelled) return;
+                setActualSize(blob.size);
                 blobUrl = URL.createObjectURL(blob);
                 setMediaUrl(blobUrl);
             } catch (err) {
-                // Bad base64 falls back to the raw data URI — the
-                // download and player will likely fail, but at least
-                // we've surfaced *something*.
                 console.warn('[MediaPlayer] failed to build blob URL for', keyName, err);
-                if (!cancelled) setMediaUrl(`data:${mimeType};base64,${data}`);
+                if (cancelled) return;
+                if (blobToken) {
+                    // Surface a clear error message; the inline
+                    // base64 fallback isn't available for tokens.
+                    setFetchError(err instanceof Error ? err.message : String(err));
+                } else {
+                    // Bad base64 falls back to the raw data URI — the
+                    // download and player will likely fail, but at
+                    // least we've surfaced *something*.
+                    setMediaUrl(`data:${mimeType};base64,${data}`);
+                }
             }
         })();
 
@@ -174,13 +276,19 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
             cancelled = true;
             if (blobUrl) URL.revokeObjectURL(blobUrl);
         };
-    }, [data, mimeType, keyName, isText]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- blobToken is a derived object, fingerprint via the raw `data` string instead
+    }, [data, mimeType, keyName, isText, cookieToken, apiConfig]);
 
     const downloadHref = mediaUrl;
     const base64 = mediaUrl;
+    // Size source-of-truth depends on shape: GPX from the text length,
+    // blob tokens from the token's `size=` hint (or the fetched blob's
+    // size after fetch), inline base64 from the encoded length.
     const sizeKB = isText
         ? Math.round(new TextEncoder().encode(data).length / 1024)
-        : Math.round((data.length * 3) / 4 / 1024);
+        : blobToken
+            ? Math.round(actualSize / 1024)
+            : Math.round((data.length * 3) / 4 / 1024);
     const filename = `${keyName || 'output'}.${extensionFor(mimeType)}`;
 
     const downloadLabel = type === 'gpx' ? 'Download GPX' : 'Download';
@@ -192,6 +300,20 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
             <span className="ni-hint">{mimeType} ({sizeKB} KB)</span>
         </div>
     );
+
+    // Blob token resolution failed: render a clear "unavailable" badge
+    // instead of a broken player. This is the diagnostic affordance
+    // the user asked for — a failed fetch shouldn't look like raw
+    // text or a silently-broken control.
+    if (blobToken && fetchError) {
+        return (
+            <div className="ni-media">
+                <div className="ni-media-loading">
+                    <Icon name="circle-exclamation" /> Blob unavailable: {fetchError}
+                </div>
+            </div>
+        );
+    }
 
     if (type === 'audio') {
         // Key on the mediaUrl itself. The blob URL is created
