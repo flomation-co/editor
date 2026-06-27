@@ -191,9 +191,19 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
     // auth and the API base URL from runtime config. The browser
     // hands us a Blob directly so we can revoke its URL on unmount
     // the same way as base64-decoded sources.
+    //
+    // useConfig() returns a fresh getter closure on every render, so
+    // we MUST resolve the API URL down to a plain string here and
+    // depend on the string (not the closure) in the effect below.
+    // Without this, the effect refires every render → revokes its
+    // freshly-created blob URL → fires again → infinite loop, and
+    // the browser console fills with ERR_FILE_NOT_FOUND on revoked
+    // blob: URLs. Same logic applies to any consumer reading from
+    // useConfig inside an effect dep array.
     const blobToken = parseBlobToken(data);
     const cookieToken = useCookieToken();
-    const apiConfig = useConfig();
+    const getConfig = useConfig();
+    const apiURL = getConfig('AUTOMATE_API_URL', '') ?? '';
 
     // For binary media we ultimately want a blob: URL — large data:
     // URIs in an <a download> attribute fail silently in Chrome and
@@ -237,7 +247,6 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
                     // carry one (some proxies strip Content-Type on
                     // streamed responses), so the <audio>/<video>
                     // element gets a usable hint either way.
-                    const apiURL = (apiConfig as { AUTOMATE_API_URL?: string })?.AUTOMATE_API_URL ?? '';
                     res = await fetch(`${apiURL}/api/v1/blob/${blobToken.handle}`, {
                         headers: cookieToken ? { Authorization: `Bearer ${cookieToken}` } : undefined,
                     });
@@ -277,7 +286,7 @@ function MediaPlayer({ type, mimeType, data, keyName }: { type: 'audio' | 'image
             if (blobUrl) URL.revokeObjectURL(blobUrl);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- blobToken is a derived object, fingerprint via the raw `data` string instead
-    }, [data, mimeType, keyName, isText, cookieToken, apiConfig]);
+    }, [data, mimeType, keyName, isText, cookieToken, apiURL]);
 
     const downloadHref = mediaUrl;
     const base64 = mediaUrl;

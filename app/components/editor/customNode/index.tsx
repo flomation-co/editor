@@ -54,11 +54,18 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const hasInputs = !isTrigger && !isErrorNode && !isSubFlowBegin;
     const hasOutputs = data?.config?.outputs && data.config.outputs.length > 0;
 
-    // Detect AI nodes that support tool use and no-response handles
+    // Detect AI nodes that support tool use and no-response handles.
+    // Categorical-by-folder (label.startsWith('ai/')) isn't enough: ai/
+    // also houses non-conversational transforms like gemini_image and
+    // gemini_tts which are simple input→output nodes and should render
+    // plain. The real discriminator is whether the action accepts a
+    // `tool_definitions` input — that's what wires the tool loop and
+    // creates the need for Response/Tools/Finished output handles.
     const isAINode = useMemo(() => {
         const label = data?.config?.label || data?.label || '';
-        return label.startsWith('ai/');
-    }, [data?.config?.label, data?.label]);
+        if (!label.startsWith('ai/')) return false;
+        return (data?.config?.inputs || []).some((i: any) => i?.name === 'tool_definitions');
+    }, [data?.config?.label, data?.label, data?.config?.inputs]);
 
     const hasToolDefinitions = useMemo(() => {
         if (!isAINode || !data?.config?.inputs) return false;
