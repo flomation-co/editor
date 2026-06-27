@@ -68,6 +68,17 @@ export const SENSITIVE_KEY_NAME =
 // happens to start with "sk-"). Real tokens are always >=20 chars.
 const MIN_LENGTH = 20;
 
+// MAX_LENGTH is the ceiling above which we don't bother checking and
+// it would be UNSAFE to even try. Even linear-complexity regexes
+// (HIGH_ENTROPY_BASE64 etc.) consume internal recursion stack on V8
+// proportional to input length, and multi-MB strings — like
+// base64-encoded video output from Veo / audio output from TTS —
+// reliably blow `Maximum call stack size exceeded` from RegExp.test.
+// 8 KB covers every realistic secret shape (TLS keys ~2–4 KB, API
+// tokens < 100 bytes, JWT < 4 KB); anything bigger is media or
+// document content that simply cannot be a credential.
+const MAX_LENGTH = 8 * 1024;
+
 // HIGH_ENTROPY_HEX catches long hex blobs that don't match a known
 // prefix — generic secret access keys, hash-shaped tokens, etc.
 const HIGH_ENTROPY_HEX = /^[a-f0-9]{32,}$/i;
@@ -99,6 +110,11 @@ export function detectSecret(value: unknown): string | null {
     // literal secret, they're a pointer to where it's stored.
     if (value.includes("${secrets.") || value.includes("${secret.")) return null;
     if (value.includes("${credentials.") || value.includes("${credential.")) return null;
+
+    // Short-circuit on oversized values BEFORE trimming — `trim()`
+    // itself is fine but the regex calls that follow are not, and a
+    // 7 MB base64 string trimmed is still 7 MB.
+    if (value.length > MAX_LENGTH) return null;
 
     const trimmed = value.trim();
     if (trimmed.length < MIN_LENGTH) return null;
