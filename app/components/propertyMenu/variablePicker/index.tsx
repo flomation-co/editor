@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { VariableItem } from "~/components/propertyMenu/variableInput";
+import { VariableCreateFooter } from "~/components/propertyMenu/VariableCreateFooter";
 import "./index.css";
 
 type VariablePickerProps = {
@@ -254,6 +255,7 @@ const VariablePicker = (props: VariablePickerProps) => {
                             </div>
                         ))}
                     </div>
+                    <VariableCreateFooter filter={search} />
                 </div>
             )}
         </div>

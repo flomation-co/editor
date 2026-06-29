@@ -346,6 +346,78 @@
     white-space: nowrap;
 }
 
+/* "No matches" placeholder shown when the filter excludes every
+   item but the dropdown is still open (so the create footer is
+   reachable). */
+.variable-autocomplete-empty {
+    padding: 8px 10px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    text-align: center;
+}
+
+/* Footer ported from variablePicker — same component (
+   VariableCreateFooter) renders into both surfaces. We duplicate the
+   styles rather than importing across components because the
+   autocomplete CSS already owns its own dropdown chrome and we want
+   each surface self-contained. Keep these in sync with the
+   .vp-footer block in variablePicker/index.css if either changes. */
+
+.variable-autocomplete .vp-footer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.variable-autocomplete .vp-footer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    border-radius: 4px;
+    color: rgba(196, 181, 253, 0.95);
+    font-size: 11px;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.variable-autocomplete .vp-footer-btn:hover {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #e5deff;
+}
+
+.variable-autocomplete .vp-footer-btn--refresh {
+    margin-left: auto;
+    padding: 4px 6px;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.variable-autocomplete .vp-footer-btn--refresh:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #e5e7eb;
+}
+
+.variable-autocomplete .vp-footer-name {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
 /* Variable mode toggle for non-text inputs.
    Picker is attached flush to the field — no gap, button stretches to field
    height, left-rounded corners removed and a -1px margin overlaps the
