@@ -245,6 +245,69 @@
     text-align: center;
 }
 
+/* ── Create + refresh footer ──────────────────────────────────
+   Sits below the variable list in both VariablePicker (button-
+   triggered dropdown) and VariableInput (inline ${ autocomplete).
+   Lets the flow author create a missing secret/property/credential
+   in a new tab without leaving the editor, plus refresh the list
+   when they return. */
+
+.vp-footer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.vp-footer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    border-radius: 4px;
+    color: rgba(196, 181, 253, 0.95);
+    font-size: 11px;
+    font-family: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.vp-footer-btn:hover {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #e5deff;
+}
+
+.vp-footer-btn--refresh {
+    /* Refresh button sits to the right and is icon-only. */
+    margin-left: auto;
+    padding: 4px 6px;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.vp-footer-btn--refresh:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #e5e7eb;
+}
+
+.vp-footer-name {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
 /* Lifecycle status for non-active credentials. Sits at the right
    edge of the row (auto-margin-left) and uses an amber/red palette
    so it reads as "attention needed". The native title attribute on

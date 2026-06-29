@@ -2,7 +2,7 @@ import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import type {Environment, Property, Secret} from "~/types";
 import {useEffect, useState} from "react";
-import {Link, useParams} from "react-router";
+import {Link, useParams, useSearchParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
@@ -201,6 +201,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function EnvironmentDetail() {
     const environmentID = useParams().id;
+    const [searchParams] = useSearchParams();
     const token = useCookieToken();
     const controller = new AbortController();
 
@@ -246,6 +247,39 @@ export default function EnvironmentDetail() {
         updateSecrets();
         updateCredentials();
         loadProviders();
+    }, []);
+
+    // Deep-link entry from the variable picker's "+ Create new X"
+    // button. ?tab=secrets|properties|credentials switches the active
+    // tab; ?new=<name> opens the corresponding add form with the
+    // name pre-filled. Both params are optional — the page renders
+    // its default (properties tab, no form) if neither is present.
+    //
+    // Runs only on mount of the search params change, NOT on every
+    // render — without this guard, clicking "Cancel" on the create
+    // form would re-open it as the URL still carries ?new=.
+    useEffect(() => {
+        const tab = searchParams.get("tab");
+        const newName = searchParams.get("new");
+        if (tab === "properties" || tab === "secrets" || tab === "credentials") {
+            setActiveTab(tab);
+        }
+        if (newName) {
+            if (tab === "properties") {
+                setNewPropName(newName);
+                setShowAddProperty(true);
+            } else if (tab === "secrets") {
+                setNewSecretName(newName);
+                setShowAddSecret(true);
+            } else if (tab === "credentials") {
+                setNewCredName(newName);
+                setShowAddCredential(true);
+            }
+        }
+        // Dependency array intentionally empty — we want first-mount
+        // behaviour only. The user editing the form shouldn't re-trigger
+        // open/pre-fill from URL.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const updateProperties = () => {

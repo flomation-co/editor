@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Icon } from "~/components/icons/Icon";
 import { detectSecret } from "~/lib/secretDetection";
+import { VariableCreateFooter } from "~/components/propertyMenu/VariableCreateFooter";
 // Prism import sequence matters: the core must come first, then any
 // languages that depend on `clike` (JavaScript, Bash) before the
 // language files themselves. Importing each language file registers
@@ -598,12 +599,15 @@ const VariableInput = (props: VariableInputProps) => {
                     </div>
                 </>
             )}
-            {autocomplete.visible && filteredVariables.length > 0 && (
+            {autocomplete.visible && (
                 <div
                     ref={autocompleteRef}
                     className="variable-autocomplete"
                     style={{ top: autocomplete.y, left: autocomplete.x }}
                 >
+                    {filteredVariables.length === 0 && (
+                        <div className="variable-autocomplete-empty">No matches</div>
+                    )}
                     {filteredVariables.map((v, i) => (
                         <div
                             key={`${v.category}.${v.name}`}
@@ -629,6 +633,7 @@ const VariableInput = (props: VariableInputProps) => {
                             )}
                         </div>
                     ))}
+                    <VariableCreateFooter filter={autocomplete.filter} />
                 </div>
             )}
         </div>

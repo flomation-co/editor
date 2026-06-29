@@ -69,6 +69,7 @@ import {NodeCategoryType, useDebounce} from "~/types";
 import PropertyMenu from "~/components/propertyMenu";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
+import { EnvironmentContext } from "~/contexts/EnvironmentContext";
 import {useNavigate} from "react-router";
 import {Tooltip} from "react-tooltip";
 
@@ -210,7 +211,12 @@ export function Editor(props : EditorProps) {
             })
     }, []);
 
-    useEffect(() => {
+    // Reload secrets / properties / credentials for the current
+    // environment. Extracted into a stable callback so the variable
+    // picker can re-trigger it via the EnvironmentContext after the
+    // user creates a new entry on the Environment page in another
+    // tab. Three parallel GETs (deduped from prior inline useEffect).
+    const refreshEnvironmentVariables = useCallback(() => {
         if (!environment) {
             setEnvVariables([]);
             return;
@@ -259,7 +265,11 @@ export function Editor(props : EditorProps) {
 
             setEnvVariables(items);
         });
-    }, [environment]);
+    }, [environment, token]);
+
+    useEffect(() => {
+        refreshEnvironmentVariables();
+    }, [refreshEnvironmentVariables]);
 
     useEffect(() => {
         api.get(API_URL + "/api/v1/action", {
@@ -1552,6 +1562,10 @@ export function Editor(props : EditorProps) {
     }
 
     return (
+        <EnvironmentContext.Provider value={{
+            environmentId: environment || null,
+            refreshVariables: refreshEnvironmentVariables,
+        }}>
             <Container noPadding={true}>
                 {(!flo || !plugins) && (
                     <div className={"loading-container"}>
@@ -1874,5 +1888,6 @@ export function Editor(props : EditorProps) {
                 </div>
             )}
             </Container>
+        </EnvironmentContext.Provider>
     )
 }
