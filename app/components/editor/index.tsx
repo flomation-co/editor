@@ -1225,6 +1225,21 @@ export function Editor(props : EditorProps) {
             };
             walkParents(node.id);
 
+            // refRoot strips path/bracket segments to the
+            // validatable "namespace.name" prefix. The executor's
+            // ParseReference + ResolvePath let users drill into
+            // structured outputs (e.g. ${nodeId.body.items[0].id} or
+            // ${flow.user.profile.email}). The editor's validator
+            // only checks that the ROOT exists — the path is opaque
+            // and resolved at runtime; typos there surface as empty
+            // substitutions, not editor red squiggles.
+            const refRoot = (name: string): string => {
+                const cleaned = name.replace(/\[[^\]]*\]/g, "");
+                const parts = cleaned.split(".").filter(p => p.length > 0);
+                if (parts.length <= 2) return cleaned;
+                return parts.slice(0, 2).join(".");
+            };
+
             for (const i of inputs) {
                 if (!isInputVisible(i, inputs)) continue;
                 if (typeof i.value !== 'string') continue;
@@ -1232,24 +1247,25 @@ export function Editor(props : EditorProps) {
                 if (!refs) continue;
                 for (const ref of refs) {
                     const name = ref.slice(2, -1);
+                    const root = refRoot(name);
                     // Runtime variables (flow, var, loop, trigger) are always valid
-                    if (runtimePrefixes.some(p => name.startsWith(p))) continue;
+                    if (runtimePrefixes.some(p => root.startsWith(p))) continue;
                     // Environment-dependent variables (secrets, env) must exist
                     // in the current environment's variables list
-                    if (validPrefixes.some(p => name.startsWith(p))) {
-                        const known = allVariables.some(v => `${v.category}.${v.name}` === name ||
-                            (v.category === 'secrets' && `secret.${v.name}` === name));
+                    if (validPrefixes.some(p => root.startsWith(p))) {
+                        const known = allVariables.some(v => `${v.category}.${v.name}` === root ||
+                            (v.category === 'secrets' && `secret.${v.name}` === root));
                         if (!known) {
                             record(node.id, {
                                 kind: "unresolved",
                                 fieldName: i.name,
                                 fieldLabel: i.label || i.name,
-                                detail: `Field "${i.label || i.name}" on ${labelOf(node)} references \${${name}} but that variable doesn't exist in this environment.`,
+                                detail: `Field "${i.label || i.name}" on ${labelOf(node)} references \${${name}} but ${root} doesn't exist in this environment.`,
                             });
                         }
                         continue;
                     }
-                    if (nodeVarNames.has(name)) continue;
+                    if (nodeVarNames.has(root)) continue;
                     // Truly unresolvable — name doesn't match any
                     // namespace, any parent output, or any ancestor
                     // scoped reference. Most common cause is a typo
