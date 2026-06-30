@@ -516,6 +516,342 @@
     transform: rotate(45deg);
 }
 
+/* ── New scope picker (service rows + segmented controls) ──
+   Replaces the legacy 2-column checkbox grid. One service row per
+   provider service (Gmail, Calendar, ...), each with optional
+   mutually-exclusive access-level segments and orthogonal toggle
+   checkboxes. */
+
+.scope-picker {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scope-row {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.scope-row:last-child {
+    border-bottom: none;
+}
+
+.scope-row-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    /* Lock the line-box height to exactly 22px so the row's
+       intrinsic content area is always 22px regardless of which
+       elements are mounted inside it. The summary pill overrides
+       to 20px for itself (below this floor), so adding or removing
+       the pill cannot grow the flex line — the bare name's 22px
+       always dominates. Without this, flex's align-items: center
+       reads the tallest child and the row jumps a few pixels when
+       the pill enters the DOM. */
+    line-height: 22px;
+    background: transparent;
+    border: none;
+    color: inherit;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.12s ease;
+}
+
+.scope-row-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.scope-row-header:focus-visible {
+    outline: 2px solid rgba(139, 92, 246, 0.4);
+    outline-offset: -2px;
+}
+
+.scope-row-chevron {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+    transition: color 0.12s ease;
+}
+
+.scope-row--expanded .scope-row-chevron,
+.scope-row-header:hover .scope-row-chevron {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.scope-row-icon {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 14px;
+}
+
+.scope-row-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.scope-row-summary {
+    margin-left: auto;
+    font-size: 12px;
+    color: rgba(196, 181, 253, 0.85);
+    background: rgba(139, 92, 246, 0.12);
+    /* The pill MUST NOT make the row taller than the bare-text
+       state, otherwise the flex line grows when the pill appears
+       and the page jumps. Two things together achieve that:
+         1. box-shadow replaces border — paints the same 1px stroke
+            but doesn't contribute to box height (border adds 2px).
+         2. explicit line-height + zero vertical padding pins the
+            pill's outer height to exactly 20px, which is below the
+            14px-name's natural line-box height (~21px). The name
+            still dominates the flex line, so adding/removing the
+            pill is now an in-place visual change. */
+    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.25);
+    padding: 0 8px;
+    line-height: 20px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50%;
+}
+
+.scope-row-body {
+    padding: 0 16px 14px 38px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.scope-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: lowercase;
+    letter-spacing: 0.2px;
+}
+
+.scope-badge--sensitive {
+    background: rgba(217, 119, 6, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.scope-badge--required {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scope-badge--inline {
+    margin-left: 6px;
+}
+
+.scope-row-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.5;
+}
+
+.scope-segment-group {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 2px;
+    align-self: flex-start;
+}
+
+.scope-segment {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    padding: 5px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.scope-segment:hover {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.scope-segment--active {
+    background: rgba(139, 92, 246, 0.25);
+    color: #e5deff;
+    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.4);
+}
+
+.scope-toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+}
+
+/* Toggle checkbox — built as a hidden native input + visible
+   styled box. The native input retains keyboard accessibility
+   and screen-reader semantics; the visible .scope-toggle-box
+   handles every pixel of the rendering so we get crisp
+   appearance and no browser-default focus rings leaking through. */
+
+.scope-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    user-select: none;
+    line-height: 1;
+}
+
+.scope-toggle:hover {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.scope-toggle input[type="checkbox"] {
+    /* Visually-hidden but still focusable. Don't use display:none
+       — that strips it from the tab order. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.scope-toggle-box {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    font-size: 9px;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.scope-toggle:hover .scope-toggle-box {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.scope-toggle input[type="checkbox"]:checked + .scope-toggle-box {
+    background: rgba(139, 92, 246, 0.55);
+    border-color: rgba(139, 92, 246, 0.7);
+    color: #fff;
+}
+
+.scope-toggle input[type="checkbox"]:focus-visible + .scope-toggle-box {
+    outline: 2px solid rgba(139, 92, 246, 0.5);
+    outline-offset: 2px;
+}
+
+.scope-toggle-label {
+    color: inherit;
+}
+
+/* "Other scopes" expandable — legacy / custom scopes preserved on
+   save but not in the catalogue. Compressed by default; hidden
+   entirely when there aren't any. */
+
+.scope-row--other {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.scope-other-toggle {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    font-family: inherit;
+    text-align: left;
+}
+
+.scope-other-toggle:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.scope-other-hint {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 11px;
+    margin-left: auto;
+}
+
+.scope-other-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 8px;
+    padding-left: 24px;
+}
+
+.scope-other-item {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 2px 6px;
+    border-radius: 3px;
+    align-self: flex-start;
+}
+
+/* Footer banner — closes the user's mental loop between
+   selections and the OAuth consent screen they're about to see. */
+
+.scope-picker-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(139, 92, 246, 0.06);
+    border-top: 1px solid rgba(139, 92, 246, 0.15);
+    color: rgba(229, 222, 255, 0.8);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.scope-picker-footer svg {
+    flex-shrink: 0;
+    color: rgba(196, 181, 253, 0.7);
+}
+
+/* Inline hint below an input, explaining validation constraints
+   without an aggressive error state. */
+
+.env-detail-input-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin: -2px 0 8px 2px;
+    line-height: 1.5;
+}
+
+.env-detail-input-hint code {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    color: rgba(196, 181, 253, 0.85);
+}
+
 .env-detail-select {
     width: 100%;
     padding: 8px 10px;
