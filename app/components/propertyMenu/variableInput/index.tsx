@@ -63,6 +63,15 @@ type ParsedSegment = {
     category?: string;
     varName?: string;
     valid?: boolean;
+    // pathLen is the number of characters in this segment's path
+    // suffix (".products" or "[0].id" — the part after the
+    // namespace+name root). Identical between display and raw
+    // because the path bytes themselves are unchanged in the
+    // friendly rendering. Used by the cursor-position mapping to
+    // do 1:1 translation within the path region — so editing
+    // (typing / backspacing) into the path doesn't get warped by
+    // the prefix-length difference between friendly and raw.
+    pathLen?: number;
 };
 
 // rootAndPath splits a reference body into a (root, pathSuffix) pair.
@@ -167,6 +176,7 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
             category,
             varName,
             valid,
+            pathLen: path.length,
         });
 
         lastIndex = match.index + match[0].length;
@@ -180,22 +190,53 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
     return segments;
 }
 
-/** Build the display string and a mapping from display positions to raw positions */
+/** Build the display string and a mapping from display positions to
+ *  raw positions. For variable segments, also records the path
+ *  region's boundary on both axes — the path is identical between
+ *  display and raw, so the mapping is 1:1 in that region. Only the
+ *  prefix region (where friendly labels shorten the display) needs
+ *  boundary snapping. */
 function buildDisplayMapping(segments: ParsedSegment[]) {
     let displayText = "";
     let rawOffset = 0;
     let displayOffset = 0;
-    // Map from display offset → raw offset for each segment boundary
-    const toRaw: { displayStart: number; displayEnd: number; rawStart: number; rawEnd: number }[] = [];
+    const toRaw: {
+        displayStart: number; displayEnd: number;
+        rawStart: number; rawEnd: number;
+        // Where the path region BEGINS inside this segment. For
+        // segments with no path, equals displayEnd-1 / rawEnd-1
+        // (one before the closing brace) — i.e. the path region
+        // is empty. For variable segments, the path region runs
+        // [displayPathStart, displayEnd-1) ↔ [rawPathStart, rawEnd-1).
+        displayPathStart: number;
+        rawPathStart: number;
+        // Whether this segment is a variable (pill) — text
+        // segments map 1:1 throughout.
+        isVariable: boolean;
+    }[] = [];
 
     for (const seg of segments) {
         const rawLen = seg.value.length;
         const displayLen = seg.display.length;
+        const pathLen = seg.pathLen ?? 0;
+        const isVariable = seg.type === "variable";
+        // For a variable segment, the path region ends just BEFORE
+        // the closing brace. The brace is 1 char (the `}`). Path
+        // starts pathLen characters before the brace position.
+        const displayPathStart = isVariable
+            ? displayOffset + displayLen - pathLen - 1
+            : displayOffset;
+        const rawPathStart = isVariable
+            ? rawOffset + rawLen - pathLen - 1
+            : rawOffset;
         toRaw.push({
             displayStart: displayOffset,
             displayEnd: displayOffset + displayLen,
             rawStart: rawOffset,
             rawEnd: rawOffset + rawLen,
+            displayPathStart,
+            rawPathStart,
+            isVariable,
         });
         displayText += seg.display;
         rawOffset += rawLen;
@@ -228,47 +269,80 @@ function buildDisplayMapping(segments: ParsedSegment[]) {
 // Positions OUTSIDE all pill segments (plain text) map 1:1 between
 // display and raw because text segments have display === value
 // length.
+// displayPosToRaw maps a cursor position in the rendered (friendly-
+// label) display space to the equivalent position in the underlying
+// raw text.
+//
+// For TEXT segments, display === raw — straightforward 1:1.
+//
+// For VARIABLE (pill) segments, the segment is split into:
+//
+//   [displayStart .. displayPathStart) — the friendly PREFIX
+//   (different length on display vs raw because the friendly
+//   label shortens the prefix).
+//
+//   [displayPathStart .. displayEnd - 1) — the PATH region
+//   (identical bytes in display and raw — ".products" or "[0].id"
+//   render the same in both). Cursor positions here map 1:1.
+//
+//   The closing brace `}` is treated as the boundary at the end.
+//
+// This split is the load-bearing insight: edits inside the path
+// region of a pill (typing path segments, backspacing characters
+// from a path) need byte-accurate mapping, which the path region's
+// 1:1 character correspondence provides naturally.
 function displayPosToRaw(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
     for (const m of mapping) {
         if (pos <= m.displayStart) return m.rawStart;
-        if (pos === m.displayEnd) return m.rawEnd;
-        if (pos < m.displayEnd) {
-            // Inside the pill — boundary-snap rather than
-            // interpolate proportionally.
-            const fromStart = pos - m.displayStart;
-            const fromEnd = m.displayEnd - pos;
-            // "Just inside the closing brace" — most common edit
-            // target for path appends. Mapped to "just inside the
-            // raw closing brace" so .items[0] lands right after
-            // the existing reference name.
-            if (fromEnd <= 1) return m.rawEnd - 1;
-            // "Just inside the opening brace" — symmetric case.
-            if (fromStart <= 2) return m.rawStart + 2;
-            // Mid-pill: snap to nearer boundary.
-            return fromStart < fromEnd ? m.rawStart : m.rawEnd;
+        if (pos >= m.displayEnd) continue;
+
+        if (!m.isVariable) {
+            // Text segment — 1:1.
+            return m.rawStart + (pos - m.displayStart);
         }
+
+        // Variable segment. Which region is pos in?
+        if (pos >= m.displayPathStart) {
+            // Inside the path region OR at the closing brace.
+            // Both the path region and the brace use 1:1 mapping
+            // from displayPathStart onwards because the bytes are
+            // identical in display and raw.
+            return m.rawPathStart + (pos - m.displayPathStart);
+        }
+
+        // Inside the friendly prefix — snap to nearer boundary.
+        // The user shouldn't be editing in the friendly-name
+        // portion (it's a synthesised label, not real text); we
+        // snap to either "before the opening brace" (rawStart) or
+        // "start of the path region" (rawPathStart) based on
+        // proximity.
+        const fromStart = pos - m.displayStart;
+        const fromPath = m.displayPathStart - pos;
+        return fromStart < fromPath ? m.rawStart : m.rawPathStart;
     }
     const last = mapping[mapping.length - 1];
     return last ? last.rawEnd : pos;
 }
 
-// rawPosToDisplay is the inverse mapping. Same boundary-snapping
-// rationale: a raw position inside a pill's underlying characters
-// should map to one of the pill's display boundaries, not to a
-// proportional offset inside the friendly label (which would put
-// the visual cursor in the middle of the pill text and the next
-// keystroke would compound the mis-mapping).
+// rawPosToDisplay is the symmetric inverse mapping. Same regional
+// split: 1:1 within the path region, boundary-snap within the
+// friendly prefix.
 function rawPosToDisplay(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
     for (const m of mapping) {
         if (pos <= m.rawStart) return m.displayStart;
-        if (pos === m.rawEnd) return m.displayEnd;
-        if (pos < m.rawEnd) {
-            const fromStart = pos - m.rawStart;
-            const fromEnd = m.rawEnd - pos;
-            if (fromEnd <= 1) return m.displayEnd - 1;
-            if (fromStart <= 2) return m.displayStart + 2;
-            return fromStart < fromEnd ? m.displayStart : m.displayEnd;
+        if (pos >= m.rawEnd) continue;
+
+        if (!m.isVariable) {
+            return m.displayStart + (pos - m.rawStart);
         }
+
+        if (pos >= m.rawPathStart) {
+            return m.displayPathStart + (pos - m.rawPathStart);
+        }
+
+        const fromStart = pos - m.rawStart;
+        const fromPath = m.rawPathStart - pos;
+        return fromStart < fromPath ? m.displayStart : m.displayPathStart;
     }
     const last = mapping[mapping.length - 1];
     return last ? last.displayEnd : pos;
