@@ -10,6 +10,7 @@ import QRProperty from "~/components/propertyMenu/qrProperty";
 import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
 import FormBuilder from "~/components/propertyMenu/formBuilder";
 import KeyValueProperty from "~/components/propertyMenu/keyValueProperty";
+import RowsProperty from "~/components/propertyMenu/rowsProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
@@ -417,6 +418,20 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         label={i.label}
                                                         key={props.node.data.id + "-" + i.name}
                                                         value={i.value || "[]"}
+                                                        variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            case "rows":
+                                                return (
+                                                    <RowsProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value || ""}
+                                                        placeholder={i.placeholder}
                                                         variables={props.variables}
                                                         onValueChange={onValueChange}
                                                     />
