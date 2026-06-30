@@ -12,185 +12,20 @@ import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
 import {PERMISSIONS} from "~/types";
+import {
+    providerCatalogue,
+    defaultSelection,
+    selectionToScopeString,
+    scopesStringToSelection,
+    countScopes,
+    type ScopeSelection,
+} from "./scope-catalogue";
+import { ScopeServiceRow } from "./ScopeServiceRow";
 
-type ScopeItem = { scope: string; label: string; default?: boolean };
-type ScopeGroup = { group: string; scopes: ScopeItem[] };
+// Provider scope catalogue has moved to ./scope-catalogue.ts.
+// The structured per-service shape lives there along with the
+// selection ↔ scope-string helpers.
 
-const providerScopes: Record<string, ScopeGroup[]> = {
-    google: [
-        { group: "Identity", scopes: [
-            { scope: "openid", label: "OpenID", default: true },
-            { scope: "email", label: "Email address", default: true },
-            { scope: "profile", label: "Profile info", default: true },
-        ]},
-        { group: "Gmail", scopes: [
-            { scope: "https://www.googleapis.com/auth/gmail.readonly", label: "Read-only" },
-            { scope: "https://www.googleapis.com/auth/gmail.send", label: "Send" },
-            { scope: "https://www.googleapis.com/auth/gmail.modify", label: "Read/write" },
-        ]},
-        { group: "Calendar", scopes: [
-            { scope: "https://www.googleapis.com/auth/calendar", label: "Full access" },
-            { scope: "https://www.googleapis.com/auth/calendar.readonly", label: "Read-only" },
-        ]},
-        { group: "Drive", scopes: [
-            { scope: "https://www.googleapis.com/auth/drive.readonly", label: "Read-only" },
-            { scope: "https://www.googleapis.com/auth/drive.file", label: "File access" },
-        ]},
-        { group: "Sheets", scopes: [
-            { scope: "https://www.googleapis.com/auth/spreadsheets", label: "Full access" },
-            { scope: "https://www.googleapis.com/auth/spreadsheets.readonly", label: "Read-only" },
-        ]},
-        { group: "Docs & Slides", scopes: [
-            { scope: "https://www.googleapis.com/auth/documents", label: "Google Docs" },
-            { scope: "https://www.googleapis.com/auth/presentations", label: "Google Slides" },
-        ]},
-        { group: "YouTube", scopes: [
-            { scope: "https://www.googleapis.com/auth/youtube", label: "Manage" },
-            { scope: "https://www.googleapis.com/auth/youtube.readonly", label: "Read-only" },
-            { scope: "https://www.googleapis.com/auth/youtube.upload", label: "Upload" },
-        ]},
-    ],
-    microsoft: [
-        { group: "Identity", scopes: [
-            { scope: "openid", label: "OpenID", default: true },
-            { scope: "email", label: "Email address", default: true },
-            { scope: "profile", label: "Profile info", default: true },
-            { scope: "offline_access", label: "Offline access", default: true },
-            { scope: "User.Read", label: "Read user profile" },
-        ]},
-        { group: "Outlook Mail", scopes: [
-            { scope: "Mail.Read", label: "Read" },
-            { scope: "Mail.ReadBasic", label: "Read basic" },
-            { scope: "Mail.ReadWrite", label: "Read/write" },
-            { scope: "Mail.Send", label: "Send" },
-        ]},
-        { group: "Calendar", scopes: [
-            { scope: "Calendars.Read", label: "Read" },
-            { scope: "Calendars.ReadWrite", label: "Read/write" },
-        ]},
-        { group: "OneDrive", scopes: [
-            { scope: "Files.Read", label: "Read" },
-            { scope: "Files.ReadWrite", label: "Read/write" },
-            { scope: "Files.ReadWrite.All", label: "Full access (all files)" },
-        ]},
-        { group: "Teams", scopes: [
-            { scope: "Team.ReadBasic.All", label: "Read teams" },
-            { scope: "Channel.ReadBasic.All", label: "Read channels" },
-            { scope: "ChannelMessage.Send", label: "Send channel messages" },
-            { scope: "Chat.ReadWrite", label: "Read/write chats" },
-        ]},
-        { group: "SharePoint", scopes: [
-            { scope: "Sites.ReadWrite.All", label: "Read/write sites" },
-        ]},
-    ],
-    github: [
-        { group: "User", scopes: [
-            { scope: "read:user", label: "Read profile", default: true },
-            { scope: "user:email", label: "Read emails", default: true },
-        ]},
-        { group: "Repositories", scopes: [
-            { scope: "repo", label: "Full access" },
-            { scope: "public_repo", label: "Public only" },
-            { scope: "repo:status", label: "Commit statuses" },
-        ]},
-        { group: "Organisations", scopes: [
-            { scope: "read:org", label: "Read membership" },
-            { scope: "write:org", label: "Write membership" },
-            { scope: "admin:org", label: "Full control" },
-        ]},
-        { group: "Actions & Packages", scopes: [
-            { scope: "workflow", label: "Workflows" },
-            { scope: "write:packages", label: "Write packages" },
-            { scope: "read:packages", label: "Read packages" },
-            { scope: "delete:packages", label: "Delete packages" },
-        ]},
-        { group: "Other", scopes: [
-            { scope: "gist", label: "Gists" },
-            { scope: "notifications", label: "Notifications" },
-            { scope: "admin:repo_hook", label: "Webhooks" },
-        ]},
-    ],
-    linkedin: [
-        { group: "Identity", scopes: [
-            { scope: "openid", label: "OpenID", default: true },
-            { scope: "profile", label: "Profile info", default: true },
-            { scope: "email", label: "Email address", default: true },
-            { scope: "r_liteprofile", label: "Lite profile" },
-        ]},
-        { group: "Social", scopes: [
-            { scope: "w_member_social", label: "Post as member", default: true },
-        ]},
-        { group: "Organisation (requires approval)", scopes: [
-            { scope: "r_organization_social", label: "Read org posts" },
-            { scope: "w_organization_social", label: "Post as organisation" },
-            { scope: "rw_organization_admin", label: "Manage organisation" },
-            { scope: "r_ads", label: "Read ad accounts" },
-            { scope: "r_ads_reporting", label: "Read ad reports" },
-        ]},
-    ],
-    linkedin_community: [
-        { group: "Member Content", scopes: [
-            { scope: "r_member_social", label: "Read member posts", default: true },
-            { scope: "w_member_social", label: "Write member posts", default: true },
-        ]},
-        { group: "Organisation Content", scopes: [
-            { scope: "r_organization_social", label: "Read organisation posts", default: true },
-            { scope: "w_organization_social", label: "Write organisation posts", default: true },
-        ]},
-        { group: "Organisation Admin", scopes: [
-            { scope: "rw_organization_admin", label: "Manage organisation pages", default: true },
-        ]},
-    ],
-    facebook: [
-        { group: "Pages", scopes: [
-            { scope: "pages_manage_posts", label: "Manage posts", default: true },
-            { scope: "pages_read_engagement", label: "Read engagement", default: true },
-            { scope: "pages_show_list", label: "Show list" },
-            { scope: "pages_read_user_content", label: "Read user content" },
-            { scope: "pages_manage_metadata", label: "Manage metadata" },
-            { scope: "pages_manage_engagement", label: "Manage engagement" },
-            { scope: "pages_messaging", label: "Messaging" },
-        ]},
-        { group: "Instagram", scopes: [
-            { scope: "instagram_basic", label: "Basic access" },
-            { scope: "instagram_content_publish", label: "Publish content" },
-            { scope: "instagram_manage_comments", label: "Manage comments" },
-            { scope: "instagram_manage_insights", label: "Insights" },
-        ]},
-        { group: "Business", scopes: [
-            { scope: "business_management", label: "Business management" },
-            { scope: "ads_management", label: "Ads management" },
-            { scope: "ads_read", label: "Read ads" },
-        ]},
-    ],
-    twitter: [
-        { group: "Tweets", scopes: [
-            { scope: "tweet.read", label: "Read", default: true },
-            { scope: "tweet.write", label: "Write", default: true },
-        ]},
-        { group: "Users", scopes: [
-            { scope: "users.read", label: "Read profiles", default: true },
-            { scope: "offline.access", label: "Offline access", default: true },
-        ]},
-        { group: "Social", scopes: [
-            { scope: "follows.read", label: "Read follows" },
-            { scope: "follows.write", label: "Manage follows" },
-            { scope: "like.read", label: "Read likes" },
-            { scope: "like.write", label: "Manage likes" },
-        ]},
-        { group: "Lists & Bookmarks", scopes: [
-            { scope: "list.read", label: "Read lists" },
-            { scope: "list.write", label: "Manage lists" },
-            { scope: "bookmark.read", label: "Read bookmarks" },
-            { scope: "bookmark.write", label: "Manage bookmarks" },
-        ]},
-        { group: "Messaging", scopes: [
-            { scope: "space.read", label: "Read Spaces" },
-            { scope: "dm.read", label: "Read DMs" },
-            { scope: "dm.write", label: "Send DMs" },
-        ]},
-    ],
-};
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -232,7 +67,21 @@ export default function EnvironmentDetail() {
     const [ showAddCredential, setShowAddCredential ] = useState(false);
     const [ newCredName, setNewCredName ] = useState("");
     const [ newCredProvider, setNewCredProvider ] = useState("");
-    const [ newCredSelectedScopes, setNewCredSelectedScopes ] = useState<Set<string>>(new Set());
+    // Structured per-service selection. Empty until a provider is
+    // picked, at which point we hydrate from defaultSelection so
+    // every service row has a sensible initial state.
+    const [ newCredSelection, setNewCredSelection ] = useState<ScopeSelection>(new Map());
+    // Scopes the catalogue doesn't recognise — only populated when
+    // an edit-existing-credential flow reverse-parses a saved scope
+    // string. Until then, always empty. Preserved on save so we
+    // never silently strip legacy/custom scopes.
+    const [ newCredOtherScopes, setNewCredOtherScopes ] = useState<Set<string>>(new Set());
+    const [ showOtherScopes, setShowOtherScopes ] = useState(false);
+    // Per-service accordion expansion state. All rows collapsed by
+    // default — users open the one(s) they want to change. Keeps
+    // the vertical density tight when scanning providers with many
+    // services (Google has 8, Microsoft has 6).
+    const [ expandedServices, setExpandedServices ] = useState<Map<string, boolean>>(new Map());
 
     const getUrl = (path: string) => {
         const config = useConfig();
@@ -347,27 +196,91 @@ export default function EnvironmentDetail() {
             .catch(() => setProviders([]));
     };
 
-    const toggleScope = (scope: string) => {
-        setNewCredSelectedScopes(prev => {
-            const next = new Set(prev);
-            if (next.has(scope)) next.delete(scope);
-            else next.add(scope);
+    // Update a single service's access level in the selection map.
+    // Selections are immutable per React state convention — clone
+    // the outer map AND the inner ServiceSelection so React's
+    // identity check sees the change.
+    //
+    // If the picked level declares `implies` (toggle ids that the
+    // level's scope semantically subsumes — e.g. Google's
+    // gmail.modify already grants send), auto-enable those toggles
+    // so the UI reflects the actual granted capability. The auto-
+    // tick is one-way: switching away from the implying level does
+    // NOT auto-untick the toggle. Users remain free to manually
+    // untick afterwards if they don't want the redundant scope
+    // string in the OAuth request.
+    const handleLevelChange = (serviceId: string, level: string) => {
+        setNewCredSelection(prev => {
+            const next = new Map(prev);
+            const existing = next.get(serviceId) ?? { toggles: new Set<string>() };
+            const toggles = new Set(existing.toggles);
+
+            const service = providerCatalogue[newCredProvider]?.find(s => s.id === serviceId);
+            const pickedLevel = service?.levels?.find(l => l.value === level);
+            for (const toggleId of pickedLevel?.implies || []) {
+                toggles.add(toggleId);
+            }
+
+            next.set(serviceId, { ...existing, level, toggles });
             return next;
         });
     };
 
+    // Accordion expand/collapse for a single service row.
+    const handleExpandToggle = (serviceId: string) => {
+        setExpandedServices(prev => {
+            const next = new Map(prev);
+            next.set(serviceId, !next.get(serviceId));
+            return next;
+        });
+    };
+
+    // Toggle an orthogonal capability checkbox on or off. Independent
+    // of the level segment — Gmail's Send is the canonical case.
+    const handleToggleChange = (serviceId: string, toggleId: string, enabled: boolean) => {
+        setNewCredSelection(prev => {
+            const next = new Map(prev);
+            const existing = next.get(serviceId) ?? { toggles: new Set<string>() };
+            const toggles = new Set(existing.toggles);
+            if (enabled) toggles.add(toggleId);
+            else toggles.delete(toggleId);
+            next.set(serviceId, { ...existing, toggles });
+            return next;
+        });
+    };
+
+    const resetCredentialForm = () => {
+        setShowAddCredential(false);
+        setNewCredName("");
+        setNewCredProvider("");
+        setNewCredSelection(new Map());
+        setNewCredOtherScopes(new Set());
+        setShowOtherScopes(false);
+        setExpandedServices(new Map());
+    };
+
+    // Credential names back environment-variable references like
+    // ${credentials.X.access_token}, so we keep them strictly to
+    // identifier characters: ASCII letters, digits, dash and
+    // underscore. Filter-on-change so a paste of "Company Slack
+    // (prod)" becomes "CompanySlackprod" silently rather than
+    // producing a validation error to dismiss.
+    const sanitiseCredentialName = (raw: string) => raw.replace(/[^a-zA-Z0-9_-]/g, "");
+
+    const credentialNameInvalidReason = (): string | null => {
+        if (!newCredName.trim()) return "Enter a name first — letters, digits, dash and underscore only.";
+        return null;
+    };
+
     const saveCredential = () => {
         if (!newCredName.trim() || !newCredProvider) return;
-        const scopeStr = Array.from(newCredSelectedScopes).join(' ');
+        const scopeStr = selectionToScopeString(newCredProvider, newCredSelection, newCredOtherScopes);
         const body: any = { provider_slug: newCredProvider, name: newCredName };
         if (scopeStr) body.scopes = scopeStr;
 
         api.post(getUrl('/credential'), body, { headers })
             .then(r => {
-                setShowAddCredential(false);
-                setNewCredName("");
-                setNewCredProvider("");
-                setNewCredSelectedScopes(new Set());
+                resetCredentialForm();
                 toast.success("Credential created — authorise in the popup");
                 updateCredentials();
                 if (r?.data?.auth_url) {
@@ -587,11 +500,8 @@ export default function EnvironmentDetail() {
                                             onClick={() => {
                                                 if (!p.configured) return;
                                                 setNewCredProvider(p.slug);
-                                                const defaults = new Set<string>();
-                                                (providerScopes[p.slug] || []).forEach((g: any) => {
-                                                    g.scopes.forEach((s: any) => { if (s.default) defaults.add(s.scope); });
-                                                });
-                                                setNewCredSelectedScopes(defaults);
+                                                setNewCredSelection(defaultSelection(p.slug));
+                                                setNewCredOtherScopes(new Set());
                                             }}
                                         >
                                             <Icon name={p.icon || 'link'} />
@@ -610,34 +520,78 @@ export default function EnvironmentDetail() {
                                 <Icon name={providers.find(p => p.slug === newCredProvider)?.icon || 'link'} />
                                 {providers.find(p => p.slug === newCredProvider)?.name}
                             </div>
-                            <input type="text" placeholder="Credential name (e.g. company_linkedin)" autoFocus value={newCredName} onChange={e => setNewCredName(e.target.value)} />
-                            {providerScopes[newCredProvider] && (
-                                <div className="env-cred-scopes-section">
-                                    <div className="env-cred-scopes-label">Scopes</div>
-                                    <div className="env-cred-scopes-groups">
-                                        {providerScopes[newCredProvider].map(group => (
-                                            <div key={group.group} className="env-cred-scope-group">
-                                                <div className="env-cred-scope-group-name">{group.group}</div>
-                                                <div className="env-cred-scopes-grid">
-                                                    {group.scopes.map(s => (
-                                                        <label key={s.scope} className="env-cred-scope-item" title={s.scope}>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={newCredSelectedScopes.has(s.scope)}
-                                                                onChange={() => toggleScope(s.scope)}
-                                                            />
-                                                            <span>{s.label}</span>
-                                                        </label>
+                            <input
+                                type="text"
+                                placeholder="Credential name (e.g. company_linkedin)"
+                                autoFocus
+                                value={newCredName}
+                                onChange={e => setNewCredName(sanitiseCredentialName(e.target.value))}
+                                pattern="[A-Za-z0-9_-]+"
+                                title="Letters, digits, dash and underscore only — no spaces or symbols."
+                            />
+                            <div className="env-detail-input-hint">
+                                Letters, digits, <code>-</code> and <code>_</code> only.
+                                Used in <code>{"${credentials.<name>}"}</code> references.
+                            </div>
+                            {providerCatalogue[newCredProvider] && (
+                                <div className="scope-picker">
+                                    {providerCatalogue[newCredProvider].map(svc => (
+                                        <ScopeServiceRow
+                                            key={svc.id}
+                                            service={svc}
+                                            selection={newCredSelection.get(svc.id)}
+                                            expanded={expandedServices.get(svc.id) ?? false}
+                                            onExpandToggle={handleExpandToggle}
+                                            onLevelChange={handleLevelChange}
+                                            onToggleChange={handleToggleChange}
+                                        />
+                                    ))}
+
+                                    {newCredOtherScopes.size > 0 && (
+                                        <div className="scope-row scope-row--other">
+                                            <button
+                                                type="button"
+                                                className="scope-other-toggle"
+                                                onClick={() => setShowOtherScopes(s => !s)}
+                                                aria-expanded={showOtherScopes}
+                                            >
+                                                <Icon name={showOtherScopes ? "chevron-down" : "chevron-right"} />
+                                                <span>Other scopes ({newCredOtherScopes.size})</span>
+                                                <span className="scope-other-hint">— legacy or custom values; preserved on save.</span>
+                                            </button>
+                                            {showOtherScopes && (
+                                                <div className="scope-other-list">
+                                                    {Array.from(newCredOtherScopes).sort().map(s => (
+                                                        <code key={s} className="scope-other-item">{s}</code>
                                                     ))}
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="scope-picker-footer">
+                                        <Icon name="arrow-up-right-from-square" />
+                                        <span>
+                                            Create &amp; authorise sends you to {providers.find(p => p.slug === newCredProvider)?.name || newCredProvider} to approve these {countScopes(newCredProvider, newCredSelection, newCredOtherScopes)} scopes.
+                                        </span>
                                     </div>
                                 </div>
                             )}
                             <div className="env-detail-add-actions">
-                                <button className="env-detail-btn-save" onClick={saveCredential} disabled={!newCredName.trim() || newCredSelectedScopes.size === 0}><Icon name="check" /> Create &amp; Authorise</button>
-                                <button className="env-detail-btn-cancel" onClick={() => { setShowAddCredential(false); setNewCredName(""); setNewCredProvider(""); setNewCredSelectedScopes(new Set()); }}>Cancel</button>
+                                {(() => {
+                                    const invalidReason = credentialNameInvalidReason();
+                                    return (
+                                        <button
+                                            className="env-detail-btn-save"
+                                            onClick={saveCredential}
+                                            disabled={!!invalidReason}
+                                            title={invalidReason || undefined}
+                                        >
+                                            <Icon name="check" /> Create &amp; Authorise
+                                        </button>
+                                    );
+                                })()}
+                                <button className="env-detail-btn-cancel" onClick={resetCredentialForm}>Cancel</button>
                             </div>
                         </div>
                     )}
