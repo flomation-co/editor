@@ -65,9 +65,40 @@ type ParsedSegment = {
     valid?: boolean;
 };
 
+// rootAndPath splits a reference body into a (root, pathSuffix) pair.
+// The root is the "namespace.name" or "nodeId.outputKey" prefix the
+// editor can validate against the known variables list; pathSuffix is
+// the deeper JSON/array navigation the executor resolves at runtime
+// via ParseReference + ResolvePath. We preserve the original
+// characters (dots + brackets) in pathSuffix so the rendered chip
+// reads as the user typed it: ${parent > response_body.data[0].id}.
+//
+// Examples:
+//   "nodeUUID.body"         -> root="nodeUUID.body", path=""
+//   "nodeUUID.body.data"    -> root="nodeUUID.body", path=".data"
+//   "nodeUUID.body[0].id"   -> root="nodeUUID.body", path="[0].id"
+//   "flow.user_name"        -> root="flow.user_name", path=""
+//   "secrets.API_KEY"       -> root="secrets.API_KEY", path=""
+function rootAndPath(inner: string): { root: string; path: string } {
+    // Boundary = second dot OR first bracket, whichever is earlier.
+    // Everything before is the validatable root; everything from
+    // there on is the opaque runtime-resolved path.
+    const firstDot = inner.indexOf(".");
+    if (firstDot < 0) return { root: inner, path: "" };
+    const secondDot = inner.indexOf(".", firstDot + 1);
+    const firstBracket = inner.indexOf("[");
+    const candidates = [secondDot, firstBracket].filter(i => i >= 0);
+    if (candidates.length === 0) return { root: inner, path: "" };
+    const boundary = Math.min(...candidates);
+    return { root: inner.slice(0, boundary), path: inner.slice(boundary) };
+}
+
 function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[] {
     const segments: ParsedSegment[] = [];
-    const regex = /\$\{([\w.-]+)}/g;
+    // Allow bracket-index segments inside ${...} so path references
+    // like ${node.body[0].id} render as a pill rather than raw text.
+    // The captured inner still parses cleanly via rootAndPath.
+    const regex = /\$\{([\w.\-\[\]]+)}/g;
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
@@ -79,8 +110,14 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
 
         const inner = match[1];
 
+        // Split inner into root + path so we can look up the root
+        // against known variables and preserve the path segments
+        // verbatim in both the underlying value and the display
+        // label.
+        const { root, path } = rootAndPath(inner);
+
         const scopedMatch = variables.find(
-            (v) => v.category === "input" && v.insertName === inner
+            (v) => v.category === "input" && v.insertName === root
         );
 
         let category: string;
@@ -93,30 +130,32 @@ function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[]
             varName = inner;
             valid = true;
             if (scopedMatch.source) {
-                displayLabel = "${" + scopedMatch.source + " > " + scopedMatch.name + "}";
+                displayLabel = "${" + scopedMatch.source + " > " + scopedMatch.name + path + "}";
             }
         } else {
-            const dotIndex = inner.indexOf(".");
+            const dotIndex = root.indexOf(".");
             if (dotIndex >= 0) {
-                category = inner.slice(0, dotIndex);
-                varName = inner.slice(dotIndex + 1);
+                category = root.slice(0, dotIndex);
+                varName = root.slice(dotIndex + 1);
                 if (category === "secret") category = "secrets";
             } else {
                 category = "input";
-                varName = inner;
+                varName = root;
             }
 
             valid = variables.some(
                 (v) => v.category === category && (v.name === varName || v.insertName === varName)
             );
 
-            // Check for friendly label on valid parent outputs
+            // Friendly label on valid parent outputs. Includes the
+            // path suffix so the chip reads as the user typed it
+            // (e.g. "Parent Node > response_body.data[0].id").
             if (valid && category === "input") {
                 const matched = variables.find(
                     (v) => v.category === "input" && v.name === varName && v.source
                 );
                 if (matched?.source) {
-                    displayLabel = "${" + matched.source + " > " + matched.name + "}";
+                    displayLabel = "${" + matched.source + " > " + matched.name + path + "}";
                 }
             }
         }

@@ -27,6 +27,10 @@ type VariablePickerProps = {
 // flows and the runtime substitution layer accepts both — see
 // CLAUDE.md's "Variable substitution" note.
 const KNOWN_NAMESPACES = "secrets|secret|env|flow|var|user|credentials|credential|loop|trigger";
+// PREFIXED_RE captures namespace + everything else (including dots
+// and brackets). The "everything else" is allowed to contain path
+// segments — ${flow.user.profile.email} parses with name="user.profile.email"
+// just fine since .+ is greedy.
 const PREFIXED_RE = new RegExp(`^\\$\\{(${KNOWN_NAMESPACES})\\.(.+)}$`);
 
 function parseVariableRef(val: string): { category: string; name: string } | null {
@@ -40,7 +44,10 @@ function parseVariableRef(val: string): { category: string; name: string } | nul
         if (cat === "credential") cat = "credentials";
         return { category: cat, name: prefixed[2] };
     }
-    const bare = val.match(/^\$\{([\w.-]+)}$/);
+    // Bare reference (parent-node output, ${nodeId.field[.path...]}).
+    // Allow brackets so ${nodeId.body[0].id} parses to the chip form
+    // rather than falling back to the button mode.
+    const bare = val.match(/^\$\{([\w.\-\[\]]+)}$/);
     if (bare) return { category: "input", name: bare[1] };
     return null;
 }
