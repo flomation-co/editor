@@ -205,26 +205,69 @@ function buildDisplayMapping(segments: ParsedSegment[]) {
     return { displayText, toRaw };
 }
 
+// displayPosToRaw maps a cursor position in the rendered (friendly-
+// label) display space to the equivalent position in the underlying
+// raw text. Pills with a shortened friendly label produce a display
+// shorter than the raw, so proportional mapping is fundamentally
+// lossy: cursor positions inside a pill's display land in the
+// middle of the raw pill's characters, which corrupts edits when
+// the user types path segments after the pill.
+//
+// Instead we treat each pill as ATOMIC: positions inside the pill
+// snap to one of three boundaries —
+//
+//   - Just AFTER the opening "${" (rawStart + 2) — for edits at
+//     the very start of the pill content.
+//   - Just BEFORE the closing "}" (rawEnd - 1) — for edits at the
+//     very end of the pill content. THIS is the common case for
+//     path appends: the user clicks "after response_body, before }"
+//     and types ".items[0].id".
+//   - Falls back to the nearer boundary for mid-pill positions
+//     (uncommon — pills are usually treated as opaque).
+//
+// Positions OUTSIDE all pill segments (plain text) map 1:1 between
+// display and raw because text segments have display === value
+// length.
 function displayPosToRaw(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
     for (const m of mapping) {
         if (pos <= m.displayStart) return m.rawStart;
-        if (pos <= m.displayEnd) {
-            // Proportional mapping within segment
-            const ratio = (pos - m.displayStart) / (m.displayEnd - m.displayStart || 1);
-            return Math.round(m.rawStart + ratio * (m.rawEnd - m.rawStart));
+        if (pos === m.displayEnd) return m.rawEnd;
+        if (pos < m.displayEnd) {
+            // Inside the pill — boundary-snap rather than
+            // interpolate proportionally.
+            const fromStart = pos - m.displayStart;
+            const fromEnd = m.displayEnd - pos;
+            // "Just inside the closing brace" — most common edit
+            // target for path appends. Mapped to "just inside the
+            // raw closing brace" so .items[0] lands right after
+            // the existing reference name.
+            if (fromEnd <= 1) return m.rawEnd - 1;
+            // "Just inside the opening brace" — symmetric case.
+            if (fromStart <= 2) return m.rawStart + 2;
+            // Mid-pill: snap to nearer boundary.
+            return fromStart < fromEnd ? m.rawStart : m.rawEnd;
         }
     }
-    // Past end
     const last = mapping[mapping.length - 1];
     return last ? last.rawEnd : pos;
 }
 
+// rawPosToDisplay is the inverse mapping. Same boundary-snapping
+// rationale: a raw position inside a pill's underlying characters
+// should map to one of the pill's display boundaries, not to a
+// proportional offset inside the friendly label (which would put
+// the visual cursor in the middle of the pill text and the next
+// keystroke would compound the mis-mapping).
 function rawPosToDisplay(pos: number, mapping: ReturnType<typeof buildDisplayMapping>["toRaw"]): number {
     for (const m of mapping) {
         if (pos <= m.rawStart) return m.displayStart;
-        if (pos <= m.rawEnd) {
-            const ratio = (pos - m.rawStart) / (m.rawEnd - m.rawStart || 1);
-            return Math.round(m.displayStart + ratio * (m.displayEnd - m.displayStart));
+        if (pos === m.rawEnd) return m.displayEnd;
+        if (pos < m.rawEnd) {
+            const fromStart = pos - m.rawStart;
+            const fromEnd = m.rawEnd - pos;
+            if (fromEnd <= 1) return m.displayEnd - 1;
+            if (fromStart <= 2) return m.displayStart + 2;
+            return fromStart < fromEnd ? m.displayStart : m.displayEnd;
         }
     }
     const last = mapping[mapping.length - 1];
