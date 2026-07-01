@@ -1,4 +1,5 @@
 import type {Route} from "../+types/home";
+import { uuidv4 } from "~/lib/uuid";
 import {useEffect, useState, useRef} from "react";
 import api from "~/lib/api";
 import type {Flo} from "~/types";
@@ -490,7 +491,7 @@ export default function Flows() {
 
                 // Generate real UUIDs for each template node so they're unique
                 const idMap: Record<string, string> = {};
-                template.nodes.forEach(n => { idMap[n.id] = crypto.randomUUID(); });
+                template.nodes.forEach(n => { idMap[n.id] = uuidv4(); });
 
                 const nodes = template.nodes.map(n => {
                     const realId = idMap[n.id];
@@ -505,7 +506,7 @@ export default function Flows() {
                     };
                 });
                 const edges = (template.edges || []).map((e, i) => ({
-                    id: crypto.randomUUID(),
+                    id: uuidv4(),
                     source: idMap[e.source],
                     target: idMap[e.target],
                     ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),

@@ -409,15 +409,31 @@ const VariableInput = (props: VariableInputProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const autocompleteRef = useRef<HTMLDivElement>(null);
 
+    // Track the last value we emitted upward so the resync effect below can
+    // distinguish an external change (e.g. the variable picker inserting a
+    // reference) from the echo of our own edit arriving back through props.value.
+    const lastEmitted = useRef<string>(props.value || "");
+
     useEffect(() => {
         if (props.onValueChange) {
             props.onValueChange(props.name, value);
         }
+        lastEmitted.current = value;
     }, [value]);
 
+    // Resync internal state whenever props.value changes externally. The
+    // variable picker (insert / clear) mutates the parent's value while this
+    // input stays mounted; previously only a node switch ([props.nodeId])
+    // triggered a resync, so a picked variable didn't appear in the field
+    // until the node was reselected. The lastEmitted guard skips the echo of
+    // our own onValueChange round-trip so typing (and the cursor) isn't disturbed.
     useEffect(() => {
-        setValue(props.value || "");
-    }, [props.nodeId]);
+        const incoming = props.value || "";
+        if (incoming !== lastEmitted.current) {
+            lastEmitted.current = incoming;
+            setValue(incoming);
+        }
+    }, [props.value, props.nodeId]);
 
     // Keep highlight div sized and scrolled to match the input/textarea
     useEffect(() => {

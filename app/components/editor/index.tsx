@@ -1,4 +1,5 @@
 import "./index.css"
+import { uuidv4 } from "~/lib/uuid";
 import "./nodes.css"
 import type {Flo, Environment, Property, Secret} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
@@ -161,7 +162,7 @@ export function Editor(props : EditorProps) {
                 if (clipboardRef.current.length > 0) {
                     const offset = 50;
                     const newNodes = clipboardRef.current.map((n: any) => {
-                        const newId = '' + self.crypto.randomUUID() + '';
+                        const newId = '' + uuidv4() + '';
                         return {
                             ...n,
                             id: newId,
@@ -325,7 +326,7 @@ export function Editor(props : EditorProps) {
 
     useEffect(() => {
         if (flo && !flo.revision && plugins && plugins["trigger/manual"] && nodes.length === 0) {
-            const nodeId = '' + self.crypto.randomUUID() + '';
+            const nodeId = '' + uuidv4() + '';
             setNodes([{
                 id: nodeId,
                 position: { x: 250, y: 200 },
@@ -709,7 +710,7 @@ export function Editor(props : EditorProps) {
             pluginType = "input"
         }
 
-        const id ='' + self.crypto.randomUUID() + '';
+        const id ='' + uuidv4() + '';
         const newNode = {
             id: id,
             position: {
@@ -995,6 +996,10 @@ export function Editor(props : EditorProps) {
 
         // Collect outputs from parent nodes, walking through conditionals
         // to find grandparent outputs that pass through.
+        // Collected separately so we can surface them at the TOP of the picker
+        // (they're what users almost always want) rather than appended after
+        // the global flow/user/secret/env variables.
+        const parentItems: VariableItem[] = [];
         const seen = new Set<string>();
         const collectParentOutputs = (nodeId: string) => {
             if (seen.has(nodeId)) return;
@@ -1015,7 +1020,7 @@ export function Editor(props : EditorProps) {
                 if (parentNode.data.config.outputs) {
                     for (const output of parentNode.data.config.outputs) {
                         if (output.name) {
-                            items.push({
+                            parentItems.push({
                                 name: output.name,
                                 insertName: parentId + "." + output.name,
                                 category: "input",
@@ -1055,7 +1060,8 @@ export function Editor(props : EditorProps) {
 
         collectParentOutputs(propertyNode.id);
 
-        return items;
+        // Connected upstream-node outputs first, then the global variables.
+        return [...parentItems, ...items];
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     // validationProblems is the single source of truth for "is this
@@ -1437,7 +1443,7 @@ export function Editor(props : EditorProps) {
     // inside later. We start expanded by default so the user can
     // immediately see the working surface they just created.
     const addGroup = useCallback(() => {
-        const id = "" + self.crypto.randomUUID();
+        const id = "" + uuidv4();
         const graphElement = document.querySelector('.react-flow');
         const rect = graphElement?.getBoundingClientRect();
         const centreX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
