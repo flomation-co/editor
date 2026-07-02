@@ -34,6 +34,11 @@ const DynamicSelectProperty = (props: PropertyProps) => {
     const config = useConfig();
     const token = useCookieToken();
 
+    // The parent keys this component on node id + input name, so a node
+    // switch remounts it and useState re-initialises from props — no sync
+    // effect needed. The saved value only ever changes through the
+    // user-interaction handlers below, never from an effect, so mounting
+    // can never overwrite a stored value.
     const [value, setValue] = useState<string>(props.value);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -42,21 +47,20 @@ const DynamicSelectProperty = (props: PropertyProps) => {
     const [error, setError] = useState("");
     const ref = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    const commit = (val: string) => {
+        setValue(val);
         if (props.onValueChange) {
-            props.onValueChange(props.name, value);
+            props.onValueChange(props.name, val);
         }
-    }, [value]);
+    };
 
-    useEffect(() => {
-        setValue(props.value);
-    }, [props.nodeId]);
-
-    // Fetch once per node selection so a saved value resolves to its
-    // display name immediately. Failures only set the error banner — the
-    // static options keep the dropdown usable and the value is untouched.
+    // Fetch on mount (and again if the endpoint ever changes) so a saved
+    // value resolves to its display name immediately. Failures only set
+    // the error banner — the static options keep the dropdown usable and
+    // the value is untouched.
     useEffect(() => {
         let cancelled = false;
+        setFetched(null);
         setLoading(true);
         setError("");
         const url = config("AUTOMATE_API_URL");
@@ -78,7 +82,7 @@ const DynamicSelectProperty = (props: PropertyProps) => {
                 if (!cancelled) setLoading(false);
             });
         return () => { cancelled = true; };
-    }, [props.endpoint, props.nodeId]);
+    }, [props.endpoint]);
 
     useEffect(() => {
         if (!open) return;
@@ -118,7 +122,7 @@ const DynamicSelectProperty = (props: PropertyProps) => {
     const showFreeText = query !== "" && !exactMatch;
 
     const choose = (val: string) => {
-        setValue(val);
+        commit(val);
         setOpen(false);
         setSearch("");
     };
@@ -133,8 +137,8 @@ const DynamicSelectProperty = (props: PropertyProps) => {
                 <VariablePicker
                     value={value}
                     variables={props.variables || []}
-                    onSelect={(ref) => setValue(ref)}
-                    onClear={() => setValue("")}
+                    onSelect={(ref) => commit(ref)}
+                    onClear={() => commit("")}
                 />
             ) : (
                 <div className="variable-mode-row">
@@ -195,8 +199,8 @@ const DynamicSelectProperty = (props: PropertyProps) => {
                     <VariablePicker
                         value={value}
                         variables={props.variables ?? []}
-                        onSelect={(ref) => setValue(ref)}
-                        onClear={() => setValue("")}
+                        onSelect={(ref) => commit(ref)}
+                        onClear={() => commit("")}
                     />
                 </div>
             )}
