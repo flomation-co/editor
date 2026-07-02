@@ -249,6 +249,7 @@ build-docker:
 
 Deploy to DEV:
   stage: Development
+  when: manual
   variables:
     ENVIRONMENT: dev
   only:
