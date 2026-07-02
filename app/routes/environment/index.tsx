@@ -26,6 +26,24 @@ import { ScopeServiceRow } from "./ScopeServiceRow";
 // The structured per-service shape lives there along with the
 // selection ↔ scope-string helpers.
 
+// A per-tenant OAuth URL variable declared by a provider (e.g. Shopify's shop
+// subdomain). Mirrors the api's api.URLVariable Go struct.
+interface URLVariable {
+    key: string;
+    label: string;
+    placeholder?: string;
+}
+
+// OAuth credential provider as returned by /api/v1/credential/providers.
+interface CredentialProvider {
+    slug: string;
+    name: string;
+    icon?: string;
+    // configured=false → no platform-level OAuth app exists, so the user
+    // supplies their own Client ID/Secret ("bring your own app").
+    configured?: boolean;
+    url_variables?: URLVariable[];
+}
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -63,7 +81,7 @@ export default function EnvironmentDetail() {
     const [ confirmDelete, setConfirmDelete ] = useState<{ type: 'property' | 'secret' | 'credential', id: string, name: string } | null>(null);
 
     const [ credentials, setCredentials ] = useState<any[]>([]);
-    const [ providers, setProviders ] = useState<any[]>([]);
+    const [ providers, setProviders ] = useState<CredentialProvider[]>([]);
     const [ showAddCredential, setShowAddCredential ] = useState(false);
     const [ newCredName, setNewCredName ] = useState("");
     const [ newCredProvider, setNewCredProvider ] = useState("");
@@ -287,7 +305,13 @@ export default function EnvironmentDetail() {
         const scopeStr = selectionToScopeString(newCredProvider, newCredSelection, newCredOtherScopes);
         const body: any = { provider_slug: newCredProvider, name: newCredName };
         if (scopeStr) body.scopes = scopeStr;
-        if (Object.keys(newCredUrlVars).length > 0) body.url_vars = newCredUrlVars;
+        if (Object.keys(newCredUrlVars).length > 0) {
+            // Trim on save too — onBlur normally trims, but guarantee no stray
+            // whitespace reaches the API if the field is never blurred.
+            body.url_vars = Object.fromEntries(
+                Object.entries(newCredUrlVars).map(([k, val]) => [k, val.trim()])
+            );
+        }
         if (newCredClientId.trim()) body.client_id = newCredClientId.trim();
         if (newCredClientSecret.trim()) body.client_secret = newCredClientSecret.trim();
 
@@ -552,13 +576,18 @@ export default function EnvironmentDetail() {
                                 Used in <code>{"${credentials.<name>}"}</code> references.
                             </div>
                             {/* Per-tenant URL variables (e.g. Shopify shop subdomain) */}
-                            {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map((v: any) => (
+                            {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map(v => (
                                 <div key={v.key} className="env-detail-url-var">
                                     <input
                                         type="text"
                                         placeholder={v.placeholder || v.label}
                                         value={newCredUrlVars[v.key] ?? ""}
-                                        onChange={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value.trim() }))}
+                                        // Store keystrokes verbatim and trim on blur (not on every
+                                        // keystroke) so a value with an internal hyphen can be typed
+                                        // without the next character stripping the trailing one —
+                                        // consistent with the Client ID/Secret inputs, which trim on save.
+                                        onChange={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value }))}
+                                        onBlur={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value.trim() }))}
                                     />
                                     <div className="env-detail-input-hint">{v.label}</div>
                                 </div>
@@ -632,7 +661,7 @@ export default function EnvironmentDetail() {
                                 {(() => {
                                     const selProvider = providers.find(p => p.slug === newCredProvider);
                                     const missingVar = (selProvider?.url_variables ?? [])
-                                        .find((v: any) => !(newCredUrlVars[v.key] ?? "").trim());
+                                        .find(v => !(newCredUrlVars[v.key] ?? "").trim());
                                     const needsClient = !selProvider?.configured;
                                     const invalidReason = credentialNameInvalidReason()
                                         || (missingVar ? `Enter the ${missingVar.label} first.` : "")
