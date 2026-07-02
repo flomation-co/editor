@@ -692,12 +692,18 @@ export default function Flows() {
                                                 </span>
                                             )}
                                             <Tooltip id={"tooltip-time-" + flo.id} />
-                                            {flo.last_execution?.duration && (
+                                            {/* Ternary + null (not &&) — when duration is 0 the &&
+                                                short-circuits to the number 0 which React renders as the
+                                                literal "0" in JSX. friendlyDuration() already returns ""
+                                                for a 0-ms duration, so we could feed it unconditionally,
+                                                but keeping the guard here means we don't emit the empty
+                                                span at all. */}
+                                            {flo.last_execution?.duration ? (
                                                 <span className="flow-card-detail">{friendlyDuration(flo.last_execution.duration)}</span>
-                                            )}
-                                            {flo.execution_count > 0 && (
+                                            ) : null}
+                                            {flo.execution_count > 0 ? (
                                                 <span className="flow-card-detail">{flo.execution_count} run{flo.execution_count !== 1 ? 's' : ''}</span>
-                                            )}
+                                            ) : null}
                                         </div>
                                     </div>
 
