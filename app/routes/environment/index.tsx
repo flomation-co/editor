@@ -67,6 +67,13 @@ export default function EnvironmentDetail() {
     const [ showAddCredential, setShowAddCredential ] = useState(false);
     const [ newCredName, setNewCredName ] = useState("");
     const [ newCredProvider, setNewCredProvider ] = useState("");
+    // Per-tenant OAuth URL variable values (e.g. {shop: "my-store"}) for
+    // providers that declare url_variables (Shopify and other per-account SaaS).
+    const [ newCredUrlVars, setNewCredUrlVars ] = useState<Record<string, string>>({});
+    // Bring-your-own OAuth app credentials, used when the provider has no
+    // platform-level app configured (e.g. Shopify — each user has their own app).
+    const [ newCredClientId, setNewCredClientId ] = useState("");
+    const [ newCredClientSecret, setNewCredClientSecret ] = useState("");
     // Structured per-service selection. Empty until a provider is
     // picked, at which point we hydrate from defaultSelection so
     // every service row has a sensible initial state.
@@ -253,6 +260,9 @@ export default function EnvironmentDetail() {
         setShowAddCredential(false);
         setNewCredName("");
         setNewCredProvider("");
+        setNewCredUrlVars({});
+        setNewCredClientId("");
+        setNewCredClientSecret("");
         setNewCredSelection(new Map());
         setNewCredOtherScopes(new Set());
         setShowOtherScopes(false);
@@ -277,6 +287,9 @@ export default function EnvironmentDetail() {
         const scopeStr = selectionToScopeString(newCredProvider, newCredSelection, newCredOtherScopes);
         const body: any = { provider_slug: newCredProvider, name: newCredName };
         if (scopeStr) body.scopes = scopeStr;
+        if (Object.keys(newCredUrlVars).length > 0) body.url_vars = newCredUrlVars;
+        if (newCredClientId.trim()) body.client_id = newCredClientId.trim();
+        if (newCredClientSecret.trim()) body.client_secret = newCredClientSecret.trim();
 
         api.post(getUrl('/credential'), body, { headers })
             .then(r => {
@@ -495,10 +508,8 @@ export default function EnvironmentDetail() {
                                     {providers.map(p => (
                                         <button
                                             key={p.slug}
-                                            className={`env-cred-provider-option ${!p.configured ? 'env-cred-provider-option--disabled' : ''}`}
-                                            disabled={!p.configured}
+                                            className="env-cred-provider-option"
                                             onClick={() => {
-                                                if (!p.configured) return;
                                                 setNewCredProvider(p.slug);
                                                 setNewCredSelection(defaultSelection(p.slug));
                                                 setNewCredOtherScopes(new Set());
@@ -506,7 +517,9 @@ export default function EnvironmentDetail() {
                                         >
                                             <Icon name={p.icon || 'link'} />
                                             <span>{p.name}</span>
-                                            {!p.configured && <span className="env-cred-provider-unconfigured">Not configured</span>}
+                                            {/* Not platform-configured → the user supplies their own
+                                                OAuth app's Client ID/Secret in the form below. */}
+                                            {!p.configured && <span className="env-cred-provider-unconfigured">Bring your own app</span>}
                                         </button>
                                     ))}
                                 </div>
@@ -538,6 +551,39 @@ export default function EnvironmentDetail() {
                                 Letters, digits, <code>-</code> and <code>_</code> only.
                                 Used in <code>{"${credentials.<name>}"}</code> references.
                             </div>
+                            {/* Per-tenant URL variables (e.g. Shopify shop subdomain) */}
+                            {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map((v: any) => (
+                                <div key={v.key} className="env-detail-url-var">
+                                    <input
+                                        type="text"
+                                        placeholder={v.placeholder || v.label}
+                                        value={newCredUrlVars[v.key] ?? ""}
+                                        onChange={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value.trim() }))}
+                                    />
+                                    <div className="env-detail-input-hint">{v.label}</div>
+                                </div>
+                            ))}
+                            {/* Bring-your-own OAuth app: shown when the provider has no
+                                platform-level app configured (e.g. Shopify). */}
+                            {!providers.find(p => p.slug === newCredProvider)?.configured && (
+                                <>
+                                    <input
+                                        type="text"
+                                        placeholder="Client ID (API key)"
+                                        value={newCredClientId}
+                                        onChange={e => setNewCredClientId(e.target.value)}
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Client Secret (API secret key)"
+                                        value={newCredClientSecret}
+                                        onChange={e => setNewCredClientSecret(e.target.value)}
+                                    />
+                                    <div className="env-detail-input-hint">
+                                        From your OAuth app. Add this API's <code>/api/v1/credential/callback</code> as an allowed redirect URL in the app.
+                                    </div>
+                                </>
+                            )}
                             {providerCatalogue[newCredProvider] && (
                                 <div className="scope-picker">
                                     {providerCatalogue[newCredProvider].map(svc => (
@@ -584,7 +630,14 @@ export default function EnvironmentDetail() {
                             )}
                             <div className="env-detail-add-actions">
                                 {(() => {
-                                    const invalidReason = credentialNameInvalidReason();
+                                    const selProvider = providers.find(p => p.slug === newCredProvider);
+                                    const missingVar = (selProvider?.url_variables ?? [])
+                                        .find((v: any) => !(newCredUrlVars[v.key] ?? "").trim());
+                                    const needsClient = !selProvider?.configured;
+                                    const invalidReason = credentialNameInvalidReason()
+                                        || (missingVar ? `Enter the ${missingVar.label} first.` : "")
+                                        || (needsClient && !newCredClientId.trim() ? "Enter the Client ID first." : "")
+                                        || (needsClient && !newCredClientSecret.trim() ? "Enter the Client Secret first." : "");
                                     return (
                                         <button
                                             className="env-detail-btn-save"
