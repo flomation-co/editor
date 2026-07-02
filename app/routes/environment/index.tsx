@@ -526,7 +526,12 @@ export default function EnvironmentDetail() {
                                 autoFocus
                                 value={newCredName}
                                 onChange={e => setNewCredName(sanitiseCredentialName(e.target.value))}
-                                pattern="[A-Za-z0-9_-]+"
+                                // `-` is placed at the START of the character class so it's
+                                // guaranteed literal — Chrome enforces the ECMAScript `v` flag
+                                // for HTML5 pattern regex, which treats a trailing `-` inside a
+                                // class as an unfinished range operator and throws
+                                // "Invalid regular expression: Invalid character in character class".
+                                pattern="[-A-Za-z0-9_]+"
                                 title="Letters, digits, dash and underscore only — no spaces or symbols."
                             />
                             <div className="env-detail-input-hint">
