@@ -309,6 +309,21 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             ?.inputs?.find((x: any) => x.name === i.name);
                                         const dynamicOptions = freshInput?.dynamic_options ?? i.dynamic_options;
                                         if (dynamicOptions && dynamicOptions.endpoint) {
+                                            // Params-declared sibling inputs are forwarded to the
+                                            // resolver as query parameters — unsaved edits first
+                                            // (localValues), then the stored node config — so the
+                                            // dropdown tracks the values the user is typing.
+                                            let fetchParams: Record<string, string> | undefined;
+                                            if (dynamicOptions.params?.length) {
+                                                fetchParams = {};
+                                                for (const p of dynamicOptions.params) {
+                                                    const paramInput = props.node.data.config.inputs.find((x: any) => x.name === p);
+                                                    fetchParams[p] = String(localValues[p] ?? paramInput?.value ?? "");
+                                                }
+                                                if (props.environmentId) {
+                                                    fetchParams["environment"] = props.environmentId;
+                                                }
+                                            }
                                             return (
                                                 <DynamicSelectProperty
                                                     nodeId={props.node.data.id}
@@ -317,6 +332,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     key={props.node.data.id + "-" + i.name}
                                                     value={i.value}
                                                     endpoint={dynamicOptions.endpoint}
+                                                    params={fetchParams}
                                                     options={i.options || []}
                                                     required={i.required}
                                                     variables={props.variables}

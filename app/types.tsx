@@ -109,6 +109,11 @@ export type ParameterDynamicOptions = {
     // API-relative endpoint returning {"options": [{name, value}]} — the
     // editor fetches this at edit time; static options are the fallback.
     endpoint: string
+    // Sibling input names whose current values are appended to the fetch
+    // as query parameters (plus environment=<id>), for resolvers that
+    // need node context — e.g. ai/ollama's model list lives on the server
+    // named by the node's own endpoint input.
+    params?: string[]
 }
 
 export type ParameterDefinition = {

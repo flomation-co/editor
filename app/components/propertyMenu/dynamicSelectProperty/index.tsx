@@ -20,6 +20,10 @@ type PropertyProps = {
     label: string;
     value: string;
     endpoint: string;
+    // Query parameters forwarded to the endpoint, sourced from sibling
+    // inputs declared in the marker's params (e.g. ai/ollama's server
+    // URL). Fetches re-run (debounced) when these values change.
+    params?: Record<string, string>;
     options: ParameterOption[];
     required?: boolean;
     variables?: VariableItem[];
@@ -54,35 +58,46 @@ const DynamicSelectProperty = (props: PropertyProps) => {
         }
     };
 
-    // Fetch on mount (and again if the endpoint ever changes) so a saved
-    // value resolves to its display name immediately. Failures only set
-    // the error banner — the static options keep the dropdown usable and
-    // the value is untouched.
+    // Fetch on mount (and again if the endpoint or forwarded params ever
+    // change) so a saved value resolves to its display name immediately.
+    // Failures only set the error banner — the static options keep the
+    // dropdown usable and the value is untouched. Param changes arrive per
+    // keystroke while the user types a sibling input (e.g. a server URL),
+    // so refetches after the initial one are debounced.
+    const paramsKey = props.params ? JSON.stringify(props.params) : "";
+    const hasFetchedRef = useRef(false);
     useEffect(() => {
         let cancelled = false;
         setFetched(null);
         setLoading(true);
         setError("");
-        const url = config("AUTOMATE_API_URL");
-        api.get(`${url}${props.endpoint}`, {
-            headers: {Authorization: "Bearer " + token},
-        })
-            .then(res => {
-                if (cancelled) return;
-                if (res?.data?.error || !Array.isArray(res?.data?.options)) {
-                    setError(res?.data?.error || "Failed to load options");
-                    return;
-                }
-                setFetched(res.data.options);
+        const run = () => {
+            const url = config("AUTOMATE_API_URL");
+            const query = props.params ? new URLSearchParams(props.params).toString() : "";
+            const separator = query ? (props.endpoint.includes("?") ? "&" : "?") : "";
+            api.get(`${url}${props.endpoint}${separator}${query}`, {
+                headers: {Authorization: "Bearer " + token},
             })
-            .catch(() => {
-                if (!cancelled) setError("Failed to load options");
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => { cancelled = true; };
-    }, [props.endpoint]);
+                .then(res => {
+                    if (cancelled) return;
+                    if (res?.data?.error || !Array.isArray(res?.data?.options)) {
+                        setError(res?.data?.error || "Failed to load options");
+                        return;
+                    }
+                    setFetched(res.data.options);
+                })
+                .catch(() => {
+                    if (!cancelled) setError("Failed to load options");
+                })
+                .finally(() => {
+                    if (!cancelled) setLoading(false);
+                });
+        };
+        const delay = paramsKey && hasFetchedRef.current ? 400 : 0;
+        hasFetchedRef.current = true;
+        const timer = setTimeout(run, delay);
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [props.endpoint, paramsKey]);
 
     useEffect(() => {
         if (!open) return;
