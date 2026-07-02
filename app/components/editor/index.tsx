@@ -1823,6 +1823,7 @@ export function Editor(props : EditorProps) {
                                             variables={allVariables}
                                             triggers={flo?.triggers}
                                             environmentId={environment || undefined}
+                                            actionDefinitions={plugins}
                                             onValueChange={onValueChange}
                                             onNameChange={onNameChange}
                                             onDismiss={() => {

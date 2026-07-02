@@ -14,6 +14,7 @@ import RowsProperty from "~/components/propertyMenu/rowsProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
+import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 import WebhookSecretProperty from "~/components/propertyMenu/webhookSecretProperty";
@@ -31,6 +32,12 @@ type PropertyMenuProps = {
     variables?: VariableItem[];
     triggers?: Trigger[];
     environmentId?: string;
+    // Freshly-fetched action definitions keyed by action id. Node configs
+    // are snapshotted into flow revisions at add time, so serve-time-only
+    // metadata (dynamic_options) must be resolved from here, not from the
+    // saved node config — otherwise nodes added before a feature shipped
+    // would never pick it up.
+    actionDefinitions?: Record<string, any> | null;
     onValueChange?: (node_id: string, property: string, value: any) => void;
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
@@ -291,6 +298,31 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             const refInput = props.node.data.config.inputs.find((x: any) => x.name === i.visible_when.field);
                                             const refValue = localValues[i.visible_when.field] ?? refInput?.value ?? '';
                                             if (!i.visible_when.values.includes(refValue)) return null;
+                                        }
+
+                                        // Inputs marked dynamic_options fetch their choices from the
+                                        // api at edit time; static options remain the fallback. The
+                                        // marker is resolved from the freshly-fetched definitions
+                                        // (falling back to the node snapshot) because saved nodes
+                                        // carry configs snapshotted before the marker existed.
+                                        const freshInput = props.actionDefinitions?.[props.node.data.label]
+                                            ?.inputs?.find((x: any) => x.name === i.name);
+                                        const dynamicOptions = freshInput?.dynamic_options ?? i.dynamic_options;
+                                        if (dynamicOptions && dynamicOptions.endpoint) {
+                                            return (
+                                                <DynamicSelectProperty
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value}
+                                                    endpoint={dynamicOptions.endpoint}
+                                                    options={i.options || []}
+                                                    required={i.required}
+                                                    variables={props.variables}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            )
                                         }
 
                                         if (i.options && i.options.length > 0 && i.type !== "multi_select") {

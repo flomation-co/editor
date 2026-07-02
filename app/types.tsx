@@ -105,6 +105,12 @@ export type ParameterOption = {
     value: string
 }
 
+export type ParameterDynamicOptions = {
+    // API-relative endpoint returning {"options": [{name, value}]} — the
+    // editor fetches this at edit time; static options are the fallback.
+    endpoint: string
+}
+
 export type ParameterDefinition = {
     id?: string,
     name: string,
@@ -113,7 +119,8 @@ export type ParameterDefinition = {
     value: string,
     label?: string,
     required?: boolean,
-    options?: ParameterOption[]
+    options?: ParameterOption[],
+    dynamic_options?: ParameterDynamicOptions
 }
 
 export type Runner = {
