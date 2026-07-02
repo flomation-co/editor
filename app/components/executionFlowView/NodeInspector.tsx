@@ -445,8 +445,11 @@ function InspectorValue({ value, depth = 0, keyName = '' }: { value: any; depth?
     if (typeof parsed === 'string') {
         if (parsed === '********') return <span className="ni-val ni-val--obfuscated">********</span>;
 
-        // Detect and render media content (audio, image, video, pdf)
-        if (keyName && parsed.length > 100) {
+        // Detect and render media content (audio, image, video, pdf).
+        // Blob tokens are ~80 chars — shorter than the base64 length
+        // floor — so accept them regardless of length. Base64 inline
+        // media still needs >100 chars to plausibly be a real payload.
+        if (keyName && (parsed.length > 100 || parseBlobToken(parsed))) {
             const media = detectMedia(keyName, parsed);
             if (media.type) {
                 return <MediaPlayer type={media.type} mimeType={media.mimeType} data={parsed} keyName={keyName} />;

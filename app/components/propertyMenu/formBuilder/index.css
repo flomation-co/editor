@@ -412,3 +412,94 @@
 .fb-type-picker-cancel:hover {
     color: rgba(255, 255, 255, 0.6);
 }
+
+/* ── Options sub-editor (radio / checkboxes / dropdown) ── */
+
+.fb-options-editor {
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+}
+
+.fb-option-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.fb-option-row:first-of-type {
+    margin-top: 6px;
+}
+
+.fb-option-label-input,
+.fb-option-value-input {
+    width: 100%;
+    min-width: 0;
+}
+
+.fb-option-value-input {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.fb-option-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.fb-add-option {
+    width: 100%;
+    margin-top: 8px;
+    padding: 6px;
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.12s ease;
+}
+
+.fb-add-option:hover {
+    background: rgba(139, 92, 246, 0.06);
+    border-color: rgba(139, 92, 246, 0.2);
+    color: rgba(139, 92, 246, 0.8);
+}
+
+/* ── Address preview (informational, no interactive controls) ── */
+
+.fb-address-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+}
+
+.fb-address-preview small {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+}
+
+.fb-address-preview code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    color: rgba(196, 181, 253, 0.9);
+}
