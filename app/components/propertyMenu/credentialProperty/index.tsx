@@ -47,7 +47,19 @@ const CredentialProperty = (props: CredentialPropertyProps) => {
     const [value, setValue] = useState<string>(props.value || "");
     const emptyRowRef = useRef<HTMLDivElement>(null);
 
+    // Propagate value changes up to the flow — but NOT on the initial mount.
+    // The node already carries its saved value via props.value, so echoing it
+    // back on mount is redundant; worse, on a panel with more than one secret
+    // picker (e.g. a node with both an API token and an OAuth token) those
+    // mount-time pushes feed the flow's setNodes and can loop into React's
+    // "maximum update depth exceeded" (#185). Skipping the first run breaks
+    // that cycle while still notifying on a real user select/clear.
+    const didPropagateRef = useRef(false);
     useEffect(() => {
+        if (!didPropagateRef.current) {
+            didPropagateRef.current = true;
+            return;
+        }
         if (props.onValueChange) {
             props.onValueChange(props.name, value);
         }
