@@ -52,6 +52,7 @@ const TRIGGER_ICONS: Record<string, any> = {
     'google-drive': "google",
     'calendly-webhook': "calendly",
     'calcom-webhook': "calcom",
+    'acuity-webhook': "acuity",
     'zendesk-webhook': "zendesk",
 };
 
@@ -77,6 +78,7 @@ const TRIGGER_LABELS: Record<string, string> = {
     'google-drive': 'Google Drive',
     'calendly-webhook': 'Calendly',
     'calcom-webhook': 'Cal.com',
+    'acuity-webhook': 'Acuity',
     'zendesk-webhook': 'Zendesk',
 };
 
