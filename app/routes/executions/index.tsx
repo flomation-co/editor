@@ -50,6 +50,7 @@ const TRIGGER_ICONS: Record<string, any> = {
     'twilio-sms': "comment-sms",
     'twilio-voice': "phone-volume",
     'google-drive': "google",
+    'calendly-webhook': "calendly",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -72,6 +73,7 @@ const TRIGGER_LABELS: Record<string, string> = {
     'twilio-sms': 'Twilio SMS',
     'twilio-voice': 'Twilio Voice',
     'google-drive': 'Google Drive',
+    'calendly-webhook': 'Calendly',
 };
 
 function triggerIcon(type?: string): any {
