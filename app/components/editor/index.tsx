@@ -766,37 +766,55 @@ export function Editor(props : EditorProps) {
     }, [setNodes, setEdges]);
 
     const onValueChange = useCallback((id: string, property: string, value: any) => {
-        setNodes((prev) => prev.map((node) => {
-            if (node.id !== id) return node;
+        setNodes((prev) => {
+            let changed = false;
+            const next = prev.map((node) => {
+                if (node.id !== id) return node;
 
-            // Special case: store trigger input definitions separately from action inputs
-            if (property === "__trigger_inputs__") {
+                // Special case: store trigger input definitions separately from action inputs
+                if (property === "__trigger_inputs__") {
+                    changed = true;
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            config: {
+                                ...node.data.config,
+                                trigger_inputs: value,
+                            },
+                        },
+                    };
+                }
+
+                if (!node.data.config.inputs) return node;
+                const target = node.data.config.inputs.find((input: any) => input.name === property);
+                // No-op guard: every property component echoes its current value
+                // back up on mount (see e.g. StringProperty / CredentialProperty's
+                // [value] effect). Applying an unchanged value would still build a
+                // fresh nodes array on each echo; on a panel with several inputs
+                // those cascading setNodes calls can loop into React's "maximum
+                // update depth exceeded" (#185). When the value hasn't actually
+                // changed, leave the node untouched.
+                if (!target || target.value === value) return node;
+                changed = true;
                 return {
                     ...node,
                     data: {
                         ...node.data,
                         config: {
                             ...node.data.config,
-                            trigger_inputs: value,
+                            inputs: node.data.config.inputs.map((input: any) =>
+                                input.name === property ? { ...input, value } : input
+                            ),
                         },
                     },
                 };
-            }
-
-            if (!node.data.config.inputs) return node;
-            return {
-                ...node,
-                data: {
-                    ...node.data,
-                    config: {
-                        ...node.data.config,
-                        inputs: node.data.config.inputs.map((input) =>
-                            input.name === property ? { ...input, value } : input
-                        ),
-                    },
-                },
-            };
-        }));
+            });
+            // Return the SAME array reference when nothing changed so the
+            // underlying useState bails (Object.is) — no re-render, no re-echo,
+            // no cascade.
+            return changed ? next : prev;
+        });
     }, [setNodes])
 
     const onNameChange = useCallback((id: string, value: any) => {
