@@ -51,6 +51,7 @@ const TRIGGER_ICONS: Record<string, any> = {
     'twilio-voice': "phone-volume",
     'google-drive': "google",
     'calendly-webhook': "calendly",
+    'calcom-webhook': "calcom",
     'zendesk-webhook': "zendesk",
 };
 
@@ -75,6 +76,7 @@ const TRIGGER_LABELS: Record<string, string> = {
     'twilio-voice': 'Twilio Voice',
     'google-drive': 'Google Drive',
     'calendly-webhook': 'Calendly',
+    'calcom-webhook': 'Cal.com',
     'zendesk-webhook': 'Zendesk',
 };
 
