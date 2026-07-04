@@ -555,6 +555,14 @@
     overflow: visible;
 }
 
+/* ── Human in the Loop: like Switch — fixed width, grows for option handles ── */
+.flo-node--await {
+    width: 56px;
+    min-height: 56px;
+    overflow: visible;
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
 /* ── Handles ── */
 .react-flow__handle {
     width: 6px !important;
