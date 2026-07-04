@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
+import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 
 type FormOption = {
     label: string;
@@ -35,6 +36,10 @@ type FormComponent = {
     default_value?: string;
     // Present only on radio / checkboxes / dropdown fields.
     options?: FormOption[];
+    // When set (option-based fields only), options are populated at load
+    // time from this key in the data-source flow's outputs, rather than the
+    // static options above. Requires a form-level data flow.
+    options_source?: string;
     // Numeric constraints — apply to number, slider, and rating types.
     min?: number;
     max?: number;
@@ -123,6 +128,13 @@ type FormPage = {
     visible_if?: VisibilityRule;
 }
 
+// Autofill config: run a flow when the form loads and expose its outputs as
+// ${data.X} in labels, placeholders and default values.
+type FormDataSource = {
+    flow_id: string;
+    timeout_seconds?: number;
+}
+
 type FormDefinition = {
     title: string;
     description: string;
@@ -130,6 +142,8 @@ type FormDefinition = {
     // Require Sentinel session cookie to view/submit. Enables ${user.X}
     // substitution at render time.
     require_login?: boolean;
+    // Optional flow whose outputs prefill fields via ${data.X}.
+    data_source?: FormDataSource;
 }
 
 type Props = {
@@ -331,6 +345,7 @@ const FormBuilder = (props: Props) => {
                 description: parsed.description || "",
                 pages: parsed.pages || [{components: []}],
                 require_login: parsed.require_login || false,
+                data_source: parsed.data_source || undefined,
             };
         } catch {
             return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
@@ -634,6 +649,33 @@ const FormBuilder = (props: Props) => {
                         </span>
                     </label>
                 </div>
+                <div className="fb-field-row fb-datasource">
+                    <label className="fb-label">Prefill from a flow</label>
+                    <span className="fb-datasource-desc">
+                        Run a flow when the form loads and use its outputs to fill fields
+                        with <code>{" ${data.X} "}</code>(e.g. a default of
+                        <code>{" ${data.customer_name} "}</code>). The flow runs once and the
+                        result is cached, so many visitors share a single run.
+                    </span>
+                    <FlowSelectProperty
+                        nodeId={`${props.nodeId}-datasource`}
+                        name="data_source_flow"
+                        label="Data flow"
+                        value={form.data_source?.flow_id || ""}
+                        onValueChange={(_, flowId) =>
+                            updateForm({data_source: flowId ? {...form.data_source, flow_id: flowId} : undefined})
+                        }
+                    />
+                    {form.data_source?.flow_id && (
+                        <button
+                            type="button"
+                            className="fb-datasource-clear"
+                            onClick={() => updateForm({data_source: undefined})}
+                        >
+                            <Icon name="xmark" /> Remove data flow
+                        </button>
+                    )}
+                </div>
             </div>
 
             {form.pages.map((page, pageIndex) => (
@@ -748,7 +790,7 @@ const FormBuilder = (props: Props) => {
                                                 <VariableInput
                                                     nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-default`}
                                                     name={`default-${comp.name}`}
-                                                    placeholder="Static text or ${user.first_name}, ${query.ref}, etc."
+                                                    placeholder="Static text or ${user.first_name}, ${query.ref}, ${data.customer_name}, etc."
                                                     label="Default Value"
                                                     value={comp.default_value || ""}
                                                     variables={props.variables || []}
@@ -928,6 +970,23 @@ const FormBuilder = (props: Props) => {
                                     {OPTION_BASED_TYPES.has(comp.type) && (
                                         <div className="fb-field-group fb-full-width fb-options-editor">
                                             <span className="fb-field-group-label">Options</span>
+                                            {form.data_source?.flow_id && (
+                                                <div className="fb-options-source">
+                                                    <label className="fb-field-group-label">Populate from flow output</label>
+                                                    <input
+                                                        className="fb-input fb-input-sm"
+                                                        value={comp.options_source || ""}
+                                                        placeholder="Output key, e.g. countries — leave blank for the fixed list below"
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {options_source: e.target.value || undefined})}
+                                                    />
+                                                    <span className="fb-options-source-hint">
+                                                        The data flow output must be a list of strings or
+                                                        <code>{" {label, value} "}</code>objects. Options load in the
+                                                        browser after the form appears; the fixed list below is used if
+                                                        this is blank.
+                                                    </span>
+                                                </div>
+                                            )}
                                             {(comp.options || []).map((opt, optionIndex) => {
                                                 // Auto-track slug when value hasn't been hand-edited off the current
                                                 // slug. Empty value also tracks (typical during rapid label typing).
