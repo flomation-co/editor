@@ -8,6 +8,22 @@ type FormOption = {
     value: string;
 }
 
+// A single "show when" condition: one earlier answer, compared to a value.
+type VisibilityClause = {
+    field: string;   // identifier of the earlier question whose answer is tested
+    op: string;      // equals, not_equals, contains, one_of, empty, ...
+    value?: string;  // omitted for the empty / not_empty operators
+}
+
+// A group of conditions combined with all (AND) or any (OR). Absent /
+// empty means the field or page is always shown. Mirrors visibilityRule in
+// launch/internal/http/form.go — the launch renderer evaluates the same
+// shape to show/hide live and to strip hidden answers on submit.
+type VisibilityRule = {
+    match: "all" | "any";
+    rules: VisibilityClause[];
+}
+
 type FormComponent = {
     name: string;
     label: string;
@@ -38,6 +54,9 @@ type FormComponent = {
     accept_mime?: string;
     max_size_bytes?: number;
     allow_gallery?: boolean;
+    // Conditional visibility — show this field only when earlier answers
+    // satisfy the rule. Absent means always visible.
+    visible_if?: VisibilityRule;
 }
 
 // Types whose response is constrained to a curated list. Adding a new
@@ -99,6 +118,9 @@ const identifierTracksLabel = (identifier: string, previousLabel: string): boole
 
 type FormPage = {
     components: FormComponent[];
+    // Conditional visibility for the whole page — skipped in navigation
+    // and stripped on submit when the rule isn't satisfied.
+    visible_if?: VisibilityRule;
 }
 
 type FormDefinition = {
@@ -145,6 +167,158 @@ const fieldTypes = [
     {value: "qr_scanner", label: "QR / Barcode", icon: "qrcode"},
     {value: "ranking", label: "Ranking", icon: "list"},
 ];
+
+// Operators offered in the conditional-visibility builder. Labels are
+// deliberately plain-English ("is", "is not") rather than jargon so a
+// non-technical form author can read a rule like a sentence. The `value`
+// strings are the wire format the launch renderer evaluates — keep them in
+// sync with evalClause in launch/internal/http/form.go.
+const VISIBILITY_OPERATORS = [
+    {value: "equals", label: "is"},
+    {value: "not_equals", label: "is not"},
+    {value: "contains", label: "contains"},
+    {value: "not_contains", label: "does not contain"},
+    {value: "starts_with", label: "starts with"},
+    {value: "ends_with", label: "ends with"},
+    {value: "one_of", label: "is one of"},
+    {value: "empty", label: "is empty"},
+    {value: "not_empty", label: "is not empty"},
+    {value: "greater_than", label: "is greater than"},
+    {value: "less_than", label: "is less than"},
+];
+
+// Operators that take no comparison value (they test presence, not a value).
+const VALUELESS_OPS = new Set(["empty", "not_empty"]);
+
+type SourceField = {name: string; label: string};
+
+// VisibilityEditor is the shared "show this when…" builder used for both a
+// single question and a whole page. It's fully controlled — the parent owns
+// the rule and receives an updated one (or undefined to clear all
+// conditions) via onChange. `sources` is the list of earlier questions that
+// may be referenced; when empty the control can't be enabled.
+const VisibilityEditor = ({rule, sources, onChange, scope}: {
+    rule?: VisibilityRule;
+    sources: SourceField[];
+    onChange: (rule?: VisibilityRule) => void;
+    scope: "question" | "page";
+}) => {
+    const enabled = !!rule && rule.rules.length > 0;
+
+    const newClause = (): VisibilityClause => ({field: sources[0]?.name || "", op: "equals", value: ""});
+
+    if (!enabled) {
+        if (sources.length === 0) {
+            return (
+                <div className="fb-visibility fb-visibility--empty">
+                    <Icon name="eye" />
+                    <span>
+                        Add an earlier {scope === "page" ? "question on a previous page" : "question"} to
+                        make this {scope} appear only sometimes.
+                    </span>
+                </div>
+            );
+        }
+        return (
+            <button
+                type="button"
+                className="fb-visibility-enable"
+                onClick={() => onChange({match: "all", rules: [newClause()]})}
+            >
+                <Icon name="eye" /> Only show this {scope} when&hellip;
+            </button>
+        );
+    }
+
+    const patchClause = (i: number, patch: Partial<VisibilityClause>) =>
+        onChange({...rule!, rules: rule!.rules.map((c, ci) => ci === i ? {...c, ...patch} : c)});
+
+    const removeClause = (i: number) => {
+        const rules = rule!.rules.filter((_, ci) => ci !== i);
+        onChange(rules.length === 0 ? undefined : {...rule!, rules});
+    };
+
+    return (
+        <div className="fb-visibility">
+            <div className="fb-visibility-head">
+                <span className="fb-visibility-title">
+                    <Icon name="eye" /> Show this {scope} when
+                </span>
+                {rule!.rules.length > 1 && (
+                    <select
+                        className="fb-input fb-input-sm fb-visibility-match"
+                        value={rule!.match}
+                        onChange={e => onChange({...rule!, match: e.target.value as "all" | "any"})}
+                    >
+                        <option value="all">all match</option>
+                        <option value="any">any match</option>
+                    </select>
+                )}
+                <button
+                    type="button"
+                    className="fb-icon-btn fb-danger"
+                    title="Remove all conditions"
+                    onClick={() => onChange(undefined)}
+                >
+                    <Icon name="xmark" />
+                </button>
+            </div>
+
+            {rule!.rules.map((clause, i) => (
+                <div key={i} className="fb-visibility-clause">
+                    <select
+                        className="fb-input fb-input-sm"
+                        value={clause.field}
+                        onChange={e => patchClause(i, {field: e.target.value})}
+                    >
+                        {!sources.some(s => s.name === clause.field) && (
+                            // The referenced field was renamed/removed — keep it
+                            // visible so the author notices rather than silently
+                            // repointing the rule at a different question.
+                            <option value={clause.field}>{clause.field || "(choose a question)"}</option>
+                        )}
+                        {sources.map(s => (
+                            <option key={s.name} value={s.name}>{s.label || s.name}</option>
+                        ))}
+                    </select>
+                    <select
+                        className="fb-input fb-input-sm"
+                        value={clause.op}
+                        onChange={e => patchClause(i, {op: e.target.value})}
+                    >
+                        {VISIBILITY_OPERATORS.map(o => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                    </select>
+                    {!VALUELESS_OPS.has(clause.op) && (
+                        <input
+                            className="fb-input fb-input-sm"
+                            value={clause.value || ""}
+                            placeholder={clause.op === "one_of" ? "a, b, c" : "value"}
+                            onChange={e => patchClause(i, {value: e.target.value})}
+                        />
+                    )}
+                    <button
+                        type="button"
+                        className="fb-icon-btn fb-danger"
+                        title="Remove condition"
+                        onClick={() => removeClause(i)}
+                    >
+                        <Icon name="trash" />
+                    </button>
+                </div>
+            ))}
+
+            <button
+                type="button"
+                className="fb-add-option"
+                onClick={() => onChange({...rule!, rules: [...rule!.rules, newClause()]})}
+            >
+                <Icon name="plus" /> Add condition
+            </button>
+        </div>
+    );
+};
 
 const FormBuilder = (props: Props) => {
     const [addingToPage, setAddingToPage] = useState<number | null>(null);
@@ -275,6 +449,45 @@ const FormBuilder = (props: Props) => {
                 } : p
             ),
         }));
+    };
+
+    const updatePage = (pageIndex: number, updates: Partial<FormPage>) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi === pageIndex ? {...p, ...updates} : p),
+        }));
+    };
+
+    // Questions that a conditional rule may reference must appear *before*
+    // the thing being gated — earlier pages, or an earlier position on the
+    // same page — so a rule can never point forward or at itself (which
+    // would risk an evaluation cycle). Display-only elements hold no answer,
+    // so they're excluded as sources.
+    const sourceFieldsForComponent = (pageIndex: number, fieldIndex: number): SourceField[] => {
+        const out: SourceField[] = [];
+        form.pages.forEach((p, pi) => {
+            if (pi > pageIndex) return;
+            p.components.forEach((c, ci) => {
+                if (pi === pageIndex && ci >= fieldIndex) return;
+                if (DISPLAY_ONLY_TYPES.has(c.type)) return;
+                out.push({name: c.name, label: c.label || c.name});
+            });
+        });
+        return out;
+    };
+
+    // A page condition may only reference answers from strictly earlier
+    // pages (a page can't depend on answers the user hasn't reached yet).
+    const sourceFieldsForPage = (pageIndex: number): SourceField[] => {
+        const out: SourceField[] = [];
+        form.pages.forEach((p, pi) => {
+            if (pi >= pageIndex) return;
+            p.components.forEach(c => {
+                if (DISPLAY_ONLY_TYPES.has(c.type)) return;
+                out.push({name: c.name, label: c.label || c.name});
+            });
+        });
+        return out;
     };
 
     const removeField = (pageIndex: number, fieldIndex: number) => {
@@ -445,6 +658,17 @@ const FormBuilder = (props: Props) => {
                             )}
                         </div>
                     </div>
+
+                    {pageIndex > 0 && (
+                        <div className="fb-page-visibility">
+                            <VisibilityEditor
+                                scope="page"
+                                rule={page.visible_if}
+                                sources={sourceFieldsForPage(pageIndex)}
+                                onChange={r => updatePage(pageIndex, {visible_if: r})}
+                            />
+                        </div>
+                    )}
 
                     {page.components.map((comp, fieldIndex) => (
                         <div key={fieldIndex} className="fb-component">
@@ -764,6 +988,12 @@ const FormBuilder = (props: Props) => {
                                         </div>
                                     )}
                                 </div>
+                                <VisibilityEditor
+                                    scope="question"
+                                    rule={comp.visible_if}
+                                    sources={sourceFieldsForComponent(pageIndex, fieldIndex)}
+                                    onChange={r => updateField(pageIndex, fieldIndex, {visible_if: r})}
+                                />
                                 <div className="fb-component-footer">
                                     {!DISPLAY_ONLY_TYPES.has(comp.type) ? (
                                         <>

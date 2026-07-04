@@ -503,3 +503,95 @@
     font-size: 10px;
     color: rgba(196, 181, 253, 0.9);
 }
+
+/* ---- Conditional visibility ("show this when…") ---------------------- */
+
+/* Sits between a question's config grid and its footer, or under a page
+   header. A tinted left border marks it as a branching/logic control,
+   distinct from the plain field inputs above it. */
+.fb-visibility {
+    margin-top: 10px;
+    padding: 10px;
+    border-left: 2px solid rgba(139, 92, 246, 0.5);
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fb-page-visibility {
+    margin-bottom: 10px;
+}
+
+.fb-visibility-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fb-visibility-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(196, 181, 253, 0.9);
+    flex: 1;
+}
+
+.fb-visibility-match {
+    max-width: 120px;
+}
+
+.fb-visibility-clause {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* The value input flexes to fill; the two selects stay compact so a clause
+   reads left-to-right as "question · operator · value". */
+.fb-visibility-clause .fb-input {
+    min-width: 0;
+}
+.fb-visibility-clause select {
+    flex: 1 1 0;
+}
+.fb-visibility-clause input {
+    flex: 1 1 60px;
+}
+
+/* The "Only show this … when" call-to-action before any rule exists. */
+.fb-visibility-enable {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 6px 10px;
+    width: 100%;
+    background: transparent;
+    border: 1px dashed rgba(139, 92, 246, 0.35);
+    border-radius: 6px;
+    color: rgba(196, 181, 253, 0.75);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.fb-visibility-enable:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #c4b5fd;
+}
+
+/* Shown instead of the enable button when there are no earlier questions
+   to reference yet. */
+.fb-visibility--empty {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    border-left-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
