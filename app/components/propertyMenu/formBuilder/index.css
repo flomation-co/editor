@@ -595,3 +595,75 @@
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
 }
+
+/* ---- Prefill from a flow (${data.X} autofill) ------------------------ */
+
+.fb-datasource {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fb-datasource-desc {
+    font-size: 11px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.fb-datasource-desc code {
+    background: rgba(0, 170, 156, 0.15);
+    color: #5eead4;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+}
+
+.fb-datasource-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.fb-datasource-clear:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+/* Dynamic-options binding inside an option-based field's editor. */
+.fb-options-source {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(0, 170, 156, 0.06);
+    border: 1px solid rgba(0, 170, 156, 0.15);
+}
+
+.fb-options-source-hint {
+    font-size: 10px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.fb-options-source-hint code {
+    background: rgba(0, 170, 156, 0.15);
+    color: #5eead4;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+}
