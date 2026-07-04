@@ -1010,7 +1010,7 @@ export function Editor(props : EditorProps) {
         // to child branches (if, switch, loop). The editor mirrors the
         // executor's pass-through behaviour by walking up through these
         // nodes to find upstream outputs for autocomplete.
-        const passThroughTypes = new Set([4, 5, 6]); // conditional, loop, switch
+        const passThroughTypes = new Set([4, 5, 6, 7]); // conditional, loop, switch, human-in-the-loop
 
         // Collect outputs from parent nodes, walking through conditionals
         // to find grandparent outputs that pass through.
@@ -1224,7 +1224,7 @@ export function Editor(props : EditorProps) {
                     // Walk through pass-through nodes (conditional, loop, switch)
                     // and sub-flow invoke nodes to find upstream outputs
                     const pt = pn.data?.config?.type;
-                    if (pt === 4 || pt === 5 || pt === 6 || pn.data?.label === 'subflow/invoke') {
+                    if (pt === 4 || pt === 5 || pt === 6 || pt === 7 || pn.data?.label === 'subflow/invoke') {
                         walkParents(pid);
                     }
                     // Sub-flow cross-reference: when we reach a Begin Sub-Flow,

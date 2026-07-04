@@ -15,6 +15,7 @@ const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; 
     4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', text: '#efd467', iconColour: '#efd467' },  // Conditional
     5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', text: '#b967ef', iconColour: '#b967ef' },  // Loop
     6: { bg: '#06b6d4', bgAlpha: 'rgba(6,182,212,0.15)',  glow: 'rgba(6,182,212,0.35)',  text: '#06b6d4', iconColour: '#22d3ee' },  // Switch
+    7: { bg: '#f43f5e', bgAlpha: 'rgba(244,63,94,0.15)',  glow: 'rgba(244,63,94,0.35)',  text: '#f43f5e', iconColour: '#fb7185' },  // Human in the Loop
 };
 
 const NODE_CLASS_MAP: Record<number, string> = {
@@ -24,7 +25,41 @@ const NODE_CLASS_MAP: Record<number, string> = {
     4: 'flo-node flo-node--conditional',
     5: 'flo-node flo-node--loop',
     6: 'flo-node flo-node--switch',
+    7: 'flo-node flo-node--await',
 };
+
+// slugifyOption mirrors the executor's option-value derivation so the editor's
+// handle ids ("option_<value>") match the handles the executor routes to.
+const slugifyOption = (s: string): string =>
+    (s || '').toLowerCase().replace(/[^a-z0-9 _-]/g, '').replace(/[ _-]/g, '_');
+
+// HandleLabel renders an output-handle caption as an icon + text chip that sits
+// just outside the node, over the outgoing edge line. Shared by every
+// multi-output node (Switch, Await, AI, Loop) so labels read consistently.
+const HandleLabel = ({
+    icon,
+    label,
+    top,
+    italic,
+    truncate,
+    colour,
+}: {
+    icon: string;
+    label: string;
+    top: number;
+    italic?: boolean;
+    truncate?: boolean;
+    colour?: string;
+}) => (
+    <span
+        className={`handle-label handle-label--outside${italic ? ' handle-label--italic' : ''}${truncate ? ' handle-label--truncate' : ''}`}
+        style={{ top, ...(colour ? { color: colour } : {}) }}
+        title={label}
+    >
+        <Icon name={icon} className="handle-label__icon" />
+        <span className="handle-label__text">{label}</span>
+    </span>
+);
 
 const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // RG: PERFORMANCE IMPROVEMENT: cache the icon so not to re-parse on every use
@@ -84,6 +119,27 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 : casesInput.value;
             if (Array.isArray(parsed)) {
                 return parsed.map((c: any) => c.key || c.label || 'Case');
+            }
+        } catch {}
+        return [];
+    }, [type, data?.config?.inputs]);
+
+    // Extract Human-in-the-Loop options from the 'options' input for dynamic
+    // handle rendering. Each option becomes an "option_<value>" source handle.
+    const awaitOptions = useMemo((): { label: string; value: string }[] => {
+        if (type !== 7 || !data?.config?.inputs) return [];
+        const optionsInput = data.config.inputs.find((i: any) => i.name === 'options');
+        if (!optionsInput?.value) return [];
+        try {
+            const parsed = typeof optionsInput.value === 'string'
+                ? JSON.parse(optionsInput.value)
+                : optionsInput.value;
+            if (Array.isArray(parsed)) {
+                return parsed.map((o: any) => {
+                    const label = o.key || o.label || 'Option';
+                    const value = (o.value && String(o.value).trim()) || slugifyOption(label);
+                    return { label, value };
+                });
             }
         } catch {}
         return [];
@@ -173,11 +229,16 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
-                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 70 } : {}),
+                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 18 } : {}),
                     ...(type === 6 ? {
                         // Switch node height scales to cover all handles (cases + default)
                         minHeight: Math.max(56, 14 + (switchCases.length + 1) * 28 + 14),
                         width: Math.max(56, 14 + (switchCases.length + 1) * 28 + 14),
+                    } : {}),
+                    ...(type === 7 ? {
+                        // Await node height scales to cover all handles (options + timeout)
+                        minHeight: Math.max(56, 14 + (awaitOptions.length + 1) * 28 + 14),
+                        width: Math.max(56, 14 + (awaitOptions.length + 1) * 28 + 14),
                     } : {}),
                 } as React.CSSProperties}
             >
@@ -209,7 +270,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 )}
 
                 {/* Standard source handle for types 1, 2, 3 */}
-                {type !== 4 && type !== 5 && type !== 6 && hasOutputs && !isAINode && !isSubFlowEnd && (
+                {type !== 4 && type !== 5 && type !== 6 && type !== 7 && hasOutputs && !isAINode && !isSubFlowEnd && (
                     <Handle
                         type="source"
                         position={Position.Right}
@@ -222,9 +283,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     const handleSpacing = 28;
                     const startOffset = 14;
                     const handles = [
-                        { id: 'output', label: 'Response', color: 'rgba(255,255,255,0.5)' },
-                        { id: 'tools', label: 'Tools', color: 'rgba(245,158,11,0.7)' },
-                        { id: 'no_response', label: 'Finished', color: 'rgba(255,255,255,0.35)', italic: true },
+                        { id: 'output', label: 'Response', icon: 'comment', color: 'rgba(255,255,255,0.55)' },
+                        { id: 'tools', label: 'Tools', icon: 'wrench', color: 'rgba(245,158,11,0.8)' },
+                        { id: 'no_response', label: 'Finished', icon: 'circle-check', color: 'rgba(255,255,255,0.45)', italic: true },
                     ];
                     return (
                         <>
@@ -238,17 +299,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id={h.id}
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className={`handle-label${h.italic ? ' handle-label--italic' : ''}`}
-                                            style={{
-                                                right: 10,
-                                                top: y,
-                                                transform: 'translateY(-50%)',
-                                                color: h.color,
-                                            }}
-                                        >
-                                            {h.label}
-                                        </span>
+                                        <HandleLabel icon={h.icon} label={h.label} top={y} italic={h.italic} colour={h.color} />
                                     </React.Fragment>
                                 );
                             })}
@@ -275,8 +326,8 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     <>
                         <Handle type="source" position={Position.Bottom} id="loop" />
                         <Handle type="source" position={Position.Right} id="output" />
-                        <span className="loop-label loop-label--body">Loop</span>
-                        <span className="loop-label loop-label--done">Done</span>
+                        <span className="loop-label loop-label--body"><Icon name="repeat" className="handle-label__icon" />Loop</span>
+                        <span className="loop-label loop-label--done"><Icon name="circle-check" className="handle-label__icon" />Done</span>
                     </>
                 )}
 
@@ -296,12 +347,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id={`case_${i}`}
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--truncate"
-                                            style={{ top: y }}
-                                        >
-                                            {label}
-                                        </span>
+                                        <HandleLabel icon="circle-dot" label={label} top={y} truncate />
                                     </React.Fragment>
                                 );
                             })}
@@ -315,15 +361,61 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id="default"
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--italic handle-label--default"
-                                            style={{ top: y }}
-                                        >
-                                            Default
-                                        </span>
+                                        <HandleLabel icon="code-branch" label="Default" top={y} italic colour="rgba(6,182,212,0.7)" />
                                     </>
                                 );
                             })()}
+                        </>
+                    );
+                })()}
+
+                {/* Human in the Loop (type 7): one handle per option + timeout */}
+                {type === 7 && (() => {
+                    const handleSpacing = 28;
+                    const startOffset = 14;
+                    return (
+                        <>
+                            {awaitOptions.map((opt, i: number) => {
+                                const y = startOffset + i * handleSpacing;
+                                return (
+                                    <React.Fragment key={`option_${opt.value}_${i}`}>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id={`option_${opt.value}`}
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <HandleLabel icon="circle-dot" label={opt.label} top={y} truncate />
+                                    </React.Fragment>
+                                );
+                            })}
+                            {(() => {
+                                const y = startOffset + awaitOptions.length * handleSpacing;
+                                return (
+                                    <>
+                                        <Handle
+                                            type="source"
+                                            position={Position.Right}
+                                            id="timeout"
+                                            style={{ top: y, transform: 'translateY(-50%)' }}
+                                        />
+                                        <HandleLabel icon="clock" label="Timeout" top={y} italic colour="rgba(6,182,212,0.7)" />
+                                    </>
+                                );
+                            })()}
+                            {/* Delivery handle (bottom): wire Send Message nodes
+                                here to fan the request out over their channels,
+                                like AI tool nodes. */}
+                            <Handle
+                                type="source"
+                                position={Position.Bottom}
+                                id="delivery"
+                                style={{ left: '50%', transform: 'translateX(-50%)' }}
+                            />
+                            <span className="await-delivery-label">
+                                <Icon name="paper-plane" className="handle-label__icon" />
+                                Deliver via
+                            </span>
                         </>
                     );
                 })()}
