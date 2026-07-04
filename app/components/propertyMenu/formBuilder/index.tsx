@@ -55,10 +55,23 @@ type FormComponent = {
     // Location precision — "coarse" rounds coordinates client-side to
     // ~110m; "fine" (or unset) uses raw device precision.
     precision?: "coarse" | "fine";
-    // Upload-field constraints (esignature / camera / file_upload).
+    // Upload-field constraints (esignature / camera / file_upload / license_plate).
     accept_mime?: string;
     max_size_bytes?: number;
     allow_gallery?: boolean;
+    // Recognition-field settings (license_plate, and future face/OCR fields).
+    // capture_mode: "manual" = tap-to-capture (default); "auto" = hands-off
+    // continuous detection with no button (e.g. car-park entry).
+    capture_mode?: "manual" | "auto";
+    // auto_submit (auto mode only): submit the whole form on a confident
+    // recognition — the true unattended kiosk loop. Default off.
+    auto_submit?: boolean;
+    // Minimum confidence (0..1) before a recognition is accepted in auto mode.
+    confidence_threshold?: number;
+    // Informational privacy notice shown beside the field (not a gating
+    // consent checkbox). show_privacy_notice defaults to true.
+    privacy_notice?: string;
+    show_privacy_notice?: boolean;
     // Conditional visibility — show this field only when earlier answers
     // satisfy the rule. Absent means always visible.
     visible_if?: VisibilityRule;
@@ -90,8 +103,15 @@ const STRUCTURED_TYPES = new Set(["location", "address"]);
 // Upload types capture a file and store its bytes in the blob store;
 // the response is a flo:blob:... token string. Placeholder / default
 // don't apply (the user picks a file rather than typing). Read-only
-// works via disabling the picker.
-const UPLOAD_TYPES = new Set(["esignature", "camera", "file_upload"]);
+// works via disabling the picker. license_plate also uploads a captured
+// frame, so it shares the upload UI treatment.
+const UPLOAD_TYPES = new Set(["esignature", "camera", "file_upload", "license_plate"]);
+
+// Recognition types capture a camera frame AND run in-browser recognition,
+// emitting a composite value ({image, plate, ...}). They carry capture-mode,
+// auto-submit and privacy-notice settings. This set is the extension point
+// for future recognition fields (face, OCR, …).
+const RECOGNITION_TYPES = new Set(["license_plate"]);
 
 // slugifyOptionValue turns a display label into a machine-safe value.
 // Used to prefill the value field when the user only edits the label —
@@ -179,6 +199,7 @@ const fieldTypes = [
     {value: "camera", label: "Camera", icon: "image"},
     {value: "file_upload", label: "File Upload", icon: "file-arrow-down"},
     {value: "qr_scanner", label: "QR / Barcode", icon: "qrcode"},
+    {value: "license_plate", label: "Licence Plate", icon: "magnifying-glass"},
     {value: "ranking", label: "Ranking", icon: "list"},
 ];
 
@@ -425,6 +446,15 @@ const FormBuilder = (props: Props) => {
         }
         if (type === "file_upload") {
             newField.max_size_bytes = 10 * 1024 * 1024;
+        }
+        if (type === "license_plate") {
+            newField.accept_mime = "image/*";
+            newField.max_size_bytes = 10 * 1024 * 1024;
+            newField.capture_mode = "manual";
+            newField.show_privacy_notice = true;
+            newField.privacy_notice =
+                "This field uses your device camera to read a licence plate. " +
+                "Images are processed in your browser.";
         }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
@@ -879,6 +909,80 @@ const FormBuilder = (props: Props) => {
                                                         />
                                                         Allow gallery
                                                     </label>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                    {comp.type === "license_plate" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Recognition</span>
+                                                <div className="fb-address-preview">
+                                                    <span>Camera frame → in-browser plate read</span>
+                                                    <small>Response: <code>{"${trigger." + comp.name + ".plate}"}</code> plus <code>.image</code> (blob) and <code>.confidence</code>. Recognition runs in the browser; only forms using this field load the model.</small>
+                                                </div>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Capture mode</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.capture_mode || "manual"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {capture_mode: e.target.value as "manual" | "auto"})}
+                                                >
+                                                    <option value="manual">Manual — tap to capture</option>
+                                                    <option value="auto">Auto — hands-off (e.g. car-park entry)</option>
+                                                </select>
+                                            </div>
+                                            {comp.capture_mode === "auto" && (
+                                                <>
+                                                    <div className="fb-field-group fb-full-width">
+                                                        <label className="fb-toggle-label">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={comp.auto_submit || false}
+                                                                onChange={e => updateField(pageIndex, fieldIndex, {auto_submit: e.target.checked})}
+                                                            />
+                                                            Submit the form automatically on a confident read
+                                                        </label>
+                                                    </div>
+                                                    <div className="fb-field-group">
+                                                        <span className="fb-field-group-label">Min confidence</span>
+                                                        <input
+                                                            className="fb-input fb-input-sm"
+                                                            type="number"
+                                                            min={0}
+                                                            max={1}
+                                                            step={0.05}
+                                                            value={comp.confidence_threshold ?? ""}
+                                                            placeholder="0.6"
+                                                            onChange={e => {
+                                                                const v = e.target.value === "" ? undefined : Number(e.target.value);
+                                                                updateField(pageIndex, fieldIndex, {confidence_threshold: v});
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div className="fb-field-group fb-full-width">
+                                                <label className="fb-toggle-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={comp.show_privacy_notice !== false}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {show_privacy_notice: e.target.checked})}
+                                                    />
+                                                    Show a privacy notice on the form
+                                                </label>
+                                            </div>
+                                            {comp.show_privacy_notice !== false && (
+                                                <div className="fb-field-group fb-full-width">
+                                                    <span className="fb-field-group-label">Privacy notice</span>
+                                                    <textarea
+                                                        className="fb-input fb-input-sm"
+                                                        rows={2}
+                                                        value={comp.privacy_notice || ""}
+                                                        placeholder="This field uses your camera to read a licence plate…"
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {privacy_notice: e.target.value})}
+                                                    />
                                                 </div>
                                             )}
                                         </>
