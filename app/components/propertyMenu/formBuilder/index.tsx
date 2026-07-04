@@ -371,6 +371,7 @@ const FormBuilder = (props: Props) => {
                 pages: parsed.pages || [{components: []}],
                 require_login: parsed.require_login || false,
                 data_source: parsed.data_source || undefined,
+                submit: parsed.submit || undefined,
             };
         } catch {
             return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
