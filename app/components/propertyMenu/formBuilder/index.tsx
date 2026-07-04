@@ -222,16 +222,9 @@ const VisibilityEditor = ({rule, sources, onChange, scope}: {
     const newClause = (): VisibilityClause => ({field: sources[0]?.name || "", op: "equals", value: ""});
 
     if (!enabled) {
+        // Nothing to condition against yet — don't signpost the edge case.
         if (sources.length === 0) {
-            return (
-                <div className="fb-visibility fb-visibility--empty">
-                    <Icon name="eye" />
-                    <span>
-                        Add an earlier {scope === "page" ? "question on a previous page" : "question"} to
-                        make this {scope} appear only sometimes.
-                    </span>
-                </div>
-            );
+            return null;
         }
         return (
             <button
@@ -239,7 +232,7 @@ const VisibilityEditor = ({rule, sources, onChange, scope}: {
                 className="fb-visibility-enable"
                 onClick={() => onChange({match: "all", rules: [newClause()]})}
             >
-                <Icon name="eye" /> Only show this {scope} when&hellip;
+                <Icon name="eye" /> Conditional visibility
             </button>
         );
     }
