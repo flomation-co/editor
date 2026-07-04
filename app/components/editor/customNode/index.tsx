@@ -33,6 +33,34 @@ const NODE_CLASS_MAP: Record<number, string> = {
 const slugifyOption = (s: string): string =>
     (s || '').toLowerCase().replace(/[^a-z0-9 _-]/g, '').replace(/[ _-]/g, '_');
 
+// HandleLabel renders an output-handle caption as an icon + text chip that sits
+// just outside the node, over the outgoing edge line. Shared by every
+// multi-output node (Switch, Await, AI, Loop) so labels read consistently.
+const HandleLabel = ({
+    icon,
+    label,
+    top,
+    italic,
+    truncate,
+    colour,
+}: {
+    icon: string;
+    label: string;
+    top: number;
+    italic?: boolean;
+    truncate?: boolean;
+    colour?: string;
+}) => (
+    <span
+        className={`handle-label handle-label--outside${italic ? ' handle-label--italic' : ''}${truncate ? ' handle-label--truncate' : ''}`}
+        style={{ top, ...(colour ? { color: colour } : {}) }}
+        title={label}
+    >
+        <Icon name={icon} className="handle-label__icon" />
+        <span className="handle-label__text">{label}</span>
+    </span>
+);
+
 const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // RG: PERFORMANCE IMPROVEMENT: cache the icon so not to re-parse on every use
     const icon = useMemo(() => {
@@ -201,7 +229,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                 style={{
                     '--node-colour': effectiveColours.bg,
                     '--node-glow': effectiveColours.glow,
-                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 70 } : {}),
+                    ...(isAINode ? { minHeight: 3 * 28 + 16, minWidth: 180, paddingRight: 18 } : {}),
                     ...(type === 6 ? {
                         // Switch node height scales to cover all handles (cases + default)
                         minHeight: Math.max(56, 14 + (switchCases.length + 1) * 28 + 14),
@@ -255,9 +283,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     const handleSpacing = 28;
                     const startOffset = 14;
                     const handles = [
-                        { id: 'output', label: 'Response', color: 'rgba(255,255,255,0.5)' },
-                        { id: 'tools', label: 'Tools', color: 'rgba(245,158,11,0.7)' },
-                        { id: 'no_response', label: 'Finished', color: 'rgba(255,255,255,0.35)', italic: true },
+                        { id: 'output', label: 'Response', icon: 'comment', color: 'rgba(255,255,255,0.55)' },
+                        { id: 'tools', label: 'Tools', icon: 'wrench', color: 'rgba(245,158,11,0.8)' },
+                        { id: 'no_response', label: 'Finished', icon: 'circle-check', color: 'rgba(255,255,255,0.45)', italic: true },
                     ];
                     return (
                         <>
@@ -271,17 +299,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id={h.id}
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className={`handle-label${h.italic ? ' handle-label--italic' : ''}`}
-                                            style={{
-                                                right: 10,
-                                                top: y,
-                                                transform: 'translateY(-50%)',
-                                                color: h.color,
-                                            }}
-                                        >
-                                            {h.label}
-                                        </span>
+                                        <HandleLabel icon={h.icon} label={h.label} top={y} italic={h.italic} colour={h.color} />
                                     </React.Fragment>
                                 );
                             })}
@@ -308,8 +326,8 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     <>
                         <Handle type="source" position={Position.Bottom} id="loop" />
                         <Handle type="source" position={Position.Right} id="output" />
-                        <span className="loop-label loop-label--body">Loop</span>
-                        <span className="loop-label loop-label--done">Done</span>
+                        <span className="loop-label loop-label--body"><Icon name="repeat" className="handle-label__icon" />Loop</span>
+                        <span className="loop-label loop-label--done"><Icon name="circle-check" className="handle-label__icon" />Done</span>
                     </>
                 )}
 
@@ -329,12 +347,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id={`case_${i}`}
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--truncate"
-                                            style={{ top: y }}
-                                        >
-                                            {label}
-                                        </span>
+                                        <HandleLabel icon="circle-dot" label={label} top={y} truncate />
                                     </React.Fragment>
                                 );
                             })}
@@ -348,12 +361,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id="default"
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--italic handle-label--default"
-                                            style={{ top: y }}
-                                        >
-                                            Default
-                                        </span>
+                                        <HandleLabel icon="code-branch" label="Default" top={y} italic colour="rgba(6,182,212,0.7)" />
                                     </>
                                 );
                             })()}
@@ -377,12 +385,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id={`option_${opt.value}`}
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--truncate"
-                                            style={{ top: y }}
-                                        >
-                                            {opt.label}
-                                        </span>
+                                        <HandleLabel icon="circle-dot" label={opt.label} top={y} truncate />
                                     </React.Fragment>
                                 );
                             })}
@@ -396,12 +399,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                             id="timeout"
                                             style={{ top: y, transform: 'translateY(-50%)' }}
                                         />
-                                        <span
-                                            className="handle-label handle-label--outside handle-label--italic handle-label--default"
-                                            style={{ top: y }}
-                                        >
-                                            Timeout
-                                        </span>
+                                        <HandleLabel icon="clock" label="Timeout" top={y} italic colour="rgba(6,182,212,0.7)" />
                                     </>
                                 );
                             })()}
@@ -414,7 +412,10 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                 id="delivery"
                                 style={{ left: '50%', transform: 'translateX(-50%)' }}
                             />
-                            <span className="await-delivery-label">Deliver via</span>
+                            <span className="await-delivery-label">
+                                <Icon name="paper-plane" className="handle-label__icon" />
+                                Deliver via
+                            </span>
                         </>
                     );
                 })()}

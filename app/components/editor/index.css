@@ -405,6 +405,9 @@
 
 .loop-label {
     position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: 9px;
     font-weight: 600;
     color: rgba(185,103,239,0.8);
@@ -424,21 +427,41 @@
     transform: translateY(-50%);
 }
 
-/* ── Handle labels with background cutout ── */
+/* ── Handle labels: icon + text sitting outside the node, over the edge line ──
+   The label's solid background "cuts" the connection line for clarity, so the
+   text reads cleanly on top of the wire leaving the handle. */
 .handle-label {
     position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: 8px;
+    line-height: 1;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
     background: var(--xy-background-color, #131313);
-    padding: 1px 4px;
+    padding: 2px 4px;
     border-radius: 3px;
     white-space: nowrap;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.55);
 }
 
+.handle-label__icon {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.handle-label__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sit just outside the right edge so the label overlaps the start of the
+   outgoing edge line rather than floating away from it. */
 .handle-label--outside {
-    left: calc(100% + 6px);
+    left: calc(100% + 3px);
     transform: translateY(-50%);
 }
 
@@ -446,18 +469,16 @@
     right: 10px;
 }
 
-.handle-label--italic {
+.handle-label--italic .handle-label__text {
     font-style: italic;
 }
 
-.handle-label--truncate {
-    max-width: 60px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.handle-label--truncate .handle-label__text {
+    max-width: 64px;
 }
 
 .handle-label--default {
-    color: rgba(6, 182, 212, 0.55);
+    color: rgba(6, 182, 212, 0.7);
 }
 
 .diamond-label {
@@ -570,11 +591,23 @@
     left: 50%;
     transform: translateX(-50%);
     margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: 9px;
     letter-spacing: 0.02em;
     white-space: nowrap;
-    color: rgba(251, 113, 133, 0.75);
+    color: rgba(251, 113, 133, 0.8);
     pointer-events: none;
+    z-index: 2;
+    background: var(--xy-background-color, #131313);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+.await-delivery-label .handle-label__icon {
+    width: 8px;
+    height: 8px;
+    opacity: 0.9;
 }
 
 /* ── Handles ── */
