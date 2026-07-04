@@ -345,6 +345,11 @@ const FormBuilder = (props: Props) => {
         }
     });
 
+    // The data-driven (prefill-from-a-flow) section is collapsed by default so
+    // it doesn't crowd the common case — but starts open if a flow is already
+    // configured, so an existing data source is never hidden away.
+    const [dataDrivenOpen, setDataDrivenOpen] = useState(() => !!form.data_source?.flow_id);
+
     useEffect(() => {
         props.onChange(JSON.stringify(form));
     }, [form]);
@@ -642,31 +647,46 @@ const FormBuilder = (props: Props) => {
                         </span>
                     </label>
                 </div>
-                <div className="fb-field-row fb-datasource">
-                    <label className="fb-label">Prefill from a flow</label>
-                    <span className="fb-datasource-desc">
-                        Run a flow when the form loads and use its outputs to fill fields
-                        with <code>{" ${data.X} "}</code>(e.g. a default of
-                        <code>{" ${data.customer_name} "}</code>). The flow runs once and the
-                        result is cached, so many visitors share a single run.
-                    </span>
-                    <FlowSelectProperty
-                        nodeId={`${props.nodeId}-datasource`}
-                        name="data_source_flow"
-                        label="Data flow"
-                        value={form.data_source?.flow_id || ""}
-                        onValueChange={(_, flowId) =>
-                            updateForm({data_source: flowId ? {...form.data_source, flow_id: flowId} : undefined})
-                        }
-                    />
-                    {form.data_source?.flow_id && (
-                        <button
-                            type="button"
-                            className="fb-datasource-clear"
-                            onClick={() => updateForm({data_source: undefined})}
-                        >
-                            <Icon name="xmark" /> Remove data flow
-                        </button>
+                <div className="fb-field-row fb-collapsible">
+                    <button
+                        type="button"
+                        className="fb-collapsible-header"
+                        onClick={() => setDataDrivenOpen(o => !o)}
+                        aria-expanded={dataDrivenOpen}
+                    >
+                        <Icon name={dataDrivenOpen ? "chevron-down" : "chevron-right"} />
+                        <span className="fb-collapsible-title">Data-driven form</span>
+                        {form.data_source?.flow_id && (
+                            <span className="fb-collapsible-badge">1 flow</span>
+                        )}
+                    </button>
+                    {dataDrivenOpen && (
+                        <div className="fb-datasource">
+                            <span className="fb-datasource-desc">
+                                Run a flow when the form loads and use its outputs to fill fields
+                                with <code>{" ${data.X} "}</code>(e.g. a default of
+                                <code>{" ${data.customer_name} "}</code>). The flow runs once and the
+                                result is cached, so many visitors share a single run.
+                            </span>
+                            <FlowSelectProperty
+                                nodeId={`${props.nodeId}-datasource`}
+                                name="data_source_flow"
+                                label="Data flow"
+                                value={form.data_source?.flow_id || ""}
+                                onValueChange={(_, flowId) =>
+                                    updateForm({data_source: flowId ? {...form.data_source, flow_id: flowId} : undefined})
+                                }
+                            />
+                            {form.data_source?.flow_id && (
+                                <button
+                                    type="button"
+                                    className="fb-datasource-clear"
+                                    onClick={() => updateForm({data_source: undefined})}
+                                >
+                                    <Icon name="xmark" /> Remove data flow
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
