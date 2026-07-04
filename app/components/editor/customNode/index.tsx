@@ -405,6 +405,16 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                                     </>
                                 );
                             })()}
+                            {/* Delivery handle (bottom): wire Send Message nodes
+                                here to fan the request out over their channels,
+                                like AI tool nodes. */}
+                            <Handle
+                                type="source"
+                                position={Position.Bottom}
+                                id="delivery"
+                                style={{ left: '50%', transform: 'translateX(-50%)' }}
+                            />
+                            <span className="await-delivery-label">Deliver via</span>
                         </>
                     );
                 })()}

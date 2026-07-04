@@ -563,6 +563,20 @@
     border-color: rgba(244, 63, 94, 0.3);
 }
 
+/* "Deliver via" caption under the delivery handle at the node's bottom edge. */
+.await-delivery-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
+    font-size: 9px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: rgba(251, 113, 133, 0.75);
+    pointer-events: none;
+}
+
 /* ── Handles ── */
 .react-flow__handle {
     width: 6px !important;
