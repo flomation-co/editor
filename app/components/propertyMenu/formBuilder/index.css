@@ -584,12 +584,63 @@
     color: #c4b5fd;
 }
 
+/* ---- Collapsible section (e.g. Data-driven form) --------------------- */
+
+.fb-collapsible {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fb-collapsible-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.fb-collapsible-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.fb-collapsible-header svg {
+    width: 11px;
+    height: 11px;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.fb-collapsible-title {
+    flex: 1;
+}
+
+.fb-collapsible-badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: #5eead4;
+    background: rgba(0, 170, 156, 0.16);
+    border-radius: 20px;
+    padding: 2px 9px;
+}
+
 /* ---- Prefill from a flow (${data.X} autofill) ------------------------ */
 
 .fb-datasource {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding-left: 2px;
 }
 
 .fb-datasource-desc {
