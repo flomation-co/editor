@@ -155,6 +155,15 @@ type FormDataSource = {
     timeout_seconds?: number;
 }
 
+// Post-submission behaviour: a custom thank-you message, resetting for another
+// response (kiosk), or redirecting the browser.
+type FormSubmit = {
+    success_message?: string;
+    on_submit?: "message" | "restart" | "redirect";
+    redirect_url?: string;
+    redirect_delay_seconds?: number;
+}
+
 type FormDefinition = {
     title: string;
     description: string;
@@ -164,6 +173,8 @@ type FormDefinition = {
     require_login?: boolean;
     // Optional flow whose outputs prefill fields via ${data.X}.
     data_source?: FormDataSource;
+    // What happens after a successful submission (thank-you / restart / redirect).
+    submit?: FormSubmit;
 }
 
 type Props = {
@@ -360,6 +371,7 @@ const FormBuilder = (props: Props) => {
                 pages: parsed.pages || [{components: []}],
                 require_login: parsed.require_login || false,
                 data_source: parsed.data_source || undefined,
+                submit: parsed.submit || undefined,
             };
         } catch {
             return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
@@ -370,6 +382,13 @@ const FormBuilder = (props: Props) => {
     // it doesn't crowd the common case — but starts open if a flow is already
     // configured, so an existing data source is never hidden away.
     const [dataDrivenOpen, setDataDrivenOpen] = useState(() => !!form.data_source?.flow_id);
+
+    // "After submission" section — collapsed by default; opens if any
+    // post-submit behaviour is already configured.
+    const [afterSubmitOpen, setAfterSubmitOpen] = useState(() => {
+        const s = form.submit;
+        return !!(s && (s.success_message || (s.on_submit && s.on_submit !== "message") || s.redirect_url));
+    });
 
     useEffect(() => {
         props.onChange(JSON.stringify(form));
@@ -715,6 +734,80 @@ const FormBuilder = (props: Props) => {
                                 >
                                     <Icon name="xmark" /> Remove data flow
                                 </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className="fb-field-row fb-collapsible">
+                    <button
+                        type="button"
+                        className="fb-collapsible-header"
+                        onClick={() => setAfterSubmitOpen(o => !o)}
+                        aria-expanded={afterSubmitOpen}
+                    >
+                        <Icon name={afterSubmitOpen ? "chevron-down" : "chevron-right"} />
+                        <span className="fb-collapsible-title">After submission</span>
+                        {form.submit?.on_submit && form.submit.on_submit !== "message" && (
+                            <span className="fb-collapsible-badge">{form.submit.on_submit}</span>
+                        )}
+                    </button>
+                    {afterSubmitOpen && (
+                        <div className="fb-datasource">
+                            <span className="fb-datasource-desc">
+                                What the visitor sees after they submit — a thank-you message, a
+                                reset for another response (kiosk), or a redirect.
+                            </span>
+                            <div className="fb-field-group fb-full-width">
+                                <span className="fb-field-group-label">On submit</span>
+                                <select
+                                    className="fb-input fb-input-sm"
+                                    value={form.submit?.on_submit || "message"}
+                                    onChange={e => updateForm({submit: {...form.submit, on_submit: e.target.value as "message" | "restart" | "redirect"}})}
+                                >
+                                    <option value="message">Show a thank-you message</option>
+                                    <option value="restart">Reset for another response</option>
+                                    <option value="redirect">Redirect to a URL</option>
+                                </select>
+                            </div>
+                            {(form.submit?.on_submit || "message") !== "redirect" && (
+                                <div className="fb-field-group fb-full-width">
+                                    <span className="fb-field-group-label">Thank-you message</span>
+                                    <textarea
+                                        className="fb-input fb-input-sm"
+                                        rows={2}
+                                        value={form.submit?.success_message || ""}
+                                        placeholder="Your response has been submitted successfully."
+                                        onChange={e => updateForm({submit: {...form.submit, success_message: e.target.value}})}
+                                    />
+                                </div>
+                            )}
+                            {form.submit?.on_submit === "redirect" && (
+                                <>
+                                    <div className="fb-field-group fb-full-width">
+                                        <span className="fb-field-group-label">Redirect URL</span>
+                                        <input
+                                            className="fb-input fb-input-sm"
+                                            value={form.submit?.redirect_url || ""}
+                                            placeholder="https://example.com/thanks"
+                                            onChange={e => updateForm({submit: {...form.submit, redirect_url: e.target.value}})}
+                                        />
+                                    </div>
+                                    <div className="fb-field-group">
+                                        <span className="fb-field-group-label">Delay (seconds)</span>
+                                        <input
+                                            className="fb-input fb-input-sm"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            value={form.submit?.redirect_delay_seconds ?? ""}
+                                            placeholder="0"
+                                            onChange={e => {
+                                                const v = e.target.value === "" ? undefined : Number(e.target.value);
+                                                updateForm({submit: {...form.submit, redirect_delay_seconds: v}});
+                                            }}
+                                        />
+                                    </div>
+                                </>
                             )}
                         </div>
                     )}
