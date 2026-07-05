@@ -13,6 +13,7 @@ import KeyValueProperty from "~/components/propertyMenu/keyValueProperty";
 import RowsProperty from "~/components/propertyMenu/rowsProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
+import MoneyProperty from "~/components/propertyMenu/moneyProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
@@ -594,6 +595,28 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
+
+                                            case "money": {
+                                                // The currency symbol tracks the sibling `currency`
+                                                // input reactively — unsaved edits (localValues)
+                                                // first, then the stored node config.
+                                                const currencyInput = props.node.data.config.inputs.find((x: any) => x.name === "currency");
+                                                const currencyValue = String(localValues["currency"] ?? currencyInput?.value ?? "");
+                                                return (
+                                                    <MoneyProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        currency={currencyValue}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+                                            }
 
                                             case "number":
                                                 return (
