@@ -38,6 +38,58 @@ type CategoryGroup = {
     subGroups: SubGroup[];
 }
 
+// ── Fuzzy search ──────────────────────────────────────────────────────────
+// A lightweight scored fuzzy matcher (no dependency — the action set is small
+// enough that per-keystroke scoring is trivial). fuzzyScore returns 0 for no
+// match, or a 0..1 relevance score: an exact substring scores highest (1.0 for
+// a prefix, ~0.95 at a word boundary, 0.8 mid-string); a looser subsequence
+// match (the query characters appearing in order, e.g. "gche" -> "git/checkout")
+// scores below that, rewarding consecutive runs and word-start hits.
+const WORD_BOUNDARY = /[\s\-_/.]/;
+
+const fuzzyScore = (needle: string, haystack: string): number => {
+    if (!needle || !haystack) return 0;
+    const h = haystack.toLowerCase();
+    const n = needle.toLowerCase();
+
+    // Exact substring — the strongest signal.
+    const idx = h.indexOf(n);
+    if (idx !== -1) {
+        if (idx === 0) return 1.0;                        // prefix
+        if (WORD_BOUNDARY.test(h[idx - 1])) return 0.95;  // start of a word
+        return 0.8;                                       // mid-string
+    }
+
+    // Subsequence match — every query character must appear, in order.
+    let ni = 0, run = 0, score = 0;
+    for (let hi = 0; hi < h.length && ni < n.length; hi++) {
+        if (h[hi] === n[ni]) {
+            run += 1;
+            let charScore = 1 + run * 0.5;                                   // reward runs
+            if (hi === 0 || WORD_BOUNDARY.test(h[hi - 1])) charScore += 1;   // word start
+            score += charScore;
+            ni += 1;
+        } else {
+            run = 0;
+        }
+    }
+    if (ni < n.length) return 0;                          // not all chars matched
+    // Normalise below the exact-substring band so substring matches always win.
+    return Math.min(score / (n.length * 3), 0.7);
+};
+
+// scorePlugin ranks a plugin against the query across name, label, category and
+// description. Field weights make a name hit outrank a category hit, which
+// outranks a description hit; the best-scoring field wins (max), so a match in
+// ANY of those fields surfaces the action.
+const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
+    3.0 * fuzzyScore(query, p.name),
+    3.0 * fuzzyScore(query, p.label || ""),
+    1.8 * fuzzyScore(query, p.category?.name || ""),
+    1.8 * fuzzyScore(query, p.category?.sub_name || ""),
+    1.0 * fuzzyScore(query, p.description || ""),
+);
+
 const ContextMenu = (props: ContextMenuProps) => {
     const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
     const [ searchTerm, setSearchTerm ] = useState<string>("");
@@ -119,16 +171,16 @@ const ContextMenu = (props: ContextMenuProps) => {
         return result;
     }
 
-    // Get all plugins matching search across all types
+    // Get all plugins matching the search — a fuzzy match across name, label,
+    // category and description, ranked most-relevant first.
     const getSearchResults = (): PluginDefinition[] => {
         if (!props.plugins || !searchTerm) return [];
         return Object.keys(props.plugins)
             .map(k => props.plugins[k])
-            .filter(p =>
-                p.name.toLowerCase().includes(searchTerm) ||
-                p.description.toLowerCase().includes(searchTerm) ||
-                (p.category?.name.toLowerCase().includes(searchTerm))
-            );
+            .map(p => ({p, score: scorePlugin(p, searchTerm)}))
+            .filter(x => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .map(x => x.p);
     }
 
     const renderActionItem = (nt: PluginDefinition) => (
