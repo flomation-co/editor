@@ -567,7 +567,31 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             // accept managed credentials (since they also
                                             // resolve to a token) but credential slots
                                             // reject literal secrets (no refresh path).
-                                            case "credential":
+                                            case "credential": {
+                                                // QuickBooks/Xero actions pair the credential with a
+                                                // sibling tenant/company input that must hold the
+                                                // per-account identifier captured at connect time.
+                                                // When the user picks a credential, auto-fill that
+                                                // sibling with the matching metadata accessor
+                                                // (${credentials.NAME.tenant_id|realm_id}) so they
+                                                // never have to hunt for the id by hand. Keyed off the
+                                                // presence of a `tenant`/`company` sibling, so no other
+                                                // credential input (Google, Slack, …) is affected.
+                                                const siblingInputs = props.node.data.config.inputs;
+                                                const hasTenant = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenant");
+                                                const hasCompany = i.name === "credential" && siblingInputs.some((x: any) => x.name === "company");
+                                                const handleCredentialChange = (property: string, value: any) => {
+                                                    onValueChange(property, value);
+                                                    if (!hasTenant && !hasCompany) return;
+                                                    const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
+                                                    if (!match) return;
+                                                    const credName = match[1];
+                                                    if (hasTenant) {
+                                                        onValueChange("tenant", "${credentials." + credName + ".tenant_id}");
+                                                    } else if (hasCompany) {
+                                                        onValueChange("company", "${credentials." + credName + ".realm_id}");
+                                                    }
+                                                };
                                                 return (
                                                     <CredentialProperty
                                                         nodeId={props.node.data.id}
@@ -578,9 +602,10 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         required={i.required}
                                                         variables={props.variables}
                                                         kind="credential"
-                                                        onValueChange={onValueChange}
+                                                        onValueChange={handleCredentialChange}
                                                     />
                                                 )
+                                            }
                                             case "secret":
                                                 return (
                                                     <CredentialProperty
