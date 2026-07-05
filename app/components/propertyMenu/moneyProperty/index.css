@@ -1,0 +1,56 @@
+/* Money field: a currency symbol prefix fused to a decimal amount input.
+   The wrapper owns the frame (border, background, focus glow) so the inner
+   <input> — which would otherwise inherit the global input chrome — is reset
+   to a bare, transparent control. Squared on the right to merge with the
+   adjacent variable-picker button, mirroring .variable-mode-row > input. */
+.money-input-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+    background-color: #17202e;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px 0 0 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.money-input-field:focus-within {
+    box-shadow: 0 0 10px 1px var(--highlight-colour);
+    border-color: rgba(147, 51, 235, 0.6);
+}
+
+.money-input-symbol {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    padding: 0 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-right: 1px solid rgba(107, 114, 128, 0.4);
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+}
+
+/* Reset the inner input away from the global input chrome — the wrapper
+   provides all of it. */
+.money-input-field > input.money-input-amount {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--primary-font-colour);
+    outline: none;
+}
+
+.money-input-field > input.money-input-amount:focus {
+    box-shadow: none;
+}
