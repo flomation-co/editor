@@ -102,7 +102,10 @@ export type ExecutionStatusDot = {
 
 export type ParameterOption = {
     name: string,
-    value: string
+    value: string,
+    // Optional label for a collapsible group this option belongs to in a
+    // multi-select (options sharing a group render together). Absent = ungrouped.
+    group?: string
 }
 
 export type ParameterDynamicOptions = {
