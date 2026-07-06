@@ -57,8 +57,12 @@ const MultiSelectProperty = (props: PropertyProps) => {
     const hasGroups = useMemo(() => groups.some(g => g.group !== ""), [groups]);
 
     // Which groups are expanded. Seed open = any group with a current selection,
-    // so a returning user sees their picks; re-seed when the node changes.
+    // so a returning user sees their picks. Deliberately re-seeds ONLY when the
+    // node changes, not on every value/options change: re-seeding on value change
+    // would re-open a group the user just collapsed. props.value / props.options
+    // are read intentionally with a nodeId-only dependency (hence the disable).
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const sel = parseSelected(props.value || "");
         const open = new Set<string>();
@@ -138,6 +142,8 @@ const MultiSelectProperty = (props: PropertyProps) => {
                                         <button
                                             type="button"
                                             onClick={() => toggleGroup(group)}
+                                            aria-expanded={open}
+                                            aria-label={`${group} events`}
                                             style={{
                                                 display: "flex", alignItems: "center", gap: 8, width: "100%",
                                                 background: "transparent", border: "none", cursor: "pointer",
