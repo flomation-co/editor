@@ -78,6 +78,13 @@ const TriggerURLProperty = (props: Props) => {
             triggerUrl = publicUrl + triggerPath;
             break;
         }
+        case "intercom-webhook": {
+            // Intercom webhooks must be publicly accessible — use LAUNCH_URL (ngrok)
+            const publicUrl = config("LAUNCH_URL") || launchUrl;
+            triggerPath = `/webhook/${trigger.id}`;
+            triggerUrl = publicUrl + triggerPath;
+            break;
+        }
         case "linkedin-poll":
             // Polling-based — no URL needed
             return null;
@@ -86,6 +93,7 @@ const TriggerURLProperty = (props: Props) => {
     }
 
     const isFacebookTrigger = typeName === "facebook-messenger" || typeName === "facebook-feed";
+    const isIntercomTrigger = typeName === "intercom-webhook";
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -95,7 +103,7 @@ const TriggerURLProperty = (props: Props) => {
 
     return (
         <div className="trigger-url-section">
-            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : "Trigger URL"}</div>
+            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : "Trigger URL"}</div>
             {isFacebookTrigger && (
                 <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
                     Paste this URL in your{" "}
@@ -108,6 +116,20 @@ const TriggerURLProperty = (props: Props) => {
                         Facebook App Dashboard
                     </a>
                     {" "}under <strong>Webhooks</strong>. Subscribe to <strong>Page</strong> events.
+                </div>
+            )}
+            {isIntercomTrigger && (
+                <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
+                    Paste this URL in your{" "}
+                    <a
+                        href="https://app.intercom.com/a/apps/_/developer-hub"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#00aa9c", textDecoration: "underline" }}
+                    >
+                        Intercom Developer Hub
+                    </a>
+                    {" "}app under <strong>Configure → Webhooks</strong>, then pick the topics you want to receive. Intercom checks the URL with a HEAD request when you save.
                 </div>
             )}
             <div className="trigger-url-box">
