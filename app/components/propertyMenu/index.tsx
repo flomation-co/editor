@@ -301,6 +301,17 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             if (!i.visible_when.values.includes(refValue)) return null;
                                         }
 
+                                        // QuickBooks `sandbox` is a system-managed field: it's
+                                        // auto-filled from the credential metadata (driven by the app's
+                                        // OAuth config) and must not be exposed as a user toggle. Hide it
+                                        // on QuickBooks auth actions (identified by credential + company
+                                        // siblings) so the environment is chosen behind the scenes.
+                                        if (i.name === "sandbox"
+                                            && props.node.data.config.inputs.some((x: any) => x.name === "credential")
+                                            && props.node.data.config.inputs.some((x: any) => x.name === "company")) {
+                                            return null;
+                                        }
+
                                         // Inputs marked dynamic_options fetch their choices from the
                                         // api at edit time; static options remain the fallback. The
                                         // marker is resolved from the freshly-fetched definitions
@@ -580,6 +591,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 const siblingInputs = props.node.data.config.inputs;
                                                 const hasTenant = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenant");
                                                 const hasCompany = i.name === "credential" && siblingInputs.some((x: any) => x.name === "company");
+                                                const hasSandbox = siblingInputs.some((x: any) => x.name === "sandbox");
                                                 const handleCredentialChange = (property: string, value: any) => {
                                                     onValueChange(property, value);
                                                     if (!hasTenant && !hasCompany) return;
@@ -590,6 +602,13 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         onValueChange("tenant", "${credentials." + credName + ".tenant_id}");
                                                     } else if (hasCompany) {
                                                         onValueChange("company", "${credentials." + credName + ".realm_id}");
+                                                        // QuickBooks: the sandbox/production host is a
+                                                        // property of the app's keys, not a user choice —
+                                                        // carry it through the credential metadata (hidden
+                                                        // input, see the render skip below).
+                                                        if (hasSandbox) {
+                                                            onValueChange("sandbox", "${credentials." + credName + ".sandbox}");
+                                                        }
                                                     }
                                                 };
                                                 return (
