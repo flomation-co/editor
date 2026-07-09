@@ -1105,7 +1105,7 @@ export function Editor(props : EditorProps) {
         const isInputVisible = (input: any, allInputs: any[]) => {
             if (!input.visible_when) return true;
             const ref = allInputs.find((x: any) => x.name === input.visible_when.field);
-            const refValue = ref?.value ?? '';
+            const refValue = String(ref?.value ?? '');
             return input.visible_when.values.includes(refValue);
         };
 
