@@ -297,7 +297,8 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         // Conditional visibility via visible_when
                                         if (i.visible_when) {
                                             const refInput = props.node.data.config.inputs.find((x: any) => x.name === i.visible_when.field);
-                                            const refValue = localValues[i.visible_when.field] ?? refInput?.value ?? '';
+                                            // String() so boolean checkbox values ("true"/"false") can match
+                                            const refValue = String(localValues[i.visible_when.field] ?? refInput?.value ?? '');
                                             if (!i.visible_when.values.includes(refValue)) return null;
                                         }
 
