@@ -677,8 +677,12 @@ const FormBuilder = (props: Props) => {
                         label="Description"
                         value={form.description}
                         variables={props.variables || []}
+                        multiline
                         onValueChange={(_, v) => updateForm({description: v})}
                     />
+                    <span className="fb-hint">
+                        Supports line breaks, <strong>*bold*</strong> and <em>_italic_</em>.
+                    </span>
                 </div>
                 <div className="fb-field-row">
                     <label className="fb-toggle-label fb-toggle-label--prominent">
