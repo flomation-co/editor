@@ -22,6 +22,24 @@
     margin-bottom: 4px;
 }
 
+.fb-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.fb-hint strong {
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 700;
+}
+
+.fb-hint em {
+    color: rgba(255, 255, 255, 0.65);
+    font-style: italic;
+}
+
 .fb-input {
     width: 100%;
     padding: 8px 10px;
