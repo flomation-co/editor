@@ -84,8 +84,20 @@ function serialiseRows(rows: Row[]): string {
     return JSON.stringify(rows);
 }
 
+// Drag state: which cell or row is being dragged. Cells reorder only
+// within their own row (their column position is meaningful across the
+// 2D grid); rows reorder among themselves.
+type DragState =
+    | { kind: "cell"; row: number; col: number }
+    | { kind: "row"; row: number }
+    | null;
+
 const RowsProperty = (props: RowsPropertyProps) => {
     const [rows, setRows] = useState<Row[]>(() => parseRows(props.value));
+    const [drag, setDrag] = useState<DragState>(null);
+    // The cell/row currently under the pointer during a drag, for a drop
+    // indicator. Cleared on drop/drag-end.
+    const [over, setOver] = useState<DragState>(null);
 
     // Re-sync from props when the node changes (user switched
     // selection to a different node). Don't re-sync on every value
@@ -143,14 +155,72 @@ const RowsProperty = (props: RowsPropertyProps) => {
         commit(next.length === 0 ? [[""]] : next);
     };
 
+    // Reorder a cell within its row (drag-and-drop). Removing then
+    // re-inserting keeps the move predictable; a no-op move is ignored.
+    const moveCell = (rowIndex: number, from: number, to: number) => {
+        if (from === to) return;
+        const next = rows.map((r, i) => {
+            if (i !== rowIndex) return r;
+            const updated = [...r];
+            const [moved] = updated.splice(from, 1);
+            updated.splice(to, 0, moved);
+            return updated;
+        });
+        commit(next);
+    };
+
+    // Reorder a whole row among the other rows (drag-and-drop).
+    const moveRow = (from: number, to: number) => {
+        if (from === to) return;
+        const next = [...rows];
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        commit(next);
+    };
+
+    const endDrag = () => {
+        setDrag(null);
+        setOver(null);
+    };
+
     return (
         <div className="property-menu-input-row">
             <div className="property-menu-input-name">{props.label}</div>
 
             <div className="rows-property">
-                {rows.map((row, rowIndex) => (
-                    <div key={rowIndex} className="rows-property-row">
+                {rows.map((row, rowIndex) => {
+                    const rowOver = over?.kind === "row" && over.row === rowIndex && drag?.kind === "row" && drag.row !== rowIndex;
+                    return (
+                    <div
+                        key={rowIndex}
+                        className={`rows-property-row${rowOver ? " rows-property-row--drop" : ""}`}
+                        onDragOver={e => {
+                            if (drag?.kind === "row") {
+                                e.preventDefault();
+                                setOver({ kind: "row", row: rowIndex });
+                            }
+                        }}
+                        onDrop={e => {
+                            if (drag?.kind === "row") {
+                                e.preventDefault();
+                                moveRow(drag.row, rowIndex);
+                                endDrag();
+                            }
+                        }}
+                    >
                         <div className="rows-property-row-header">
+                            <span
+                                className="rows-property-drag rows-property-drag--row"
+                                draggable
+                                onDragStart={e => {
+                                    e.dataTransfer.effectAllowed = "move";
+                                    setDrag({ kind: "row", row: rowIndex });
+                                }}
+                                onDragEnd={endDrag}
+                                title="Drag to reorder this row"
+                            >
+                                <Icon name="grip-vertical" />
+                            </span>
                             <span className="rows-property-row-label">Row {rowIndex + 1}</span>
                             <button
                                 type="button"
@@ -162,8 +232,40 @@ const RowsProperty = (props: RowsPropertyProps) => {
                             </button>
                         </div>
                         <div className="rows-property-cells">
-                            {row.map((cell, colIndex) => (
-                                <div key={colIndex} className="rows-property-cell">
+                            {row.map((cell, colIndex) => {
+                                const cellOver = over?.kind === "cell" && over.row === rowIndex && over.col === colIndex
+                                    && drag?.kind === "cell" && drag.row === rowIndex && drag.col !== colIndex;
+                                return (
+                                <div
+                                    key={colIndex}
+                                    className={`rows-property-cell${cellOver ? " rows-property-cell--drop" : ""}`}
+                                    onDragOver={e => {
+                                        // Cells reorder only within their own row.
+                                        if (drag?.kind === "cell" && drag.row === rowIndex) {
+                                            e.preventDefault();
+                                            setOver({ kind: "cell", row: rowIndex, col: colIndex });
+                                        }
+                                    }}
+                                    onDrop={e => {
+                                        if (drag?.kind === "cell" && drag.row === rowIndex) {
+                                            e.preventDefault();
+                                            moveCell(rowIndex, drag.col, colIndex);
+                                            endDrag();
+                                        }
+                                    }}
+                                >
+                                    <span
+                                        className="rows-property-drag rows-property-drag--cell"
+                                        draggable
+                                        onDragStart={e => {
+                                            e.dataTransfer.effectAllowed = "move";
+                                            setDrag({ kind: "cell", row: rowIndex, col: colIndex });
+                                        }}
+                                        onDragEnd={endDrag}
+                                        title="Drag to reorder this column"
+                                    >
+                                        <Icon name="grip-vertical" />
+                                    </span>
                                     <VariableInput
                                         nodeId={props.nodeId}
                                         name={`${props.name}_r${rowIndex}_c${colIndex}`}
@@ -185,7 +287,8 @@ const RowsProperty = (props: RowsPropertyProps) => {
                                         </button>
                                     )}
                                 </div>
-                            ))}
+                                );
+                            })}
                             <button
                                 type="button"
                                 className="rows-property-add-col"
@@ -196,7 +299,8 @@ const RowsProperty = (props: RowsPropertyProps) => {
                             </button>
                         </div>
                     </div>
-                ))}
+                    );
+                })}
 
                 <button
                     type="button"
