@@ -45,8 +45,15 @@ type FormComponent = {
     max?: number;
     step?: number;
     integer_only?: boolean;
-    // Number of stars/points for rating fields (typically 5 or 10).
+    // Number of stars/points for rating fields (typically 5 or 10). Also the
+    // top score of an nps field (0..scale — 5 or 10).
     scale?: number;
+    // NPS end-of-scale captions (e.g. "Not likely" / "Very likely").
+    scale_label_low?: string;
+    scale_label_high?: string;
+    // contact_name sub-fields, in order. Empty defaults to
+    // ["first_name", "last_name", "email"]; "phone" is also supported.
+    contact_fields?: string[];
     // Bounds for date/time HTML5 inputs, as ISO strings.
     min_date?: string;
     max_date?: string;
@@ -82,7 +89,7 @@ type FormComponent = {
 // the seed-on-add behaviour. Ranking is included because its schema is
 // identical to radio/checkboxes/dropdown — it's just the response
 // shape that differs (ordered array vs single / unordered set).
-const OPTION_BASED_TYPES = new Set(["radio", "checkboxes", "dropdown", "ranking"]);
+const OPTION_BASED_TYPES = new Set(["radio", "checkboxes", "dropdown", "ranking", "opinion_scale"]);
 
 // Types whose config includes numeric range/step constraints.
 const NUMERIC_TYPES = new Set(["number", "slider", "rating"]);
@@ -98,7 +105,7 @@ const DISPLAY_ONLY_TYPES = new Set(["section_header", "divider", "info_text"]);
 // Placeholder / default_value / read-only don't map cleanly for these,
 // so the FormBuilder hides those controls and shows type-specific config
 // (precision selector for location, nothing for address).
-const STRUCTURED_TYPES = new Set(["location", "address"]);
+const STRUCTURED_TYPES = new Set(["location", "address", "contact_name"]);
 
 // Upload types capture a file and store its bytes in the blob store;
 // the response is a flo:blob:... token string. Placeholder / default
@@ -212,6 +219,10 @@ const fieldTypes = [
     {value: "qr_scanner", label: "QR / Barcode", icon: "qrcode"},
     {value: "license_plate", label: "Licence Plate", icon: "magnifying-glass"},
     {value: "ranking", label: "Ranking", icon: "list"},
+    {value: "nps", label: "NPS", icon: "gauge"},
+    {value: "opinion_scale", label: "Opinion Scale", icon: "list-check"},
+    {value: "consent", label: "Consent", icon: "clipboard-list"},
+    {value: "contact_name", label: "Contact Info", icon: "user"},
 ];
 
 // Operators offered in the conditional-visibility builder. Labels are
@@ -474,6 +485,35 @@ const FormBuilder = (props: Props) => {
             newField.privacy_notice =
                 "This field uses your device camera to read a licence plate. " +
                 "Images are processed in your browser.";
+        }
+        // NPS defaults to a 0–10 promoter score with the conventional
+        // likelihood end captions. Authors can drop to 0–5 in the config.
+        if (type === "nps") {
+            newField.scale = 10;
+            newField.scale_label_low = "Not likely";
+            newField.scale_label_high = "Very likely";
+        }
+        // Opinion scale seeds a 5-point Likert set (overriding the generic
+        // single starter option seeded above for OPTION_BASED_TYPES).
+        if (type === "opinion_scale") {
+            newField.options = [
+                {label: "Strongly disagree", value: "strongly_disagree"},
+                {label: "Disagree", value: "disagree"},
+                {label: "Neutral", value: "neutral"},
+                {label: "Agree", value: "agree"},
+                {label: "Strongly agree", value: "strongly_agree"},
+            ];
+        }
+        // Consent is a required opt-in by nature: a ticked-to-proceed
+        // checkbox with legal/terms text shown above it.
+        if (type === "consent") {
+            newField.label = "I agree to the terms";
+            newField.display_text = "Please read and accept our terms.";
+            newField.required = true;
+        }
+        // Contact info defaults to name + email; "phone" can be added.
+        if (type === "contact_name") {
+            newField.contact_fields = ["first_name", "last_name", "email"];
         }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
@@ -911,7 +951,7 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
                                     </div>
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && (
                                         <>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
@@ -1157,6 +1197,60 @@ const FormBuilder = (props: Props) => {
                                                 <option value={7}>1 – 7</option>
                                                 <option value={10}>1 – 10</option>
                                             </select>
+                                        </div>
+                                    )}
+                                    {comp.type === "nps" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Scale</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale || 10}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale: Number(e.target.value)})}
+                                                >
+                                                    <option value={5}>0 – 5</option>
+                                                    <option value={10}>0 – 10</option>
+                                                </select>
+                                            </div>
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">Low label</span>
+                                                <input
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale_label_low || ""}
+                                                    placeholder="Not likely"
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale_label_low: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">High label</span>
+                                                <input
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale_label_high || ""}
+                                                    placeholder="Very likely"
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale_label_high: e.target.value})}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                    {comp.type === "consent" && (
+                                        <div className="fb-field-group fb-full-width">
+                                            <span className="fb-field-group-label">Terms / Legal text</span>
+                                            <textarea
+                                                className="fb-input fb-input-sm"
+                                                rows={3}
+                                                value={comp.display_text || ""}
+                                                placeholder="Please read and accept our terms."
+                                                onChange={e => updateField(pageIndex, fieldIndex, {display_text: e.target.value})}
+                                            />
+                                        </div>
+                                    )}
+                                    {comp.type === "contact_name" && (
+                                        <div className="fb-field-group fb-full-width">
+                                            <span className="fb-field-group-label">Sub-fields</span>
+                                            <div className="fb-address-preview">
+                                                <span>First name · Last name · Email</span>
+                                                <small>Available downstream as <code>{"${trigger." + comp.name + ".first_name}"}</code>, <code>{".email}"}</code>, etc.</small>
+                                            </div>
                                         </div>
                                     )}
                                     {DATE_TIME_TYPES.has(comp.type) && (
