@@ -494,6 +494,35 @@
     color: rgba(139, 92, 246, 0.8);
 }
 
+/* ── Picture Choice option editor — a label/value row plus an image URL ── */
+
+.fb-picture-option {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    margin-top: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.fb-picture-option:first-of-type {
+    margin-top: 6px;
+}
+
+.fb-picture-option .fb-option-row {
+    margin-top: 0;
+}
+
+.fb-picture-image-input {
+    width: 100%;
+    min-width: 0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
 /* ── Address preview (informational, no interactive controls) ── */
 
 .fb-address-preview {

@@ -7,6 +7,9 @@ import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
 type FormOption = {
     label: string;
     value: string;
+    // Option-tile image URL used by the picture_choice field. Empty renders
+    // a text fallback tile.
+    image?: string;
 }
 
 // A single "show when" condition: one earlier answer, compared to a value.
@@ -34,8 +37,11 @@ type FormComponent = {
     order: number;
     read_only?: boolean;
     default_value?: string;
-    // Present only on radio / checkboxes / dropdown fields.
+    // Present only on radio / checkboxes / dropdown / picture_choice fields.
     options?: FormOption[];
+    // picture_choice: false ⇒ single-select (string response); true ⇒
+    // multi-select (array response). Ignored by other field types.
+    multiple?: boolean;
     // When set (option-based fields only), options are populated at load
     // time from this key in the data-source flow's outputs, rather than the
     // static options above. Requires a form-level data flow.
@@ -200,6 +206,7 @@ const fieldTypes = [
     {value: "radio", label: "Radio", icon: "circle-dot"},
     {value: "checkboxes", label: "Checkbox Group", icon: "list-check"},
     {value: "dropdown", label: "Dropdown", icon: "chevron-down"},
+    {value: "picture_choice", label: "Picture Choice", icon: "image"},
     {value: "email", label: "Email", icon: "envelope"},
     {value: "phone", label: "Phone", icon: "phone"},
     {value: "url", label: "URL", icon: "link"},
@@ -514,6 +521,14 @@ const FormBuilder = (props: Props) => {
         // Contact info defaults to name + email; "phone" can be added.
         if (type === "contact_name") {
             newField.contact_fields = ["first_name", "last_name", "email"];
+        }
+        // Picture choice seeds one starter option with an empty image URL and
+        // defaults to single-select. Its options carry an image alongside
+        // label/value, so it uses a dedicated editor rather than
+        // OPTION_BASED_TYPES.
+        if (type === "picture_choice") {
+            newField.options = [{label: "Option 1", value: "option_1", image: ""}];
+            newField.multiple = false;
         }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
@@ -951,7 +966,7 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
                                     </div>
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && (
                                         <>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
@@ -1198,6 +1213,86 @@ const FormBuilder = (props: Props) => {
                                                 <option value={10}>1 – 10</option>
                                             </select>
                                         </div>
+                                    )}
+                                    {comp.type === "picture_choice" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <label className="fb-toggle-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={comp.multiple || false}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {multiple: e.target.checked})}
+                                                    />
+                                                    Multiple selection
+                                                </label>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width fb-options-editor">
+                                                <span className="fb-field-group-label">Picture options</span>
+                                                {(comp.options || []).map((opt, optionIndex) => {
+                                                    const valueTracksLabel = opt.value === "" || opt.value === slugifyOptionValue(opt.label);
+                                                    return (
+                                                        <div key={optionIndex} className="fb-picture-option">
+                                                            <div className="fb-option-row">
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-label-input"
+                                                                    value={opt.label}
+                                                                    placeholder="Option label"
+                                                                    onChange={e => {
+                                                                        const newLabel = e.target.value;
+                                                                        const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : opt.value;
+                                                                        updateOption(pageIndex, fieldIndex, optionIndex, {label: newLabel, value: nextValue});
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-value-input"
+                                                                    value={opt.value}
+                                                                    placeholder="option_value"
+                                                                    onChange={e => updateOption(pageIndex, fieldIndex, optionIndex, {value: e.target.value})}
+                                                                />
+                                                                <div className="fb-option-actions">
+                                                                    <button
+                                                                        className="fb-icon-btn"
+                                                                        onClick={() => moveOption(pageIndex, fieldIndex, optionIndex, -1)}
+                                                                        disabled={optionIndex === 0}
+                                                                        title="Move up"
+                                                                    >
+                                                                        <Icon name="chevron-up" />
+                                                                    </button>
+                                                                    <button
+                                                                        className="fb-icon-btn"
+                                                                        onClick={() => moveOption(pageIndex, fieldIndex, optionIndex, 1)}
+                                                                        disabled={optionIndex === (comp.options?.length || 0) - 1}
+                                                                        title="Move down"
+                                                                    >
+                                                                        <Icon name="chevron-down" />
+                                                                    </button>
+                                                                    <button
+                                                                        className="fb-icon-btn fb-danger"
+                                                                        onClick={() => removeOption(pageIndex, fieldIndex, optionIndex)}
+                                                                        disabled={(comp.options?.length || 0) <= 1}
+                                                                        title="Remove option"
+                                                                    >
+                                                                        <Icon name="trash" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <input
+                                                                className="fb-input fb-input-sm fb-picture-image-input"
+                                                                value={opt.image || ""}
+                                                                placeholder="Image URL, e.g. https://example.com/photo.jpg"
+                                                                onChange={e => updateOption(pageIndex, fieldIndex, optionIndex, {image: e.target.value})}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                                <button
+                                                    className="fb-add-option"
+                                                    onClick={() => addOption(pageIndex, fieldIndex)}
+                                                >
+                                                    <Icon name="plus" /> Add Option
+                                                </button>
+                                            </div>
+                                        </>
                                     )}
                                     {comp.type === "nps" && (
                                         <>
