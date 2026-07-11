@@ -762,3 +762,24 @@
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.4);
 }
+
+/* "Computed by a flow" / "Amount from a flow" field section — a distinct
+   purple-tinted panel so the author sees this field is flow-driven. */
+.fb-computed-source {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(70, 0, 112, 0.08);
+    border: 1px solid rgba(70, 0, 112, 0.25);
+}
+
+.fb-computed-source code {
+    background: rgba(70, 0, 112, 0.2);
+    color: #c4b5fd;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+}

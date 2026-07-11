@@ -100,6 +100,13 @@ type FormComponent = {
     amount?: string;
     currency?: string;
     payment_secret?: string;
+    // Flow-computed value. When value_source names a flow, this field's value
+    // is produced by running that flow with the current form answers as
+    // ${input.X} — the field renders read-only. value_output selects which
+    // flow output key holds the value (defaults to the field's own name). On a
+    // payment field this drives the Amount (e.g. a reg-plate → car-park price).
+    value_source?: string;
+    value_output?: string;
     // Conditional visibility — show this field only when earlier answers
     // satisfy the rule. Absent means always visible.
     visible_if?: VisibilityRule;
@@ -136,6 +143,17 @@ const STRUCTURED_TYPES = new Set(["location", "address", "contact_name", "matrix
 // works via disabling the picker. license_plate also uploads a captured
 // frame, so it shares the upload UI treatment.
 const UPLOAD_TYPES = new Set(["esignature", "camera", "file_upload", "license_plate"]);
+
+// supportsComputedValue reports whether a field type can have a scalar value
+// produced by a flow (value_source). Mirrors placeholder/default eligibility —
+// structured, upload, display-only and the toggle/scale/choice types don't
+// carry a plain scalar value. Payment is handled separately ("Amount from a
+// flow"), so it is excluded here.
+function supportsComputedValue(type: string): boolean {
+    return !DISPLAY_ONLY_TYPES.has(type) && !STRUCTURED_TYPES.has(type) &&
+        !UPLOAD_TYPES.has(type) && type !== "consent" && type !== "nps" &&
+        type !== "picture_choice" && type !== "payment";
+}
 
 // Recognition types capture a camera frame AND run in-browser recognition,
 // emitting a composite value ({image, plate, ...}). They carry capture-mode,
@@ -1073,7 +1091,7 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
                                     </div>
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && comp.type !== "payment" && (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && comp.type !== "payment" && !comp.value_source && (
                                         <>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
@@ -1100,6 +1118,40 @@ const FormBuilder = (props: Props) => {
                                                 />
                                             </div>
                                         </>
+                                    )}
+                                    {supportsComputedValue(comp.type) && (
+                                        <div className="fb-field-group fb-full-width fb-computed-source">
+                                            <span className="fb-field-group-label">Computed by a flow</span>
+                                            <span className="fb-field-hint">
+                                                Fill this field's value by running a flow with the current
+                                                answers as <code>{"${input.X}"}</code>. The field becomes
+                                                read-only; the value is authoritative server-side.
+                                            </span>
+                                            <FlowSelectProperty
+                                                nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
+                                                name={`value-source-${comp.name}`}
+                                                label="Value flow"
+                                                value={comp.value_source || ""}
+                                                onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
+                                            />
+                                            {comp.value_source && (
+                                                <>
+                                                    <input
+                                                        className="fb-input fb-input-sm"
+                                                        value={comp.value_output || ""}
+                                                        placeholder="Flow output to read; defaults to the field name"
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="fb-datasource-clear"
+                                                        onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                    >
+                                                        <Icon name="xmark" /> Remove value flow
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     )}
                                     {comp.type === "location" && (
                                         <div className="fb-field-group fb-full-width">
@@ -1262,18 +1314,53 @@ const FormBuilder = (props: Props) => {
                                     )}
                                     {comp.type === "payment" && (
                                         <>
-                                            <div className="fb-field-group fb-full-width">
-                                                <span className="fb-field-group-label">Amount</span>
-                                                <VariableInput
-                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-amount`}
-                                                    name={`amount-${comp.name}`}
-                                                    placeholder="49.99"
-                                                    label="Amount"
-                                                    value={comp.amount || ""}
-                                                    variables={props.variables || []}
-                                                    onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {amount: v})}
+                                            {!comp.value_source && (
+                                                <div className="fb-field-group fb-full-width">
+                                                    <span className="fb-field-group-label">Amount</span>
+                                                    <VariableInput
+                                                        nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-amount`}
+                                                        name={`amount-${comp.name}`}
+                                                        placeholder="49.99"
+                                                        label="Amount"
+                                                        value={comp.amount || ""}
+                                                        variables={props.variables || []}
+                                                        onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {amount: v})}
+                                                    />
+                                                    <span className="fb-field-hint">Major units, e.g. 49.99. Supports ${"{"}data.X{"}"} references (resolved at checkout).</span>
+                                                </div>
+                                            )}
+                                            <div className="fb-field-group fb-full-width fb-computed-source">
+                                                <span className="fb-field-group-label">Amount from a flow</span>
+                                                <span className="fb-field-hint">
+                                                    Compute the charge by running a flow with the form
+                                                    answers as <code>{"${input.X}"}</code> (e.g. a reg-plate
+                                                    to a car-park price). Takes precedence over the manual
+                                                    amount and is resolved server-side at checkout.
+                                                </span>
+                                                <FlowSelectProperty
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
+                                                    name={`value-source-${comp.name}`}
+                                                    label="Amount flow"
+                                                    value={comp.value_source || ""}
+                                                    onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
                                                 />
-                                                <span className="fb-field-hint">Major units, e.g. 49.99. Supports ${"{"}data.X{"}"} references (resolved at checkout).</span>
+                                                {comp.value_source && (
+                                                    <>
+                                                        <input
+                                                            className="fb-input fb-input-sm"
+                                                            value={comp.value_output || ""}
+                                                            placeholder="Flow output holding the amount; defaults to the field name"
+                                                            onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="fb-datasource-clear"
+                                                            onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                        >
+                                                            <Icon name="xmark" /> Remove amount flow
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Currency</span>
