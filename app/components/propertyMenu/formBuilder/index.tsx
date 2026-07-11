@@ -42,6 +42,13 @@ type FormComponent = {
     // picture_choice: false ⇒ single-select (string response); true ⇒
     // multi-select (array response). Ignored by other field types.
     multiple?: boolean;
+    // Matrix (grid) field — rows down the side, shared columns across the
+    // top. The response is an object keyed by row value; cell_type decides
+    // whether each row holds a single column value (radio → string) or a
+    // set (checkbox → string[]). Only used by the "matrix" field type.
+    matrix_rows?: FormOption[];
+    matrix_columns?: FormOption[];
+    cell_type?: "radio" | "checkbox";
     // When set (option-based fields only), options are populated at load
     // time from this key in the data-source flow's outputs, rather than the
     // static options above. Requires a form-level data flow.
@@ -110,8 +117,10 @@ const DISPLAY_ONLY_TYPES = new Set(["section_header", "divider", "info_text"]);
 // Structured types produce nested-object responses rather than a scalar.
 // Placeholder / default_value / read-only don't map cleanly for these,
 // so the FormBuilder hides those controls and shows type-specific config
-// (precision selector for location, nothing for address).
-const STRUCTURED_TYPES = new Set(["location", "address", "contact_name"]);
+// (precision selector for location, nothing for address). Matrix joins them
+// — its response is an object keyed by row value, so placeholder/default make
+// no sense; it keeps the required toggle and its own rows/columns editor.
+const STRUCTURED_TYPES = new Set(["location", "address", "contact_name", "matrix"]);
 
 // Upload types capture a file and store its bytes in the blob store;
 // the response is a flo:blob:... token string. Placeholder / default
@@ -205,6 +214,7 @@ const fieldTypes = [
     {value: "boolean", label: "Checkbox", icon: "check"},
     {value: "radio", label: "Radio", icon: "circle-dot"},
     {value: "checkboxes", label: "Checkbox Group", icon: "list-check"},
+    {value: "matrix", label: "Matrix / Grid", icon: "table"},
     {value: "dropdown", label: "Dropdown", icon: "chevron-down"},
     {value: "picture_choice", label: "Picture Choice", icon: "image"},
     {value: "email", label: "Email", icon: "envelope"},
@@ -530,6 +540,13 @@ const FormBuilder = (props: Props) => {
             newField.options = [{label: "Option 1", value: "option_1", image: ""}];
             newField.multiple = false;
         }
+        // Matrix seeds one row and one column plus a single-choice cell type,
+        // so the dual editors render with something to edit straight away.
+        if (type === "matrix") {
+            newField.matrix_rows = [{label: "Row 1", value: "row_1"}];
+            newField.matrix_columns = [{label: "Column 1", value: "column_1"}];
+            newField.cell_type = "radio";
+        }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
         // and a text-input placeholder would be misleading.
@@ -691,6 +708,77 @@ const FormBuilder = (props: Props) => {
                         if (target < 0 || target >= opts.length) return c;
                         [opts[optionIndex], opts[target]] = [opts[target], opts[optionIndex]];
                         return {...c, options: opts};
+                    }),
+                };
+            }),
+        }));
+    };
+
+    // ── Matrix rows/columns editors ──────────────────────────────────────
+    // The matrix has two independent option lists (matrix_rows and
+    // matrix_columns) that share the option-row editor UI. Rather than
+    // overload the single-`options` helpers above, these generic helpers take
+    // a listKey ("matrix_rows" | "matrix_columns") and operate on comp[listKey],
+    // reusing the same label→value auto-slug behaviour.
+    type MatrixListKey = "matrix_rows" | "matrix_columns";
+
+    const updateListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number, patch: Partial<FormOption>) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => ci !== fieldIndex ? c : {
+                    ...c,
+                    [listKey]: (c[listKey] || []).map((o, oi) => oi !== itemIndex ? o : {...o, ...patch}),
+                }),
+            }),
+        }));
+    };
+
+    const addListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => {
+                    if (ci !== fieldIndex) return c;
+                    const existing = c[listKey] || [];
+                    const n = existing.length + 1;
+                    const stem = listKey === "matrix_rows" ? "Row" : "Column";
+                    const slug = listKey === "matrix_rows" ? "row" : "column";
+                    return {...c, [listKey]: [...existing, {label: `${stem} ${n}`, value: `${slug}_${n}`}]};
+                }),
+            }),
+        }));
+    };
+
+    const removeListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => ci !== fieldIndex ? c : {
+                    ...c,
+                    [listKey]: (c[listKey] || []).filter((_, oi) => oi !== itemIndex),
+                }),
+            }),
+        }));
+    };
+
+    const moveListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number, direction: -1 | 1) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => {
+                if (pi !== pageIndex) return p;
+                return {
+                    ...p,
+                    components: p.components.map((c, ci) => {
+                        if (ci !== fieldIndex) return c;
+                        const items = [...(c[listKey] || [])];
+                        const target = itemIndex + direction;
+                        if (target < 0 || target >= items.length) return c;
+                        [items[itemIndex], items[target]] = [items[target], items[itemIndex]];
+                        return {...c, [listKey]: items};
                     }),
                 };
             }),
@@ -1213,6 +1301,85 @@ const FormBuilder = (props: Props) => {
                                                 <option value={10}>1 – 10</option>
                                             </select>
                                         </div>
+                                    )}
+                                    {comp.type === "matrix" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Cell type</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.cell_type || "radio"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {cell_type: e.target.value as "radio" | "checkbox"})}
+                                                >
+                                                    <option value="radio">Single choice per row</option>
+                                                    <option value="checkbox">Multiple choices per row</option>
+                                                </select>
+                                            </div>
+                                            {(["matrix_rows", "matrix_columns"] as const).map(listKey => {
+                                                const items = comp[listKey] || [];
+                                                const heading = listKey === "matrix_rows" ? "Rows" : "Columns";
+                                                return (
+                                                    <div key={listKey} className="fb-field-group fb-full-width fb-options-editor">
+                                                        <span className="fb-field-group-label">{heading}</span>
+                                                        {items.map((item, itemIndex) => {
+                                                            const valueTracksLabel = item.value === "" || item.value === slugifyOptionValue(item.label);
+                                                            return (
+                                                                <div key={itemIndex} className="fb-option-row">
+                                                                    <input
+                                                                        className="fb-input fb-input-sm fb-option-label-input"
+                                                                        value={item.label}
+                                                                        placeholder={`${listKey === "matrix_rows" ? "Row" : "Column"} label`}
+                                                                        onChange={e => {
+                                                                            const newLabel = e.target.value;
+                                                                            const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : item.value;
+                                                                            updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {label: newLabel, value: nextValue});
+                                                                        }}
+                                                                    />
+                                                                    <input
+                                                                        className="fb-input fb-input-sm fb-option-value-input"
+                                                                        value={item.value}
+                                                                        placeholder="value"
+                                                                        onChange={e => updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {value: e.target.value})}
+                                                                    />
+                                                                    <div className="fb-option-actions">
+                                                                        <button
+                                                                            className="fb-icon-btn"
+                                                                            onClick={() => moveListItem(pageIndex, fieldIndex, listKey, itemIndex, -1)}
+                                                                            disabled={itemIndex === 0}
+                                                                            title="Move up"
+                                                                        >
+                                                                            <Icon name="chevron-up" />
+                                                                        </button>
+                                                                        <button
+                                                                            className="fb-icon-btn"
+                                                                            onClick={() => moveListItem(pageIndex, fieldIndex, listKey, itemIndex, 1)}
+                                                                            disabled={itemIndex === items.length - 1}
+                                                                            title="Move down"
+                                                                        >
+                                                                            <Icon name="chevron-down" />
+                                                                        </button>
+                                                                        <button
+                                                                            className="fb-icon-btn fb-danger"
+                                                                            onClick={() => removeListItem(pageIndex, fieldIndex, listKey, itemIndex)}
+                                                                            disabled={items.length <= 1}
+                                                                            title={`Remove ${listKey === "matrix_rows" ? "row" : "column"}`}
+                                                                        >
+                                                                            <Icon name="trash" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <button
+                                                            className="fb-add-option"
+                                                            onClick={() => addListItem(pageIndex, fieldIndex, listKey)}
+                                                        >
+                                                            <Icon name="plus" /> Add {listKey === "matrix_rows" ? "Row" : "Column"}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
                                     )}
                                     {comp.type === "picture_choice" && (
                                         <>
