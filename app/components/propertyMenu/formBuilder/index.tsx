@@ -92,6 +92,14 @@ type FormComponent = {
     // consent checkbox). show_privacy_notice defaults to true.
     privacy_notice?: string;
     show_privacy_notice?: boolean;
+    // Payment field (type "payment") — collects a card payment via Stripe
+    // hosted Checkout on submit. amount is a MAJOR-unit decimal string
+    // (e.g. "49.99"); it may be a ${data.X} reference (resolved server-side).
+    // currency is an ISO-4217 code (e.g. "gbp"). payment_secret is a
+    // ${secrets.X} reference to the Stripe secret key.
+    amount?: string;
+    currency?: string;
+    payment_secret?: string;
     // Conditional visibility — show this field only when earlier answers
     // satisfy the rule. Absent means always visible.
     visible_if?: VisibilityRule;
@@ -240,6 +248,7 @@ const fieldTypes = [
     {value: "opinion_scale", label: "Opinion Scale", icon: "list-check"},
     {value: "consent", label: "Consent", icon: "clipboard-list"},
     {value: "contact_name", label: "Contact Info", icon: "user"},
+    {value: "payment", label: "Payment", icon: "dollar-sign"},
 ];
 
 // Operators offered in the conditional-visibility builder. Labels are
@@ -546,6 +555,16 @@ const FormBuilder = (props: Props) => {
             newField.matrix_rows = [{label: "Row 1", value: "row_1"}];
             newField.matrix_columns = [{label: "Column 1", value: "column_1"}];
             newField.cell_type = "radio";
+        }
+        // Payment defaults to £ (GBP) and the conventional secret name. The
+        // amount is left blank for the author to fill (a literal or ${data.X}).
+        // It collects no input, so it is never required.
+        if (type === "payment") {
+            newField.label = "Payment";
+            newField.amount = "";
+            newField.currency = "gbp";
+            newField.payment_secret = "${secrets.stripe_secret_key}";
+            newField.required = false;
         }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
@@ -1054,7 +1073,7 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
                                     </div>
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && comp.type !== "payment" && (
                                         <>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
@@ -1240,6 +1259,56 @@ const FormBuilder = (props: Props) => {
                                                 onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {display_text: v})}
                                             />
                                         </div>
+                                    )}
+                                    {comp.type === "payment" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Amount</span>
+                                                <VariableInput
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-amount`}
+                                                    name={`amount-${comp.name}`}
+                                                    placeholder="49.99"
+                                                    label="Amount"
+                                                    value={comp.amount || ""}
+                                                    variables={props.variables || []}
+                                                    onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {amount: v})}
+                                                />
+                                                <span className="fb-field-hint">Major units, e.g. 49.99. Supports ${"{"}data.X{"}"} references (resolved at checkout).</span>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Currency</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.currency || "gbp"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {currency: e.target.value})}
+                                                >
+                                                    <option value="gbp">GBP (£)</option>
+                                                    <option value="usd">USD ($)</option>
+                                                    <option value="eur">EUR (€)</option>
+                                                    <option value="aud">AUD ($)</option>
+                                                    <option value="cad">CAD ($)</option>
+                                                    <option value="jpy">JPY (¥)</option>
+                                                    <option value="chf">CHF</option>
+                                                    <option value="nzd">NZD ($)</option>
+                                                    <option value="sek">SEK</option>
+                                                    <option value="nok">NOK</option>
+                                                    <option value="dkk">DKK</option>
+                                                </select>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Stripe Secret Key</span>
+                                                <VariableInput
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-payment-secret`}
+                                                    name={`payment-secret-${comp.name}`}
+                                                    placeholder="${secrets.stripe_secret_key}"
+                                                    label="Stripe Secret Key"
+                                                    value={comp.payment_secret ?? "${secrets.stripe_secret_key}"}
+                                                    variables={props.variables || []}
+                                                    onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {payment_secret: v})}
+                                                />
+                                                <span className="fb-field-hint">A ${"{"}secrets.X{"}"} reference — resolved server-side, never exposed to the browser.</span>
+                                            </div>
+                                        </>
                                     )}
                                     {(comp.type === "number" || comp.type === "slider") && (
                                         <>
@@ -1624,7 +1693,7 @@ const FormBuilder = (props: Props) => {
                                     onChange={r => updateField(pageIndex, fieldIndex, {visible_if: r})}
                                 />
                                 <div className="fb-component-footer">
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) ? (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && comp.type !== "payment" ? (
                                         <>
                                             <label className="fb-toggle-label">
                                                 <input
@@ -1646,6 +1715,10 @@ const FormBuilder = (props: Props) => {
                                             )}
                                             <span className="fb-field-name">{comp.name}</span>
                                         </>
+                                    ) : comp.type === "payment" ? (
+                                        // Payment collects no input — Required/Read-only are
+                                        // meaningless. Card capture happens on Stripe's hosted page.
+                                        <span className="fb-field-name">payment field</span>
                                     ) : (
                                         // Display-only fields don't collect input so Required/Read-only
                                         // are meaningless. Just show the tag so authors can spot which

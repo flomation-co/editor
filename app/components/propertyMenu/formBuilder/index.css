@@ -753,3 +753,12 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
 }
+
+/* Inline helper text beneath a payment field's inputs. */
+.fb-field-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.4);
+}
