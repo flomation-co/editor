@@ -65,7 +65,6 @@ export default function EmbedApps() {
     const [apps, setApps] = useState<EmbedApp[]>([]);
     const [showCreate, setShowCreate] = useState(false);
     const [newName, setNewName] = useState("");
-    const [newOrigins, setNewOrigins] = useState<string[]>([]);
     const [expanded, setExpanded] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -101,11 +100,13 @@ export default function EmbedApps() {
 
     const create = () => {
         if (newName.trim().length < 3) return;
-        api.post(base(), {name: newName.trim(), allowed_origins: newOrigins}, auth)
-            .then(() => {
-                setNewName(""); setNewOrigins([]); setShowCreate(false);
-                toast.success("Embed key created");
+        // Create with just a name; origins are added on the card that opens next.
+        api.post(base(), {name: newName.trim(), allowed_origins: []}, auth)
+            .then(r => {
+                setNewName(""); setShowCreate(false);
+                toast.success("Embed key created — add an allowed origin to start using it");
                 load();
+                if (r?.data?.id) setExpanded(r.data.id); // open the new card, ready for origins
             })
             .catch(() => toast.error("Failed to create embed key"));
     };
@@ -151,14 +152,13 @@ export default function EmbedApps() {
                                 <input
                                     type="text" autoFocus placeholder="Key name (e.g. Marketing site)"
                                     value={newName} onChange={e => setNewName(e.target.value)}
+                                    onKeyDown={e => e.key === "Enter" && create()}
                                 />
-                                <label className="embed-field-label">Allowed origins</label>
-                                <OriginInput value={newOrigins} onChange={setNewOrigins} />
                                 <div className="embed-create-actions">
                                     <button className="embed-btn-save" onClick={create} disabled={newName.trim().length < 3}>
                                         <Icon name="plus" /> Create
                                     </button>
-                                    <button className="embed-btn-cancel" onClick={() => { setShowCreate(false); setNewName(""); setNewOrigins([]); }}>
+                                    <button className="embed-btn-cancel" onClick={() => { setShowCreate(false); setNewName(""); }}>
                                         Cancel
                                     </button>
                                 </div>
@@ -200,57 +200,6 @@ export default function EmbedApps() {
                 )}
             </ProtectedRoute>
         </Container>
-    );
-}
-
-// OriginInput edits a list of allowed origins: a single validated textbox with a
-// "+" to add (Enter also adds), and a removable chip per existing origin. Only a
-// well-formed http(s) origin can be added, and it is normalised before storage so
-// it matches the browser's Origin header exactly.
-function OriginInput(props: {value: string[]; onChange: (v: string[]) => void}) {
-    const [text, setText] = useState("");
-    const norm = normaliseOrigin(text);
-    const canAdd = norm !== null && !props.value.includes(norm);
-
-    const add = () => {
-        if (!canAdd) return;
-        props.onChange([...props.value, norm!]);
-        setText("");
-    };
-
-    return (
-        <div className="embed-origin-input">
-            <div className="embed-add-row">
-                <input
-                    placeholder="https://example.com"
-                    value={text}
-                    onChange={e => setText(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-                    className={text && norm === null ? "embed-input-invalid" : ""}
-                />
-                <button type="button" className="embed-origin-add" onClick={add} disabled={!canAdd} title="Add origin">
-                    <Icon name="plus" /> Add
-                </button>
-            </div>
-            {text.trim().length > 0 && norm === null && (
-                <div className="embed-origin-error">
-                    Enter a valid origin — e.g. https://example.com (scheme + host, no path). Insecure
-                    http:// is allowed for localhost only.
-                </div>
-            )}
-            {props.value.length > 0 && (
-                <div className="embed-chip-row">
-                    {props.value.map(o => (
-                        <span key={o} className="embed-chip">
-                            {o}
-                            <button type="button" onClick={() => props.onChange(props.value.filter(x => x !== o))} title="Remove origin">
-                                <Icon name="trash" />
-                            </button>
-                        </span>
-                    ))}
-                </div>
-            )}
-        </div>
     );
 }
 
