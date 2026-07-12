@@ -19,7 +19,8 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-const RESOURCE_TYPES = ["form", "flow", "agent"] as const;
+// A pickable embeddable resource — a Flow or an Agent — with its display name.
+type ResourceOption = {type: "flow" | "agent"; id: string; name: string};
 
 // isLoopbackHost reports whether a hostname is a local-development loopback,
 // where insecure http:// is acceptable.
@@ -71,13 +72,32 @@ export default function EmbedApps() {
     const base = () => useConfig()("AUTOMATE_API_URL") + "/api/v1/embed/app";
     const auth = {headers: {Authorization: "Bearer " + token}};
 
+    const [resourceOptions, setResourceOptions] = useState<ResourceOption[]>([]);
+
     const load = () => {
         api.get(base(), auth)
             .then(r => setApps(Array.isArray(r?.data) ? r.data : []))
             .catch(() => setApps([]))
             .finally(() => setIsLoading(false));
     };
-    useEffect(() => { load(); }, []);
+
+    // Flows and agents the user can opt in — fetched once and searched in the
+    // resource picker. Flows come back under { flos: [...] }; agents as an array.
+    const loadResourceOptions = () => {
+        const apiURL = useConfig()("AUTOMATE_API_URL");
+        Promise.all([
+            api.get(apiURL + "/api/v1/flo?limit=200", auth).then(r => r?.data?.flos ?? r?.data ?? []).catch(() => []),
+            api.get(apiURL + "/api/v1/agent", auth).then(r => (Array.isArray(r?.data) ? r.data : [])).catch(() => []),
+        ]).then(([flos, agents]) => {
+            const opts: ResourceOption[] = [
+                ...flos.map((f: any) => ({type: "flow" as const, id: f.id, name: f.name || "Untitled flow"})),
+                ...agents.map((a: any) => ({type: "agent" as const, id: a.id, name: a.name || "Untitled agent"})),
+            ];
+            setResourceOptions(opts);
+        });
+    };
+
+    useEffect(() => { load(); loadResourceOptions(); }, []);
 
     const create = () => {
         if (newName.trim().length < 3) return;
@@ -159,6 +179,7 @@ export default function EmbedApps() {
                                     onChanged={load}
                                     base={base}
                                     auth={auth}
+                                    resourceOptions={resourceOptions}
                                 />
                             ))}
                         </div>
@@ -242,13 +263,22 @@ function EmbedCard(props: {
     onChanged: () => void;
     base: () => string;
     auth: {headers: {Authorization: string}};
+    resourceOptions: ResourceOption[];
 }) {
-    const {app, base, auth, onChanged} = props;
+    const {app, base, auth, onChanged, resourceOptions} = props;
     const [origin, setOrigin] = useState("");
-    const [resType, setResType] = useState<typeof RESOURCE_TYPES[number]>("form");
-    const [resId, setResId] = useState("");
+    const [resSearch, setResSearch] = useState("");
+    const [resFocus, setResFocus] = useState(false);
 
     const appURL = base() + "/" + app.id;
+
+    // Names for the opted-in resources (id -> name), so chips read nicely.
+    const nameFor = (id: string) => resourceOptions.find(o => o.id === id)?.name;
+    const optedIn = new Set((app.resources ?? []).map(r => r.resource_id));
+    const matches = resourceOptions
+        .filter(o => !optedIn.has(o.id))
+        .filter(o => o.name.toLowerCase().includes(resSearch.trim().toLowerCase()))
+        .slice(0, 8);
 
     const addOrigin = () => {
         const norm = normaliseOrigin(origin);
@@ -265,7 +295,11 @@ function EmbedCard(props: {
     const setResource = (rt: string, rid: string, enabled: boolean) => {
         if (!rid.trim()) return;
         api.post(appURL + "/resource", {resource_type: rt, resource_id: rid.trim(), enabled}, auth)
-            .then(() => { setResId(""); toast.success(enabled ? "Resource added" : "Resource removed"); onChanged(); })
+            .then(() => {
+                if (enabled) { setResSearch(""); setResFocus(false); }
+                toast.success(enabled ? "Resource added" : "Resource removed");
+                onChanged();
+            })
             .catch(() => toast.error("Failed to update resource"));
     };
 
@@ -321,20 +355,36 @@ function EmbedCard(props: {
                         <div className="embed-chip-row">
                             {(app.resources ?? []).map(r => (
                                 <span key={r.resource_type + r.resource_id} className="embed-chip">
-                                    {r.resource_type}: {r.resource_id.slice(0, 8)}
-                                    <button onClick={() => setResource(r.resource_type, r.resource_id, false)}><Icon name="xmark" /></button>
+                                    <span className={"embed-res-badge embed-res-badge--" + r.resource_type}>{r.resource_type}</span>
+                                    {nameFor(r.resource_id) ?? r.resource_id.slice(0, 8)}
+                                    <button onClick={() => setResource(r.resource_type, r.resource_id, false)} title="Remove"><Icon name="trash" /></button>
                                 </span>
                             ))}
-                            {(app.resources?.length ?? 0) === 0 && <span className="embed-hint">Nothing embeddable yet — opt a form, flow or agent in below.</span>}
+                            {(app.resources?.length ?? 0) === 0 && <span className="embed-hint">Nothing embeddable yet — search for a flow or agent below.</span>}
                         </div>
-                        <div className="embed-add-row">
-                            <select value={resType} onChange={e => setResType(e.target.value as typeof RESOURCE_TYPES[number])}>
-                                {RESOURCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                            <input placeholder="Resource ID (form / flow / agent)" value={resId}
-                                   onChange={e => setResId(e.target.value)}
-                                   onKeyDown={e => e.key === "Enter" && setResource(resType, resId, true)} />
-                            <button onClick={() => setResource(resType, resId, true)}><Icon name="plus" /> Opt in</button>
+                        <div className="embed-resource-search">
+                            <input
+                                placeholder="Search a flow or agent to embed…"
+                                value={resSearch}
+                                onChange={e => { setResSearch(e.target.value); setResFocus(true); }}
+                                onFocus={() => setResFocus(true)}
+                                onBlur={() => setTimeout(() => setResFocus(false), 150)}
+                            />
+                            {resFocus && matches.length > 0 && (
+                                <div className="embed-autocomplete">
+                                    {matches.map(o => (
+                                        <button key={o.type + o.id} className="embed-autocomplete-item"
+                                                onMouseDown={e => e.preventDefault()}
+                                                onClick={() => setResource(o.type, o.id, true)}>
+                                            <span className={"embed-res-badge embed-res-badge--" + o.type}>{o.type}</span>
+                                            <span className="embed-autocomplete-name">{o.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {resFocus && resSearch.trim() && matches.length === 0 && (
+                                <div className="embed-autocomplete"><div className="embed-autocomplete-empty">No matching flow or agent</div></div>
+                            )}
                         </div>
                     </section>
                 </div>
