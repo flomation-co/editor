@@ -594,7 +594,30 @@ export const PERMISSIONS = {
     AGENT_EDIT: "agent.edit",
     AGENT_DELETE: "agent.delete",
     AGENT_START_STOP: "agent.start_stop",
+    EMBED_MANAGE: "embed.manage",
+    EMBED_VIEW: "embed.view",
 } as const;
+
+// EmbedApp is a publishable-key credential for the developer SDK, with its
+// allowed browser origins and the resources (forms/flows/agents) opted in for
+// embedding. The publishable key is safe to ship in client JS.
+export type EmbedApp = {
+    id: string;
+    organisation_id?: string | null;
+    owner_id: string;
+    name: string;
+    publishable_key: string;
+    created_at: string;
+    allowed_origins?: string[];
+    resources?: EmbedResource[];
+};
+
+export type EmbedResource = {
+    embed_app_id: string;
+    resource_type: "form" | "flow" | "agent";
+    resource_id: string;
+    created_at: string;
+};
 
 export const PERMISSION_CATEGORIES = [
     {
@@ -642,6 +665,13 @@ export const PERMISSION_CATEGORIES = [
             { key: PERMISSIONS.AGENT_EDIT, label: "Edit Agents" },
             { key: PERMISSIONS.AGENT_DELETE, label: "Delete Agents" },
             { key: PERMISSIONS.AGENT_START_STOP, label: "Start/Stop Agents" },
+        ]
+    },
+    {
+        name: "Embed / SDK",
+        permissions: [
+            { key: PERMISSIONS.EMBED_VIEW, label: "View Embed Keys" },
+            { key: PERMISSIONS.EMBED_MANAGE, label: "Manage Embed Keys" },
         ]
     },
 ] as const;

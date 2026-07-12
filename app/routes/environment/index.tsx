@@ -6,7 +6,7 @@ import {Link, useParams, useSearchParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
-import {toast} from "react-toastify";
+import {toast} from "~/components/toast";
 import Modal from "~/components/modal";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
