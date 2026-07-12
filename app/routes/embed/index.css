@@ -100,8 +100,12 @@
 .embed-chip button:hover { color: #ff5f57; }
 .embed-hint { font-size: 12.5px; color: rgba(255, 255, 255, 0.4); }
 
-.embed-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.embed-add-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .embed-add-row input { flex: 1; min-width: 180px; }
+/* Pin the row's controls to a shared height so the input and Add button line up
+   (the button has a fixed height; the input would otherwise be sized by padding). */
+.embed-add-row input,
+.embed-add-row select { height: 40px; box-sizing: border-box; }
 .embed-add-row button {
     display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; height: 40px;
     background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16);
