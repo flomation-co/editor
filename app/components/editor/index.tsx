@@ -10,7 +10,7 @@ import { Icon } from "~/components/icons/Icon";
 import api from "~/lib/api";
 import { detectSecret } from "~/lib/secretDetection";
 import { ValidationProvider, type ValidationProblem } from "~/components/editor/validationContext";
-import {toast} from "react-toastify";
+import {toast} from "~/components/toast";
 
 import Container from "~/components/container";
 import ContextMenu from "~/components/contextMenu";

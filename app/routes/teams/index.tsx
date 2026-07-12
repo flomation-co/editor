@@ -8,7 +8,7 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import Modal from "~/components/modal";
-import {toast} from "react-toastify";
+import {toast} from "~/components/toast";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
