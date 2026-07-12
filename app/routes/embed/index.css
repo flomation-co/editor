@@ -54,8 +54,12 @@
 
 .embed-card {
     background: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
+    /* No overflow:hidden — the resource autocomplete is absolutely positioned and
+       must be able to escape the card. The card's own background is clipped to
+       the radius already; no child paints into the corners. */
 }
+.embed-card-head:first-child { border-radius: 8px 8px 0 0; }
 .embed-card-head {
     display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer;
 }
