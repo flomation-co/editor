@@ -329,15 +329,6 @@ function EmbedCard(props: {
                 <div className="embed-card-body">
                     <section>
                         <h4>Allowed origins</h4>
-                        <div className="embed-chip-row">
-                            {(app.allowed_origins ?? []).map(o => (
-                                <span key={o} className="embed-chip">
-                                    {o}
-                                    <button onClick={() => removeOrigin(o)}><Icon name="xmark" /></button>
-                                </span>
-                            ))}
-                            {(app.allowed_origins?.length ?? 0) === 0 && <span className="embed-hint">No origins — the key can't be used from any site yet.</span>}
-                        </div>
                         <div className="embed-add-row">
                             <input placeholder="https://example.com" value={origin}
                                    className={origin.trim() && !isValidOrigin(origin) ? "embed-input-invalid" : ""}
@@ -348,20 +339,19 @@ function EmbedCard(props: {
                         {origin.trim().length > 0 && !isValidOrigin(origin) && (
                             <div className="embed-origin-error">Enter a valid origin (https://…; http:// for localhost only).</div>
                         )}
+                        <div className="embed-chip-row embed-chip-row--below">
+                            {(app.allowed_origins ?? []).map(o => (
+                                <span key={o} className="embed-chip">
+                                    {o}
+                                    <button onClick={() => removeOrigin(o)}><Icon name="xmark" /></button>
+                                </span>
+                            ))}
+                            {(app.allowed_origins?.length ?? 0) === 0 && <span className="embed-hint">No origins — the key can't be used from any site yet.</span>}
+                        </div>
                     </section>
 
                     <section>
                         <h4>Embeddable resources</h4>
-                        <div className="embed-chip-row">
-                            {(app.resources ?? []).map(r => (
-                                <span key={r.resource_type + r.resource_id} className="embed-chip">
-                                    <span className={"embed-res-badge embed-res-badge--" + r.resource_type}>{r.resource_type}</span>
-                                    {nameFor(r.resource_id) ?? r.resource_id.slice(0, 8)}
-                                    <button onClick={() => setResource(r.resource_type, r.resource_id, false)} title="Remove"><Icon name="trash" /></button>
-                                </span>
-                            ))}
-                            {(app.resources?.length ?? 0) === 0 && <span className="embed-hint">Nothing embeddable yet — search for a flow or agent below.</span>}
-                        </div>
                         <div className="embed-resource-search">
                             <input
                                 placeholder="Search a flow or agent to embed…"
@@ -385,6 +375,16 @@ function EmbedCard(props: {
                             {resFocus && resSearch.trim() && matches.length === 0 && (
                                 <div className="embed-autocomplete"><div className="embed-autocomplete-empty">No matching flow or agent</div></div>
                             )}
+                        </div>
+                        <div className="embed-chip-row embed-chip-row--below">
+                            {(app.resources ?? []).map(r => (
+                                <span key={r.resource_type + r.resource_id} className="embed-chip">
+                                    <span className={"embed-res-badge embed-res-badge--" + r.resource_type}>{r.resource_type}</span>
+                                    {nameFor(r.resource_id) ?? r.resource_id.slice(0, 8)}
+                                    <button onClick={() => setResource(r.resource_type, r.resource_id, false)} title="Remove"><Icon name="trash" /></button>
+                                </span>
+                            ))}
+                            {(app.resources?.length ?? 0) === 0 && <span className="embed-hint">Nothing embeddable yet — search for a flow or agent above.</span>}
                         </div>
                     </section>
                 </div>

@@ -92,6 +92,8 @@
 .embed-card-body h4 { margin: 0 0 10px; font-size: 13px; color: rgba(255, 255, 255, 0.8); }
 
 .embed-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+/* When the chips sit BELOW their input, space goes on top, not bottom. */
+.embed-chip-row--below { margin-top: 12px; margin-bottom: 0; }
 .embed-chip {
     display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
     background: rgba(0, 170, 156, 0.08); border: 1px solid rgba(0, 170, 156, 0.25);
