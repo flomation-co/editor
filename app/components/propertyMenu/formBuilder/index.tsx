@@ -3,6 +3,9 @@ import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
+import api from "~/lib/api";
+import useConfig from "~/components/config";
+import useCookieToken from "~/components/cookie";
 
 type FormOption = {
     label: string;
@@ -448,6 +451,49 @@ const FormBuilder = (props: Props) => {
     useEffect(() => {
         props.onChange(JSON.stringify(form));
     }, [form]);
+
+    // Autocomplete suggestions for the "Computed by a flow" output field. For
+    // each flow referenced by a field's value_source we fetch the flow revision
+    // once and extract the keys named by its output/set nodes, so the author is
+    // offered the flow's real output names rather than typing a free-text guess.
+    // Cached per flow id (an entry — even an empty array — marks a completed
+    // fetch, so switching fields or re-rendering never refetches).
+    const config = useConfig();
+    const token = useCookieToken();
+    const [flowOutputs, setFlowOutputs] = useState<Record<string, string[]>>({});
+
+    useEffect(() => {
+        const ids = new Set<string>();
+        form.pages.forEach(p => p.components?.forEach(c => {
+            if (c.value_source) ids.add(c.value_source);
+        }));
+        ids.forEach(flowId => {
+            if (flowOutputs[flowId] !== undefined) return; // already fetched (incl. empty)
+            const url = config("AUTOMATE_API_URL");
+            api.get(`${url}/api/v1/flo/${flowId}`, {
+                headers: { Authorization: "Bearer " + token },
+            })
+                .then(res => {
+                    const nodes = res.data?.revision?.data?.nodes;
+                    const keys: string[] = [];
+                    if (Array.isArray(nodes)) {
+                        for (const n of nodes) {
+                            const isOutput = n?.data?.label === "output/set" || n?.type === "output/set";
+                            if (!isOutput) continue;
+                            const inputs = n?.data?.config?.inputs;
+                            if (!Array.isArray(inputs)) continue;
+                            const nameInput = inputs.find((inp: any) => inp?.name === "name");
+                            const key = nameInput?.value;
+                            if (typeof key === "string" && key && !keys.includes(key)) {
+                                keys.push(key);
+                            }
+                        }
+                    }
+                    setFlowOutputs(prev => ({...prev, [flowId]: keys}));
+                })
+                .catch(() => setFlowOutputs(prev => ({...prev, [flowId]: []})));
+        });
+    }, [form, flowOutputs]);
 
     const updateForm = (updates: Partial<FormDefinition>) => {
         setForm(prev => ({...prev, ...updates}));
@@ -1134,14 +1180,28 @@ const FormBuilder = (props: Props) => {
                                                 value={comp.value_source || ""}
                                                 onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
                                             />
-                                            {comp.value_source && (
+                                            {comp.value_source && (() => {
+                                                const dlId = `${props.nodeId}-${pageIndex}-${fieldIndex}-value-outputs`;
+                                                const outs = flowOutputs[comp.value_source] || [];
+                                                return (
                                                 <>
                                                     <input
                                                         className="fb-input fb-input-sm"
+                                                        list={outs.length ? dlId : undefined}
                                                         value={comp.value_output || ""}
                                                         placeholder="Flow output to read; defaults to the field name"
                                                         onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
                                                     />
+                                                    {outs.length > 0 && (
+                                                        <datalist id={dlId}>
+                                                            {outs.map(o => <option key={o} value={o} />)}
+                                                        </datalist>
+                                                    )}
+                                                    {outs.length > 0 && (
+                                                        <span className="fb-field-hint">
+                                                            Available outputs: {outs.join(", ")}
+                                                        </span>
+                                                    )}
                                                     <button
                                                         type="button"
                                                         className="fb-datasource-clear"
@@ -1150,7 +1210,8 @@ const FormBuilder = (props: Props) => {
                                                         <Icon name="xmark" /> Remove value flow
                                                     </button>
                                                 </>
-                                            )}
+                                                );
+                                            })()}
                                         </div>
                                     )}
                                     {comp.type === "location" && (
