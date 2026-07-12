@@ -7,7 +7,7 @@ import useCookieToken from "~/components/cookie";
 import type {EmbedApp} from "~/types";
 import {PERMISSIONS} from "~/types";
 import Modal from "~/components/modal";
-import {toast} from "react-toastify";
+import {useToast} from "~/components/toast";
 import {Icon} from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
 import "./index.css";
@@ -61,6 +61,7 @@ function isValidOrigin(value: string): boolean {
 
 export default function EmbedApps() {
     const token = useCookieToken();
+    const {showToast} = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [apps, setApps] = useState<EmbedApp[]>([]);
     const [showCreate, setShowCreate] = useState(false);
@@ -104,24 +105,40 @@ export default function EmbedApps() {
         api.post(base(), {name: newName.trim(), allowed_origins: []}, auth)
             .then(r => {
                 setNewName(""); setShowCreate(false);
-                toast.success("Embed key created — add an allowed origin to start using it");
+                showToast("Embed key created — add an allowed origin to start using it", "success");
                 load();
                 if (r?.data?.id) setExpanded(r.data.id); // open the new card, ready for origins
             })
-            .catch(() => toast.error("Failed to create embed key"));
+            .catch(() => showToast("Failed to create embed key", "error"));
     };
 
     const remove = (id: string) => {
         api.delete(base() + "/" + id, auth)
-            .then(() => { toast.success("Embed key deleted"); load(); })
-            .catch(() => toast.error("Failed to delete embed key"));
+            .then(() => { showToast("Embed key deleted", "success"); load(); })
+            .catch(() => showToast("Failed to delete embed key", "error"));
     };
 
-    const copyKey = (key: string) => {
-        navigator.clipboard?.writeText(key).then(
-            () => toast.success("Publishable key copied"),
-            () => toast.error("Could not copy"),
-        );
+    const copyKey = async (key: string) => {
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(key);
+            } else {
+                // Fallback for non-secure contexts / older browsers where the
+                // Clipboard API is unavailable (otherwise no toast would fire).
+                const ta = document.createElement("textarea");
+                ta.value = key;
+                ta.style.position = "fixed";
+                ta.style.opacity = "0";
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand("copy");
+                document.body.removeChild(ta);
+            }
+            showToast("Publishable key copied", "success");
+        } catch {
+            showToast("Could not copy — select and copy it manually", "error");
+        }
     };
 
     return (
@@ -215,6 +232,7 @@ function EmbedCard(props: {
     resourceOptions: ResourceOption[];
 }) {
     const {app, base, auth, onChanged, resourceOptions} = props;
+    const {showToast} = useToast();
     const [origin, setOrigin] = useState("");
     const [resSearch, setResSearch] = useState("");
     const [resFocus, setResFocus] = useState(false);
@@ -231,25 +249,25 @@ function EmbedCard(props: {
 
     const addOrigin = () => {
         const norm = normaliseOrigin(origin);
-        if (!norm) { toast.error("Enter a valid origin, e.g. https://example.com"); return; }
+        if (!norm) { showToast("Enter a valid origin, e.g. https://example.com", "error"); return; }
         api.post(appURL + "/origin", {origin: norm}, auth)
-            .then(() => { setOrigin(""); toast.success("Origin added"); onChanged(); })
-            .catch(() => toast.error("Failed to add origin"));
+            .then(() => { setOrigin(""); showToast("Origin added", "success"); onChanged(); })
+            .catch(() => showToast("Failed to add origin", "error"));
     };
     const removeOrigin = (o: string) => {
         api.delete(appURL + "/origin", {...auth, data: {origin: o}})
-            .then(() => { toast.success("Origin removed"); onChanged(); })
-            .catch(() => toast.error("Failed to remove origin"));
+            .then(() => { showToast("Origin removed", "success"); onChanged(); })
+            .catch(() => showToast("Failed to remove origin", "error"));
     };
     const setResource = (rt: string, rid: string, enabled: boolean) => {
         if (!rid.trim()) return;
         api.post(appURL + "/resource", {resource_type: rt, resource_id: rid.trim(), enabled}, auth)
             .then(() => {
                 if (enabled) { setResSearch(""); setResFocus(false); }
-                toast.success(enabled ? "Resource added" : "Resource removed");
+                showToast(enabled ? "Resource added" : "Resource removed", "success");
                 onChanged();
             })
-            .catch(() => toast.error("Failed to update resource"));
+            .catch(() => showToast("Failed to update resource", "error"));
     };
 
     const masked = app.publishable_key.slice(0, 7) + "…" + app.publishable_key.slice(-4);
