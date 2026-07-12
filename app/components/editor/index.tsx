@@ -1557,7 +1557,12 @@ export function Editor(props : EditorProps) {
     }, []);
 
     function getManualTriggerInputs(): any[] {
-        const manualNode = nodes.find(n => n.type === "trigger/manual");
+        // Match on data.label as well as type: after a revision save/load the
+        // durable identity is data.label (node.type is not preserved), which is
+        // why every other trigger check in this file uses both. Matching type
+        // only meant this returned [] for a loaded flow, so the input modal was
+        // silently skipped and Execute ran with no inputs.
+        const manualNode = nodes.find(n => n.type === "trigger/manual" || (n.data as any)?.label === "trigger/manual");
         if (!manualNode?.data) return [];
         const config = (manualNode.data as any).config;
         if (!config?.trigger_inputs) return [];
