@@ -38,18 +38,27 @@ export default function FlowSelectProperty(props: FlowSelectPropertyProps) {
                     list = res.data;
                 }
                 setFlows(list);
-                // Resolve initial name if we have a selectedId
-                if (selectedId) {
-                    const match = list.find(f => f.id === selectedId);
-                    if (match) setSelectedName(match.name);
-                }
             })
             .catch(() => {});
     }, []);
 
+    // Re-seed the selected id whenever the authoritative value changes — not
+    // just on a node switch. An external update (reload / undo / a sibling
+    // re-render handing back a fresh value) must be reflected, otherwise the
+    // control keeps showing a stale selection. Keyed on props.value so it tracks
+    // the source of truth; the search box has its own state and is untouched.
     useEffect(() => {
         setSelectedId(props.value || "");
-    }, [props.nodeId]);
+    }, [props.nodeId, props.value]);
+
+    // Resolve the display name from the loaded flow list whenever the selection
+    // or the list changes. Until the list loads (or if the flow isn't in it) the
+    // input falls back to showing the raw id, so the value is never lost.
+    useEffect(() => {
+        if (!selectedId) { setSelectedName(""); return; }
+        const match = flows.find(f => f.id === selectedId);
+        if (match) setSelectedName(match.name);
+    }, [selectedId, flows]);
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {

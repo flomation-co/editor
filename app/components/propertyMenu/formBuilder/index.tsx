@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
@@ -235,6 +235,28 @@ type Props = {
     onChange: (value: string) => void;
 }
 
+// parseFormDefinition turns the stored form_definition JSON string into a
+// FormDefinition, filling in sane defaults for missing top-level fields. Pages
+// (and therefore every component's config — payment value_source/value_output,
+// visibility rules, options, …) are passed through verbatim, so nothing about a
+// field is lost on load. Shared by the initial mount and the external-value
+// re-sync below so both interpret a saved definition identically.
+const parseFormDefinition = (raw: string): FormDefinition => {
+    try {
+        const parsed = JSON.parse(raw || "{}");
+        return {
+            title: parsed.title || "Untitled Form",
+            description: parsed.description || "",
+            pages: parsed.pages || [{components: []}],
+            require_login: parsed.require_login || false,
+            data_source: parsed.data_source || undefined,
+            submit: parsed.submit || undefined,
+        };
+    } catch {
+        return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
+    }
+};
+
 
 const fieldTypes = [
     {value: "text", label: "Text", icon: "i-cursor"},
@@ -420,21 +442,17 @@ const VisibilityEditor = ({rule, sources, onChange, scope}: {
 const FormBuilder = (props: Props) => {
     const [addingToPage, setAddingToPage] = useState<number | null>(null);
 
-    const [form, setForm] = useState<FormDefinition>(() => {
-        try {
-            const parsed = JSON.parse(props.value || "{}");
-            return {
-                title: parsed.title || "Untitled Form",
-                description: parsed.description || "",
-                pages: parsed.pages || [{components: []}],
-                require_login: parsed.require_login || false,
-                data_source: parsed.data_source || undefined,
-                submit: parsed.submit || undefined,
-            };
-        } catch {
-            return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
-        }
-    });
+    const [form, setForm] = useState<FormDefinition>(() => parseFormDefinition(props.value));
+
+    // Distinguish our OWN echo (the value we just emitted, which the parent
+    // stores and hands straight back as props.value) from a genuine EXTERNAL
+    // change to the definition — a flow reload, an undo/redo, or a collaborator
+    // replacing the node. The builder's key is stable per node, so it never
+    // remounts on those; without this it would keep showing stale data (e.g. a
+    // payment field's value_source/value_output/payment_secret appearing to
+    // "revert"). Seeded with the mount value so the initial emit is recognised
+    // as our own and doesn't trigger a needless re-seed.
+    const lastEmitted = useRef<string>(props.value);
 
     // The data-driven (prefill-from-a-flow) section is collapsed by default so
     // it doesn't crowd the common case — but starts open if a flow is already
@@ -449,8 +467,25 @@ const FormBuilder = (props: Props) => {
     });
 
     useEffect(() => {
-        props.onChange(JSON.stringify(form));
+        const serialised = JSON.stringify(form);
+        // Record what we emit so the sync effect below can tell our own echo
+        // apart from an external change.
+        lastEmitted.current = serialised;
+        props.onChange(serialised);
     }, [form]);
+
+    // Re-seed from props.value ONLY when it differs from what we last emitted —
+    // i.e. the definition changed underneath us (reload / undo / collaborator),
+    // not our own round-trip. This keeps an open builder in sync with external
+    // updates without ever clobbering in-progress edits (those match
+    // lastEmitted and are ignored). The equality check makes this loop-safe: our
+    // emit sets lastEmitted, the parent echoes the same string back, and this
+    // effect no-ops.
+    useEffect(() => {
+        if (props.value === lastEmitted.current) return;
+        lastEmitted.current = props.value;
+        setForm(parseFormDefinition(props.value));
+    }, [props.value]);
 
     // Autocomplete suggestions for the "Computed by a flow" output field. For
     // each flow referenced by a field's value_source we fetch the flow revision
