@@ -21,11 +21,21 @@ export function meta({}: Route.MetaArgs) {
 
 const RESOURCE_TYPES = ["form", "flow", "agent"] as const;
 
+// isLoopbackHost reports whether a hostname is a local-development loopback,
+// where insecure http:// is acceptable.
+function isLoopbackHost(hostname: string): boolean {
+    const h = hostname.toLowerCase();
+    return h === "localhost" || h.endsWith(".localhost") ||
+        h === "127.0.0.1" || h.startsWith("127.") ||
+        h === "::1" || h === "[::1]";
+}
+
 // normaliseOrigin returns the canonical origin (scheme://host[:port], no trailing
-// path) for a candidate string, or null if it isn't a valid http(s) origin. This
-// is exactly the shape a browser sends in the Origin header, so the allowlist
-// stores and matches it verbatim. A path/query/fragment is rejected — an origin
-// is host-level only.
+// path) for a candidate string, or null if it isn't a valid embeddable origin.
+// This is exactly the shape a browser sends in the Origin header, so the
+// allowlist stores and matches it verbatim. Rules: http(s) only; a path / query /
+// fragment is rejected (an origin is host-level); and insecure http:// is allowed
+// ONLY for localhost loopback — a real site must serve the embed over https.
 function normaliseOrigin(value: string): string | null {
     const v = value.trim();
     if (!v) return null;
@@ -39,6 +49,8 @@ function normaliseOrigin(value: string): string | null {
     if ((u.pathname && u.pathname !== "/") || u.search || u.hash) return null;
     // A host must have at least one label; reject bare schemes.
     if (!u.hostname) return null;
+    // Insecure http:// is dev-only (localhost); everything else must be https://.
+    if (u.protocol === "http:" && !isLoopbackHost(u.hostname)) return null;
     return u.origin;
 }
 
@@ -201,7 +213,8 @@ function OriginInput(props: {value: string[]; onChange: (v: string[]) => void}) 
             </div>
             {text.trim().length > 0 && norm === null && (
                 <div className="embed-origin-error">
-                    Enter a valid origin — scheme and host only, e.g. https://example.com (no path).
+                    Enter a valid origin — e.g. https://example.com (scheme + host, no path). Insecure
+                    http:// is allowed for localhost only.
                 </div>
             )}
             {props.value.length > 0 && (
@@ -299,7 +312,7 @@ function EmbedCard(props: {
                             <button onClick={addOrigin} disabled={!isValidOrigin(origin)}><Icon name="plus" /> Add origin</button>
                         </div>
                         {origin.trim().length > 0 && !isValidOrigin(origin) && (
-                            <div className="embed-origin-error">Enter a valid origin — scheme and host only (no path).</div>
+                            <div className="embed-origin-error">Enter a valid origin (https://…; http:// for localhost only).</div>
                         )}
                     </section>
 
