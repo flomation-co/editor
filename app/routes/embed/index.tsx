@@ -21,13 +21,38 @@ export function meta({}: Route.MetaArgs) {
 
 const RESOURCE_TYPES = ["form", "flow", "agent"] as const;
 
+// normaliseOrigin returns the canonical origin (scheme://host[:port], no trailing
+// path) for a candidate string, or null if it isn't a valid http(s) origin. This
+// is exactly the shape a browser sends in the Origin header, so the allowlist
+// stores and matches it verbatim. A path/query/fragment is rejected — an origin
+// is host-level only.
+function normaliseOrigin(value: string): string | null {
+    const v = value.trim();
+    if (!v) return null;
+    let u: URL;
+    try {
+        u = new URL(v);
+    } catch {
+        return null;
+    }
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    if ((u.pathname && u.pathname !== "/") || u.search || u.hash) return null;
+    // A host must have at least one label; reject bare schemes.
+    if (!u.hostname) return null;
+    return u.origin;
+}
+
+function isValidOrigin(value: string): boolean {
+    return normaliseOrigin(value) !== null;
+}
+
 export default function EmbedApps() {
     const token = useCookieToken();
     const [isLoading, setIsLoading] = useState(true);
     const [apps, setApps] = useState<EmbedApp[]>([]);
     const [showCreate, setShowCreate] = useState(false);
     const [newName, setNewName] = useState("");
-    const [newOrigins, setNewOrigins] = useState("");
+    const [newOrigins, setNewOrigins] = useState<string[]>([]);
     const [expanded, setExpanded] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -44,10 +69,9 @@ export default function EmbedApps() {
 
     const create = () => {
         if (newName.trim().length < 3) return;
-        const origins = newOrigins.split(/[\n,]/).map(o => o.trim()).filter(Boolean);
-        api.post(base(), {name: newName.trim(), allowed_origins: origins}, auth)
+        api.post(base(), {name: newName.trim(), allowed_origins: newOrigins}, auth)
             .then(() => {
-                setNewName(""); setNewOrigins(""); setShowCreate(false);
+                setNewName(""); setNewOrigins([]); setShowCreate(false);
                 toast.success("Embed key created");
                 load();
             })
@@ -96,15 +120,13 @@ export default function EmbedApps() {
                                     type="text" autoFocus placeholder="Key name (e.g. Marketing site)"
                                     value={newName} onChange={e => setNewName(e.target.value)}
                                 />
-                                <textarea
-                                    placeholder="Allowed origins, one per line — e.g. https://example.com"
-                                    value={newOrigins} onChange={e => setNewOrigins(e.target.value)}
-                                />
+                                <label className="embed-field-label">Allowed origins</label>
+                                <OriginInput value={newOrigins} onChange={setNewOrigins} />
                                 <div className="embed-create-actions">
                                     <button className="embed-btn-save" onClick={create} disabled={newName.trim().length < 3}>
                                         <Icon name="plus" /> Create
                                     </button>
-                                    <button className="embed-btn-cancel" onClick={() => { setShowCreate(false); setNewName(""); setNewOrigins(""); }}>
+                                    <button className="embed-btn-cancel" onClick={() => { setShowCreate(false); setNewName(""); setNewOrigins([]); }}>
                                         Cancel
                                     </button>
                                 </div>
@@ -148,6 +170,56 @@ export default function EmbedApps() {
     );
 }
 
+// OriginInput edits a list of allowed origins: a single validated textbox with a
+// "+" to add (Enter also adds), and a removable chip per existing origin. Only a
+// well-formed http(s) origin can be added, and it is normalised before storage so
+// it matches the browser's Origin header exactly.
+function OriginInput(props: {value: string[]; onChange: (v: string[]) => void}) {
+    const [text, setText] = useState("");
+    const norm = normaliseOrigin(text);
+    const canAdd = norm !== null && !props.value.includes(norm);
+
+    const add = () => {
+        if (!canAdd) return;
+        props.onChange([...props.value, norm!]);
+        setText("");
+    };
+
+    return (
+        <div className="embed-origin-input">
+            <div className="embed-add-row">
+                <input
+                    placeholder="https://example.com"
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+                    className={text && norm === null ? "embed-input-invalid" : ""}
+                />
+                <button type="button" className="embed-origin-add" onClick={add} disabled={!canAdd} title="Add origin">
+                    <Icon name="plus" /> Add
+                </button>
+            </div>
+            {text.trim().length > 0 && norm === null && (
+                <div className="embed-origin-error">
+                    Enter a valid origin — scheme and host only, e.g. https://example.com (no path).
+                </div>
+            )}
+            {props.value.length > 0 && (
+                <div className="embed-chip-row">
+                    {props.value.map(o => (
+                        <span key={o} className="embed-chip">
+                            {o}
+                            <button type="button" onClick={() => props.onChange(props.value.filter(x => x !== o))} title="Remove origin">
+                                <Icon name="trash" />
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function EmbedCard(props: {
     app: EmbedApp;
     expanded: boolean;
@@ -166,8 +238,9 @@ function EmbedCard(props: {
     const appURL = base() + "/" + app.id;
 
     const addOrigin = () => {
-        if (!origin.trim()) return;
-        api.post(appURL + "/origin", {origin: origin.trim()}, auth)
+        const norm = normaliseOrigin(origin);
+        if (!norm) { toast.error("Enter a valid origin, e.g. https://example.com"); return; }
+        api.post(appURL + "/origin", {origin: norm}, auth)
             .then(() => { setOrigin(""); toast.success("Origin added"); onChanged(); })
             .catch(() => toast.error("Failed to add origin"));
     };
@@ -220,10 +293,14 @@ function EmbedCard(props: {
                         </div>
                         <div className="embed-add-row">
                             <input placeholder="https://example.com" value={origin}
+                                   className={origin.trim() && !isValidOrigin(origin) ? "embed-input-invalid" : ""}
                                    onChange={e => setOrigin(e.target.value)}
                                    onKeyDown={e => e.key === "Enter" && addOrigin()} />
-                            <button onClick={addOrigin}><Icon name="plus" /> Add origin</button>
+                            <button onClick={addOrigin} disabled={!isValidOrigin(origin)}><Icon name="plus" /> Add origin</button>
                         </div>
+                        {origin.trim().length > 0 && !isValidOrigin(origin) && (
+                            <div className="embed-origin-error">Enter a valid origin — scheme and host only (no path).</div>
+                        )}
                     </section>
 
                     <section>
