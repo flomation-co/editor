@@ -302,6 +302,17 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             if (!i.visible_when.values.includes(refValue)) return null;
                                         }
 
+                                        // QuickBooks `sandbox` is a system-managed field: it's
+                                        // auto-filled from the credential metadata (driven by the app's
+                                        // OAuth config) and must not be exposed as a user toggle. Hide it
+                                        // on QuickBooks auth actions (identified by credential + company
+                                        // siblings) so the environment is chosen behind the scenes.
+                                        if (i.name === "sandbox"
+                                            && props.node.data.config.inputs.some((x: any) => x.name === "credential")
+                                            && props.node.data.config.inputs.some((x: any) => x.name === "company")) {
+                                            return null;
+                                        }
+
                                         // Inputs marked dynamic_options fetch their choices from the
                                         // api at edit time; static options remain the fallback. The
                                         // marker is resolved from the freshly-fetched definitions
@@ -568,7 +579,39 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             // accept managed credentials (since they also
                                             // resolve to a token) but credential slots
                                             // reject literal secrets (no refresh path).
-                                            case "credential":
+                                            case "credential": {
+                                                // QuickBooks/Xero actions pair the credential with a
+                                                // sibling tenant/company input that must hold the
+                                                // per-account identifier captured at connect time.
+                                                // When the user picks a credential, auto-fill that
+                                                // sibling with the matching metadata accessor
+                                                // (${credentials.NAME.tenant_id|realm_id}) so they
+                                                // never have to hunt for the id by hand. Keyed off the
+                                                // presence of a `tenant`/`company` sibling, so no other
+                                                // credential input (Google, Slack, …) is affected.
+                                                const siblingInputs = props.node.data.config.inputs;
+                                                const hasTenant = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenant");
+                                                const hasCompany = i.name === "credential" && siblingInputs.some((x: any) => x.name === "company");
+                                                const hasSandbox = siblingInputs.some((x: any) => x.name === "sandbox");
+                                                const handleCredentialChange = (property: string, value: any) => {
+                                                    onValueChange(property, value);
+                                                    if (!hasTenant && !hasCompany) return;
+                                                    const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
+                                                    if (!match) return;
+                                                    const credName = match[1];
+                                                    if (hasTenant) {
+                                                        onValueChange("tenant", "${credentials." + credName + ".tenant_id}");
+                                                    } else if (hasCompany) {
+                                                        onValueChange("company", "${credentials." + credName + ".realm_id}");
+                                                        // QuickBooks: the sandbox/production host is a
+                                                        // property of the app's keys, not a user choice —
+                                                        // carry it through the credential metadata (hidden
+                                                        // input, see the render skip below).
+                                                        if (hasSandbox) {
+                                                            onValueChange("sandbox", "${credentials." + credName + ".sandbox}");
+                                                        }
+                                                    }
+                                                };
                                                 return (
                                                     <CredentialProperty
                                                         nodeId={props.node.data.id}
@@ -579,9 +622,10 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         required={i.required}
                                                         variables={props.variables}
                                                         kind="credential"
-                                                        onValueChange={onValueChange}
+                                                        onValueChange={handleCredentialChange}
                                                     />
                                                 )
+                                            }
                                             case "secret":
                                                 return (
                                                     <CredentialProperty
