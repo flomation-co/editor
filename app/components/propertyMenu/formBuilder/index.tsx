@@ -1,12 +1,18 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
+import api from "~/lib/api";
+import useConfig from "~/components/config";
+import useCookieToken from "~/components/cookie";
 
 type FormOption = {
     label: string;
     value: string;
+    // Option-tile image URL used by the picture_choice field. Empty renders
+    // a text fallback tile.
+    image?: string;
 }
 
 // A single "show when" condition: one earlier answer, compared to a value.
@@ -34,8 +40,18 @@ type FormComponent = {
     order: number;
     read_only?: boolean;
     default_value?: string;
-    // Present only on radio / checkboxes / dropdown fields.
+    // Present only on radio / checkboxes / dropdown / picture_choice fields.
     options?: FormOption[];
+    // picture_choice: false ⇒ single-select (string response); true ⇒
+    // multi-select (array response). Ignored by other field types.
+    multiple?: boolean;
+    // Matrix (grid) field — rows down the side, shared columns across the
+    // top. The response is an object keyed by row value; cell_type decides
+    // whether each row holds a single column value (radio → string) or a
+    // set (checkbox → string[]). Only used by the "matrix" field type.
+    matrix_rows?: FormOption[];
+    matrix_columns?: FormOption[];
+    cell_type?: "radio" | "checkbox";
     // When set (option-based fields only), options are populated at load
     // time from this key in the data-source flow's outputs, rather than the
     // static options above. Requires a form-level data flow.
@@ -45,8 +61,15 @@ type FormComponent = {
     max?: number;
     step?: number;
     integer_only?: boolean;
-    // Number of stars/points for rating fields (typically 5 or 10).
+    // Number of stars/points for rating fields (typically 5 or 10). Also the
+    // top score of an nps field (0..scale — 5 or 10).
     scale?: number;
+    // NPS end-of-scale captions (e.g. "Not likely" / "Very likely").
+    scale_label_low?: string;
+    scale_label_high?: string;
+    // contact_name sub-fields, in order. Empty defaults to
+    // ["first_name", "last_name", "email"]; "phone" is also supported.
+    contact_fields?: string[];
     // Bounds for date/time HTML5 inputs, as ISO strings.
     min_date?: string;
     max_date?: string;
@@ -72,6 +95,21 @@ type FormComponent = {
     // consent checkbox). show_privacy_notice defaults to true.
     privacy_notice?: string;
     show_privacy_notice?: boolean;
+    // Payment field (type "payment") — collects a card payment via Stripe
+    // hosted Checkout on submit. amount is a MAJOR-unit decimal string
+    // (e.g. "49.99"); it may be a ${data.X} reference (resolved server-side).
+    // currency is an ISO-4217 code (e.g. "gbp"). payment_secret is a
+    // ${secrets.X} reference to the Stripe secret key.
+    amount?: string;
+    currency?: string;
+    payment_secret?: string;
+    // Flow-computed value. When value_source names a flow, this field's value
+    // is produced by running that flow with the current form answers as
+    // ${input.X} — the field renders read-only. value_output selects which
+    // flow output key holds the value (defaults to the field's own name). On a
+    // payment field this drives the Amount (e.g. a reg-plate → car-park price).
+    value_source?: string;
+    value_output?: string;
     // Conditional visibility — show this field only when earlier answers
     // satisfy the rule. Absent means always visible.
     visible_if?: VisibilityRule;
@@ -82,7 +120,7 @@ type FormComponent = {
 // the seed-on-add behaviour. Ranking is included because its schema is
 // identical to radio/checkboxes/dropdown — it's just the response
 // shape that differs (ordered array vs single / unordered set).
-const OPTION_BASED_TYPES = new Set(["radio", "checkboxes", "dropdown", "ranking"]);
+const OPTION_BASED_TYPES = new Set(["radio", "checkboxes", "dropdown", "ranking", "opinion_scale"]);
 
 // Types whose config includes numeric range/step constraints.
 const NUMERIC_TYPES = new Set(["number", "slider", "rating"]);
@@ -97,8 +135,10 @@ const DISPLAY_ONLY_TYPES = new Set(["section_header", "divider", "info_text"]);
 // Structured types produce nested-object responses rather than a scalar.
 // Placeholder / default_value / read-only don't map cleanly for these,
 // so the FormBuilder hides those controls and shows type-specific config
-// (precision selector for location, nothing for address).
-const STRUCTURED_TYPES = new Set(["location", "address"]);
+// (precision selector for location, nothing for address). Matrix joins them
+// — its response is an object keyed by row value, so placeholder/default make
+// no sense; it keeps the required toggle and its own rows/columns editor.
+const STRUCTURED_TYPES = new Set(["location", "address", "contact_name", "matrix"]);
 
 // Upload types capture a file and store its bytes in the blob store;
 // the response is a flo:blob:... token string. Placeholder / default
@@ -106,6 +146,17 @@ const STRUCTURED_TYPES = new Set(["location", "address"]);
 // works via disabling the picker. license_plate also uploads a captured
 // frame, so it shares the upload UI treatment.
 const UPLOAD_TYPES = new Set(["esignature", "camera", "file_upload", "license_plate"]);
+
+// supportsComputedValue reports whether a field type can have a scalar value
+// produced by a flow (value_source). Mirrors placeholder/default eligibility —
+// structured, upload, display-only and the toggle/scale/choice types don't
+// carry a plain scalar value. Payment is handled separately ("Amount from a
+// flow"), so it is excluded here.
+function supportsComputedValue(type: string): boolean {
+    return !DISPLAY_ONLY_TYPES.has(type) && !STRUCTURED_TYPES.has(type) &&
+        !UPLOAD_TYPES.has(type) && type !== "consent" && type !== "nps" &&
+        type !== "picture_choice" && type !== "payment";
+}
 
 // Recognition types capture a camera frame AND run in-browser recognition,
 // emitting a composite value ({image, plate, ...}). They carry capture-mode,
@@ -184,6 +235,28 @@ type Props = {
     onChange: (value: string) => void;
 }
 
+// parseFormDefinition turns the stored form_definition JSON string into a
+// FormDefinition, filling in sane defaults for missing top-level fields. Pages
+// (and therefore every component's config — payment value_source/value_output,
+// visibility rules, options, …) are passed through verbatim, so nothing about a
+// field is lost on load. Shared by the initial mount and the external-value
+// re-sync below so both interpret a saved definition identically.
+const parseFormDefinition = (raw: string): FormDefinition => {
+    try {
+        const parsed = JSON.parse(raw || "{}");
+        return {
+            title: parsed.title || "Untitled Form",
+            description: parsed.description || "",
+            pages: parsed.pages || [{components: []}],
+            require_login: parsed.require_login || false,
+            data_source: parsed.data_source || undefined,
+            submit: parsed.submit || undefined,
+        };
+    } catch {
+        return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
+    }
+};
+
 
 const fieldTypes = [
     {value: "text", label: "Text", icon: "i-cursor"},
@@ -192,7 +265,9 @@ const fieldTypes = [
     {value: "boolean", label: "Checkbox", icon: "check"},
     {value: "radio", label: "Radio", icon: "circle-dot"},
     {value: "checkboxes", label: "Checkbox Group", icon: "list-check"},
+    {value: "matrix", label: "Matrix / Grid", icon: "table"},
     {value: "dropdown", label: "Dropdown", icon: "chevron-down"},
+    {value: "picture_choice", label: "Picture Choice", icon: "image"},
     {value: "email", label: "Email", icon: "envelope"},
     {value: "phone", label: "Phone", icon: "phone"},
     {value: "url", label: "URL", icon: "link"},
@@ -212,6 +287,11 @@ const fieldTypes = [
     {value: "qr_scanner", label: "QR / Barcode", icon: "qrcode"},
     {value: "license_plate", label: "Licence Plate", icon: "magnifying-glass"},
     {value: "ranking", label: "Ranking", icon: "list"},
+    {value: "nps", label: "NPS", icon: "gauge"},
+    {value: "opinion_scale", label: "Opinion Scale", icon: "list-check"},
+    {value: "consent", label: "Consent", icon: "clipboard-list"},
+    {value: "contact_name", label: "Contact Info", icon: "user"},
+    {value: "payment", label: "Payment", icon: "dollar-sign"},
 ];
 
 // Operators offered in the conditional-visibility builder. Labels are
@@ -362,21 +442,17 @@ const VisibilityEditor = ({rule, sources, onChange, scope}: {
 const FormBuilder = (props: Props) => {
     const [addingToPage, setAddingToPage] = useState<number | null>(null);
 
-    const [form, setForm] = useState<FormDefinition>(() => {
-        try {
-            const parsed = JSON.parse(props.value || "{}");
-            return {
-                title: parsed.title || "Untitled Form",
-                description: parsed.description || "",
-                pages: parsed.pages || [{components: []}],
-                require_login: parsed.require_login || false,
-                data_source: parsed.data_source || undefined,
-                submit: parsed.submit || undefined,
-            };
-        } catch {
-            return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
-        }
-    });
+    const [form, setForm] = useState<FormDefinition>(() => parseFormDefinition(props.value));
+
+    // Distinguish our OWN echo (the value we just emitted, which the parent
+    // stores and hands straight back as props.value) from a genuine EXTERNAL
+    // change to the definition — a flow reload, an undo/redo, or a collaborator
+    // replacing the node. The builder's key is stable per node, so it never
+    // remounts on those; without this it would keep showing stale data (e.g. a
+    // payment field's value_source/value_output/payment_secret appearing to
+    // "revert"). Seeded with the mount value so the initial emit is recognised
+    // as our own and doesn't trigger a needless re-seed.
+    const lastEmitted = useRef<string>(props.value);
 
     // The data-driven (prefill-from-a-flow) section is collapsed by default so
     // it doesn't crowd the common case — but starts open if a flow is already
@@ -391,8 +467,68 @@ const FormBuilder = (props: Props) => {
     });
 
     useEffect(() => {
-        props.onChange(JSON.stringify(form));
+        const serialised = JSON.stringify(form);
+        // Record what we emit so the sync effect below can tell our own echo
+        // apart from an external change.
+        lastEmitted.current = serialised;
+        props.onChange(serialised);
     }, [form]);
+
+    // Re-seed from props.value ONLY when it differs from what we last emitted —
+    // i.e. the definition changed underneath us (reload / undo / collaborator),
+    // not our own round-trip. This keeps an open builder in sync with external
+    // updates without ever clobbering in-progress edits (those match
+    // lastEmitted and are ignored). The equality check makes this loop-safe: our
+    // emit sets lastEmitted, the parent echoes the same string back, and this
+    // effect no-ops.
+    useEffect(() => {
+        if (props.value === lastEmitted.current) return;
+        lastEmitted.current = props.value;
+        setForm(parseFormDefinition(props.value));
+    }, [props.value]);
+
+    // Autocomplete suggestions for the "Computed by a flow" output field. For
+    // each flow referenced by a field's value_source we fetch the flow revision
+    // once and extract the keys named by its output/set nodes, so the author is
+    // offered the flow's real output names rather than typing a free-text guess.
+    // Cached per flow id (an entry — even an empty array — marks a completed
+    // fetch, so switching fields or re-rendering never refetches).
+    const config = useConfig();
+    const token = useCookieToken();
+    const [flowOutputs, setFlowOutputs] = useState<Record<string, string[]>>({});
+
+    useEffect(() => {
+        const ids = new Set<string>();
+        form.pages.forEach(p => p.components?.forEach(c => {
+            if (c.value_source) ids.add(c.value_source);
+        }));
+        ids.forEach(flowId => {
+            if (flowOutputs[flowId] !== undefined) return; // already fetched (incl. empty)
+            const url = config("AUTOMATE_API_URL");
+            api.get(`${url}/api/v1/flo/${flowId}`, {
+                headers: { Authorization: "Bearer " + token },
+            })
+                .then(res => {
+                    const nodes = res.data?.revision?.data?.nodes;
+                    const keys: string[] = [];
+                    if (Array.isArray(nodes)) {
+                        for (const n of nodes) {
+                            const isOutput = n?.data?.label === "output/set" || n?.type === "output/set";
+                            if (!isOutput) continue;
+                            const inputs = n?.data?.config?.inputs;
+                            if (!Array.isArray(inputs)) continue;
+                            const nameInput = inputs.find((inp: any) => inp?.name === "name");
+                            const key = nameInput?.value;
+                            if (typeof key === "string" && key && !keys.includes(key)) {
+                                keys.push(key);
+                            }
+                        }
+                    }
+                    setFlowOutputs(prev => ({...prev, [flowId]: keys}));
+                })
+                .catch(() => setFlowOutputs(prev => ({...prev, [flowId]: []})));
+        });
+    }, [form, flowOutputs]);
 
     const updateForm = (updates: Partial<FormDefinition>) => {
         setForm(prev => ({...prev, ...updates}));
@@ -474,6 +610,60 @@ const FormBuilder = (props: Props) => {
             newField.privacy_notice =
                 "This field uses your device camera to read a licence plate. " +
                 "Images are processed in your browser.";
+        }
+        // NPS defaults to a 0–10 promoter score with the conventional
+        // likelihood end captions. Authors can drop to 0–5 in the config.
+        if (type === "nps") {
+            newField.scale = 10;
+            newField.scale_label_low = "Not likely";
+            newField.scale_label_high = "Very likely";
+        }
+        // Opinion scale seeds a 5-point Likert set (overriding the generic
+        // single starter option seeded above for OPTION_BASED_TYPES).
+        if (type === "opinion_scale") {
+            newField.options = [
+                {label: "Strongly disagree", value: "strongly_disagree"},
+                {label: "Disagree", value: "disagree"},
+                {label: "Neutral", value: "neutral"},
+                {label: "Agree", value: "agree"},
+                {label: "Strongly agree", value: "strongly_agree"},
+            ];
+        }
+        // Consent is a required opt-in by nature: a ticked-to-proceed
+        // checkbox with legal/terms text shown above it.
+        if (type === "consent") {
+            newField.label = "I agree to the terms";
+            newField.display_text = "Please read and accept our terms.";
+            newField.required = true;
+        }
+        // Contact info defaults to name + email; "phone" can be added.
+        if (type === "contact_name") {
+            newField.contact_fields = ["first_name", "last_name", "email"];
+        }
+        // Picture choice seeds one starter option with an empty image URL and
+        // defaults to single-select. Its options carry an image alongside
+        // label/value, so it uses a dedicated editor rather than
+        // OPTION_BASED_TYPES.
+        if (type === "picture_choice") {
+            newField.options = [{label: "Option 1", value: "option_1", image: ""}];
+            newField.multiple = false;
+        }
+        // Matrix seeds one row and one column plus a single-choice cell type,
+        // so the dual editors render with something to edit straight away.
+        if (type === "matrix") {
+            newField.matrix_rows = [{label: "Row 1", value: "row_1"}];
+            newField.matrix_columns = [{label: "Column 1", value: "column_1"}];
+            newField.cell_type = "radio";
+        }
+        // Payment defaults to £ (GBP) and the conventional secret name. The
+        // amount is left blank for the author to fill (a literal or ${data.X}).
+        // It collects no input, so it is never required.
+        if (type === "payment") {
+            newField.label = "Payment";
+            newField.amount = "";
+            newField.currency = "gbp";
+            newField.payment_secret = "${secrets.stripe_secret_key}";
+            newField.required = false;
         }
         // Display-only types get a friendlier default label and no
         // placeholder — they don't collect input, so "Field N Label"
@@ -636,6 +826,77 @@ const FormBuilder = (props: Props) => {
                         if (target < 0 || target >= opts.length) return c;
                         [opts[optionIndex], opts[target]] = [opts[target], opts[optionIndex]];
                         return {...c, options: opts};
+                    }),
+                };
+            }),
+        }));
+    };
+
+    // ── Matrix rows/columns editors ──────────────────────────────────────
+    // The matrix has two independent option lists (matrix_rows and
+    // matrix_columns) that share the option-row editor UI. Rather than
+    // overload the single-`options` helpers above, these generic helpers take
+    // a listKey ("matrix_rows" | "matrix_columns") and operate on comp[listKey],
+    // reusing the same label→value auto-slug behaviour.
+    type MatrixListKey = "matrix_rows" | "matrix_columns";
+
+    const updateListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number, patch: Partial<FormOption>) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => ci !== fieldIndex ? c : {
+                    ...c,
+                    [listKey]: (c[listKey] || []).map((o, oi) => oi !== itemIndex ? o : {...o, ...patch}),
+                }),
+            }),
+        }));
+    };
+
+    const addListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => {
+                    if (ci !== fieldIndex) return c;
+                    const existing = c[listKey] || [];
+                    const n = existing.length + 1;
+                    const stem = listKey === "matrix_rows" ? "Row" : "Column";
+                    const slug = listKey === "matrix_rows" ? "row" : "column";
+                    return {...c, [listKey]: [...existing, {label: `${stem} ${n}`, value: `${slug}_${n}`}]};
+                }),
+            }),
+        }));
+    };
+
+    const removeListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => ci !== fieldIndex ? c : {
+                    ...c,
+                    [listKey]: (c[listKey] || []).filter((_, oi) => oi !== itemIndex),
+                }),
+            }),
+        }));
+    };
+
+    const moveListItem = (pageIndex: number, fieldIndex: number, listKey: MatrixListKey, itemIndex: number, direction: -1 | 1) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => {
+                if (pi !== pageIndex) return p;
+                return {
+                    ...p,
+                    components: p.components.map((c, ci) => {
+                        if (ci !== fieldIndex) return c;
+                        const items = [...(c[listKey] || [])];
+                        const target = itemIndex + direction;
+                        if (target < 0 || target >= items.length) return c;
+                        [items[itemIndex], items[target]] = [items[target], items[itemIndex]];
+                        return {...c, [listKey]: items};
                     }),
                 };
             }),
@@ -911,7 +1172,7 @@ const FormBuilder = (props: Props) => {
                                             onChange={e => updateField(pageIndex, fieldIndex, {name: e.target.value})}
                                         />
                                     </div>
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && !STRUCTURED_TYPES.has(comp.type) && !UPLOAD_TYPES.has(comp.type) && comp.type !== "consent" && comp.type !== "nps" && comp.type !== "picture_choice" && comp.type !== "payment" && !comp.value_source && (
                                         <>
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
@@ -938,6 +1199,55 @@ const FormBuilder = (props: Props) => {
                                                 />
                                             </div>
                                         </>
+                                    )}
+                                    {supportsComputedValue(comp.type) && (
+                                        <div className="fb-field-group fb-full-width fb-computed-source">
+                                            <span className="fb-field-group-label">Computed by a flow</span>
+                                            <span className="fb-field-hint">
+                                                Fill this field's value by running a flow with the current
+                                                answers as <code>{"${input.X}"}</code>. The field becomes
+                                                read-only; the value is authoritative server-side.
+                                            </span>
+                                            <FlowSelectProperty
+                                                nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
+                                                name={`value-source-${comp.name}`}
+                                                label="Value flow"
+                                                value={comp.value_source || ""}
+                                                onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
+                                            />
+                                            {comp.value_source && (() => {
+                                                const dlId = `${props.nodeId}-${pageIndex}-${fieldIndex}-value-outputs`;
+                                                const outs = flowOutputs[comp.value_source] || [];
+                                                return (
+                                                <>
+                                                    <input
+                                                        className="fb-input fb-input-sm"
+                                                        list={outs.length ? dlId : undefined}
+                                                        value={comp.value_output || ""}
+                                                        placeholder="Flow output to read; defaults to the field name"
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
+                                                    />
+                                                    {outs.length > 0 && (
+                                                        <datalist id={dlId}>
+                                                            {outs.map(o => <option key={o} value={o} />)}
+                                                        </datalist>
+                                                    )}
+                                                    {outs.length > 0 && (
+                                                        <span className="fb-field-hint">
+                                                            Available outputs: {outs.join(", ")}
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        className="fb-datasource-clear"
+                                                        onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                    >
+                                                        <Icon name="xmark" /> Remove value flow
+                                                    </button>
+                                                </>
+                                                );
+                                            })()}
+                                        </div>
                                     )}
                                     {comp.type === "location" && (
                                         <div className="fb-field-group fb-full-width">
@@ -1098,6 +1408,91 @@ const FormBuilder = (props: Props) => {
                                             />
                                         </div>
                                     )}
+                                    {comp.type === "payment" && (
+                                        <>
+                                            {!comp.value_source && (
+                                                <div className="fb-field-group fb-full-width">
+                                                    <span className="fb-field-group-label">Amount</span>
+                                                    <VariableInput
+                                                        nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-amount`}
+                                                        name={`amount-${comp.name}`}
+                                                        placeholder="49.99"
+                                                        label="Amount"
+                                                        value={comp.amount || ""}
+                                                        variables={props.variables || []}
+                                                        onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {amount: v})}
+                                                    />
+                                                    <span className="fb-field-hint">Major units, e.g. 49.99. Supports ${"{"}data.X{"}"} references (resolved at checkout).</span>
+                                                </div>
+                                            )}
+                                            <div className="fb-field-group fb-full-width fb-computed-source">
+                                                <span className="fb-field-group-label">Amount from a flow</span>
+                                                <span className="fb-field-hint">
+                                                    Compute the charge by running a flow with the form
+                                                    answers as <code>{"${input.X}"}</code> (e.g. a reg-plate
+                                                    to a car-park price). Takes precedence over the manual
+                                                    amount and is resolved server-side at checkout.
+                                                </span>
+                                                <FlowSelectProperty
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
+                                                    name={`value-source-${comp.name}`}
+                                                    label="Amount flow"
+                                                    value={comp.value_source || ""}
+                                                    onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
+                                                />
+                                                {comp.value_source && (
+                                                    <>
+                                                        <input
+                                                            className="fb-input fb-input-sm"
+                                                            value={comp.value_output || ""}
+                                                            placeholder="Flow output holding the amount; defaults to the field name"
+                                                            onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="fb-datasource-clear"
+                                                            onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                        >
+                                                            <Icon name="xmark" /> Remove amount flow
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Currency</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.currency || "gbp"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {currency: e.target.value})}
+                                                >
+                                                    <option value="gbp">GBP (£)</option>
+                                                    <option value="usd">USD ($)</option>
+                                                    <option value="eur">EUR (€)</option>
+                                                    <option value="aud">AUD ($)</option>
+                                                    <option value="cad">CAD ($)</option>
+                                                    <option value="jpy">JPY (¥)</option>
+                                                    <option value="chf">CHF</option>
+                                                    <option value="nzd">NZD ($)</option>
+                                                    <option value="sek">SEK</option>
+                                                    <option value="nok">NOK</option>
+                                                    <option value="dkk">DKK</option>
+                                                </select>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Stripe Secret Key</span>
+                                                <VariableInput
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-payment-secret`}
+                                                    name={`payment-secret-${comp.name}`}
+                                                    placeholder="${secrets.stripe_secret_key}"
+                                                    label="Stripe Secret Key"
+                                                    value={comp.payment_secret ?? "${secrets.stripe_secret_key}"}
+                                                    variables={props.variables || []}
+                                                    onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {payment_secret: v})}
+                                                />
+                                                <span className="fb-field-hint">A ${"{"}secrets.X{"}"} reference — resolved server-side, never exposed to the browser.</span>
+                                            </div>
+                                        </>
+                                    )}
                                     {(comp.type === "number" || comp.type === "slider") && (
                                         <>
                                             <div className="fb-field-group">
@@ -1157,6 +1552,219 @@ const FormBuilder = (props: Props) => {
                                                 <option value={7}>1 – 7</option>
                                                 <option value={10}>1 – 10</option>
                                             </select>
+                                        </div>
+                                    )}
+                                    {comp.type === "matrix" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Cell type</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.cell_type || "radio"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {cell_type: e.target.value as "radio" | "checkbox"})}
+                                                >
+                                                    <option value="radio">Single choice per row</option>
+                                                    <option value="checkbox">Multiple choices per row</option>
+                                                </select>
+                                            </div>
+                                            {(["matrix_rows", "matrix_columns"] as const).map(listKey => {
+                                                const items = comp[listKey] || [];
+                                                const heading = listKey === "matrix_rows" ? "Rows" : "Columns";
+                                                return (
+                                                    <div key={listKey} className="fb-field-group fb-full-width fb-options-editor">
+                                                        <span className="fb-field-group-label">{heading}</span>
+                                                        {items.map((item, itemIndex) => {
+                                                            const valueTracksLabel = item.value === "" || item.value === slugifyOptionValue(item.label);
+                                                            return (
+                                                                <div key={itemIndex} className="fb-option-row">
+                                                                    <input
+                                                                        className="fb-input fb-input-sm fb-option-label-input"
+                                                                        value={item.label}
+                                                                        placeholder={`${listKey === "matrix_rows" ? "Row" : "Column"} label`}
+                                                                        onChange={e => {
+                                                                            const newLabel = e.target.value;
+                                                                            const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : item.value;
+                                                                            updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {label: newLabel, value: nextValue});
+                                                                        }}
+                                                                    />
+                                                                    <input
+                                                                        className="fb-input fb-input-sm fb-option-value-input"
+                                                                        value={item.value}
+                                                                        placeholder="value"
+                                                                        onChange={e => updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {value: e.target.value})}
+                                                                    />
+                                                                    <div className="fb-option-actions">
+                                                                        <button
+                                                                            className="fb-icon-btn"
+                                                                            onClick={() => moveListItem(pageIndex, fieldIndex, listKey, itemIndex, -1)}
+                                                                            disabled={itemIndex === 0}
+                                                                            title="Move up"
+                                                                        >
+                                                                            <Icon name="chevron-up" />
+                                                                        </button>
+                                                                        <button
+                                                                            className="fb-icon-btn"
+                                                                            onClick={() => moveListItem(pageIndex, fieldIndex, listKey, itemIndex, 1)}
+                                                                            disabled={itemIndex === items.length - 1}
+                                                                            title="Move down"
+                                                                        >
+                                                                            <Icon name="chevron-down" />
+                                                                        </button>
+                                                                        <button
+                                                                            className="fb-icon-btn fb-danger"
+                                                                            onClick={() => removeListItem(pageIndex, fieldIndex, listKey, itemIndex)}
+                                                                            disabled={items.length <= 1}
+                                                                            title={`Remove ${listKey === "matrix_rows" ? "row" : "column"}`}
+                                                                        >
+                                                                            <Icon name="trash" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <button
+                                                            className="fb-add-option"
+                                                            onClick={() => addListItem(pageIndex, fieldIndex, listKey)}
+                                                        >
+                                                            <Icon name="plus" /> Add {listKey === "matrix_rows" ? "Row" : "Column"}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
+                                    )}
+                                    {comp.type === "picture_choice" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <label className="fb-toggle-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={comp.multiple || false}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {multiple: e.target.checked})}
+                                                    />
+                                                    Multiple selection
+                                                </label>
+                                            </div>
+                                            <div className="fb-field-group fb-full-width fb-options-editor">
+                                                <span className="fb-field-group-label">Picture options</span>
+                                                {(comp.options || []).map((opt, optionIndex) => {
+                                                    const valueTracksLabel = opt.value === "" || opt.value === slugifyOptionValue(opt.label);
+                                                    return (
+                                                        <div key={optionIndex} className="fb-picture-option">
+                                                            <div className="fb-option-row">
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-label-input"
+                                                                    value={opt.label}
+                                                                    placeholder="Option label"
+                                                                    onChange={e => {
+                                                                        const newLabel = e.target.value;
+                                                                        const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : opt.value;
+                                                                        updateOption(pageIndex, fieldIndex, optionIndex, {label: newLabel, value: nextValue});
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-value-input"
+                                                                    value={opt.value}
+                                                                    placeholder="option_value"
+                                                                    onChange={e => updateOption(pageIndex, fieldIndex, optionIndex, {value: e.target.value})}
+                                                                />
+                                                                <div className="fb-option-actions">
+                                                                    <button
+                                                                        className="fb-icon-btn"
+                                                                        onClick={() => moveOption(pageIndex, fieldIndex, optionIndex, -1)}
+                                                                        disabled={optionIndex === 0}
+                                                                        title="Move up"
+                                                                    >
+                                                                        <Icon name="chevron-up" />
+                                                                    </button>
+                                                                    <button
+                                                                        className="fb-icon-btn"
+                                                                        onClick={() => moveOption(pageIndex, fieldIndex, optionIndex, 1)}
+                                                                        disabled={optionIndex === (comp.options?.length || 0) - 1}
+                                                                        title="Move down"
+                                                                    >
+                                                                        <Icon name="chevron-down" />
+                                                                    </button>
+                                                                    <button
+                                                                        className="fb-icon-btn fb-danger"
+                                                                        onClick={() => removeOption(pageIndex, fieldIndex, optionIndex)}
+                                                                        disabled={(comp.options?.length || 0) <= 1}
+                                                                        title="Remove option"
+                                                                    >
+                                                                        <Icon name="trash" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <input
+                                                                className="fb-input fb-input-sm fb-picture-image-input"
+                                                                value={opt.image || ""}
+                                                                placeholder="Image URL, e.g. https://example.com/photo.jpg"
+                                                                onChange={e => updateOption(pageIndex, fieldIndex, optionIndex, {image: e.target.value})}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                                <button
+                                                    className="fb-add-option"
+                                                    onClick={() => addOption(pageIndex, fieldIndex)}
+                                                >
+                                                    <Icon name="plus" /> Add Option
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                    {comp.type === "nps" && (
+                                        <>
+                                            <div className="fb-field-group fb-full-width">
+                                                <span className="fb-field-group-label">Scale</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale || 10}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale: Number(e.target.value)})}
+                                                >
+                                                    <option value={5}>0 – 5</option>
+                                                    <option value={10}>0 – 10</option>
+                                                </select>
+                                            </div>
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">Low label</span>
+                                                <input
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale_label_low || ""}
+                                                    placeholder="Not likely"
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale_label_low: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">High label</span>
+                                                <input
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.scale_label_high || ""}
+                                                    placeholder="Very likely"
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {scale_label_high: e.target.value})}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                    {comp.type === "consent" && (
+                                        <div className="fb-field-group fb-full-width">
+                                            <span className="fb-field-group-label">Terms / Legal text</span>
+                                            <textarea
+                                                className="fb-input fb-input-sm"
+                                                rows={3}
+                                                value={comp.display_text || ""}
+                                                placeholder="Please read and accept our terms."
+                                                onChange={e => updateField(pageIndex, fieldIndex, {display_text: e.target.value})}
+                                            />
+                                        </div>
+                                    )}
+                                    {comp.type === "contact_name" && (
+                                        <div className="fb-field-group fb-full-width">
+                                            <span className="fb-field-group-label">Sub-fields</span>
+                                            <div className="fb-address-preview">
+                                                <span>First name · Last name · Email</span>
+                                                <small>Available downstream as <code>{"${trigger." + comp.name + ".first_name}"}</code>, <code>{".email}"}</code>, etc.</small>
+                                            </div>
                                         </div>
                                     )}
                                     {DATE_TIME_TYPES.has(comp.type) && (
@@ -1268,7 +1876,7 @@ const FormBuilder = (props: Props) => {
                                     onChange={r => updateField(pageIndex, fieldIndex, {visible_if: r})}
                                 />
                                 <div className="fb-component-footer">
-                                    {!DISPLAY_ONLY_TYPES.has(comp.type) ? (
+                                    {!DISPLAY_ONLY_TYPES.has(comp.type) && comp.type !== "payment" ? (
                                         <>
                                             <label className="fb-toggle-label">
                                                 <input
@@ -1290,6 +1898,10 @@ const FormBuilder = (props: Props) => {
                                             )}
                                             <span className="fb-field-name">{comp.name}</span>
                                         </>
+                                    ) : comp.type === "payment" ? (
+                                        // Payment collects no input — Required/Read-only are
+                                        // meaningless. Card capture happens on Stripe's hosted page.
+                                        <span className="fb-field-name">payment field</span>
                                     ) : (
                                         // Display-only fields don't collect input so Required/Read-only
                                         // are meaningless. Just show the tag so authors can spot which
