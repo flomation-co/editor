@@ -15,6 +15,7 @@ import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import MoneyProperty from "~/components/propertyMenu/moneyProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
+import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
 import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
@@ -26,6 +27,7 @@ import DateTimeProperty from "~/components/propertyMenu/dateTimeProperty";
 import MultiSelectProperty from "~/components/propertyMenu/multiSelectProperty";
 import "~/components/propertyMenu/multiSelectProperty/index.css";
 import "~/components/propertyMenu/selectProperty/index.css";
+import "~/components/propertyMenu/comboboxProperty/index.css";
 import { Icon } from "~/components/icons/Icon";
 
 type PropertyMenuProps = {
@@ -462,6 +464,23 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     endpoint={dynamicOptions.endpoint}
                                                     params={fetchParams}
                                                     options={i.options || []}
+                                                    required={i.required}
+                                                    variables={props.variables}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            )
+                                        }
+
+                                        if (i.type === "combobox") {
+                                            return (
+                                                <ComboboxProperty
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value}
+                                                    options={i.options || []}
+                                                    placeholder={i.placeholder}
                                                     required={i.required}
                                                     variables={props.variables}
                                                     onValueChange={onValueChange}
