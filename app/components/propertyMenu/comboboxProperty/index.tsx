@@ -65,31 +65,29 @@ const ComboboxProperty = (props: PropertyProps) => {
             </div>
             <div className="variable-mode-row" ref={ref}>
                 <div className="property-menu-combobox">
-                    <div className="property-menu-combobox-field">
-                        <VariableInput
-                            nodeId={props.nodeId}
-                            name={props.name}
-                            placeholder={props.placeholder ?? ""}
-                            label={props.label}
-                            value={value}
-                            required={props.required}
-                            multiline={false}
-                            variables={props.variables ?? []}
-                            onValueChange={(_, v) => setValue(v)}
-                        />
-                        {options.length > 0 && (
-                            <button
-                                type="button"
-                                className={`property-menu-combobox-toggle ${open ? "open" : ""}`}
-                                title="Suggested values"
-                                onClick={() => setOpen(o => !o)}
-                            >
-                                <svg className="property-menu-select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
-                        )}
-                    </div>
+                    <VariableInput
+                        nodeId={props.nodeId}
+                        name={props.name}
+                        placeholder={props.placeholder ?? ""}
+                        label={props.label}
+                        value={value}
+                        required={props.required}
+                        multiline={false}
+                        variables={props.variables ?? []}
+                        onValueChange={(_, v) => setValue(v)}
+                    />
+                    {options.length > 0 && (
+                        <button
+                            type="button"
+                            className={`property-menu-combobox-toggle ${open ? "open" : ""}`}
+                            title="Suggested values"
+                            onClick={() => setOpen(o => !o)}
+                        >
+                            <svg className="property-menu-select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </button>
+                    )}
                     {open && options.length > 0 && (
                         <div className="property-menu-select-list property-menu-combobox-list">
                             {options.map(opt => (

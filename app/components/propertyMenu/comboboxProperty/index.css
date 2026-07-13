@@ -1,7 +1,10 @@
 /* ComboboxProperty — a typeable field with a suggestions dropdown. Reuses the
    .property-menu-select-list / -option classes from selectProperty for the
-   dropdown itself; these rules add the input+toggle layout and position the
-   list beneath it. */
+   dropdown. The chevron toggle is overlaid inside the field's right edge (like
+   SelectProperty's integrated chevron) rather than sitting as a separate button
+   between the field and the $ variable picker, and the field's right edge is
+   squared so it merges flush with the picker — matching every other input in
+   the property menu. */
 
 .property-menu-combobox {
     position: relative;
@@ -9,40 +12,35 @@
     min-width: 0;
 }
 
-.property-menu-combobox-field {
-    display: flex;
-    align-items: stretch;
-    gap: 4px;
+/* Leave room for the chevron, and square the right edge so the field merges
+   flush with the $ picker button next to it (variable-mode-row has gap: 0). */
+.property-menu-combobox .variable-input-field,
+.property-menu-combobox .variable-input-highlight {
+    padding-right: 34px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
-/* Let the text input take the space and the toggle sit to its right. */
-.property-menu-combobox-field > :first-child {
-    flex: 1;
-    min-width: 0;
-}
-
+/* The chevron sits over the field's right edge, inside its border. */
 .property-menu-combobox-toggle {
-    flex-shrink: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    background: #17202e;
-    border: 1px solid rgba(107, 114, 128, 0.5);
-    border-radius: 6px;
+    background: transparent;
+    border: none;
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
     outline: none;
-    transition: border-color 0.1s ease, background 0.1s ease;
+    z-index: 2;
 }
 
 .property-menu-combobox-toggle:hover {
-    background: #1c2536;
-    border-color: rgba(139, 0, 222, 0.4);
-}
-
-.property-menu-combobox-toggle.open {
-    border-color: rgba(0, 170, 156, 0.5);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .property-menu-combobox-toggle.open .property-menu-select-chevron {
