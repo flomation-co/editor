@@ -137,6 +137,60 @@
     accent-color: #00aa9c;
 }
 
+.trigger-input-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.trigger-input-options-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.trigger-input-option-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.trigger-input-option-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.trigger-input-def-remove:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.trigger-input-option-move {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.trigger-input-option-move:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.property-menu-input-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
 .property-menu-help {
     padding: 12px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.06);

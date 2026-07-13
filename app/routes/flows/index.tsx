@@ -53,6 +53,12 @@ export default function Flows() {
     const [ isTriggering, setIsTriggering ] = useState<boolean>(false);
     const [ currentTrigger, setCurrentTrigger ] = useState<string>();
 
+    // Manual-trigger input collection modal (mirrors the in-editor Execute
+    // modal). When a flow's manual trigger declares inputs, we gather them here
+    // before executing instead of POSTing a null body.
+    const [ triggerInputModal, setTriggerInputModal ] = useState<{ floId: string; triggerId: string; inputs: any[] } | null>(null);
+    const [ triggerInputValues, setTriggerInputValues ] = useState<Record<string, string>>({});
+
     const [ offset, setOffset ] = useState<number>(0);
     const [ limit, setLimit ] = useState<number>(10);
     const [ disableRightPagination, setDisableRightPagination ] = useState<boolean>(false);
@@ -221,7 +227,7 @@ export default function Flows() {
         return dayjs.utc(date).local().format("D MMM YYYY H:mm:ss");
     }
 
-    function triggerFlo(flo_id: string, trigger_id: string) {
+    function triggerFlo(flo_id: string, trigger_id: string, data: Record<string, any> | null = null) {
         if (isTriggering) {
             return
         }
@@ -229,7 +235,7 @@ export default function Flows() {
         setIsTriggering(true)
         setCurrentTrigger(flo_id)
 
-        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", null, {
+        api.post(API_URL + "/api/v1/flo/" + flo_id + "/trigger/" + trigger_id + "/execute", data, {
             headers: {
                 "Authorization": "Bearer " + token,
             }
@@ -247,6 +253,106 @@ export default function Flows() {
                 setIsTriggering(false);
                 setCurrentTrigger(null);
             })
+    }
+
+    // Read the manual trigger's declared inputs from a revision's node list.
+    // Matches on data.label as well as type: after a revision save/load the
+    // durable identity is data.label (node.type is not preserved), which is
+    // why the editor uses both. Only inputs with a non-empty name count.
+    function getManualTriggerInputs(nodes: any[]): any[] {
+        if (!Array.isArray(nodes)) return [];
+        const manualNode = nodes.find((n: any) => n?.type === "trigger/manual" || n?.data?.label === "trigger/manual");
+        const config = manualNode?.data?.config;
+        if (!config?.trigger_inputs) return [];
+        return (config.trigger_inputs as any[]).filter((i: any) => i && i.name && i.name !== "");
+    }
+
+    // Run click: fetch the flow's latest revision (the list rows do not carry
+    // it), inspect the manual trigger for declared inputs, and either open the
+    // input modal or execute immediately with no body (preserving the old
+    // behaviour for flows with no manual inputs).
+    async function handleRunClick(flo: Flo) {
+        if (isTriggering || flo.has_validation_errors) return;
+        setCurrentTrigger(flo.id);
+        try {
+            const response = await api.get(API_URL + "/api/v1/flo/" + flo.id, {
+                headers: { Authorization: "Bearer " + token },
+            });
+            const nodes = (response?.data?.revision?.data as any)?.nodes;
+            const inputs = getManualTriggerInputs(nodes);
+            if (inputs.length > 0) {
+                const defaults: Record<string, string> = {};
+                inputs.forEach((i: any) => { if (i.value !== undefined && i.value !== null) defaults[i.name] = String(i.value); });
+                setTriggerInputValues(defaults);
+                setCurrentTrigger(undefined);
+                setTriggerInputModal({ floId: flo.id, triggerId: "default", inputs });
+                return;
+            }
+        } catch (error) {
+            // If we can't resolve the schema, fall back to a plain execution
+            // rather than blocking the user.
+            console.error(error);
+        }
+        setCurrentTrigger(undefined);
+        triggerFlo(flo.id, "default", null);
+    }
+
+    function handleTriggerInputSubmit() {
+        if (!triggerInputModal) return;
+
+        // Validate required fields. Booleans are never "missing" (a false
+        // checkbox is a valid answer); every other type must have a value.
+        const missing = triggerInputModal.inputs.filter((i: any) => {
+            if (!i.required || i.type === "boolean") return false;
+            return !String(triggerInputValues[i.name] ?? "").trim();
+        });
+        if (missing.length > 0) {
+            toast.error(`Please fill in: ${missing.map((i: any) => i.label || i.name).join(", ")}`);
+            return;
+        }
+
+        // Type-aware validation (convenience only — the server also validates).
+        const invalid: string[] = [];
+        triggerInputModal.inputs.forEach((i: any) => {
+            const raw = String(triggerInputValues[i.name] ?? "").trim();
+            if (!raw) return; // empties handled by the required check above
+            if (i.type === "integer" && !Number.isFinite(Number(raw))) {
+                invalid.push(`${i.label || i.name} must be a number`);
+            }
+            if (i.type === "dropdown" && Array.isArray(i.options) && i.options.length > 0) {
+                const allowed = i.options.map((o: any) => String(o.value ?? o.name));
+                if (!allowed.includes(raw)) {
+                    invalid.push(`${i.label || i.name} must be one of the listed options`);
+                }
+            }
+        });
+        if (invalid.length > 0) {
+            toast.error(invalid.join(", "));
+            return;
+        }
+
+        // Coerce each value to its declared type so the flow + server receive
+        // correctly-typed values rather than everything as a string.
+        const coerced: Record<string, any> = {};
+        triggerInputModal.inputs.forEach((i: any) => {
+            const raw = triggerInputValues[i.name];
+            switch (i.type) {
+                case "integer":
+                    coerced[i.name] = raw === undefined || String(raw).trim() === "" ? "" : Number(raw);
+                    break;
+                case "boolean":
+                    // Checkbox values are stored as the strings "true"/"false".
+                    coerced[i.name] = raw === "true";
+                    break;
+                default: // string, text, date, dropdown → string
+                    coerced[i.name] = raw === undefined || raw === null ? "" : String(raw);
+                    break;
+            }
+        });
+
+        const target = triggerInputModal;
+        setTriggerInputModal(null);
+        triggerFlo(target.floId, target.triggerId, coerced);
     }
 
     function handlePageChange(offset: number, limit: number) {
@@ -711,7 +817,7 @@ export default function Flows() {
                                         <button
                                             className="flo-run-btn"
                                             disabled={flo.has_validation_errors}
-                                            onClick={() => { if (!flo.has_validation_errors) triggerFlo(flo.id, 'default'); }}
+                                            onClick={() => { if (!flo.has_validation_errors) handleRunClick(flo); }}
                                             data-tooltip-id={"trigger-" + flo.id}
                                             data-tooltip-content={flo.has_validation_errors ? "Complete all required fields" : "Run"}
                                             data-tooltip-place="bottom"
@@ -805,6 +911,77 @@ export default function Flows() {
                         </div>
                     </div>
                 </Modal>
+            )}
+
+            {triggerInputModal && (
+                <div className="trigger-input-overlay" onClick={(e) => { if (e.target === e.currentTarget) setTriggerInputModal(null); }}>
+                    <div className="trigger-input-modal">
+                        <div className="trigger-input-header">
+                            <div className="trigger-input-title">Execute Flow</div>
+                            <div className="trigger-input-subtitle">Provide values for the trigger inputs below</div>
+                        </div>
+                        <div className="trigger-input-body">
+                            {triggerInputModal.inputs.map((input: any) => (
+                                <div key={input.name} className="trigger-input-field">
+                                    <label className="trigger-input-label">
+                                        {input.label || input.name}
+                                        {input.required && <span className="trigger-input-required">*</span>}
+                                    </label>
+                                    {input.type === "text" ? (
+                                        <textarea
+                                            className="trigger-input-textarea"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                            placeholder={input.placeholder || ""}
+                                            rows={3}
+                                        />
+                                    ) : input.type === "boolean" ? (
+                                        <label className="trigger-input-checkbox-row">
+                                            <input
+                                                type="checkbox"
+                                                checked={triggerInputValues[input.name] === "true"}
+                                                onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.checked ? "true" : "false"}))}
+                                            />
+                                            <span>{input.placeholder || "Enabled"}</span>
+                                        </label>
+                                    ) : input.type === "date" ? (
+                                        <input
+                                            className="trigger-input-text"
+                                            type="date"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                        />
+                                    ) : input.type === "dropdown" || (input.options && input.options.length > 0) ? (
+                                        <select
+                                            className="trigger-input-select"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                        >
+                                            <option value="">Select...</option>
+                                            {(input.options || []).map((opt: any) => (
+                                                <option key={opt.value ?? opt.name} value={opt.value ?? opt.name}>{opt.label || opt.name || opt.value}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            className="trigger-input-text"
+                                            type={input.type === "integer" ? "number" : "text"}
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                            placeholder={input.placeholder || ""}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="trigger-input-footer">
+                            <button className="trigger-input-btn trigger-input-btn--cancel" onClick={() => setTriggerInputModal(null)}>Cancel</button>
+                            <button className="trigger-input-btn trigger-input-btn--execute" onClick={handleTriggerInputSubmit} disabled={isTriggering}>
+                                <Icon name="play" /> {isTriggering ? "Executing..." : "Execute"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             </ProtectedRoute>

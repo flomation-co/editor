@@ -52,7 +52,19 @@ const INPUT_TYPES = [
     {value: "integer", label: "Number"},
     {value: "boolean", label: "Checkbox"},
     {value: "text", label: "Multiline Text"},
+    {value: "date", label: "Date"},
+    {value: "dropdown", label: "Dropdown"},
 ];
+
+// slugifyOptionValue turns a display label into a machine-safe value —
+// used to prefill a dropdown option's value while the author is only
+// editing its label (mirrors the helper in formBuilder).
+function slugifyOptionValue(label: string): string {
+    return label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+}
 
 // languageFromNodeLabel picks the Prism grammar identifier for a
 // code-typed input based on the owning action's label. Centralised
@@ -99,7 +111,52 @@ function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string;
     };
 
     const updateInput = (idx: number, field: string, value: any) => {
-        commit(localInputs.map((inp, i) => i === idx ? {...inp, [field]: value} : inp));
+        commit(localInputs.map((inp, i) => {
+            if (i !== idx) return inp;
+            const updated = {...inp, [field]: value};
+            // Seed a starter option when switching to dropdown so the
+            // sub-editor renders something to edit rather than an empty state.
+            if (field === "type" && value === "dropdown" && (!inp.options || inp.options.length === 0)) {
+                updated.options = [{label: "Option 1", value: "option_1"}];
+            }
+            return updated;
+        }));
+    };
+
+    const getOptions = (inp: any): any[] => Array.isArray(inp.options) ? inp.options : [];
+
+    const addOption = (idx: number) => {
+        commit(localInputs.map((inp, i) => {
+            if (i !== idx) return inp;
+            const existing = getOptions(inp);
+            const n = existing.length + 1;
+            return {...inp, options: [...existing, {label: `Option ${n}`, value: `option_${n}`}]};
+        }));
+    };
+
+    const updateOption = (idx: number, optIdx: number, patch: any) => {
+        commit(localInputs.map((inp, i) => {
+            if (i !== idx) return inp;
+            return {...inp, options: getOptions(inp).map((o, oi) => oi === optIdx ? {...o, ...patch} : o)};
+        }));
+    };
+
+    const removeOption = (idx: number, optIdx: number) => {
+        commit(localInputs.map((inp, i) => {
+            if (i !== idx) return inp;
+            return {...inp, options: getOptions(inp).filter((_, oi) => oi !== optIdx)};
+        }));
+    };
+
+    const moveOption = (idx: number, optIdx: number, direction: -1 | 1) => {
+        commit(localInputs.map((inp, i) => {
+            if (i !== idx) return inp;
+            const opts = [...getOptions(inp)];
+            const target = optIdx + direction;
+            if (target < 0 || target >= opts.length) return inp;
+            [opts[optIdx], opts[target]] = [opts[target], opts[optIdx]];
+            return {...inp, options: opts};
+        }));
     };
 
     return (
@@ -163,6 +220,50 @@ function TriggerInputsBuilder({nodeId, inputs, onInputsChange}: {nodeId: string;
                             Required
                         </label>
                     </div>
+                    {inp.type === "dropdown" && (
+                        <div className="trigger-input-options">
+                            <span className="trigger-input-options-label">Options</span>
+                            {getOptions(inp).map((opt, optIdx) => {
+                                // Auto-track slug when the value hasn't been hand-edited
+                                // off the current slug (empty value tracks too).
+                                const valueTracksLabel = !opt.value || opt.value === slugifyOptionValue(opt.label || "");
+                                return (
+                                    <div key={optIdx} className="trigger-input-option-row">
+                                        <input
+                                            className="trigger-input-def-field"
+                                            value={opt.label || ""}
+                                            placeholder="Option label"
+                                            onChange={(e) => {
+                                                const newLabel = e.target.value;
+                                                const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : opt.value;
+                                                updateOption(idx, optIdx, {label: newLabel, value: nextValue});
+                                            }}
+                                        />
+                                        <input
+                                            className="trigger-input-def-field"
+                                            value={opt.value || ""}
+                                            placeholder="option_value"
+                                            onChange={(e) => updateOption(idx, optIdx, {value: e.target.value})}
+                                        />
+                                        <div className="trigger-input-option-actions">
+                                            <button type="button" className="trigger-input-def-remove trigger-input-option-move" onClick={() => moveOption(idx, optIdx, -1)} disabled={optIdx === 0} title="Move up">
+                                                <Icon name="chevron-up" />
+                                            </button>
+                                            <button type="button" className="trigger-input-def-remove trigger-input-option-move" onClick={() => moveOption(idx, optIdx, 1)} disabled={optIdx === getOptions(inp).length - 1} title="Move down">
+                                                <Icon name="chevron-down" />
+                                            </button>
+                                            <button type="button" className="trigger-input-def-remove" onClick={() => removeOption(idx, optIdx)} disabled={getOptions(inp).length <= 1} title="Remove option">
+                                                <Icon name="trash" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <button type="button" className="trigger-inputs-add-btn" onClick={() => addOption(idx)}>
+                                <Icon name="plus" /> Add Option
+                            </button>
+                        </div>
+                    )}
                 </div>
             ))}
         </div>
@@ -281,15 +382,29 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 </div>
                                 {/* Dynamic trigger inputs builder for manual triggers */}
                                 {(props.node.data.label === "trigger/manual" || props.node.type === "trigger/manual") && (
-                                    <TriggerInputsBuilder
-                                        nodeId={props.node.data.id}
-                                        inputs={props.node.data.config.trigger_inputs || []}
-                                        onInputsChange={(inputs) => {
-                                            if (props.onValueChange) {
-                                                props.onValueChange(props.node.data.id, "__trigger_inputs__", inputs);
-                                            }
-                                        }}
-                                    />
+                                    <>
+                                        <TriggerInputsBuilder
+                                            nodeId={props.node.data.id}
+                                            inputs={props.node.data.config.trigger_inputs || []}
+                                            onInputsChange={(inputs) => {
+                                                if (props.onValueChange) {
+                                                    props.onValueChange(props.node.data.id, "__trigger_inputs__", inputs);
+                                                }
+                                            }}
+                                        />
+                                        <div className={"property-menu-input-row"}>
+                                            <div className={"property-menu-input-name"}>Run token</div>
+                                            <input
+                                                type={"text"}
+                                                placeholder={"Optional bearer token"}
+                                                value={localValues["__run_token__"] ?? props.node.data.config.run_token ?? ""}
+                                                onChange={(e) => onValueChange("__run_token__", e.target.value)}
+                                            />
+                                            <div className={"property-menu-input-hint"}>
+                                                Optional bearer token required to run this trigger via its URL; may be a ${"{secrets.X}"} reference
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
 
                                 {props.node.data.config.inputs && (

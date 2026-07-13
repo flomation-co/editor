@@ -786,6 +786,23 @@ export function Editor(props : EditorProps) {
                     };
                 }
 
+                // Special case: the manual trigger's optional run token lives on
+                // the node config, not among the action inputs.
+                if (property === "__run_token__") {
+                    if (node.data.config.run_token === value) return node;
+                    changed = true;
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            config: {
+                                ...node.data.config,
+                                run_token: value,
+                            },
+                        },
+                    };
+                }
+
                 if (!node.data.config.inputs) return node;
                 const target = node.data.config.inputs.find((input: any) => input.name === property);
                 // No-op guard: every property component echoes its current value
@@ -1540,7 +1557,12 @@ export function Editor(props : EditorProps) {
     }, []);
 
     function getManualTriggerInputs(): any[] {
-        const manualNode = nodes.find(n => n.type === "trigger/manual");
+        // Match on data.label as well as type: after a revision save/load the
+        // durable identity is data.label (node.type is not preserved), which is
+        // why every other trigger check in this file uses both. Matching type
+        // only meant this returned [] for a loaded flow, so the input modal was
+        // silently skipped and Execute ran with no inputs.
+        const manualNode = nodes.find(n => n.type === "trigger/manual" || (n.data as any)?.label === "trigger/manual");
         if (!manualNode?.data) return [];
         const config = (manualNode.data as any).config;
         if (!config?.trigger_inputs) return [];
@@ -1563,17 +1585,61 @@ export function Editor(props : EditorProps) {
 
     function handleTriggerInputSubmit() {
         if (!triggerInputModal) return;
-        // Validate required fields
-        const missing = triggerInputModal.inputs.filter((i: any) => i.required && !triggerInputValues[i.name]?.trim());
+        // Validate required fields. Booleans are never "missing" (a false
+        // checkbox is a valid answer); every other type must have a value.
+        const missing = triggerInputModal.inputs.filter((i: any) => {
+            if (!i.required || i.type === "boolean") return false;
+            return !String(triggerInputValues[i.name] ?? "").trim();
+        });
         if (missing.length > 0) {
             toast.error(`Please fill in: ${missing.map((i: any) => i.label || i.name).join(", ")}`);
             return;
         }
-        triggerFlo(triggerInputModal.floId, triggerInputModal.triggerId, triggerInputValues);
+
+        // Type-aware validation (convenience only — the server also validates).
+        const invalid: string[] = [];
+        triggerInputModal.inputs.forEach((i: any) => {
+            const raw = String(triggerInputValues[i.name] ?? "").trim();
+            if (!raw) return; // empties handled by the required check above
+            if (i.type === "integer" && !Number.isFinite(Number(raw))) {
+                invalid.push(`${i.label || i.name} must be a number`);
+            }
+            if (i.type === "dropdown" && Array.isArray(i.options) && i.options.length > 0) {
+                const allowed = i.options.map((o: any) => String(o.value ?? o.name));
+                if (!allowed.includes(raw)) {
+                    invalid.push(`${i.label || i.name} must be one of the listed options`);
+                }
+            }
+        });
+        if (invalid.length > 0) {
+            toast.error(invalid.join(", "));
+            return;
+        }
+
+        // Coerce each value to its declared type so the flow + server receive
+        // correctly-typed values rather than everything as a string.
+        const coerced: Record<string, any> = {};
+        triggerInputModal.inputs.forEach((i: any) => {
+            const raw = triggerInputValues[i.name];
+            switch (i.type) {
+                case "integer":
+                    coerced[i.name] = raw === undefined || String(raw).trim() === "" ? "" : Number(raw);
+                    break;
+                case "boolean":
+                    // Checkbox values are stored as the strings "true"/"false".
+                    coerced[i.name] = raw === "true";
+                    break;
+                default: // string, text, date, dropdown → string
+                    coerced[i.name] = raw === undefined || raw === null ? "" : String(raw);
+                    break;
+            }
+        });
+
+        triggerFlo(triggerInputModal.floId, triggerInputModal.triggerId, coerced);
         setTriggerInputModal(null);
     }
 
-    function triggerFlo(flo_id: string, trigger_id: string, data: Record<string, string> | null) {
+    function triggerFlo(flo_id: string, trigger_id: string, data: Record<string, any> | null) {
         if (isTriggering) {
             return
         }
@@ -1896,15 +1962,22 @@ export function Editor(props : EditorProps) {
                                             />
                                             <span>{input.placeholder || "Enabled"}</span>
                                         </label>
-                                    ) : input.options && input.options.length > 0 ? (
+                                    ) : input.type === "date" ? (
+                                        <input
+                                            className="trigger-input-text"
+                                            type="date"
+                                            value={triggerInputValues[input.name] || ""}
+                                            onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
+                                        />
+                                    ) : input.type === "dropdown" || (input.options && input.options.length > 0) ? (
                                         <select
                                             className="trigger-input-select"
                                             value={triggerInputValues[input.name] || ""}
                                             onChange={(e) => setTriggerInputValues(prev => ({...prev, [input.name]: e.target.value}))}
                                         >
                                             <option value="">Select...</option>
-                                            {input.options.map((opt: any) => (
-                                                <option key={opt.value || opt.name} value={opt.value || opt.name}>{opt.name || opt.value}</option>
+                                            {(input.options || []).map((opt: any) => (
+                                                <option key={opt.value ?? opt.name} value={opt.value ?? opt.name}>{opt.label || opt.name || opt.value}</option>
                                             ))}
                                         </select>
                                     ) : (
