@@ -64,6 +64,11 @@ const TriggerURLProperty = (props: Props) => {
             triggerPath = `/form/${trigger.id}`;
             triggerUrl = launchUrl + triggerPath;
             break;
+        case "web":
+            // Invoked over HTTP (any accepted verb) by the flow id, embed-gated.
+            triggerPath = `/v1/embed/flow/${trigger.flo_id}/invoke`;
+            triggerUrl = launchUrl + triggerPath;
+            break;
         case "image":
             triggerPath = `/image/${trigger.id}`;
             triggerUrl = launchUrl + triggerPath;
@@ -94,6 +99,7 @@ const TriggerURLProperty = (props: Props) => {
 
     const isFacebookTrigger = typeName === "facebook-messenger" || typeName === "facebook-feed";
     const isIntercomTrigger = typeName === "intercom-webhook";
+    const isWebTrigger = typeName === "web";
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -103,7 +109,15 @@ const TriggerURLProperty = (props: Props) => {
 
     return (
         <div className="trigger-url-section">
-            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : "Trigger URL"}</div>
+            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : isWebTrigger ? "Invoke URL" : "Trigger URL"}</div>
+            {isWebTrigger && (
+                <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
+                    Call this over HTTP with your embed app's publishable key
+                    (<code>X-Flomation-Publishable-Key</code>) — via the SDK's{" "}
+                    <code>invoke()</code> or any HTTP client. Opt this flow in on the{" "}
+                    <strong>Embed SDK</strong> page first.
+                </div>
+            )}
             {isFacebookTrigger && (
                 <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
                     Paste this URL in your{" "}
