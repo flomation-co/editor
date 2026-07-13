@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc"
 import relativeTime from "dayjs/plugin/relativeTime"
 import {Tooltip} from 'react-tooltip'
-import {toast} from 'react-toastify'
+import {toast} from "~/components/toast"
 import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import useConfig from "~/components/config";
 import {PaginationControls} from "~/components/paginationControls";

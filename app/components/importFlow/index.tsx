@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast } from "~/components/toast";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";

@@ -111,6 +111,9 @@ export function VerticalNav(props: VerticalNavProps) {
                                 {isOrgMode && hasPermission(PERMISSIONS.RUNNER_MANAGE) && (
                                     <NavLink to={"/queue"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Queues" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="cubes-stacked" /></div><span className={"menu-section-list-item-label"}>Queues</span></NavLink>
                                 )}
+                                {(hasPermission(PERMISSIONS.EMBED_VIEW) || hasPermission(PERMISSIONS.EMBED_MANAGE)) && (
+                                    <NavLink to={"/embed"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Embed SDK" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="code" /></div><span className={"menu-section-list-item-label"}>Embed SDK</span></NavLink>
+                                )}
                             </div>
                         </>
                     )}
