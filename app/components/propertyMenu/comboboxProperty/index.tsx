@@ -26,6 +26,9 @@ const ComboboxProperty = (props: PropertyProps) => {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
+    // Mirrors SelectProperty: onValueChange fires whenever the value changes,
+    // including once on mount. Kept identical so both option-backed fields
+    // behave the same way through the property menu's change plumbing.
     useEffect(() => {
         if (props.onValueChange) {
             props.onValueChange(props.name, value);
