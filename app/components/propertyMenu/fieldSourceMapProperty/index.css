@@ -1,0 +1,123 @@
+/* FieldSourceMapProperty — rows of [field name] from [source dropdown]. Matches
+   the dark property-menu theme used by selectProperty / keyValueProperty. */
+
+.fsm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fsm-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(107, 114, 128, 0.5);
+  border-radius: 6px;
+  background: #17202e;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: border-color 0.1s ease, background 0.1s ease;
+}
+.fsm-add-btn:hover {
+  background: #1c2536;
+  border-color: rgba(0, 170, 156, 0.5);
+  color: #2dd4bf;
+}
+
+.fsm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.fsm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fsm-field {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  background: #17202e;
+  border: 1px solid rgba(107, 114, 128, 0.5);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  outline: none;
+}
+.fsm-field:focus {
+  border-color: rgba(0, 170, 156, 0.5);
+}
+.fsm-field::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fsm-from {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.fsm-source {
+  flex-shrink: 0;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 13px;
+  background: #17202e;
+  border: 1px solid rgba(107, 114, 128, 0.5);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  outline: none;
+}
+.fsm-source:focus {
+  border-color: rgba(0, 170, 156, 0.5);
+}
+
+.fsm-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+.fsm-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+.fsm-icon-btn--danger:hover {
+  background: rgba(185, 28, 28, 0.18);
+  color: #f87171;
+}
+
+.fsm-empty-state {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 4px 2px;
+}
+
+.fsm-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.4);
+}
+.fsm-hint code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #2dd4bf;
+}

@@ -24,6 +24,7 @@ import VoiceSelectorProperty from "~/components/propertyMenu/voiceSelectorProper
 import ModelSelectorProperty from "~/components/propertyMenu/modelSelectorProperty";
 import DateTimeProperty from "~/components/propertyMenu/dateTimeProperty";
 import MultiSelectProperty from "~/components/propertyMenu/multiSelectProperty";
+import FieldSourceMapProperty from "~/components/propertyMenu/fieldSourceMapProperty";
 import "~/components/propertyMenu/multiSelectProperty/index.css";
 import "~/components/propertyMenu/selectProperty/index.css";
 import { Icon } from "~/components/icons/Icon";
@@ -380,6 +381,23 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         setName(e.target.value);
                                     }}/>
                                 </div>
+                                {/* Web Trigger: what's available to the flow + the trust warning */}
+                                {(props.node.data.label === "trigger/web" || props.node.type === "trigger/web") && (
+                                    <div className="property-menu-note property-menu-note--web-trigger">
+                                        <div className="property-menu-note-title">Available in this flow</div>
+                                        <p>
+                                            <code>{"${method}"}</code>, your declared request fields (e.g.{" "}
+                                            <code>{"${id}"}</code>), <code>{"${raw_body}"}</code>,{" "}
+                                            <code>{"${history}"}</code> (when history is on), and the signed-in caller as{" "}
+                                            <code>{"${user.name}"}</code> / <code>{"${user.email}"}</code>.
+                                        </p>
+                                        <p className="property-menu-note-warn">
+                                            Treat <code>{"${history}"}</code> and request inputs as untrusted user input —
+                                            never gate a privileged action on them, and don't mutate data on a{" "}
+                                            <code>GET</code>. Use <code>{"${user.X}"}</code> for anything that must be trusted.
+                                        </p>
+                                    </div>
+                                )}
                                 {/* Dynamic trigger inputs builder for manual triggers */}
                                 {(props.node.data.label === "trigger/manual" || props.node.type === "trigger/manual") && (
                                     <>
@@ -834,6 +852,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         options={i.options || []}
                                                         required={i.required}
                                                         variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
+
+                                            case "field_source_map":
+                                                return (
+                                                    <FieldSourceMapProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value || "{}"}
+                                                        options={i.options || []}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
