@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import type {ReactNode} from "react";
 import {Icon} from "~/components/icons/Icon";
 import type {GatewayAPI, GatewayAuthType} from "~/types";
@@ -82,6 +82,56 @@ function highlightJSON(code: string): ReactNode[] {
     return nodes;
 }
 
+/**
+ * JsonBodyEditor is an editable, syntax-highlighted JSON field. Textareas can't
+ * render coloured text, so a highlighted <pre> sits behind a transparent-text
+ * <textarea>; the two share identical typography/padding and their scroll is
+ * kept in sync. Tab inserts two spaces rather than moving focus.
+ */
+function JsonBodyEditor({value, onChange, placeholder}: {value: string; onChange: (v: string) => void; placeholder?: string}) {
+    const taRef = useRef<HTMLTextAreaElement>(null);
+    const preRef = useRef<HTMLPreElement>(null);
+
+    const syncScroll = () => {
+        if (taRef.current && preRef.current) {
+            preRef.current.scrollTop = taRef.current.scrollTop;
+            preRef.current.scrollLeft = taRef.current.scrollLeft;
+        }
+    };
+
+    const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            const ta = e.currentTarget;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            onChange(value.slice(0, start) + "  " + value.slice(end));
+            requestAnimationFrame(() => {
+                ta.selectionStart = ta.selectionEnd = start + 2;
+            });
+        }
+    };
+
+    return (
+        <div className="gwt-code">
+            <pre ref={preRef} className="gwt-code-hl" aria-hidden="true">
+                <code>{highlightJSON(value)}{"\n"}</code>
+            </pre>
+            <textarea
+                ref={taRef}
+                className="gwt-code-input"
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                onScroll={syncScroll}
+                onKeyDown={onKeyDown}
+                placeholder={placeholder}
+                spellCheck={false}
+                rows={5}
+            />
+        </div>
+    );
+}
+
 function statusClass(status?: number, error?: string): string {
     if (error) return "gwt-status--err";
     if (!status) return "";
@@ -163,6 +213,15 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
             </div>
         );
     }
+
+    // Pretty-print the current request body if it is valid JSON (no-op otherwise).
+    const formatBodyInput = () => {
+        try {
+            setBody(JSON.stringify(JSON.parse(body), null, 2));
+        } catch {
+            /* leave malformed JSON untouched */
+        }
+    };
 
     const setParam = (name: string, value: string) => setParamValues(p => ({...p, [name]: value}));
     const setHeader = (i: number, patch: Partial<HeaderRow>) =>
@@ -324,10 +383,15 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                     </div>
 
                     {BODY_METHODS.has(method) && (
-                        <label className="gwt-field">
-                            <span>Body (JSON)</span>
-                            <textarea value={body} onChange={e => setBody(e.target.value)} rows={4} placeholder={`{\n  "name": "Ada"\n}`} spellCheck={false} />
-                        </label>
+                        <div className="gwt-field">
+                            <div className="gwt-field-head">
+                                <span>Body (JSON)</span>
+                                <button type="button" className="gwt-mini-btn" onClick={formatBodyInput} disabled={!body.trim()} title="Pretty-print the JSON body">
+                                    <Icon name="align-left" /> Format
+                                </button>
+                            </div>
+                            <JsonBodyEditor value={body} onChange={setBody} placeholder={`{\n  "name": "Ada"\n}`} />
+                        </div>
                     )}
 
                     <button className="gwt-send" onClick={send} disabled={resp?.loading}>

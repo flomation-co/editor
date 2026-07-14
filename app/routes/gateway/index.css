@@ -251,3 +251,37 @@
 .gwt-body .tok-num { color: #d19a66; }
 .gwt-body .tok-bool { color: #c678dd; }
 .gwt-body .tok-null { color: #e06c75; }
+
+/* Body label row + Format button */
+.gwt-field-head { display: flex; align-items: center; justify-content: space-between; }
+.gwt-mini-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    color: rgba(255, 255, 255, 0.6); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px;
+}
+.gwt-mini-btn:hover:not(:disabled) { color: var(--secondary-background); }
+.gwt-mini-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Highlighted JSON body editor: transparent textarea over a coloured <pre>. */
+.gwt-code { position: relative; text-transform: none; letter-spacing: normal; }
+.gwt-code-hl,
+.gwt-code-input {
+    margin: 0; box-sizing: border-box; width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; line-height: 1.5; padding: 8px 10px;
+    border: 1px solid transparent; border-radius: 6px;
+    white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;
+    tab-size: 2;
+}
+.gwt-code-hl {
+    position: absolute; inset: 0; overflow: auto; pointer-events: none;
+    color: rgba(255, 255, 255, 0.88); background: rgba(0, 0, 0, 0.25);
+}
+.gwt-code-input {
+    position: relative; display: block; min-height: 104px; resize: vertical;
+    background: transparent; color: transparent; caret-color: #fff;
+    border-color: rgba(255, 255, 255, 0.14); overflow: auto;
+}
+.gwt-code-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.gwt-code-input:focus { outline: none; border-color: rgba(0, 170, 156, 0.6); }
