@@ -1,5 +1,5 @@
 /* Right-hand help pane: a reusable pattern for describing a page in plain
-   English. Adopted per-page via Container's `help` prop.
+   English. Adopted per-page via the Container `help` prop.
 
    It is a STRUCTURAL column of the page (a docked, full-height rail with a left
    divider and an inset background), not a floating card, with no elevation,
@@ -7,8 +7,8 @@
 
 /* Layout: main content + help rail sit side by side and fill the content area
    height. The rail is flush to the right edge; the divider is its left border.
-   The two-class selector beats `.flo-container`'s shorthand padding regardless
-   of stylesheet load order. */
+   The two-class selector out-specifies the base `.flo-container` shorthand
+   padding regardless of stylesheet load order. */
 .flo-container.flo-container--with-help {
     display: flex;
     flex-direction: row;
@@ -125,6 +125,13 @@
 
 .help-pane-link:hover {
     border-bottom-color: var(--secondary-background);
+}
+
+/* Slot for page-specific interactive tooling (e.g. the Gateway live tester). */
+.help-pane-extra {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* On narrow viewports the rail drops below the content so it never crowds it. */

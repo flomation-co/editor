@@ -14,6 +14,12 @@ export type HelpContent = {
     points?: string[];
     /** Optional closing tip, shown in a highlighted callout. May contain a link. */
     tip?: ReactNode;
+    /**
+     * Optional interactive content rendered below the copy, separated by a
+     * divider. Lets a page bolt page-specific tooling (e.g. a live tester) onto
+     * the rail without the pane knowing anything about it.
+     */
+    extra?: ReactNode;
 };
 
 /**
@@ -21,7 +27,7 @@ export type HelpContent = {
  * It is a permanent, structural column (adopted via Container's `help` prop):
  * always visible, no collapse.
  */
-export default function HelpPane({title, intro, points, tip}: HelpContent) {
+export default function HelpPane({title, intro, points, tip, extra}: HelpContent) {
     return (
         <aside className="help-pane" aria-label="Page help">
             <div className="help-pane-header">
@@ -53,6 +59,8 @@ export default function HelpPane({title, intro, points, tip}: HelpContent) {
                     <span>{tip}</span>
                 </div>
             )}
+
+            {extra && <div className="help-pane-extra">{extra}</div>}
         </aside>
     );
 }

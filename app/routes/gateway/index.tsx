@@ -12,6 +12,7 @@ import {useToast} from "~/components/toast";
 import {Icon} from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
 import type {HelpContent} from "~/components/helpPane";
+import GatewayTester from "./tester";
 import "./index.css";
 
 // Plain-English description of this page for the right-hand help pane. Aimed at
@@ -170,8 +171,12 @@ export default function GatewayAPIs() {
         );
     };
 
+    // Bolt the live tester onto the help rail — it needs the loaded APIs +
+    // gateway base URL, so it's assembled here rather than in the static copy.
+    const help: HelpContent = {...GATEWAY_HELP, extra: <GatewayTester apis={apis} launchBase={launchBase} />};
+
     return (
-        <Container help={GATEWAY_HELP}>
+        <Container help={help}>
             <ProtectedRoute permission={PERMISSIONS.GATEWAY_VIEW}>
                 <h1 className="gw-title">Gateway</h1>
 
