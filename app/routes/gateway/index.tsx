@@ -2,6 +2,7 @@ import Container from "~/components/container";
 import {useEffect, useState} from "react";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
+import FlowSelect from "~/components/flowSelect";
 import useCookieToken from "~/components/cookie";
 import type {GatewayAPI, GatewayEndpoint, GatewayAuthType} from "~/types";
 import {PERMISSIONS} from "~/types";
@@ -223,7 +224,7 @@ function GatewayCard(props: {
     showToast: (m: string, k?: ToastKind) => void;
 }) {
     const {gw, flows, expanded, onToggle, onDelete, onChanged, base, auth, launchBase, onCopy, showToast} = props;
-    const url = `${launchBase}/gw/${gw.api_id}`;
+    const url = `${launchBase}/gateway/${gw.api_id}`;
     const apiURL = base + "/" + gw.id;
 
     const [method, setMethod] = useState("GET");
@@ -264,7 +265,7 @@ function GatewayCard(props: {
                     <span className="gw-card-meta">{(gw.endpoints?.length ?? 0)} endpoint{(gw.endpoints?.length ?? 0) === 1 ? "" : "s"} · {authLabel}</span>
                 </div>
                 <button className="gw-url-pill" onClick={e => { e.stopPropagation(); onCopy(url); }} title="Copy base URL">
-                    <code>/gw/{gw.api_id}</code><Icon name="copy" />
+                    <code>/gateway/{gw.api_id}</code><Icon name="copy" />
                 </button>
                 <button className="gw-icon-btn gw-icon-btn--danger" onClick={e => { e.stopPropagation(); onDelete(); }} title="Delete API"><Icon name="trash" /></button>
                 <Icon name={expanded ? "chevron-up" : "chevron-down"} />
@@ -293,10 +294,7 @@ function GatewayCard(props: {
                                 {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                             <input value={pathPattern} placeholder="/users/:id" onChange={e => setPathPattern(e.target.value)} />
-                            <select value={flowId} onChange={e => setFlowId(e.target.value)}>
-                                <option value="">Select a flow…</option>
-                                {flows.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                            </select>
+                            <FlowSelect value={flowId} onChange={setFlowId} placeholder="Search flows…" className="gw-flow-select" />
                             <button className="gw-btn gw-btn--primary" onClick={addEndpoint}>Add</button>
                         </div>
                     </div>

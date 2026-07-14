@@ -98,7 +98,13 @@
 }
 .gw-add-endpoint select:first-child { width: 92px; }
 .gw-add-endpoint input { flex: 1; min-width: 0; }
-.gw-add-endpoint select:nth-of-type(2) { width: 180px; }
+
+/* The shared FlowSelect autocomplete, sized to sit inline in the endpoint row. */
+.gw-flow-select { width: 200px; flex-shrink: 0; }
+.gw-flow-select .flow-select-input {
+    height: 36px; padding: 0 10px; box-sizing: border-box;
+    font-size: 13px; border-radius: 6px; border-color: rgba(255, 255, 255, 0.12);
+}
 
 .gw-auth-summary { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: rgba(255, 255, 255, 0.85); }
 .gw-auth-summary span { flex: 1; }
