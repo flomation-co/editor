@@ -289,16 +289,22 @@
 /* Searchable Endpoint autocomplete (mirrors FlowSelect) */
 .gwt-ep { position: relative; text-transform: none; letter-spacing: normal; }
 .gwt-ep-control {
-    display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 38px;
-    padding: 5px 10px; box-sizing: border-box;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    /* Fixed height so the control does NOT resize between the chip (closed) and
+       the search input (open) states. */
+    height: 40px; padding: 0 10px; box-sizing: border-box;
     background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 6px;
     transition: border-color 0.12s ease;
 }
 .gwt-ep-control:hover { border-color: rgba(255, 255, 255, 0.24); }
+/* Override the global input rule (10px padding + focus glow) so the search box
+   is a bare inline field that fits the fixed control height. */
 .gwt-ep-input {
-    flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+    flex: 1; min-width: 0; width: auto; padding: 0; height: 100%;
+    background: transparent; border: none; outline: none; box-shadow: none;
     color: #fff; font-size: 13px; font-family: inherit;
 }
+.gwt-ep-input:focus { box-shadow: none; }
 .gwt-ep-input::placeholder { color: rgba(255, 255, 255, 0.3); }
 .gwt-ep-current { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; }
 .gwt-ep-placeholder { flex: 1; color: rgba(255, 255, 255, 0.4); font-size: 13px; }
