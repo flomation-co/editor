@@ -1,6 +1,7 @@
 import type {Route} from "../+types/home";
 import "./index.css"
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import {Link, useSearchParams} from "react-router";
 import {ExecuteState, ExecutionStateValue} from "~/components/executionState";
 import type {Execution} from "~/types";
@@ -102,6 +103,18 @@ function LiveDuration({ createdAt, formatter }: { createdAt: string; formatter: 
     }, [createdAt]);
     return <>{formatter(elapsed)}</>;
 }
+
+const EXECUTIONS_HELP: HelpContent = {
+    title: "About Executions",
+    intro: "Every time a flow runs it is recorded here, so you can see what happened, how long it took and whether it worked.",
+    points: [
+        "Browse past and in-progress runs",
+        "Open a run to see each step and its result",
+        "Spot failures and read the error that caused them",
+        "Check how long your runs take to finish",
+    ],
+    tip: "Open any execution to replay it step by step and inspect the data that flowed between the steps.",
+};
 
 export default function Executions() {
     const [ searchParams, setSearchParams ] = useSearchParams();
@@ -312,7 +325,7 @@ export default function Executions() {
     }
 
     return (
-        <Container>
+        <Container help={EXECUTIONS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.FLOW_EXECUTE}>
             <div className={"header"}>Executions</div>
 

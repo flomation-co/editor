@@ -5,6 +5,7 @@ import api from "~/lib/api";
 import type {Flo} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import "./index.css"
 import Modal from "~/components/modal";
 import ImportFlowModal from "~/components/importFlow";
@@ -38,6 +39,18 @@ export function meta({}: Route.MetaArgs) {
 
 const config = useConfig();
 const API_URL = config("AUTOMATE_API_URL");
+
+const FLOWS_HELP: HelpContent = {
+    title: "About Flows",
+    intro: "Flows are the automations you build: a series of steps wired together that run in order to get something done.",
+    points: [
+        "Create a flow and open it in the editor",
+        "Drag in actions and connect them to shape the logic",
+        "Run a flow by hand, or add a trigger to run it for you",
+        "Duplicate or tidy up flows as your work grows",
+    ],
+    tip: "Every flow starts from a trigger. Add one to decide what kicks it off: a schedule, a form, a webhook and more.",
+};
 
 export default function Flows() {
     const navigate = useNavigate();
@@ -630,7 +643,7 @@ export default function Flows() {
     };
 
     return (
-        <Container>
+        <Container help={FLOWS_HELP}>
             <ProtectedRoute permissions={[PERMISSIONS.FLOW_CREATE, PERMISSIONS.FLOW_EDIT, PERMISSIONS.FLOW_EXECUTE]}>
                 <div className={"header"}>Flows</div>
 

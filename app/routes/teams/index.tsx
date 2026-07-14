@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
 import type {Group, GroupMember, AgentGroupMember, OrganisationMember, Agent} from "~/types";
@@ -19,6 +20,18 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Manage teams" },
     ];
 }
+
+const TEAMS_HELP: HelpContent = {
+    title: "About Teams",
+    intro: "Teams group people together so you can hand out access in one go, instead of person by person.",
+    points: [
+        "Create teams that mirror how you work",
+        "Add or remove members from a team",
+        "Grant a team access to the things it needs",
+        "Keep permissions tidy as people come and go",
+    ],
+    tip: "Give a team a role once, and everyone in it inherits the same access.",
+};
 
 export default function Groups() {
     const config = useConfig();
@@ -210,7 +223,7 @@ export default function Groups() {
 
     if (!currentOrg) {
         return (
-            <Container>
+            <Container help={TEAMS_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
                 <div className={"header"}>Teams</div>
                 <div className={"groups-section"}>
@@ -232,7 +245,7 @@ export default function Groups() {
     );
 
     return (
-        <Container>
+        <Container help={TEAMS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.ORGANISATION_MANAGE}>
             <div className={"header"}>Teams</div>
 

@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
 import {useAuth} from "~/context/auth/use";
@@ -18,6 +19,18 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Manage your organisation" },
     ];
 }
+
+const ORGANISATION_HELP: HelpContent = {
+    title: "About your Organisation",
+    intro: "Your organisation is your shared workspace, where your team, settings and shared resources live together.",
+    points: [
+        "Invite people and manage who is a member",
+        "Set what each person is allowed to do",
+        "Manage shared settings for everyone",
+        "Keep your workspace details up to date",
+    ],
+    tip: "Members share the organisation's flows, environments and usage, so changes here affect the whole team.",
+};
 
 export default function Organisations() {
     const config = useConfig();
@@ -117,7 +130,7 @@ export default function Organisations() {
 
     if (!currentOrg) {
         return (
-            <Container>
+            <Container help={ORGANISATION_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.ORGANISATION_VIEW}>
                 <div className={"header"}>Organisations</div>
 
@@ -179,7 +192,7 @@ export default function Organisations() {
     };
 
     return (
-        <Container>
+        <Container help={ORGANISATION_HELP}>
             <ProtectedRoute permission={PERMISSIONS.ORGANISATION_VIEW}>
             <div className={"header"}>{currentOrg.name}</div>
 

@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState} from "react";
@@ -47,6 +48,18 @@ const STATUS_LABELS: Record<string, string> = {
     error: "Error",
 };
 
+const AGENTS_HELP: HelpContent = {
+    title: "About Agents",
+    intro: "Agents are AI assistants that chat on your channels, like Slack or Telegram, and run your flows to get real work done.",
+    points: [
+        "Create an agent and give it a personality and instructions",
+        "Connect the channels it should listen and reply on",
+        "Point it at a flow that decides what it can do",
+        "Follow its conversations and memory as it works",
+    ],
+    tip: "An agent needs a flow to act on. Build that flow first, then link it when you set the agent up.",
+};
+
 export default function Agents() {
     const token = useCookieToken();
     const config = useConfig();
@@ -86,7 +99,7 @@ export default function Agents() {
     };
 
     return (
-        <Container>
+        <Container help={AGENTS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="header">Agents</div>
             <div className="agents-action-bar">
