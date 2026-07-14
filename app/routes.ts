@@ -13,6 +13,7 @@ export default [
 
     route("queue", "routes/queues/index.tsx"),
     route("embed", "routes/embed/index.tsx"),
+    route("gateway", "routes/gateway/index.tsx"),
     route("organisation", "routes/organisations/index.tsx"),
     route("invite/:code", "routes/invite/index.tsx"),
     route("team", "routes/teams/index.tsx"),

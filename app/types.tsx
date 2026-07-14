@@ -596,6 +596,8 @@ export const PERMISSIONS = {
     AGENT_START_STOP: "agent.start_stop",
     EMBED_MANAGE: "embed.manage",
     EMBED_VIEW: "embed.view",
+    GATEWAY_MANAGE: "gateway.manage",
+    GATEWAY_VIEW: "gateway.view",
 } as const;
 
 // EmbedApp is a publishable-key credential for the developer SDK, with its
@@ -617,6 +619,32 @@ export type EmbedResource = {
     resource_type: "form" | "flow" | "agent";
     resource_id: string;
     created_at: string;
+};
+
+export type GatewayAuthType = "open" | "api_key" | "basic" | "oidc" | "flomation";
+
+export type GatewayEndpoint = {
+    id: string;
+    gateway_api_id: string;
+    method: string;
+    path_pattern: string;
+    flow_id: string;
+    trigger_id: string;
+    enabled: boolean;
+    created_at: string;
+};
+
+export type GatewayAPI = {
+    id: string;
+    api_id: string;
+    organisation_id?: string | null;
+    owner_id: string;
+    name: string;
+    auth_type: GatewayAuthType;
+    auth_config?: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+    endpoints?: GatewayEndpoint[];
 };
 
 export const PERMISSION_CATEGORIES = [
@@ -672,6 +700,13 @@ export const PERMISSION_CATEGORIES = [
         permissions: [
             { key: PERMISSIONS.EMBED_VIEW, label: "View Embed Keys" },
             { key: PERMISSIONS.EMBED_MANAGE, label: "Manage Embed Keys" },
+        ]
+    },
+    {
+        name: "Gateway",
+        permissions: [
+            { key: PERMISSIONS.GATEWAY_VIEW, label: "View Gateway APIs" },
+            { key: PERMISSIONS.GATEWAY_MANAGE, label: "Manage Gateway APIs" },
         ]
     },
 ] as const;

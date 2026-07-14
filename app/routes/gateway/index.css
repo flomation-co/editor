@@ -1,0 +1,108 @@
+.gw-title { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+.gw-intro { max-width: 760px; color: rgba(255, 255, 255, 0.55); font-size: 13.5px; line-height: 1.6; margin: 0 0 22px; }
+
+.gw-create-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 14px; margin-bottom: 20px;
+    background: #00aa9c; border: 1px solid rgba(0, 170, 156, 0.3); border-radius: 6px;
+    color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s ease;
+}
+.gw-create-btn:hover { background: #00ccbb; }
+
+.gw-create-form {
+    background: var(--primary-background); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px;
+    max-width: 560px;
+}
+
+.gw-field { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); }
+.gw-field input,
+.gw-field select {
+    height: 38px; padding: 0 12px; box-sizing: border-box;
+    background-color: var(--primary-background); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px; color: var(--primary-font-colour); font-size: 14px; font-family: inherit;
+}
+.gw-field input:focus, .gw-field select:focus { outline: none; border-color: rgba(0, 170, 156, 0.6); }
+
+.gw-auth-form { display: flex; flex-direction: column; gap: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; }
+
+.gw-form-actions { display: flex; gap: 8px; margin-top: 4px; }
+.gw-btn {
+    height: 34px; padding: 0 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+    background: transparent; border: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.8);
+}
+.gw-btn:hover { background: rgba(255, 255, 255, 0.06); }
+.gw-btn--primary { background: #00aa9c; border-color: rgba(0, 170, 156, 0.3); color: #fff; }
+.gw-btn--primary:hover { background: #00ccbb; }
+.gw-btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.gw-btn--danger { background: #d64545; border-color: rgba(214, 69, 69, 0.4); color: #fff; }
+.gw-btn--danger:hover { background: #e05555; }
+
+.gw-loading, .gw-empty { color: rgba(255, 255, 255, 0.5); font-size: 14px; padding: 20px 0; }
+
+.gw-list { display: flex; flex-direction: column; gap: 12px; max-width: 860px; }
+
+.gw-card { background: var(--primary-background); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; }
+.gw-card-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.gw-card-head:hover { background: rgba(255, 255, 255, 0.02); }
+.gw-card-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gw-card-name { font-size: 14.5px; font-weight: 500; }
+.gw-card-meta { font-size: 12px; color: rgba(255, 255, 255, 0.45); }
+
+.gw-url-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
+    background: rgba(0, 170, 156, 0.08); border: 1px solid rgba(0, 170, 156, 0.25);
+    border-radius: 20px; font-size: 12.5px; color: rgba(255, 255, 255, 0.85); cursor: pointer;
+}
+.gw-url-pill:hover { background: rgba(0, 170, 156, 0.16); }
+.gw-url-pill code { color: #2dd4bf; }
+
+.gw-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border: none; border-radius: 6px; background: transparent; color: rgba(255, 255, 255, 0.5); cursor: pointer;
+}
+.gw-icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.9); }
+.gw-icon-btn--danger:hover { background: rgba(214, 69, 69, 0.18); color: #f87171; }
+
+.gw-card-body { border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 16px; display: flex; flex-direction: column; gap: 22px; }
+.gw-section { display: flex; flex-direction: column; gap: 10px; }
+.gw-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: rgba(255, 255, 255, 0.4); }
+
+.gw-base-url { display: flex; flex-direction: column; gap: 8px; }
+.gw-url-box {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+}
+.gw-url-box code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #2dd4bf; font-size: 13px; }
+
+.gw-endpoint-empty { font-size: 12.5px; color: rgba(255, 255, 255, 0.4); }
+.gw-endpoint-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.gw-endpoint-path { flex: 1; min-width: 0; font-size: 13px; color: rgba(255, 255, 255, 0.85); }
+.gw-endpoint-flow { font-size: 12px; color: rgba(255, 255, 255, 0.5); }
+
+.gw-method {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 52px; padding: 3px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.8);
+}
+.gw-method--get { background: rgba(0, 170, 156, 0.18); color: #2dd4bf; }
+.gw-method--post { background: rgba(70, 0, 112, 0.35); color: #c084fc; }
+.gw-method--put, .gw-method--patch { background: rgba(234, 179, 8, 0.16); color: #fcd34d; }
+.gw-method--delete { background: rgba(214, 69, 69, 0.18); color: #f87171; }
+
+.gw-add-endpoint { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.gw-add-endpoint select, .gw-add-endpoint input {
+    height: 36px; padding: 0 10px; box-sizing: border-box;
+    background-color: var(--primary-background); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px; color: var(--primary-font-colour); font-size: 13px; font-family: inherit;
+}
+.gw-add-endpoint select:first-child { width: 92px; }
+.gw-add-endpoint input { flex: 1; min-width: 0; }
+.gw-add-endpoint select:nth-of-type(2) { width: 180px; }
+
+.gw-auth-summary { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: rgba(255, 255, 255, 0.85); }
+.gw-auth-summary span { flex: 1; }
+
+.gw-modal { padding: 4px; max-width: 380px; }
+.gw-modal h3 { margin: 0 0 8px; font-size: 16px; }
+.gw-modal p { margin: 0 0 16px; font-size: 13px; color: rgba(255, 255, 255, 0.6); line-height: 1.5; }

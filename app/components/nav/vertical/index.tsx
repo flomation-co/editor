@@ -114,6 +114,9 @@ export function VerticalNav(props: VerticalNavProps) {
                                 {(hasPermission(PERMISSIONS.EMBED_VIEW) || hasPermission(PERMISSIONS.EMBED_MANAGE)) && (
                                     <NavLink to={"/embed"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Embed SDK" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="code" /></div><span className={"menu-section-list-item-label"}>Embed SDK</span></NavLink>
                                 )}
+                                {(hasPermission(PERMISSIONS.GATEWAY_VIEW) || hasPermission(PERMISSIONS.GATEWAY_MANAGE)) && (
+                                    <NavLink to={"/gateway"} className={"menu-section-list-item"} data-tooltip-id="nav-tip" data-tooltip-content="Gateway" data-tooltip-place="right"><div className={"menu-section-list-icon"}><Icon name="server" /></div><span className={"menu-section-list-item-label"}>Gateway</span></NavLink>
+                                )}
                             </div>
                         </>
                     )}
