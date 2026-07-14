@@ -1,4 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
+import type {ReactNode} from "react";
 import {Icon} from "~/components/icons/Icon";
 import type {GatewayAPI, GatewayAuthType} from "~/types";
 
@@ -46,16 +47,39 @@ function pathParamNames(pattern: string | undefined): string[] {
     return Array.from(new Set(found.map(s => s.slice(1))));
 }
 
-// prettyBody pretty-prints a JSON response; falls back to the raw text otherwise.
-function prettyBody(text: string, contentType: string): string {
-    if (/json/i.test(contentType) || /^\s*[\[{]/.test(text)) {
+// formatBody pretty-prints (2-space indented) a JSON response and reports whether
+// it was in fact JSON — non-JSON falls back to the raw text and no highlighting.
+function formatBody(text: string, contentType: string): {text: string; json: boolean} {
+    if (/json/i.test(contentType) || /^\s*[\[{]/.test(text.trim())) {
         try {
-            return JSON.stringify(JSON.parse(text), null, 2);
+            return {text: JSON.stringify(JSON.parse(text), null, 2), json: true};
         } catch {
             /* not valid JSON after all — show raw */
         }
     }
-    return text;
+    return {text, json: false};
+}
+
+// highlightJSON turns formatted JSON into coloured token spans (keys, strings,
+// numbers, booleans, null). Hand-rolled so there's no syntax-highlighter dep.
+function highlightJSON(code: string): ReactNode[] {
+    const nodes: ReactNode[] = [];
+    const re = /("(?:\\.|[^"\\])*"(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
+    let last = 0;
+    let key = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(code)) !== null) {
+        if (m.index > last) nodes.push(code.slice(last, m.index));
+        const tok = m[0];
+        let cls = "tok-num";
+        if (tok.startsWith('"')) cls = m[2] ? "tok-key" : "tok-str";
+        else if (tok === "true" || tok === "false") cls = "tok-bool";
+        else if (tok === "null") cls = "tok-null";
+        nodes.push(<span key={key++} className={cls}>{tok}</span>);
+        last = m.index + tok.length;
+    }
+    if (last < code.length) nodes.push(code.slice(last));
+    return nodes;
 }
 
 function statusClass(status?: number, error?: string): string {
@@ -95,6 +119,9 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
     const ep = useMemo(() => endpoints.find(e => e.id === epId) ?? endpoints[0], [endpoints, epId]);
     const method = (ep?.method ?? "GET").toUpperCase();
     const params = useMemo(() => pathParamNames(ep?.path_pattern), [ep?.path_pattern]);
+    const authIdx = Math.max(0, AUTH_MODES.findIndex(m => m.value === authMode));
+    const cycleAuth = (dir: number) =>
+        setAuthMode(AUTH_MODES[(authIdx + dir + AUTH_MODES.length) % AUTH_MODES.length].value);
 
     // The concrete path with :params substituted (unfilled params left visible).
     const resolvedPath = useMemo(() => {
@@ -246,12 +273,14 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                         </div>
                     </div>
 
-                    <label className="gwt-field">
+                    <div className="gwt-field">
                         <span>Auth</span>
-                        <select value={authMode} onChange={e => setAuthMode(e.target.value as AuthMode)}>
-                            {AUTH_MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                        </select>
-                    </label>
+                        <div className="gwt-carousel">
+                            <button type="button" className="gwt-carousel-arrow" onClick={() => cycleAuth(-1)} aria-label="Previous auth mode"><Icon name="chevron-left" /></button>
+                            <span className="gwt-carousel-label">{AUTH_MODES[authIdx].label}</span>
+                            <button type="button" className="gwt-carousel-arrow" onClick={() => cycleAuth(1)} aria-label="Next auth mode"><Icon name="chevron-right" /></button>
+                        </div>
+                    </div>
                     {authMode === "api_key" && (
                         <div className="gwt-row">
                             <label className="gwt-field"><span>Header</span>
@@ -319,9 +348,10 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                     </div>
                     {resp.error ? (
                         <div className="gwt-error">{resp.error}</div>
-                    ) : (
-                        <pre className="gwt-body">{prettyBody(resp.body ?? "", resp.contentType ?? "")}</pre>
-                    )}
+                    ) : (() => {
+                        const {text, json} = formatBody(resp.body ?? "", resp.contentType ?? "");
+                        return <pre className="gwt-body">{json ? highlightJSON(text) : text}</pre>;
+                    })()}
                 </div>
             )}
         </div>

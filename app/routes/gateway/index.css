@@ -228,3 +228,26 @@
     padding: 6px 10px; cursor: pointer; color: rgba(255, 255, 255, 0.7); font-size: 12.5px;
 }
 .gwt-add:hover { border-color: rgba(0, 170, 156, 0.5); color: #fff; }
+
+/* Auth carousel */
+.gwt-carousel {
+    display: flex; align-items: center; gap: 4px; padding: 3px;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 6px;
+}
+.gwt-carousel-arrow {
+    display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 28px; flex-shrink: 0;
+    border: none; border-radius: 5px; background: transparent; color: rgba(255, 255, 255, 0.6); cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+.gwt-carousel-arrow:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.gwt-carousel-label {
+    flex: 1; text-align: center; text-transform: none; letter-spacing: normal;
+    font-size: 13px; font-weight: 500; color: #fff;
+}
+
+/* Response JSON syntax highlighting (One Dark-ish palette) */
+.gwt-body .tok-key { color: #61afef; }
+.gwt-body .tok-str { color: #98c379; }
+.gwt-body .tok-num { color: #d19a66; }
+.gwt-body .tok-bool { color: #c678dd; }
+.gwt-body .tok-null { color: #e06c75; }
