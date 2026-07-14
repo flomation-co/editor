@@ -173,7 +173,7 @@ export default function GatewayAPIs() {
 
     // Bolt the live tester onto the help rail — it needs the loaded APIs +
     // gateway base URL, so it's assembled here rather than in the static copy.
-    const help: HelpContent = {...GATEWAY_HELP, extra: <GatewayTester apis={apis} launchBase={launchBase} />};
+    const help: HelpContent = {...GATEWAY_HELP, extra: <GatewayTester apis={apis} launchBase={launchBase} sessionToken={token} />};
 
     return (
         <Container help={help}>

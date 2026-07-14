@@ -7,10 +7,12 @@ import type {GatewayAPI, GatewayAuthType, GatewayEndpoint} from "~/types";
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 // Auth modes the tester can send. Independent of the API's configured type so a
-// user can probe what happens with the wrong (or no) credentials.
-type AuthMode = "none" | "api_key" | "basic" | "bearer";
+// user can probe what happens with the wrong (or no) credentials. "flomation"
+// reuses the editor's own login (the browser session token / cookie).
+type AuthMode = "none" | "api_key" | "basic" | "bearer" | "flomation";
 const AUTH_MODES: {value: AuthMode; label: string}[] = [
     {value: "none", label: "None"},
+    {value: "flomation", label: "Flomation session"},
     {value: "api_key", label: "API Key (header)"},
     {value: "basic", label: "HTTP Basic"},
     {value: "bearer", label: "Bearer token"},
@@ -21,8 +23,8 @@ function defaultAuthMode(t: GatewayAuthType | undefined): AuthMode {
     switch (t) {
         case "api_key": return "api_key";
         case "basic": return "basic";
-        case "oidc":
-        case "flomation": return "bearer";
+        case "flomation": return "flomation";
+        case "oidc": return "bearer";
         default: return "none";
     }
 }
@@ -210,7 +212,7 @@ function statusClass(status?: number, error?: string): string {
  * proxy is needed) and reports the status, timing and body. It's page-specific
  * tooling mounted into the help rail via HelpContent.extra.
  */
-export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; launchBase: string}) {
+export default function GatewayTester({apis, launchBase, sessionToken}: {apis: GatewayAPI[]; launchBase: string; sessionToken?: string | null}) {
     const [apiPk, setApiPk] = useState<string>("");
     const [epId, setEpId] = useState<string>("");
     const [paramValues, setParamValues] = useState<Record<string, string>>({});
@@ -312,6 +314,9 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
             h["Authorization"] = "Basic " + btoa(`${username}:${password}`);
         } else if (authMode === "bearer" && token) {
             h["Authorization"] = "Bearer " + token;
+        } else if (authMode === "flomation" && sessionToken) {
+            // Reuse the editor's own login — the gateway reads it as a bearer.
+            h["Authorization"] = "Bearer " + sessionToken;
         }
 
         let bodyToSend: string | undefined;
@@ -428,6 +433,13 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                             <span>Bearer token</span>
                             <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="JWT" />
                         </label>
+                    )}
+                    {authMode === "flomation" && (
+                        <div className="gwt-note">
+                            {sessionToken
+                                ? "Sends your current Flomation login, so the request is authenticated as you (subject to the API's org/RBAC rules)."
+                                : "You are not signed in, so no session token is available to send."}
+                        </div>
                     )}
 
                     <div className="gwt-collapse-section">
