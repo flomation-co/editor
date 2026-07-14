@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import {useEffect, useState} from "react";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
@@ -58,6 +59,18 @@ function normaliseOrigin(value: string): string | null {
 function isValidOrigin(value: string): boolean {
     return normaliseOrigin(value) !== null;
 }
+
+const EMBED_HELP: HelpContent = {
+    title: "About the Embed SDK",
+    intro: "The Embed SDK lets you drop your forms, flows and agents straight into your own website or app.",
+    points: [
+        "Create an embed and choose what it exposes",
+        "Copy a small snippet into your site",
+        "Control who can use it and from where",
+        "Update the embed without touching your site again",
+    ],
+    tip: "Embeds run behind a public link, so you can share them without giving anyone access to your Flomation account.",
+};
 
 export default function EmbedApps() {
     const token = useCookieToken();
@@ -142,7 +155,7 @@ export default function EmbedApps() {
     };
 
     return (
-        <Container>
+        <Container help={EMBED_HELP}>
             <ProtectedRoute permission={PERMISSIONS.EMBED_VIEW}>
                 <div className="header">Embed SDK</div>
                 <p className="embed-intro">

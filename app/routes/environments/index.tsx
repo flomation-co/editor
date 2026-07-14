@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import SearchBar from "~/components/searchBar";
 import {Link, useNavigate, useSearchParams} from "react-router";
 import {useEffect, useState} from "react";
@@ -21,6 +22,18 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Get in the Flo" },
     ];
 }
+
+const ENVIRONMENTS_HELP: HelpContent = {
+    title: "About Environments",
+    intro: "Environments keep your secrets and settings in one safe place, so your flows can use them without anything being hard-coded.",
+    points: [
+        "Store secrets like API keys and passwords securely",
+        "Keep everyday settings as reusable properties",
+        "Connect third-party accounts as credentials",
+        "Switch between setups such as test and live",
+    ],
+    tip: "Refer to anything stored here from a flow with ${secrets.NAME} or ${env.NAME}; the real value is filled in when the flow runs.",
+};
 
 export default function Environments() {
     const navigate = useNavigate();
@@ -82,7 +95,7 @@ export default function Environments() {
     }
 
     return (
-        <Container>
+        <Container help={ENVIRONMENTS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.ENVIRONMENT_VIEW}>
             <div className={"header"}>Environments</div>
 

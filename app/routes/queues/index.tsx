@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
 import type {Queue, Runner} from "~/types";
@@ -19,6 +20,18 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Manage execution queues" },
     ];
 }
+
+const QUEUES_HELP: HelpContent = {
+    title: "About Queues",
+    intro: "Queues line up work so it is handled in an orderly way, even when a lot arrives at once.",
+    points: [
+        "See the jobs waiting to be processed",
+        "Watch how quickly work is getting through",
+        "Notice backlogs building up",
+        "Keep busy periods under control",
+    ],
+    tip: "Queues are shared across your organisation, so everyone's work is handled fairly.",
+};
 
 export default function Queues() {
     const config = useConfig();
@@ -121,7 +134,7 @@ export default function Queues() {
 
     if (!currentOrg) {
         return (
-            <Container>
+            <Container help={QUEUES_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.RUNNER_MANAGE}>
                 <div className={"header"}>Queues</div>
                 <div className={"queue-empty"}>
@@ -138,7 +151,7 @@ export default function Queues() {
     const availableRunners = allRunners.filter(r => !assignedRunnerIds.has(r.id));
 
     return (
-        <Container>
+        <Container help={QUEUES_HELP}>
             <ProtectedRoute permission={PERMISSIONS.RUNNER_MANAGE}>
             <div className={"header"}>Queues</div>
 

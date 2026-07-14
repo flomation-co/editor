@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import React, {useEffect, useState} from "react";
 import {useAuth} from "~/context/auth/use";
 import {useOrganisation} from "~/context/organisation/use";
@@ -246,6 +247,18 @@ function VoucherHistory({token}: { token: string | null }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────
+
+const BILLING_HELP: HelpContent = {
+    title: "About Billing",
+    intro: "Everything about your subscription in one place: your plan, what you are using and your invoices.",
+    points: [
+        "See your current plan and what it includes",
+        "Upgrade, downgrade or cancel when you need to",
+        "Add or update your payment card",
+        "Download past invoices",
+    ],
+    tip: "Upgrades take effect straight away; downgrades and cancellations apply at the end of your billing period.",
+};
 
 export default function Billing() {
     const auth = useAuth();
@@ -849,7 +862,7 @@ export default function Billing() {
 
     if (loading) {
         return (
-            <Container>
+            <Container help={BILLING_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.BILLING_VIEW}>
                 <div className="header">Billing</div>
                 <div className="billing-page">
@@ -861,7 +874,7 @@ export default function Billing() {
     }
 
     return (
-        <Container>
+        <Container help={BILLING_HELP}>
             <ProtectedRoute permission={PERMISSIONS.BILLING_VIEW}>
             <div className="header">Billing</div>
 

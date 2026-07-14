@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState} from "react";
@@ -25,6 +26,18 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Get in the Flo" },
     ];
 }
+
+const RUNNERS_HELP: HelpContent = {
+    title: "About Runners",
+    intro: "Runners are the machines that actually carry out your flows. Register one and your automations have somewhere to run.",
+    points: [
+        "See which runners are connected and healthy",
+        "Register a new runner to add capacity",
+        "Approve or reject runners before they pick up work",
+        "Retire runners you no longer need",
+    ],
+    tip: "A flow will not run until at least one healthy runner is available to take the job.",
+};
 
 export default function Runners() {
     const [ searchParams, setSearchParams ] = useSearchParams();
@@ -72,7 +85,7 @@ export default function Runners() {
     };
 
     return (
-        <Container>
+        <Container help={RUNNERS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.RUNNER_VIEW}>
             <div className={"header"}>Runners</div>
 
