@@ -226,6 +226,14 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
     const [headers, setHeaders] = useState<HeaderRow[]>([]);
     const [showHeaders, setShowHeaders] = useState<boolean>(false);
     const [resp, setResp] = useState<Resp | null>(null);
+    const [copied, setCopied] = useState<boolean>(false);
+
+    const copyResponse = () => {
+        navigator.clipboard?.writeText(resp?.body ?? "").then(
+            () => { setCopied(true); setTimeout(() => setCopied(false), 1500); },
+            () => {},
+        );
+    };
 
     const api = useMemo(() => apis.find(a => a.id === apiPk) ?? apis[0], [apis, apiPk]);
     const endpoints = api?.endpoints ?? [];
@@ -468,6 +476,11 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                             <span className={`gwt-status ${statusClass(resp.status)}`}>{resp.status} {resp.statusText}</span>
                         )}
                         {typeof resp.timeMs === "number" && <span className="gwt-time">{resp.timeMs} ms</span>}
+                        {!resp.error && resp.body != null && (
+                            <button type="button" className="gwt-copy" onClick={copyResponse} title="Copy response body">
+                                <Icon name={copied ? "circle-check" : "copy"} /> {copied ? "Copied" : "Copy"}
+                            </button>
+                        )}
                     </div>
                     {resp.error ? (
                         <div className="gwt-error">{resp.error}</div>
