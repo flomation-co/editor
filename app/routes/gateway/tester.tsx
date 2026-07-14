@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import type {ReactNode} from "react";
 import {Icon} from "~/components/icons/Icon";
-import type {GatewayAPI, GatewayAuthType} from "~/types";
+import type {GatewayAPI, GatewayAuthType, GatewayEndpoint} from "~/types";
 
 // Methods that carry a request body — the body editor only shows for these.
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -128,6 +128,69 @@ function JsonBodyEditor({value, onChange, placeholder}: {value: string; onChange
                 spellCheck={false}
                 rows={5}
             />
+        </div>
+    );
+}
+
+/**
+ * EndpointSelect is a searchable autocomplete for an API's endpoints, mirroring
+ * the app's FlowSelect UX. Closed, it shows the chosen endpoint as a coloured
+ * method chip + path; open, it becomes a filter box over a dropdown of matches.
+ */
+function EndpointSelect({endpoints, value, onChange}: {endpoints: GatewayEndpoint[]; value: string; onChange: (id: string) => void}) {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const ref = useRef<HTMLDivElement>(null);
+    const selected = endpoints.find(e => e.id === value);
+
+    useEffect(() => {
+        const h = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener("mousedown", h);
+        return () => document.removeEventListener("mousedown", h);
+    }, []);
+
+    const filtered = endpoints.filter(e =>
+        `${e.method} ${e.path_pattern}`.toLowerCase().includes(search.toLowerCase()));
+
+    return (
+        <div className="gwt-ep" ref={ref}>
+            <div className="gwt-ep-control" onClick={() => { setOpen(o => !o); setSearch(""); }}>
+                {open ? (
+                    <input
+                        autoFocus
+                        className="gwt-ep-input"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        onClick={e => e.stopPropagation()}
+                        placeholder="Search endpoints…"
+                    />
+                ) : selected ? (
+                    <span className="gwt-ep-current">
+                        <span className={`gwt-method gwt-method--${selected.method.toLowerCase()}`}>{selected.method}</span>
+                        <code>{selected.path_pattern}</code>
+                    </span>
+                ) : (
+                    <span className="gwt-ep-placeholder">Select an endpoint…</span>
+                )}
+                <Icon name="chevron-down" className="gwt-ep-caret" />
+            </div>
+            {open && (
+                <div className="gwt-ep-dropdown">
+                    {filtered.map(e => (
+                        <div
+                            key={e.id}
+                            className={`gwt-ep-option ${e.id === value ? "selected" : ""}`}
+                            onClick={() => { onChange(e.id); setOpen(false); }}
+                        >
+                            <span className={`gwt-method gwt-method--${e.method.toLowerCase()}`}>{e.method}</span>
+                            <code>{e.path_pattern}</code>
+                        </div>
+                    ))}
+                    {filtered.length === 0 && <div className="gwt-ep-empty">No endpoints found</div>}
+                </div>
+            )}
         </div>
     );
 }
@@ -290,18 +353,14 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                 </label>
             )}
 
-            <label className="gwt-field">
+            <div className="gwt-field">
                 <span>Endpoint</span>
                 {endpoints.length ? (
-                    <select value={ep?.id ?? ""} onChange={e => setEpId(e.target.value)}>
-                        {endpoints.map(e => (
-                            <option key={e.id} value={e.id}>{e.method} {e.path_pattern}</option>
-                        ))}
-                    </select>
+                    <EndpointSelect endpoints={endpoints} value={ep?.id ?? ""} onChange={setEpId} />
                 ) : (
                     <div className="gwt-empty">This API has no endpoints yet.</div>
                 )}
-            </label>
+            </div>
 
             {endpoints.length > 0 && (
                 <>
