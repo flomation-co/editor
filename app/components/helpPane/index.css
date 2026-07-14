@@ -1,0 +1,151 @@
+/* Right-hand help pane: a reusable pattern for describing a page in plain
+   English. Adopted per-page via Container's `help` prop.
+
+   It is a STRUCTURAL column of the page (a docked, full-height rail with a left
+   divider and an inset background), not a floating card, with no elevation,
+   radius or blur. It reads as part of the layout, the same way the left nav does. */
+
+/* Layout: main content + help rail sit side by side and fill the content area
+   height. The rail is flush to the right edge; the divider is its left border.
+   The two-class selector beats `.flo-container`'s shorthand padding regardless
+   of stylesheet load order. */
+.flo-container.flo-container--with-help {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch; /* both columns fill the content height */
+    padding-right: 0; /* let the rail run to the right edge */
+}
+
+/* The content column grows to fill, which pushes the help rail (and, when
+   collapsed, the slim tab) hard against the right-hand edge. */
+.flo-container--with-help .help-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 32px; /* keep content clear of the divider */
+    box-sizing: border-box;
+}
+
+/* The rail is a fixed ~quarter-to-third of the width, wide enough to read, not
+   so wide it dominates. Clamped so it stays sane on very wide / narrow screens. */
+.help-pane {
+    flex: 0 0 clamp(320px, 31%, 460px);
+    box-sizing: border-box;
+    /* Extra right padding keeps text clear of the floating Feedback tab. */
+    padding: 30px 52px 30px 36px;
+    border-left: 1px solid rgba(255, 255, 255, 0.16); /* crisp vertical divider */
+    background: rgba(45, 33, 56, 0.85); /* solid panel, clearly its own surface */
+}
+
+.help-pane-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.help-pane-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 600;
+    font-size: 0.95em;
+    letter-spacing: 0.01em;
+}
+
+.help-pane-heading-icon {
+    color: var(--secondary-background); /* teal */
+}
+
+.help-pane-intro {
+    margin: 0;
+    font-size: 0.9em;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.help-pane-subheading {
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.help-pane-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.help-pane-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 0.88em;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.help-pane-point-icon {
+    color: var(--secondary-background); /* teal */
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.help-pane-tip {
+    margin-top: 18px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85em;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    background: rgba(0, 170, 156, 0.09);
+    border: 1px solid rgba(0, 170, 156, 0.22);
+}
+
+.help-pane-tip-icon {
+    color: var(--secondary-background);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.help-pane-link {
+    color: var(--secondary-background); /* teal */
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 170, 156, 0.4);
+    transition: border-color 0.15s ease;
+}
+
+.help-pane-link:hover {
+    border-bottom-color: var(--secondary-background);
+}
+
+/* On narrow viewports the rail drops below the content so it never crowds it. */
+@media (max-width: 1100px) {
+    .flo-container.flo-container--with-help {
+        flex-direction: column;
+        padding-right: 25px;
+    }
+
+    .flo-container--with-help .help-main {
+        flex: 1 1 auto;
+        padding-right: 0;
+    }
+
+    .help-pane {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+        padding: 22px 24px;
+        margin-top: 24px;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.09);
+    }
+}

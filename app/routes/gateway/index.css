@@ -40,7 +40,7 @@
 
 .gw-loading, .gw-empty { color: rgba(255, 255, 255, 0.5); font-size: 14px; padding: 20px 0; }
 
-.gw-list { display: flex; flex-direction: column; gap: 12px; max-width: 860px; }
+.gw-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
 .gw-card { background: var(--primary-background); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; }
 .gw-card-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
@@ -67,6 +67,17 @@
 .gw-card-body { border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 16px; display: flex; flex-direction: column; gap: 22px; }
 .gw-section { display: flex; flex-direction: column; gap: 10px; }
 .gw-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: rgba(255, 255, 255, 0.4); }
+
+/* Delete lives at the foot of the (expanded) card, not the heading — a subtle
+   ghost-danger button separated from the settings above by a divider. */
+.gw-card-footer { display: flex; justify-content: flex-end; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.gw-delete-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 12px; font-size: 13px; font-weight: 500; cursor: pointer;
+    background: transparent; border: 1px solid rgba(214, 69, 69, 0.35); border-radius: 6px; color: #f87171;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+.gw-delete-btn:hover { background: rgba(214, 69, 69, 0.14); border-color: rgba(214, 69, 69, 0.6); }
 
 .gw-base-url { display: flex; flex-direction: column; gap: 8px; }
 .gw-url-box {
