@@ -1,5 +1,6 @@
 import Container from "~/components/container";
 import {useEffect, useState} from "react";
+import {Link} from "react-router";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import FlowSelect from "~/components/flowSelect";
@@ -10,7 +11,28 @@ import Modal from "~/components/modal";
 import {useToast} from "~/components/toast";
 import {Icon} from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
+import type {HelpContent} from "~/components/helpPane";
+import GatewayTester from "./tester";
 import "./index.css";
+
+// Plain-English description of this page for the right-hand help pane. Aimed at
+// a first-time reader, keeping jargon to the minimum the concept needs.
+const GATEWAY_HELP: HelpContent = {
+    title: "About the Gateway",
+    intro: "The Gateway turns your flows into a web address that other apps and websites can call. You build an API, add a few endpoints, and each one runs a flow and hands back its result.",
+    points: [
+        "Create an API and give it a friendly name",
+        "Add endpoints, choosing how each is called and which flow it runs",
+        "Share the short web address so other systems can use it",
+        "Decide who's allowed in: anyone, a secret key, or a signed-in Flomation account",
+    ],
+    tip: (
+        <>
+            Each endpoint runs a flow that starts with a Web Trigger.{" "}
+            <Link to="/flow" className="help-pane-link">Build that flow first</Link>, then point an endpoint at it.
+        </>
+    ),
+};
 
 export function meta() {
     return [
@@ -149,15 +171,14 @@ export default function GatewayAPIs() {
         );
     };
 
+    // Bolt the live tester onto the help rail — it needs the loaded APIs +
+    // gateway base URL, so it's assembled here rather than in the static copy.
+    const help: HelpContent = {...GATEWAY_HELP, extra: <GatewayTester apis={apis} launchBase={launchBase} sessionToken={token} />};
+
     return (
-        <Container>
+        <Container help={help}>
             <ProtectedRoute permission={PERMISSIONS.GATEWAY_VIEW}>
                 <h1 className="gw-title">Gateway</h1>
-                <p className="gw-intro">
-                    Build an HTTP API from your flows. Each API has a short public base URL; add endpoints
-                    (a method + path → a flow with a <strong>Web Trigger</strong>). Choose how each API is
-                    authenticated — open, an API key, HTTP Basic, OIDC, or a Flomation session with org RBAC.
-                </p>
 
                 {!showCreate && (
                     <button className="gw-create-btn" onClick={() => setShowCreate(true)}>
@@ -168,7 +189,7 @@ export default function GatewayAPIs() {
                     <div className="gw-create-form">
                         <label className="gw-field"><span>Name</span>
                             <input autoFocus value={newName} placeholder="e.g. Customers API" onChange={e => setNewName(e.target.value)} /></label>
-                        <AuthPolicyForm value={newAuth} onChange={setNewAuth} secretPlaceholder="shown once — store it safely" />
+                        <AuthPolicyForm value={newAuth} onChange={setNewAuth} secretPlaceholder="shown once, store it safely" />
                         <div className="gw-form-actions">
                             <button className="gw-btn gw-btn--primary" disabled={newName.trim().length < 3} onClick={create}>Create</button>
                             <button className="gw-btn" onClick={() => { setShowCreate(false); setNewName(""); setNewAuth(emptyAuth); }}>Cancel</button>
@@ -267,7 +288,6 @@ function GatewayCard(props: {
                 <button className="gw-url-pill" onClick={e => { e.stopPropagation(); onCopy(url); }} title="Copy base URL">
                     <code>/gateway/{gw.api_id}</code><Icon name="copy" />
                 </button>
-                <button className="gw-icon-btn gw-icon-btn--danger" onClick={e => { e.stopPropagation(); onDelete(); }} title="Delete API"><Icon name="trash" /></button>
                 <Icon name={expanded ? "chevron-up" : "chevron-down"} />
             </div>
 
@@ -315,6 +335,12 @@ function GatewayCard(props: {
                                 </div>
                             </>
                         )}
+                    </div>
+
+                    <div className="gw-card-footer">
+                        <button className="gw-delete-btn" onClick={onDelete} title="Delete this API">
+                            <Icon name="trash" /> Delete API
+                        </button>
                     </div>
                 </div>
             )}
