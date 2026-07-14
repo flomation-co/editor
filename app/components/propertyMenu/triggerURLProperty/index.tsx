@@ -101,6 +101,13 @@ const TriggerURLProperty = (props: Props) => {
     const isIntercomTrigger = typeName === "intercom-webhook";
     const isWebTrigger = typeName === "web";
 
+    // Web Trigger auth mode: "public" ⇒ open endpoint (no key), otherwise the
+    // secure default of requiring an embed-app publishable key. Read from the
+    // sibling auth_mode input so the hint matches how the endpoint is gated.
+    const webAuthMode = props.node?.data?.config?.inputs
+        ?.find((i: any) => i?.name === "auth_mode")?.value;
+    const isWebPublic = isWebTrigger && webAuthMode === "public";
+
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
@@ -110,12 +117,19 @@ const TriggerURLProperty = (props: Props) => {
     return (
         <div className="trigger-url-section">
             <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : isWebTrigger ? "Invoke URL" : "Trigger URL"}</div>
-            {isWebTrigger && (
+            {isWebTrigger && !isWebPublic && (
                 <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
                     Call this over HTTP with your embed app's publishable key
                     (<code>X-Flomation-Publishable-Key</code>) — via the SDK's{" "}
                     <code>invoke()</code> or any HTTP client. Opt this flow in on the{" "}
                     <strong>Embed SDK</strong> page first.
+                </div>
+            )}
+            {isWebPublic && (
+                <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
+                    <strong>Publicly open</strong> — call this over HTTP from any
+                    origin with no key required. Anyone with the URL can invoke this
+                    flow, so avoid exposing sensitive actions.
                 </div>
             )}
             {isFacebookTrigger && (

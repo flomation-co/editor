@@ -1,7 +1,9 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import type {ParameterOption} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import VariablePicker from "~/components/propertyMenu/variablePicker";
+import "~/components/propertyMenu/selectProperty/index.css";
+import "./index.css";
 
 type PropertyProps = {
     nodeId: string;
@@ -39,8 +41,15 @@ function groupOptions(options: ParameterOption[]): {group: string; options: Para
     return order.map(g => ({group: g, options: map.get(g)!}));
 }
 
+// MultiSelectProperty renders a closed dropdown (matching the single-select
+// SelectProperty shell) whose panel holds tick-toggle rows. Selecting an option
+// keeps the panel open so several can be picked; the trigger summarises the
+// current picks. Grouped options (e.g. webhook event families) stay collapsible
+// inside the panel.
 const MultiSelectProperty = (props: PropertyProps) => {
     const [value, setValue] = useState<string>(props.value || "");
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (props.onValueChange) {
@@ -65,12 +74,29 @@ const MultiSelectProperty = (props: PropertyProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const sel = parseSelected(props.value || "");
-        const open = new Set<string>();
+        const openSet = new Set<string>();
         for (const o of props.options) {
-            if (o.group && sel.has(o.value)) open.add(o.group);
+            if (o.group && sel.has(o.value)) openSet.add(o.group);
         }
-        setOpenGroups(open);
+        setOpenGroups(openSet);
     }, [props.nodeId]);
+
+    // Close the dropdown on an outside click or Escape (mirrors SelectProperty).
+    useEffect(() => {
+        if (!open) return;
+        const onDocClick = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onDocClick);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDocClick);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
 
     const toggle = (optValue: string) => {
         const next = new Set(selected);
@@ -91,24 +117,32 @@ const MultiSelectProperty = (props: PropertyProps) => {
 
     const showPicker = isVariableRef(value);
 
+    // Trigger summary: the selected option NAMES in option order (nicer than the
+    // stored values), else the placeholder.
+    const selectedNames = useMemo(
+        () => props.options.filter(o => selected.has(o.value)).map(o => o.name),
+        [props.options, selected],
+    );
+    const summary = selectedNames.join(", ");
+
     const renderRow = (opt: ParameterOption) => {
-        const id = `${props.nodeId}-${props.name}-${opt.value}`;
+        const isSel = selected.has(opt.value);
         return (
             <div
                 key={opt.value}
-                className="property-menu-input-inline-row property-menu-multi-select-row"
-                style={{margin: 0}}
+                className={`property-menu-select-option property-menu-multi-option ${isSel ? "active" : ""}`}
+                role="checkbox"
+                aria-checked={isSel}
+                onMouseDown={(e) => { e.preventDefault(); toggle(opt.value); }}
             >
-                <label htmlFor={id} className="property-menu-checkbox-label">
-                    <input
-                        id={id}
-                        type="checkbox"
-                        checked={selected.has(opt.value)}
-                        onChange={() => toggle(opt.value)}
-                    />
-                    <span className="property-menu-checkbox"></span>
-                    {opt.name}
-                </label>
+                <span className="property-menu-multi-check" aria-hidden="true">
+                    {isSel && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2.5 6.5L5 9L9.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    )}
+                </span>
+                <span className="property-menu-multi-option-label">{opt.name}</span>
             </div>
         );
     };
@@ -128,41 +162,50 @@ const MultiSelectProperty = (props: PropertyProps) => {
                 />
             ) : (
                 <div className="variable-mode-row">
-                    <div className="property-menu-multi-select">
-                        {!hasGroups
-                            ? props.options.map(renderRow)
-                            : groups.map(({group, options}) => {
-                                if (!group) {
-                                    return <React.Fragment key="__ungrouped">{options.map(renderRow)}</React.Fragment>;
-                                }
-                                const open = openGroups.has(group);
-                                const selCount = options.filter(o => selected.has(o.value)).length;
-                                return (
-                                    <div key={group} className="property-menu-multi-select-group" style={{marginBottom: 4}}>
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleGroup(group)}
-                                            aria-expanded={open}
-                                            aria-label={`${group} events`}
-                                            style={{
-                                                display: "flex", alignItems: "center", gap: 8, width: "100%",
-                                                background: "transparent", border: "none", cursor: "pointer",
-                                                padding: "6px 2px", color: "inherit", font: "inherit", textAlign: "left",
-                                            }}
-                                        >
-                                            <span style={{fontSize: 10, opacity: .7, width: 10}}>{open ? "▾" : "▸"}</span>
-                                            <span style={{fontWeight: 600}}>{group}</span>
-                                            {selCount > 0 && (
-                                                <span style={{
-                                                    fontSize: 11, fontWeight: 600, borderRadius: 10, padding: "1px 8px",
-                                                    background: "#2684ff22", color: "#8fbaff",
-                                                }}>{selCount}</span>
-                                            )}
-                                        </button>
-                                        {open && <div style={{paddingLeft: 18}}>{options.map(renderRow)}</div>}
-                                    </div>
-                                );
-                            })}
+                    <div className="property-menu-select" ref={ref}>
+                        <button
+                            type="button"
+                            className={`property-menu-select-trigger ${open ? "open" : ""}`}
+                            onClick={() => setOpen(o => !o)}
+                        >
+                            <span className={summary ? "property-menu-multi-summary" : "property-menu-select-placeholder"}>
+                                {summary || "Select..."}
+                            </span>
+                            <svg className="property-menu-select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </button>
+                        {open && (
+                            <div className="property-menu-select-list">
+                                {!hasGroups
+                                    ? props.options.map(renderRow)
+                                    : groups.map(({group, options}) => {
+                                        if (!group) {
+                                            return <React.Fragment key="__ungrouped">{options.map(renderRow)}</React.Fragment>;
+                                        }
+                                        const groupOpen = openGroups.has(group);
+                                        const selCount = options.filter(o => selected.has(o.value)).length;
+                                        return (
+                                            <div key={group} className="property-menu-multi-group">
+                                                <button
+                                                    type="button"
+                                                    className="property-menu-multi-group-header"
+                                                    onMouseDown={(e) => { e.preventDefault(); toggleGroup(group); }}
+                                                    aria-expanded={groupOpen}
+                                                    aria-label={`${group} events`}
+                                                >
+                                                    <span className="property-menu-multi-group-caret">{groupOpen ? "▾" : "▸"}</span>
+                                                    <span className="property-menu-multi-group-name">{group}</span>
+                                                    {selCount > 0 && (
+                                                        <span className="property-menu-multi-group-count">{selCount}</span>
+                                                    )}
+                                                </button>
+                                                {groupOpen && <div className="property-menu-multi-group-body">{options.map(renderRow)}</div>}
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        )}
                     </div>
                     <VariablePicker
                         value={value}
