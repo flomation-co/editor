@@ -1,6 +1,5 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
-import type {HelpContent} from "~/components/helpPane";
 import {useAuth} from "~/context/auth/use";
 import React, {useEffect, useState} from "react";
 import Card from "~/components/card";
@@ -24,17 +23,6 @@ export function meta({}: Route.MetaArgs) {
         { name: "description", content: "Flomate your workflows" },
     ];
 }
-
-const DASHBOARD_HELP: HelpContent = {
-    title: "About your Dashboard",
-    intro: "A friendly overview of your account: what has been happening lately and quick ways to get to what matters.",
-    points: [
-        "See what has run recently at a glance",
-        "Jump straight to your flows, agents or executions",
-        "Notice problems early from the summary",
-    ],
-    tip: "New here? Head to Flows to build your first automation, then come back to watch it run.",
-};
 
 export default function Dashboard() {
     const auth = useAuth();
@@ -79,7 +67,7 @@ export default function Dashboard() {
         : 0;
 
     return (
-        <Container help={DASHBOARD_HELP}>
+        <Container>
             <div className={"header"}>{auth.user ? "Welcome, " + auth.user?.name : ""}</div>
 
             <div className={"card-container"}>
