@@ -1,19 +1,84 @@
-.property-menu-multi-select {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
+/* MultiSelectProperty reuses the .property-menu-select* dropdown shell from
+   selectProperty/index.css. These rules add the per-row tick, the selected
+   summary on the trigger, and the collapsible group styling. */
+
+/* Selected picks summarised on the closed trigger — truncate rather than wrap. */
+.property-menu-multi-summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-.property-menu-multi-select-row {
-    position: relative;
-    min-height: 25px;
+/* Option rows lay the tick out beside the label. */
+.property-menu-multi-option {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
-.property-menu-multi-select-row .property-menu-checkbox-label {
+.property-menu-multi-check {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
     display: inline-flex;
     align-items: center;
-    user-select: none;
+    justify-content: center;
+    color: #2dd4bf;
+}
+
+.property-menu-multi-option-label {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Collapsible group inside the panel (webhook event families, etc). */
+.property-menu-multi-group {
+    margin-bottom: 2px;
+}
+
+.property-menu-multi-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    border-radius: 4px;
+}
+
+.property-menu-multi-group-header:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.property-menu-multi-group-caret {
+    font-size: 10px;
+    opacity: 0.7;
+    width: 10px;
+    flex-shrink: 0;
+}
+
+.property-menu-multi-group-name {
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+}
+
+.property-menu-multi-group-count {
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 1px 8px;
+    background: rgba(0, 170, 156, 0.15);
+    color: #2dd4bf;
+}
+
+.property-menu-multi-group-body {
+    padding-left: 14px;
 }
