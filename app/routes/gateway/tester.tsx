@@ -1,9 +1,32 @@
 import {useEffect, useMemo, useState} from "react";
 import {Icon} from "~/components/icons/Icon";
-import type {GatewayAPI} from "~/types";
+import type {GatewayAPI, GatewayAuthType} from "~/types";
 
 // Methods that carry a request body — the body editor only shows for these.
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// Auth modes the tester can send. Independent of the API's configured type so a
+// user can probe what happens with the wrong (or no) credentials.
+type AuthMode = "none" | "api_key" | "basic" | "bearer";
+const AUTH_MODES: {value: AuthMode; label: string}[] = [
+    {value: "none", label: "None"},
+    {value: "api_key", label: "API Key (header)"},
+    {value: "basic", label: "HTTP Basic"},
+    {value: "bearer", label: "Bearer token"},
+];
+
+// defaultAuthMode maps the API's configured auth type to a starting test mode.
+function defaultAuthMode(t: GatewayAuthType | undefined): AuthMode {
+    switch (t) {
+        case "api_key": return "api_key";
+        case "basic": return "basic";
+        case "oidc":
+        case "flomation": return "bearer";
+        default: return "none";
+    }
+}
+
+type HeaderRow = {key: string; value: string};
 
 type Resp = {
     loading?: boolean;
@@ -15,6 +38,13 @@ type Resp = {
     contentType?: string;
     body?: string;
 };
+
+// pathParamNames extracts the :param segments from a path pattern (deduped).
+function pathParamNames(pattern: string | undefined): string[] {
+    if (!pattern) return [];
+    const found = pattern.match(/:([A-Za-z0-9_]+)/g) ?? [];
+    return Array.from(new Set(found.map(s => s.slice(1))));
+}
 
 // prettyBody pretty-prints a JSON response; falls back to the raw text otherwise.
 function prettyBody(text: string, contentType: string): string {
@@ -46,19 +76,34 @@ function statusClass(status?: number, error?: string): string {
 export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; launchBase: string}) {
     const [apiPk, setApiPk] = useState<string>("");
     const [epId, setEpId] = useState<string>("");
-    const [path, setPath] = useState<string>("");
+    const [paramValues, setParamValues] = useState<Record<string, string>>({});
     const [body, setBody] = useState<string>("");
-    // Auth inputs (only the ones relevant to the API's auth type are shown).
+    // Auth (overridable, defaults to the API's configured type).
+    const [authMode, setAuthMode] = useState<AuthMode>("none");
+    const [apiKeyHeader, setApiKeyHeader] = useState<string>("X-API-Key");
     const [apiKey, setApiKey] = useState<string>("");
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [token, setToken] = useState<string>("");
+    // Custom headers (collapsible).
+    const [headers, setHeaders] = useState<HeaderRow[]>([]);
+    const [showHeaders, setShowHeaders] = useState<boolean>(false);
     const [resp, setResp] = useState<Resp | null>(null);
 
     const api = useMemo(() => apis.find(a => a.id === apiPk) ?? apis[0], [apis, apiPk]);
     const endpoints = api?.endpoints ?? [];
     const ep = useMemo(() => endpoints.find(e => e.id === epId) ?? endpoints[0], [endpoints, epId]);
     const method = (ep?.method ?? "GET").toUpperCase();
+    const params = useMemo(() => pathParamNames(ep?.path_pattern), [ep?.path_pattern]);
+
+    // The concrete path with :params substituted (unfilled params left visible).
+    const resolvedPath = useMemo(() => {
+        const pattern = ep?.path_pattern ?? "/";
+        return pattern.replace(/:([A-Za-z0-9_]+)/g, (_, n) => {
+            const v = paramValues[n];
+            return v ? encodeURIComponent(v) : `:${n}`;
+        });
+    }, [ep?.path_pattern, paramValues]);
 
     // Keep the selected API valid as the list loads / changes.
     useEffect(() => {
@@ -67,16 +112,18 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
         }
     }, [apis, apiPk]);
 
-    // When the API changes, default to its first endpoint and clear the result.
+    // When the API changes, default the auth mode + api-key header to its config.
     useEffect(() => {
+        setAuthMode(defaultAuthMode(api?.auth_type));
+        setApiKeyHeader((api?.auth_config?.header as string) || "X-API-Key");
         setEpId(endpoints[0]?.id ?? "");
         setResp(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiPk]);
 
-    // When the endpoint changes, prefill the editable path with its pattern.
+    // When the endpoint changes, reset its path params and clear the result.
     useEffect(() => {
-        setPath(ep?.path_pattern ?? "/");
+        setParamValues({});
         setResp(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [epId, ep?.path_pattern]);
@@ -90,30 +137,41 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
         );
     }
 
+    const setParam = (name: string, value: string) => setParamValues(p => ({...p, [name]: value}));
+    const setHeader = (i: number, patch: Partial<HeaderRow>) =>
+        setHeaders(hs => hs.map((h, idx) => (idx === i ? {...h, ...patch} : h)));
+    const addHeader = () => setHeaders(hs => [...hs, {key: "", value: ""}]);
+    const removeHeader = (i: number) => setHeaders(hs => hs.filter((_, idx) => idx !== i));
+
     async function send() {
         if (!api || !ep) return;
         setResp({loading: true});
 
-        const headers: Record<string, string> = {};
-        let bodyToSend: string | undefined;
-        if (BODY_METHODS.has(method) && body.trim()) {
-            headers["Content-Type"] = "application/json";
-            bodyToSend = body;
-        }
-        // Attach whatever auth the API expects.
-        if (api.auth_type === "api_key" && apiKey) {
-            headers[(api.auth_config?.header as string) || "X-API-Key"] = apiKey;
-        } else if (api.auth_type === "basic" && (username || password)) {
-            headers["Authorization"] = "Basic " + btoa(`${username}:${password}`);
-        } else if ((api.auth_type === "oidc" || api.auth_type === "flomation") && token) {
-            headers["Authorization"] = "Bearer " + token;
+        const h: Record<string, string> = {};
+        // Auth first, so an explicit custom header below can still override it.
+        if (authMode === "api_key" && apiKey) {
+            h[apiKeyHeader || "X-API-Key"] = apiKey;
+        } else if (authMode === "basic" && (username || password)) {
+            h["Authorization"] = "Basic " + btoa(`${username}:${password}`);
+        } else if (authMode === "bearer" && token) {
+            h["Authorization"] = "Bearer " + token;
         }
 
-        const rel = path.startsWith("/") ? path : "/" + path;
+        let bodyToSend: string | undefined;
+        if (BODY_METHODS.has(method) && body.trim()) {
+            h["Content-Type"] = "application/json";
+            bodyToSend = body;
+        }
+        // Custom headers last — they win over the defaults above.
+        headers.forEach(row => {
+            if (row.key.trim()) h[row.key.trim()] = row.value;
+        });
+
+        const rel = resolvedPath.startsWith("/") ? resolvedPath : "/" + resolvedPath;
         const target = `${launchBase}/gateway/${api.api_id}${rel}`;
         const t0 = performance.now();
         try {
-            const res = await fetch(target, {method, headers, body: bodyToSend});
+            const res = await fetch(target, {method, headers: h, body: bodyToSend});
             const text = await res.text();
             setResp({
                 loading: false,
@@ -161,21 +219,48 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
 
             {endpoints.length > 0 && (
                 <>
-                    <label className="gwt-field">
-                        <span>Path</span>
+                    {params.length > 0 && (
+                        <div className="gwt-field">
+                            <span>Path parameters</span>
+                            <div className="gwt-params">
+                                {params.map(name => (
+                                    <div key={name} className="gwt-param">
+                                        <label className="gwt-param-key">:{name}</label>
+                                        <input
+                                            value={paramValues[name] ?? ""}
+                                            onChange={e => setParam(name, e.target.value)}
+                                            placeholder={`value for ${name}`}
+                                            spellCheck={false}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="gwt-field">
+                        <span>Request path</span>
                         <div className="gwt-path">
                             <span className={`gwt-method gwt-method--${method.toLowerCase()}`}>{method}</span>
-                            <input value={path} onChange={e => setPath(e.target.value)} placeholder="/users/123" spellCheck={false} />
+                            <code className="gwt-resolved">{resolvedPath}</code>
                         </div>
-                    </label>
+                    </div>
 
-                    {api?.auth_type === "api_key" && (
-                        <label className="gwt-field">
-                            <span>{(api.auth_config?.header as string) || "X-API-Key"}</span>
-                            <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="API key" />
-                        </label>
+                    <label className="gwt-field">
+                        <span>Auth</span>
+                        <select value={authMode} onChange={e => setAuthMode(e.target.value as AuthMode)}>
+                            {AUTH_MODES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                    </label>
+                    {authMode === "api_key" && (
+                        <div className="gwt-row">
+                            <label className="gwt-field"><span>Header</span>
+                                <input value={apiKeyHeader} onChange={e => setApiKeyHeader(e.target.value)} placeholder="X-API-Key" /></label>
+                            <label className="gwt-field"><span>Key</span>
+                                <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="secret" /></label>
+                        </div>
                     )}
-                    {api?.auth_type === "basic" && (
+                    {authMode === "basic" && (
                         <div className="gwt-row">
                             <label className="gwt-field"><span>Username</span>
                                 <input value={username} onChange={e => setUsername(e.target.value)} /></label>
@@ -183,12 +268,31 @@ export default function GatewayTester({apis, launchBase}: {apis: GatewayAPI[]; l
                                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label>
                         </div>
                     )}
-                    {(api?.auth_type === "oidc" || api?.auth_type === "flomation") && (
+                    {authMode === "bearer" && (
                         <label className="gwt-field">
                             <span>Bearer token</span>
                             <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="JWT" />
                         </label>
                     )}
+
+                    <div className="gwt-collapse-section">
+                        <button type="button" className="gwt-collapse" onClick={() => setShowHeaders(v => !v)}>
+                            <Icon name={showHeaders ? "chevron-down" : "chevron-right"} />
+                            Headers{headers.length ? ` (${headers.length})` : ""}
+                        </button>
+                        {showHeaders && (
+                            <div className="gwt-headers">
+                                {headers.map((row, i) => (
+                                    <div key={i} className="gwt-header-row">
+                                        <input value={row.key} onChange={e => setHeader(i, {key: e.target.value})} placeholder="Header" spellCheck={false} />
+                                        <input value={row.value} onChange={e => setHeader(i, {value: e.target.value})} placeholder="Value" spellCheck={false} />
+                                        <button type="button" className="gwt-icon-btn" onClick={() => removeHeader(i)} title="Remove header"><Icon name="xmark" /></button>
+                                    </div>
+                                ))}
+                                <button type="button" className="gwt-add" onClick={addHeader}><Icon name="plus" /> Add header</button>
+                            </div>
+                        )}
+                    </div>
 
                     {BODY_METHODS.has(method) && (
                         <label className="gwt-field">
