@@ -14,6 +14,7 @@ import RowsProperty from "~/components/propertyMenu/rowsProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
 import NumberProperty from "~/components/propertyMenu/numberProperty";
 import MoneyProperty from "~/components/propertyMenu/moneyProperty";
+import FileProperty from "~/components/propertyMenu/fileProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
 import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
@@ -814,6 +815,21 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     />
                                                 )
                                             }
+
+                                            case "file":
+                                                return (
+                                                    <FileProperty
+                                                        nodeId={props.node.data.id}
+                                                        name={i.name}
+                                                        placeholder={i.placeholder}
+                                                        label={i.label}
+                                                        key={props.node.data.id + "-" + i.name}
+                                                        value={i.value}
+                                                        required={i.required}
+                                                        variables={props.variables}
+                                                        onValueChange={onValueChange}
+                                                    />
+                                                )
 
                                             case "number":
                                                 return (
