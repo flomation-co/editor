@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import type { VariableItem } from "~/components/propertyMenu/variableInput";
 import { VariableCreateFooter } from "~/components/propertyMenu/VariableCreateFooter";
 import "./index.css";
@@ -91,10 +92,14 @@ const VariablePicker = (props: VariablePickerProps) => {
     useEffect(() => {
         if (!open) return;
         const handler = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setOpen(false);
-                setSearch("");
-            }
+            const t = e.target as Node;
+            // The dropdown is portaled to <body>, so it lives OUTSIDE containerRef —
+            // count clicks inside it (dropdownRef) as "inside" too, or selecting a
+            // variable / typing in the search would immediately close the picker.
+            if (containerRef.current && containerRef.current.contains(t)) return;
+            if (dropdownRef.current && dropdownRef.current.contains(t)) return;
+            setOpen(false);
+            setSearch("");
         };
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
@@ -212,7 +217,7 @@ const VariablePicker = (props: VariablePickerProps) => {
             >
                 {"$"}
             </button>
-            {open && (
+            {open && typeof document !== "undefined" && createPortal(
                 <div ref={dropdownRef} className="vp-dropdown" style={{top: dropdownPos.top, left: dropdownPos.left}}>
                     <input
                         ref={searchRef}
@@ -263,7 +268,8 @@ const VariablePicker = (props: VariablePickerProps) => {
                         ))}
                     </div>
                     <VariableCreateFooter filter={search} />
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
