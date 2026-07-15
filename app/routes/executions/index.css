@@ -140,9 +140,61 @@
 /* Hierarchical executions list */
 
 .exec-tree-indent {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0; /* allow the name to ellipsis instead of forcing the column wider */
+}
+
+/* Bound the name column so the title ellipsises instead of wrapping. */
+.exec-name-cell {
+    max-width: 260px;
+    width: 260px;
+}
+
+/* Name cell: title on one line (never wraps), execution id beneath it. */
+.exec-name-block {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.exec-name-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.exec-name-title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.exec-name-id {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Action buttons collapse to icon-only when the table gets tight. */
+.exec-actions-cell {
+    white-space: nowrap;
+}
+
+@media (max-width: 1279px) {
+    .exec-actions-cell .table-button-label {
+        display: none;
+    }
+    .exec-actions-cell .table-button {
+        padding: 0;
+    }
 }
 
 .exec-tree-expander {

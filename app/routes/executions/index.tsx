@@ -431,7 +431,7 @@ export default function Executions() {
 
                                         const renderRow = (e: Execution, depth: number) => (
                                             <tr className={"flo-table-row" + (depth > 0 ? " flo-table-row--child" : "")} key={e.id}>
-                                                <td>
+                                                <td className="exec-name-cell">
                                                     <span className="exec-tree-indent" style={{ paddingLeft: depth * 20 }}>
                                                         {depth === 0 && hierarchical && e.has_children && (
                                                             <span
@@ -448,11 +448,15 @@ export default function Executions() {
                                                         {e.agent_id && (
                                                             <Icon name="robot" style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + e.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
                                                         )}
-                                                        <Link to={"/execution/" + e.id} className={"flo-table-link"}>{e.name}</Link>
-                                                        <span className={"table-column-hide-sm flo-table-subtext"}>{e.id}</span>
-                                                        {e.parent_relationship && depth > 0 && (
-                                                            <span className="exec-tree-rel" title={"Relationship: " + e.parent_relationship}>{e.parent_relationship}</span>
-                                                        )}
+                                                        <span className="exec-name-block">
+                                                            <span className="exec-name-title-row">
+                                                                <Link to={"/execution/" + e.id} className={"flo-table-link exec-name-title"} title={e.name}>{e.name}</Link>
+                                                                {e.parent_relationship && depth > 0 && (
+                                                                    <span className="exec-tree-rel" title={"Relationship: " + e.parent_relationship}>{e.parent_relationship}</span>
+                                                                )}
+                                                            </span>
+                                                            <span className={"flo-table-subtext exec-name-id"}>{e.id}</span>
+                                                        </span>
                                                         {e.agent_id && <Tooltip id={"tooltip-agent-" + e.id} />}
                                                     </span>
                                                 </td>
@@ -491,12 +495,12 @@ export default function Executions() {
                                                         </span>
                                                     ) : null}
                                                 </td>
-                                                <td>
-                                                    <Link className={"table-button"} to={{pathname: "/execution/" + e.id}}>
-                                                        <Icon name="eye" /> <span>View</span>
+                                                <td className="exec-actions-cell">
+                                                    <Link className={"table-button"} to={{pathname: "/execution/" + e.id}} title="View">
+                                                        <Icon name="eye" /> <span className="table-button-label">View</span>
                                                     </Link>
-                                                    <button className={"table-button"} disabled={true}>
-                                                        <Icon name="circle-stop" /> <span>Stop</span>
+                                                    <button className={"table-button"} disabled={true} title="Stop">
+                                                        <Icon name="circle-stop" /> <span className="table-button-label">Stop</span>
                                                     </button>
                                                 </td>
                                             </tr>
