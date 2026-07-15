@@ -458,6 +458,13 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                         const freshInput = props.actionDefinitions?.[props.node.data.label]
                                             ?.inputs?.find((x: any) => x.name === i.name);
                                         const dynamicOptions = freshInput?.dynamic_options ?? i.dynamic_options;
+                                        // Resolve the input TYPE from the live action definition, falling
+                                        // back to the node snapshot. Node configs are frozen at add time,
+                                        // so an input whose type later changed in the manifest (e.g.
+                                        // string → colour) would otherwise keep rendering the old widget
+                                        // on existing nodes. Only the widget choice is refreshed; the
+                                        // value stays the user's snapshotted data.
+                                        const resolvedType = freshInput?.type ?? i.type;
                                         if (dynamicOptions && dynamicOptions.endpoint) {
                                             // Params-declared sibling inputs are forwarded to the
                                             // resolver as query parameters — unsaved edits first
@@ -491,7 +498,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             )
                                         }
 
-                                        if (i.type === "combobox") {
+                                        if (resolvedType === "combobox") {
                                             return (
                                                 <ComboboxProperty
                                                     nodeId={props.node.data.id}
@@ -624,7 +631,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             );
                                         }
 
-                                        switch (i.type) {
+                                        switch (resolvedType) {
                                             case "key_value_array":
                                                 return (
                                                     <KeyValueProperty
