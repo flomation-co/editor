@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "~/components/icons/Icon";
 import { detectSecret } from "~/lib/secretDetection";
 import { VariableCreateFooter } from "~/components/propertyMenu/VariableCreateFooter";
@@ -771,7 +772,7 @@ const VariableInput = (props: VariableInputProps) => {
                     </div>
                 </>
             )}
-            {autocomplete.visible && (
+            {autocomplete.visible && typeof document !== "undefined" && createPortal(
                 <div
                     ref={autocompleteRef}
                     className="variable-autocomplete"
@@ -806,7 +807,8 @@ const VariableInput = (props: VariableInputProps) => {
                         </div>
                     ))}
                     <VariableCreateFooter filter={autocomplete.filter} />
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
