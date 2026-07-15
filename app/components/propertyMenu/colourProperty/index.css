@@ -1,0 +1,127 @@
+/* Colour property: a swatch + hex field inline, opening a wheel/RGB popover. */
+
+.colour-input-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.colour-swatch {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    padding: 0;
+    /* Checkerboard so a partly/undefined colour reads as "not set". */
+    background-image:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.12) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.12) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.12) 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.colour-swatch:hover {
+    border-color: #00aa9c;
+}
+
+.colour-swatch-unknown {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.colour-hex-text {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Popover (portaled to body) */
+.colour-popover {
+    position: fixed;
+    z-index: 10000;
+    width: 216px;
+    padding: 12px;
+    background: #1a1a2e;
+    border: 1px solid rgba(139, 0, 222, 0.35);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* react-colorful sizing overrides */
+.colour-popover .react-colorful {
+    width: 192px;
+    height: 150px;
+}
+
+.colour-popover .react-colorful__saturation {
+    border-radius: 8px 8px 0 0;
+}
+
+.colour-popover .react-colorful__hue {
+    height: 16px;
+    border-radius: 0 0 8px 8px;
+    margin-top: 8px;
+}
+
+.colour-fields {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.colour-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.colour-field > span {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+}
+
+.colour-field input {
+    width: 100%;
+    padding: 5px 4px;
+    font-size: 12px;
+    text-align: center;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: none;
+}
+
+.colour-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.colour-preset {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    padding: 0;
+}
+
+.colour-preset:hover {
+    transform: scale(1.12);
+    border-color: rgba(255, 255, 255, 0.5);
+}
