@@ -147,18 +147,39 @@ function detectMedia(key: string, value: string): { type: 'audio' | 'image' | 'v
     return { type: null, mimeType: '' };
 }
 
-// extensionFor returns a file extension suitable for the download attribute
-// so saved files open in the right viewer without manual renaming.
+// extensionFor returns a file extension suitable for the download attribute so
+// saved files open in the right viewer without manual renaming. Known mimes get
+// a curated extension; anything else is DERIVED from the mime subtype (e.g.
+// video/x-m4v → m4v, image/svg+xml → svg) so a media file never downloads as a
+// generic .bin just because its exact subtype wasn't hard-coded.
 function extensionFor(mimeType: string): string {
-    if (mimeType === 'application/pdf') return 'pdf';
-    if (mimeType === 'application/gpx+xml') return 'gpx';
-    if (mimeType === 'image/png') return 'png';
-    if (mimeType === 'image/jpeg') return 'jpg';
-    if (mimeType === 'image/gif') return 'gif';
-    if (mimeType === 'image/webp') return 'webp';
-    if (mimeType === 'audio/mpeg') return 'mp3';
-    if (mimeType === 'audio/ogg') return 'ogg';
-    if (mimeType === 'video/mp4') return 'mp4';
+    const known: Record<string, string> = {
+        'application/pdf': 'pdf',
+        'application/gpx+xml': 'gpx',
+        'application/json': 'json',
+        'image/png': 'png',
+        'image/apng': 'png',
+        'image/jpeg': 'jpg',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/svg+xml': 'svg',
+        'audio/mpeg': 'mp3',
+        'audio/ogg': 'ogg',
+        'audio/wav': 'wav',
+        'audio/x-wav': 'wav',
+        'audio/webm': 'weba',
+        'video/mp4': 'mp4',
+        'video/x-m4v': 'm4v',
+        'video/quicktime': 'mov',
+        'video/webm': 'webm',
+        'video/x-matroska': 'mkv',
+        'video/x-msvideo': 'avi',
+    };
+    if (known[mimeType]) return known[mimeType];
+    // Derive from the subtype: strip an "x-" vendor prefix and any "+suffix"
+    // (image/svg+xml → svg). Accept only a short alphanumeric token as an extension.
+    const sub = (mimeType.split('/')[1] || '').replace(/^x-/, '').replace(/\+.*$/, '');
+    if (/^[a-z0-9]{1,5}$/.test(sub)) return sub;
     return 'bin';
 }
 
