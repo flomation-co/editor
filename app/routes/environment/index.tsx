@@ -92,6 +92,12 @@ export default function EnvironmentDetail() {
     // platform-level app configured (e.g. Shopify — each user has their own app).
     const [ newCredClientId, setNewCredClientId ] = useState("");
     const [ newCredClientSecret, setNewCredClientSecret ] = useState("");
+    // aws_role provider: a token-less credential (IAM Role ARN + region). After
+    // creation the API returns the Flomation-generated External ID + the trust
+    // policy to paste into the customer's role — held here to display.
+    const [ newCredRoleARN, setNewCredRoleARN ] = useState("");
+    const [ newCredRegion, setNewCredRegion ] = useState("");
+    const [ awsRoleResult, setAwsRoleResult ] = useState<{ external_id: string; trust_principal_arn: string; trust_policy: string } | null>(null);
     // Structured per-service selection. Empty until a provider is
     // picked, at which point we hydrate from defaultSelection so
     // every service row has a sensible initial state.
@@ -281,6 +287,9 @@ export default function EnvironmentDetail() {
         setNewCredUrlVars({});
         setNewCredClientId("");
         setNewCredClientSecret("");
+        setNewCredRoleARN("");
+        setNewCredRegion("");
+        setAwsRoleResult(null);
         setNewCredSelection(new Map());
         setNewCredOtherScopes(new Set());
         setShowOtherScopes(false);
@@ -302,6 +311,30 @@ export default function EnvironmentDetail() {
 
     const saveCredential = () => {
         if (!newCredName.trim() || !newCredProvider) return;
+
+        // aws_role: token-less. POST the Role ARN + region; the API generates the
+        // External ID and returns the trust policy. Keep the form open and show
+        // the result so the user can paste it into their AWS role.
+        if (newCredProvider === 'aws_role') {
+            api.post(getUrl('/credential'), {
+                provider_slug: 'aws_role',
+                name: newCredName.trim(),
+                role_arn: newCredRoleARN.trim(),
+                region: newCredRegion.trim(),
+            }, { headers })
+                .then(r => {
+                    setAwsRoleResult({
+                        external_id: r?.data?.external_id || "",
+                        trust_principal_arn: r?.data?.trust_principal_arn || "",
+                        trust_policy: r?.data?.trust_policy || "",
+                    });
+                    toast.success("AWS Role credential created — attach the trust policy below to your role");
+                    updateCredentials();
+                })
+                .catch(err => toast.error(err.response?.data?.error || "Failed to create credential"));
+            return;
+        }
+
         const scopeStr = selectionToScopeString(newCredProvider, newCredSelection, newCredOtherScopes);
         const body: any = { provider_slug: newCredProvider, name: newCredName };
         if (scopeStr) body.scopes = scopeStr;
@@ -575,6 +608,50 @@ export default function EnvironmentDetail() {
                                 Letters, digits, <code>-</code> and <code>_</code> only.
                                 Used in <code>{"${credentials.<name>}"}</code> references.
                             </div>
+                            {/* AWS Role: token-less. Paste the Role ARN + region; on Create the
+                                API returns the External ID + trust policy to attach to the role. */}
+                            {newCredProvider === 'aws_role' && (
+                                <>
+                                    <input
+                                        type="text"
+                                        placeholder="IAM Role ARN (arn:aws:iam::<account>:role/<name>)"
+                                        value={newCredRoleARN}
+                                        onChange={e => setNewCredRoleARN(e.target.value)}
+                                        onBlur={e => setNewCredRoleARN(e.target.value.trim())}
+                                    />
+                                    <div className="env-detail-input-hint">
+                                        The role in <strong>your</strong> AWS account that Flomation will assume. Create it (or use your admin/root) — the trust policy to attach appears after you click Create.
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Default region (optional, e.g. eu-west-2)"
+                                        value={newCredRegion}
+                                        onChange={e => setNewCredRegion(e.target.value)}
+                                        onBlur={e => setNewCredRegion(e.target.value.trim())}
+                                    />
+                                    {awsRoleResult && (
+                                        <div className="env-cred-aws-result">
+                                            <div className="env-detail-input-hint">
+                                                <strong>1.</strong> In your AWS account, attach this <strong>trust policy</strong> to the role:
+                                            </div>
+                                            <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
+                                            <button
+                                                type="button"
+                                                className="env-detail-btn-cancel"
+                                                onClick={() => { navigator.clipboard?.writeText(awsRoleResult.trust_policy); toast.success("Trust policy copied"); }}
+                                            >
+                                                Copy trust policy
+                                            </button>
+                                            <div className="env-detail-input-hint" style={{ marginTop: 8 }}>
+                                                <strong>External ID</strong> (already in the policy above): <code>{awsRoleResult.external_id}</code>
+                                            </div>
+                                            <div className="env-detail-input-hint">
+                                                <strong>2.</strong> Grant that role the AWS permissions your flows need, then reference it in AWS actions as <code>{"${credentials." + (newCredName || "<name>") + ".role_arn}"}</code>.
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                             {/* Per-tenant URL variables (e.g. Shopify shop subdomain) */}
                             {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map(v => (
                                 <div key={v.key} className="env-detail-url-var">
@@ -593,8 +670,8 @@ export default function EnvironmentDetail() {
                                 </div>
                             ))}
                             {/* Bring-your-own OAuth app: shown when the provider has no
-                                platform-level app configured (e.g. Shopify). */}
-                            {!providers.find(p => p.slug === newCredProvider)?.configured && (
+                                platform-level app configured (e.g. Shopify). Never for aws_role. */}
+                            {newCredProvider !== 'aws_role' && !providers.find(p => p.slug === newCredProvider)?.configured && (
                                 <>
                                     <input
                                         type="text"
@@ -660,6 +737,31 @@ export default function EnvironmentDetail() {
                             <div className="env-detail-add-actions">
                                 {(() => {
                                     const selProvider = providers.find(p => p.slug === newCredProvider);
+                                    // aws_role: once created, the primary action becomes Done (the
+                                    // trust policy is shown for copying). Before that, require a
+                                    // valid Role ARN.
+                                    if (newCredProvider === 'aws_role') {
+                                        if (awsRoleResult) {
+                                            return (
+                                                <button className="env-detail-btn-save" onClick={resetCredentialForm}>
+                                                    <Icon name="check" /> Done
+                                                </button>
+                                            );
+                                        }
+                                        const arn = newCredRoleARN.trim();
+                                        const invalidReason = credentialNameInvalidReason()
+                                            || (arn.startsWith("arn:aws:iam::") && arn.includes(":role/") ? "" : "Enter a valid IAM Role ARN first.");
+                                        return (
+                                            <button
+                                                className="env-detail-btn-save"
+                                                onClick={saveCredential}
+                                                disabled={!!invalidReason}
+                                                title={invalidReason || undefined}
+                                            >
+                                                <Icon name="check" /> Create
+                                            </button>
+                                        );
+                                    }
                                     const missingVar = (selProvider?.url_variables ?? [])
                                         .find(v => !(newCredUrlVars[v.key] ?? "").trim());
                                     const needsClient = !selProvider?.configured;
