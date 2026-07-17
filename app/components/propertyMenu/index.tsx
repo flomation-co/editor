@@ -754,9 +754,14 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 const hasTenant = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenant");
                                                 const hasCompany = i.name === "credential" && siblingInputs.some((x: any) => x.name === "company");
                                                 const hasSandbox = siblingInputs.some((x: any) => x.name === "sandbox");
+                                                // AWS actions pair the credential with assume_role_arn +
+                                                // external_id siblings; picking an aws_role credential
+                                                // auto-fills them from its metadata so the (hidden)
+                                                // assume-role fields are populated with nothing typed.
+                                                const hasAWSRole = i.name === "credential" && siblingInputs.some((x: any) => x.name === "assume_role_arn");
                                                 const handleCredentialChange = (property: string, value: any) => {
                                                     onValueChange(property, value);
-                                                    if (!hasTenant && !hasCompany) return;
+                                                    if (!hasTenant && !hasCompany && !hasAWSRole) return;
                                                     const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
                                                     if (!match) return;
                                                     const credName = match[1];
@@ -770,6 +775,12 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         // input, see the render skip below).
                                                         if (hasSandbox) {
                                                             onValueChange("sandbox", "${credentials." + credName + ".sandbox}");
+                                                        }
+                                                    }
+                                                    if (hasAWSRole) {
+                                                        onValueChange("assume_role_arn", "${credentials." + credName + ".role_arn}");
+                                                        if (siblingInputs.some((x: any) => x.name === "external_id")) {
+                                                            onValueChange("external_id", "${credentials." + credName + ".external_id}");
                                                         }
                                                     }
                                                 };
