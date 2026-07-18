@@ -152,6 +152,7 @@ export default function EnvironmentDetail() {
     const [ newCredRoleARN, setNewCredRoleARN ] = useState("");
     const [ newCredRegion, setNewCredRegion ] = useState("");
     const [ awsRoleResult, setAwsRoleResult ] = useState<{ id: string; external_id: string; trust_principal_arn: string; trust_policy: string } | null>(null);
+    const [ awsTest, setAwsTest ] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; error?: string }>({ status: 'idle' });
     // Structured per-service selection. Empty until a provider is
     // picked, at which point we hydrate from defaultSelection so
     // every service row has a sensible initial state.
@@ -344,6 +345,7 @@ export default function EnvironmentDetail() {
         setNewCredRoleARN("");
         setNewCredRegion("");
         setAwsRoleResult(null);
+        setAwsTest({ status: 'idle' });
         setNewCredSelection(new Map());
         setNewCredOtherScopes(new Set());
         setShowOtherScopes(false);
@@ -366,6 +368,20 @@ export default function EnvironmentDetail() {
     const copyText = (text: string, label: string) => {
         navigator.clipboard?.writeText(text);
         toast.success(label + " copied");
+    };
+
+    // Wizard step 2: verify the credential can actually assume the pasted role.
+    const testAWSAccess = () => {
+        if (!awsRoleResult) return;
+        setAwsTest({ status: 'testing' });
+        api.post(getUrl('/credential/' + awsRoleResult.id + '/aws-role/test'), {
+            role_arn: newCredRoleARN.trim(),
+        }, { headers })
+            .then(r => {
+                if (r?.data?.ok) setAwsTest({ status: 'ok' });
+                else setAwsTest({ status: 'fail', error: r?.data?.error || "Access denied" });
+            })
+            .catch(err => setAwsTest({ status: 'fail', error: err.response?.data?.error || "Test failed" }));
     };
 
     // Wizard step 2: attach the Role ARN the user built to the credential.
@@ -757,14 +773,39 @@ export default function EnvironmentDetail() {
                                             })()}
                                         </li>
                                         <li>
-                                            Paste the <strong>Role ARN</strong> of the role you just created, then click Finish:
+                                            Paste the <strong>Role ARN</strong> of the role you just created, then test access and click Finish:
                                             <input
                                                 type="text"
                                                 placeholder="arn:aws:iam::<account>:role/<name>"
                                                 value={newCredRoleARN}
-                                                onChange={e => setNewCredRoleARN(e.target.value)}
+                                                onChange={e => { setNewCredRoleARN(e.target.value); if (awsTest.status !== 'idle') setAwsTest({ status: 'idle' }); }}
                                                 onBlur={e => setNewCredRoleARN(e.target.value.trim())}
                                             />
+                                            {(() => {
+                                                const arn = newCredRoleARN.trim();
+                                                const ok = arn.startsWith("arn:aws:iam::") && arn.includes(":role/");
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        className="env-cred-copy-btn"
+                                                        style={{ marginTop: 6 }}
+                                                        onClick={testAWSAccess}
+                                                        disabled={!ok || awsTest.status === 'testing'}
+                                                        title={ok ? undefined : "Paste a valid Role ARN first."}
+                                                    >
+                                                        {awsTest.status === 'testing' ? "Testing…" : "Test access"}
+                                                    </button>
+                                                );
+                                            })()}
+                                            {awsTest.status === 'ok' && (
+                                                <div className="env-cred-test-ok"><Icon name="check" /> Access confirmed — Flomation can assume this role.</div>
+                                            )}
+                                            {awsTest.status === 'fail' && (
+                                                <div className="env-cred-aws-warn">
+                                                    <strong>Couldn't assume the role.</strong> {awsTest.error}
+                                                    <div style={{ marginTop: 4 }}>Check the trust policy is attached to the role and the External ID matches. (A just-created role can take a few seconds — try again.)</div>
+                                                </div>
+                                            )}
                                         </li>
                                     </ol>
                                 </div>

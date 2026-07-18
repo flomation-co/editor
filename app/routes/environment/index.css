@@ -1063,3 +1063,17 @@
     background: rgba(139, 92, 246, 0.18);
     color: #fff;
 }
+
+.env-cred-test-ok {
+    margin-top: 6px;
+    padding: 6px 9px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 170, 156, 0.12);
+    border: 1px solid rgba(0, 170, 156, 0.35);
+    border-radius: 6px;
+    color: #6ee7d8;
+    font-size: 12px;
+    text-transform: none;
+}
