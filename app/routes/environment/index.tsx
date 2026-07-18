@@ -21,7 +21,8 @@ import {
     type ScopeSelection,
 } from "./scope-catalogue";
 import { ScopeServiceRow } from "./ScopeServiceRow";
-import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy, awsRegionOptions } from "./aws-permissions";
+import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy } from "./aws-permissions";
+import { AWS_REGIONS } from "~/lib/aws-regions";
 
 // SearchableSelect is a self-contained type-to-filter dropdown for the credential
 // UI: a text field that filters a shortlist as you type and lets you pick or
@@ -719,7 +720,7 @@ export default function EnvironmentDetail() {
                                     <SearchableSelect
                                         value={newCredRegion}
                                         placeholder="Search regions, e.g. eu-west-2 (optional)"
-                                        options={awsRegionOptions}
+                                        options={AWS_REGIONS}
                                         onChange={setNewCredRegion}
                                     />
                                     <div className="env-detail-input-hint" style={{ marginTop: 6 }}>

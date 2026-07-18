@@ -18,6 +18,7 @@ import FileProperty from "~/components/propertyMenu/fileProperty";
 import ColourProperty from "~/components/propertyMenu/colourProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
+import { AWS_REGIONS } from "~/lib/aws-regions";
 import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
@@ -626,6 +627,25 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     required={i.required}
                                                     apiKeyValue={apiKeyValue}
                                                     environmentId={props.environmentId}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            );
+                                        }
+
+                                        // AWS actions: render the region field as a searchable
+                                        // combobox of AWS regions (still free-text / variable-friendly).
+                                        if (i.name === "aws_region") {
+                                            return (
+                                                <ComboboxProperty
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value}
+                                                    options={AWS_REGIONS}
+                                                    placeholder={i.placeholder}
+                                                    required={i.required}
+                                                    variables={props.variables}
                                                     onValueChange={onValueChange}
                                                 />
                                             );

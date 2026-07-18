@@ -61,6 +61,15 @@ const ComboboxProperty = (props: PropertyProps) => {
 
     const options = props.options ?? [];
 
+    // Filter the suggestions by what's been typed (matching the code or label),
+    // unless the value already exactly equals an option — so a chosen value
+    // shows the full list again rather than a single self-match.
+    const q = (value ?? "").trim().toLowerCase();
+    const exactMatch = options.some(o => o.value === value);
+    const visibleOptions = q && !exactMatch
+        ? options.filter(o => `${o.value} ${o.name}`.toLowerCase().includes(q))
+        : options;
+
     return (
         <div className={"property-menu-input-row"} key={props.name}>
             <div className={"property-menu-input-name"}>
@@ -78,7 +87,7 @@ const ComboboxProperty = (props: PropertyProps) => {
                         required={props.required}
                         multiline={false}
                         variables={props.variables ?? []}
-                        onValueChange={(_, v) => setValue(v)}
+                        onValueChange={(_, v) => { setValue(v); setOpen(true); }}
                     />
                     {options.length > 0 && (
                         <button
@@ -92,9 +101,9 @@ const ComboboxProperty = (props: PropertyProps) => {
                             </svg>
                         </button>
                     )}
-                    {open && options.length > 0 && (
+                    {open && visibleOptions.length > 0 && (
                         <div className="property-menu-select-list property-menu-combobox-list">
-                            {options.map(opt => (
+                            {visibleOptions.map(opt => (
                                 <div
                                     key={opt.value}
                                     className={`property-menu-select-option ${opt.value === value ? "active" : ""}`}
