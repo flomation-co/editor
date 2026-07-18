@@ -370,6 +370,18 @@ export default function EnvironmentDetail() {
         toast.success(label + " copied");
     };
 
+    // Cancelling an AWS Role wizard after step 1 (identity minted) but before
+    // Finish tears down the just-created credential + its dedicated IAM user, so
+    // an abandoned wizard doesn't leave an orphan. Any other cancel just resets.
+    const cancelCredentialForm = () => {
+        if (newCredProvider === 'aws_role' && awsRoleResult?.id) {
+            api.delete(getUrl('/credential/' + awsRoleResult.id), { headers })
+                .then(() => updateCredentials())
+                .catch(() => {});
+        }
+        resetCredentialForm();
+    };
+
     // Wizard step 2: verify the credential can actually assume the pasted role.
     const testAWSAccess = () => {
         if (!awsRoleResult) return;
@@ -945,7 +957,7 @@ export default function EnvironmentDetail() {
                                         </button>
                                     );
                                 })()}
-                                <button className="env-detail-btn-cancel" onClick={resetCredentialForm}>Cancel</button>
+                                <button className="env-detail-btn-cancel" onClick={cancelCredentialForm}>Cancel</button>
                             </div>
                         </div>
                     )}
