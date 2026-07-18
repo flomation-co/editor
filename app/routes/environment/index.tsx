@@ -642,6 +642,7 @@ export default function EnvironmentDetail() {
                                         value={newCredRegion}
                                         placeholder="Search regions, e.g. eu-west-2 (optional)"
                                         options={awsRegionOptions}
+                                        hideVariablePicker
                                         onValueChange={(_, v) => setNewCredRegion(v)}
                                     />
                                     <div className="env-detail-input-hint" style={{ marginTop: 6 }}>

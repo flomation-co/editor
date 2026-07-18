@@ -12,6 +12,10 @@ type PropertyProps = {
     placeholder?: string;
     required?: boolean;
     variables?: VariableItem[];
+    // hideVariablePicker suppresses the ${...} expression button — for contexts
+    // where variable references don't apply (e.g. the credential UI, which has
+    // no flow to reference).
+    hideVariablePicker?: boolean;
     onValueChange?: (property: string, value: any) => void;
 };
 
@@ -102,13 +106,15 @@ const ComboboxProperty = (props: PropertyProps) => {
                         </div>
                     )}
                 </div>
-                <VariablePicker
-                    value={value}
-                    variables={props.variables ?? []}
-                    onSelect={(refValue) => setValue((prev) => prev + refValue)}
-                    onClear={() => setValue("")}
-                    alwaysButton={true}
-                />
+                {!props.hideVariablePicker && (
+                    <VariablePicker
+                        value={value}
+                        variables={props.variables ?? []}
+                        onSelect={(refValue) => setValue((prev) => prev + refValue)}
+                        onClear={() => setValue("")}
+                        alwaysButton={true}
+                    />
+                )}
             </div>
         </div>
     );
