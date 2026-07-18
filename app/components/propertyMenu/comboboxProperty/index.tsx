@@ -78,17 +78,22 @@ const ComboboxProperty = (props: PropertyProps) => {
             </div>
             <div className="variable-mode-row" ref={ref}>
                 <div className="property-menu-combobox">
-                    <VariableInput
-                        nodeId={props.nodeId}
-                        name={props.name}
-                        placeholder={props.placeholder ?? ""}
-                        label={props.label}
-                        value={value}
-                        required={props.required}
-                        multiline={false}
-                        variables={props.variables ?? []}
-                        onValueChange={(_, v) => { setValue(v); setOpen(true); }}
-                    />
+                    {/* Open the suggestion list when the field is focused (not on
+                        value change — that fires on mount and would open it on
+                        load). display:contents keeps the layout unchanged. */}
+                    <div style={{ display: "contents" }} onFocusCapture={() => setOpen(true)}>
+                        <VariableInput
+                            nodeId={props.nodeId}
+                            name={props.name}
+                            placeholder={props.placeholder ?? ""}
+                            label={props.label}
+                            value={value}
+                            required={props.required}
+                            multiline={false}
+                            variables={props.variables ?? []}
+                            onValueChange={(_, v) => setValue(v)}
+                        />
+                    </div>
                     {options.length > 0 && (
                         <button
                             type="button"
