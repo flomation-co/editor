@@ -898,3 +898,97 @@
     white-space: pre;
     text-transform: none;
 }
+
+.env-cred-aws-result-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6ee7d8;
+    margin-bottom: 8px;
+    text-transform: none;
+}
+
+.env-cred-aws-steps {
+    margin: 0;
+    padding-left: 18px;
+    color: #c9c9d6;
+    font-size: 12.5px;
+    line-height: 1.6;
+    text-transform: none;
+}
+
+.env-cred-aws-steps li {
+    margin-bottom: 12px;
+}
+
+.env-cred-aws-steps code {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: #9ff0e6;
+}
+
+.env-cred-aws-warn {
+    margin-top: 4px;
+    padding: 6px 9px;
+    background: rgba(245, 158, 11, 0.10);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 6px;
+    color: #fcd9a0;
+    font-size: 11.5px;
+}
+
+.env-cred-aws-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.env-cred-aws-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.env-cred-aws-chip-label {
+    min-width: 120px;
+    font-size: 11px;
+    color: #9a9aac;
+}
+
+.env-cred-aws-chip code {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.env-cred-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 5px 11px;
+    background: rgba(0, 170, 156, 0.14);
+    border: 1px solid rgba(0, 170, 156, 0.35);
+    border-radius: 6px;
+    color: #9ff0e6;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.env-cred-copy-btn:hover {
+    background: rgba(0, 170, 156, 0.24);
+}
+
+.env-cred-copy-btn--sm {
+    margin-top: 0;
+    padding: 2px 8px;
+    font-size: 10.5px;
+}

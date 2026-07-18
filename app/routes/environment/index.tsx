@@ -26,6 +26,30 @@ import { ScopeServiceRow } from "./ScopeServiceRow";
 // The structured per-service shape lives there along with the
 // selection ↔ scope-string helpers.
 
+// A starter IAM permissions policy for the AWS Role credential setup guide. It
+// covers the EC2 actions shipped so far; users narrow it per least-privilege.
+const AWS_EC2_STARTER_POLICY = `{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "ec2:Describe*",
+      "ec2:RunInstances",
+      "ec2:StartInstances",
+      "ec2:StopInstances",
+      "ec2:RebootInstances",
+      "ec2:TerminateInstances",
+      "ec2:CreateTags",
+      "ec2:CreateSecurityGroup",
+      "ec2:DeleteSecurityGroup",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:CreateSnapshot"
+    ],
+    "Resource": "*"
+  }]
+}`;
+
 // A per-tenant OAuth URL variable declared by a provider (e.g. Shopify's shop
 // subdomain). Mirrors the api's api.URLVariable Go struct.
 interface URLVariable {
@@ -307,6 +331,11 @@ export default function EnvironmentDetail() {
     const credentialNameInvalidReason = (): string | null => {
         if (!newCredName.trim()) return "Enter a name first — letters, digits, dash and underscore only.";
         return null;
+    };
+
+    const copyText = (text: string, label: string) => {
+        navigator.clipboard?.writeText(text);
+        toast.success(label + " copied");
     };
 
     const saveCredential = () => {
@@ -631,23 +660,46 @@ export default function EnvironmentDetail() {
                                     />
                                     {awsRoleResult && (
                                         <div className="env-cred-aws-result">
-                                            <div className="env-detail-input-hint">
-                                                <strong>1.</strong> In your AWS account, attach this <strong>trust policy</strong> to the role:
+                                            <div className="env-cred-aws-result-title">
+                                                <Icon name="check" /> Credential created — finish the setup in AWS
                                             </div>
-                                            <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
-                                            <button
-                                                type="button"
-                                                className="env-detail-btn-cancel"
-                                                onClick={() => { navigator.clipboard?.writeText(awsRoleResult.trust_policy); toast.success("Trust policy copied"); }}
-                                            >
-                                                Copy trust policy
-                                            </button>
-                                            <div className="env-detail-input-hint" style={{ marginTop: 8 }}>
-                                                <strong>External ID</strong> (already in the policy above): <code>{awsRoleResult.external_id}</code>
-                                            </div>
-                                            <div className="env-detail-input-hint">
-                                                <strong>2.</strong> Grant that role the AWS permissions your flows need, then reference it in AWS actions as <code>{"${credentials." + (newCredName || "<name>") + ".role_arn}"}</code>.
-                                            </div>
+                                            <ol className="env-cred-aws-steps">
+                                                <li>
+                                                    In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>.
+                                                    <div className="env-cred-aws-warn">
+                                                        Name the role starting with <code>flomation-</code> (e.g. <code>flomation-ec2</code>). Flomation can only assume roles matching that prefix.
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    Paste this as the role's <strong>trust policy</strong>:
+                                                    <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
+                                                    <button type="button" className="env-cred-copy-btn" onClick={() => copyText(awsRoleResult.trust_policy, "Trust policy")}>
+                                                        <Icon name="check" /> Copy trust policy
+                                                    </button>
+                                                    <div className="env-cred-aws-chips">
+                                                        <div className="env-cred-aws-chip">
+                                                            <span className="env-cred-aws-chip-label">Flomation principal</span>
+                                                            <code>{awsRoleResult.trust_principal_arn}</code>
+                                                            <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.trust_principal_arn, "Principal ARN")}>Copy</button>
+                                                        </div>
+                                                        <div className="env-cred-aws-chip">
+                                                            <span className="env-cred-aws-chip-label">External ID</span>
+                                                            <code>{awsRoleResult.external_id}</code>
+                                                            <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.external_id, "External ID")}>Copy</button>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    Attach a <strong>permissions policy</strong> granting the AWS actions your flows use. Starter policy for EC2:
+                                                    <pre className="env-cred-trust-policy">{AWS_EC2_STARTER_POLICY}</pre>
+                                                    <button type="button" className="env-cred-copy-btn" onClick={() => copyText(AWS_EC2_STARTER_POLICY, "Permissions policy")}>
+                                                        <Icon name="check" /> Copy permissions policy
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    In any AWS action, set <strong>Authentication → Managed Role</strong> and pick <code>{newCredName || "this credential"}</code> — or reference <code>{"${credentials." + (newCredName || "<name>") + ".role_arn}"}</code> directly.
+                                                </li>
+                                            </ol>
                                         </div>
                                     )}
                                 </>
