@@ -98,7 +98,7 @@ export default function EnvironmentDetail() {
     // policy to paste into the customer's role — held here to display.
     const [ newCredRoleARN, setNewCredRoleARN ] = useState("");
     const [ newCredRegion, setNewCredRegion ] = useState("");
-    const [ awsRoleResult, setAwsRoleResult ] = useState<{ external_id: string; trust_principal_arn: string; trust_policy: string } | null>(null);
+    const [ awsRoleResult, setAwsRoleResult ] = useState<{ id: string; external_id: string; trust_principal_arn: string; trust_policy: string } | null>(null);
     // Structured per-service selection. Empty until a provider is
     // picked, at which point we hydrate from defaultSelection so
     // every service row has a sensible initial state.
@@ -315,6 +315,20 @@ export default function EnvironmentDetail() {
         toast.success(label + " copied");
     };
 
+    // Wizard step 2: attach the Role ARN the user built to the credential.
+    const finishAWSRole = () => {
+        if (!awsRoleResult) return;
+        api.put(getUrl('/credential/' + awsRoleResult.id + '/aws-role'), {
+            role_arn: newCredRoleARN.trim(),
+        }, { headers })
+            .then(() => {
+                toast.success("AWS Role credential ready");
+                resetCredentialForm();
+                updateCredentials();
+            })
+            .catch(err => toast.error(err.response?.data?.error || "Failed to attach role"));
+    };
+
     const saveCredential = () => {
         if (!newCredName.trim() || !newCredProvider) return;
 
@@ -322,19 +336,20 @@ export default function EnvironmentDetail() {
         // External ID and returns the trust policy. Keep the form open and show
         // the result so the user can paste it into their AWS role.
         if (newCredProvider === 'aws_role') {
+            // Wizard step 1: mint Flomation's dedicated identity (no role ARN yet).
             api.post(getUrl('/credential'), {
                 provider_slug: 'aws_role',
                 name: newCredName.trim(),
-                role_arn: newCredRoleARN.trim(),
                 region: newCredRegion.trim(),
             }, { headers })
                 .then(r => {
                     setAwsRoleResult({
+                        id: r?.data?.id || "",
                         external_id: r?.data?.external_id || "",
                         trust_principal_arn: r?.data?.trust_principal_arn || "",
                         trust_policy: r?.data?.trust_policy || "",
                     });
-                    toast.success("AWS Role credential created — attach the trust policy below to your role");
+                    toast.success("Flomation identity created — now build your AWS role");
                     updateCredentials();
                 })
                 .catch(err => toast.error(err.response?.data?.error || "Failed to create credential"));
@@ -616,18 +631,9 @@ export default function EnvironmentDetail() {
                             </div>
                             {/* AWS Role: token-less. Paste the Role ARN + region; on Create the
                                 API returns the External ID + trust policy to attach to the role. */}
-                            {newCredProvider === 'aws_role' && (
+                            {newCredProvider === 'aws_role' && !awsRoleResult && (
                                 <>
-                                    <input
-                                        type="text"
-                                        placeholder="IAM Role ARN (arn:aws:iam::<account>:role/<name>)"
-                                        value={newCredRoleARN}
-                                        onChange={e => setNewCredRoleARN(e.target.value)}
-                                        onBlur={e => setNewCredRoleARN(e.target.value.trim())}
-                                    />
-                                    <div className="env-detail-input-hint">
-                                        The role in <strong>your</strong> AWS account that Flomation will assume. Create it (or use your admin/root) — the trust policy to attach appears after you click Create.
-                                    </div>
+                                    <div className="env-cred-aws-step">Step 1 of 2 — Configure the credential</div>
                                     <input
                                         type="text"
                                         placeholder="Default region (optional, e.g. eu-west-2)"
@@ -636,7 +642,7 @@ export default function EnvironmentDetail() {
                                         onBlur={e => setNewCredRegion(e.target.value.trim())}
                                     />
                                     <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
-                                        Choose the permissions this role should grant — Flomation generates a least-privilege IAM policy for you to attach.
+                                        Choose the permissions this role should grant — Flomation generates a least-privilege IAM policy to attach in step 2. Clicking Create mints this credential's dedicated Flomation identity.
                                     </div>
                                     <div className="scope-picker">
                                         {awsPermissionCatalogue.map(svc => (
@@ -651,57 +657,64 @@ export default function EnvironmentDetail() {
                                             />
                                         ))}
                                     </div>
-                                    {awsRoleResult && (
-                                        <div className="env-cred-aws-result">
-                                            <div className="env-cred-aws-result-title">
-                                                <Icon name="check" /> Credential created — finish the setup in AWS
-                                            </div>
-                                            <ol className="env-cred-aws-steps">
-                                                <li>
-                                                    In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>. Name it anything you like; this credential has its own dedicated Flomation identity scoped to exactly this role.
-                                                </li>
-                                                <li>
-                                                    Paste this as the role's <strong>trust policy</strong>:
-                                                    <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
-                                                    <button type="button" className="env-cred-copy-btn" onClick={() => copyText(awsRoleResult.trust_policy, "Trust policy")}>
-                                                        <Icon name="check" /> Copy trust policy
-                                                    </button>
-                                                    <div className="env-cred-aws-chips">
-                                                        <div className="env-cred-aws-chip">
-                                                            <span className="env-cred-aws-chip-label">Flomation principal</span>
-                                                            <code>{awsRoleResult.trust_principal_arn}</code>
-                                                            <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.trust_principal_arn, "Principal ARN")}>Copy</button>
-                                                        </div>
-                                                        <div className="env-cred-aws-chip">
-                                                            <span className="env-cred-aws-chip-label">External ID</span>
-                                                            <code>{awsRoleResult.external_id}</code>
-                                                            <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.external_id, "External ID")}>Copy</button>
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    {(() => {
-                                                        const policy = awsSelectionToPolicy(newCredSelection);
-                                                        return policy ? (
-                                                            <>
-                                                                Attach this <strong>permissions policy</strong> — generated from the access levels you chose above:
-                                                                <pre className="env-cred-trust-policy">{policy}</pre>
-                                                                <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
-                                                                    <Icon name="check" /> Copy permissions policy
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <div className="env-cred-aws-warn">No permissions selected — pick access levels above so the role can actually do something.</div>
-                                                        );
-                                                    })()}
-                                                </li>
-                                                <li>
-                                                    In any AWS action, set <strong>Authentication → Managed Role</strong> and pick <code>{newCredName || "this credential"}</code> — or reference <code>{"${credentials." + (newCredName || "<name>") + ".role_arn}"}</code> directly.
-                                                </li>
-                                            </ol>
-                                        </div>
-                                    )}
                                 </>
+                            )}
+                            {newCredProvider === 'aws_role' && awsRoleResult && (
+                                <div className="env-cred-aws-result">
+                                    <div className="env-cred-aws-result-title">
+                                        <Icon name="check" /> Step 2 of 2 — Build your AWS role
+                                    </div>
+                                    <ol className="env-cred-aws-steps">
+                                        <li>
+                                            In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>. Name it anything you like.
+                                        </li>
+                                        <li>
+                                            Paste this as the role's <strong>trust policy</strong>:
+                                            <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
+                                            <button type="button" className="env-cred-copy-btn" onClick={() => copyText(awsRoleResult.trust_policy, "Trust policy")}>
+                                                <Icon name="check" /> Copy trust policy
+                                            </button>
+                                            <div className="env-cred-aws-chips">
+                                                <div className="env-cred-aws-chip">
+                                                    <span className="env-cred-aws-chip-label">Flomation principal</span>
+                                                    <code>{awsRoleResult.trust_principal_arn}</code>
+                                                    <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.trust_principal_arn, "Principal ARN")}>Copy</button>
+                                                </div>
+                                                <div className="env-cred-aws-chip">
+                                                    <span className="env-cred-aws-chip-label">External ID</span>
+                                                    <code>{awsRoleResult.external_id}</code>
+                                                    <button type="button" className="env-cred-copy-btn env-cred-copy-btn--sm" onClick={() => copyText(awsRoleResult.external_id, "External ID")}>Copy</button>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            {(() => {
+                                                const policy = awsSelectionToPolicy(newCredSelection);
+                                                return policy ? (
+                                                    <>
+                                                        Attach this <strong>permissions policy</strong> — generated from the access levels you chose:
+                                                        <pre className="env-cred-trust-policy">{policy}</pre>
+                                                        <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
+                                                            <Icon name="check" /> Copy permissions policy
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className="env-cred-aws-warn">No permissions were selected in step 1 — the role would be able to assume but do nothing.</div>
+                                                );
+                                            })()}
+                                        </li>
+                                        <li>
+                                            Paste the <strong>Role ARN</strong> of the role you just created, then click Finish:
+                                            <input
+                                                type="text"
+                                                placeholder="arn:aws:iam::<account>:role/<name>"
+                                                value={newCredRoleARN}
+                                                onChange={e => setNewCredRoleARN(e.target.value)}
+                                                onBlur={e => setNewCredRoleARN(e.target.value.trim())}
+                                            />
+                                        </li>
+                                    </ol>
+                                </div>
                             )}
                             {/* Per-tenant URL variables (e.g. Shopify shop subdomain) */}
                             {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map(v => (
@@ -793,15 +806,22 @@ export default function EnvironmentDetail() {
                                     // valid Role ARN.
                                     if (newCredProvider === 'aws_role') {
                                         if (awsRoleResult) {
+                                            // Step 2: attach the role ARN the user built.
+                                            const arn = newCredRoleARN.trim();
+                                            const ok = arn.startsWith("arn:aws:iam::") && arn.includes(":role/");
                                             return (
-                                                <button className="env-detail-btn-save" onClick={resetCredentialForm}>
-                                                    <Icon name="check" /> Done
+                                                <button
+                                                    className="env-detail-btn-save"
+                                                    onClick={finishAWSRole}
+                                                    disabled={!ok}
+                                                    title={ok ? undefined : "Paste the Role ARN you created first."}
+                                                >
+                                                    <Icon name="check" /> Finish
                                                 </button>
                                             );
                                         }
-                                        const arn = newCredRoleARN.trim();
-                                        const invalidReason = credentialNameInvalidReason()
-                                            || (arn.startsWith("arn:aws:iam::") && arn.includes(":role/") ? "" : "Enter a valid IAM Role ARN first.");
+                                        // Step 1: mint the Flomation identity (name only).
+                                        const invalidReason = credentialNameInvalidReason();
                                         return (
                                             <button
                                                 className="env-detail-btn-save"
@@ -809,7 +829,7 @@ export default function EnvironmentDetail() {
                                                 disabled={!!invalidReason}
                                                 title={invalidReason || undefined}
                                             >
-                                                <Icon name="check" /> Create
+                                                <Icon name="check" /> Create Flomation identity
                                             </button>
                                         );
                                     }
