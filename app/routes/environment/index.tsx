@@ -21,34 +21,11 @@ import {
     type ScopeSelection,
 } from "./scope-catalogue";
 import { ScopeServiceRow } from "./ScopeServiceRow";
+import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy } from "./aws-permissions";
 
 // Provider scope catalogue has moved to ./scope-catalogue.ts.
 // The structured per-service shape lives there along with the
 // selection ↔ scope-string helpers.
-
-// A starter IAM permissions policy for the AWS Role credential setup guide. It
-// covers the EC2 actions shipped so far; users narrow it per least-privilege.
-const AWS_EC2_STARTER_POLICY = `{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": [
-      "ec2:Describe*",
-      "ec2:RunInstances",
-      "ec2:StartInstances",
-      "ec2:StopInstances",
-      "ec2:RebootInstances",
-      "ec2:TerminateInstances",
-      "ec2:CreateTags",
-      "ec2:CreateSecurityGroup",
-      "ec2:DeleteSecurityGroup",
-      "ec2:AuthorizeSecurityGroupIngress",
-      "ec2:RevokeSecurityGroupIngress",
-      "ec2:CreateSnapshot"
-    ],
-    "Resource": "*"
-  }]
-}`;
 
 // A per-tenant OAuth URL variable declared by a provider (e.g. Shopify's shop
 // subdomain). Mirrors the api's api.URLVariable Go struct.
@@ -597,7 +574,7 @@ export default function EnvironmentDetail() {
                                             className="env-cred-provider-option"
                                             onClick={() => {
                                                 setNewCredProvider(p.slug);
-                                                setNewCredSelection(defaultSelection(p.slug));
+                                                setNewCredSelection(p.slug === 'aws_role' ? defaultAwsSelection() : defaultSelection(p.slug));
                                                 setNewCredOtherScopes(new Set());
                                             }}
                                         >
@@ -658,6 +635,22 @@ export default function EnvironmentDetail() {
                                         onChange={e => setNewCredRegion(e.target.value)}
                                         onBlur={e => setNewCredRegion(e.target.value.trim())}
                                     />
+                                    <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
+                                        Choose the permissions this role should grant — Flomation generates a least-privilege IAM policy for you to attach.
+                                    </div>
+                                    <div className="scope-picker">
+                                        {awsPermissionCatalogue.map(svc => (
+                                            <ScopeServiceRow
+                                                key={svc.id}
+                                                service={svc}
+                                                selection={newCredSelection.get(svc.id)}
+                                                expanded={expandedServices.get(svc.id) ?? false}
+                                                onExpandToggle={handleExpandToggle}
+                                                onLevelChange={handleLevelChange}
+                                                onToggleChange={handleToggleChange}
+                                            />
+                                        ))}
+                                    </div>
                                     {awsRoleResult && (
                                         <div className="env-cred-aws-result">
                                             <div className="env-cred-aws-result-title">
@@ -690,11 +683,20 @@ export default function EnvironmentDetail() {
                                                     </div>
                                                 </li>
                                                 <li>
-                                                    Attach a <strong>permissions policy</strong> granting the AWS actions your flows use. Starter policy for EC2:
-                                                    <pre className="env-cred-trust-policy">{AWS_EC2_STARTER_POLICY}</pre>
-                                                    <button type="button" className="env-cred-copy-btn" onClick={() => copyText(AWS_EC2_STARTER_POLICY, "Permissions policy")}>
-                                                        <Icon name="check" /> Copy permissions policy
-                                                    </button>
+                                                    {(() => {
+                                                        const policy = awsSelectionToPolicy(newCredSelection);
+                                                        return policy ? (
+                                                            <>
+                                                                Attach this <strong>permissions policy</strong> — generated from the access levels you chose above:
+                                                                <pre className="env-cred-trust-policy">{policy}</pre>
+                                                                <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
+                                                                    <Icon name="check" /> Copy permissions policy
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <div className="env-cred-aws-warn">No permissions selected — pick access levels above so the role can actually do something.</div>
+                                                        );
+                                                    })()}
                                                 </li>
                                                 <li>
                                                     In any AWS action, set <strong>Authentication → Managed Role</strong> and pick <code>{newCredName || "this credential"}</code> — or reference <code>{"${credentials." + (newCredName || "<name>") + ".role_arn}"}</code> directly.
