@@ -1,7 +1,7 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
 import type {Environment, Property, Secret} from "~/types";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Link, useParams, useSearchParams} from "react-router";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
@@ -22,7 +22,59 @@ import {
 } from "./scope-catalogue";
 import { ScopeServiceRow } from "./ScopeServiceRow";
 import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy, awsRegionOptions } from "./aws-permissions";
-import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
+
+// SearchableSelect is a self-contained type-to-filter dropdown for the credential
+// UI: a text field that filters a shortlist as you type and lets you pick or
+// free-type a value. No variable/expression affordance (irrelevant here).
+function SearchableSelect(props: {
+    value: string;
+    placeholder?: string;
+    options: { name: string; value: string }[];
+    onChange: (value: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        const onDoc = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener("mousedown", onDoc);
+        return () => document.removeEventListener("mousedown", onDoc);
+    }, [open]);
+
+    const q = props.value.trim().toLowerCase();
+    const filtered = q
+        ? props.options.filter(o => o.value.toLowerCase().includes(q) || o.name.toLowerCase().includes(q))
+        : props.options;
+
+    return (
+        <div className="cred-search-select" ref={ref}>
+            <input
+                type="text"
+                className="cred-search-select-input"
+                placeholder={props.placeholder}
+                value={props.value}
+                onChange={e => { props.onChange(e.target.value); setOpen(true); }}
+                onFocus={() => setOpen(true)}
+            />
+            {open && filtered.length > 0 && (
+                <div className="cred-search-select-list">
+                    {filtered.map(o => (
+                        <div
+                            key={o.value}
+                            className={`cred-search-select-option ${o.value === props.value ? "active" : ""}`}
+                            onMouseDown={() => { props.onChange(o.value); setOpen(false); }}
+                        >
+                            {o.name}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 // Provider scope catalogue has moved to ./scope-catalogue.ts.
 // The structured per-service shape lives there along with the
@@ -635,15 +687,12 @@ export default function EnvironmentDetail() {
                             {newCredProvider === 'aws_role' && !awsRoleResult && (
                                 <>
                                     <div className="env-cred-aws-step">Step 1 of 2 — Configure the credential</div>
-                                    <ComboboxProperty
-                                        nodeId="aws-role-region"
-                                        name="region"
-                                        label="Default region"
+                                    <div className="env-detail-input-label">Default region</div>
+                                    <SearchableSelect
                                         value={newCredRegion}
                                         placeholder="Search regions, e.g. eu-west-2 (optional)"
                                         options={awsRegionOptions}
-                                        hideVariablePicker
-                                        onValueChange={(_, v) => setNewCredRegion(v)}
+                                        onChange={setNewCredRegion}
                                     />
                                     <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
                                         Choose the permissions this role should grant — Flomation generates a least-privilege IAM policy to attach in step 2. Clicking Create mints this credential's dedicated Flomation identity.
