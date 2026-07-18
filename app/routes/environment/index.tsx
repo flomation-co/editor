@@ -21,7 +21,8 @@ import {
     type ScopeSelection,
 } from "./scope-catalogue";
 import { ScopeServiceRow } from "./ScopeServiceRow";
-import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy } from "./aws-permissions";
+import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy, awsRegionOptions } from "./aws-permissions";
+import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
 
 // Provider scope catalogue has moved to ./scope-catalogue.ts.
 // The structured per-service shape lives there along with the
@@ -634,12 +635,14 @@ export default function EnvironmentDetail() {
                             {newCredProvider === 'aws_role' && !awsRoleResult && (
                                 <>
                                     <div className="env-cred-aws-step">Step 1 of 2 — Configure the credential</div>
-                                    <input
-                                        type="text"
-                                        placeholder="Default region (optional, e.g. eu-west-2)"
+                                    <ComboboxProperty
+                                        nodeId="aws-role-region"
+                                        name="region"
+                                        label="Default region"
                                         value={newCredRegion}
-                                        onChange={e => setNewCredRegion(e.target.value)}
-                                        onBlur={e => setNewCredRegion(e.target.value.trim())}
+                                        placeholder="Search regions, e.g. eu-west-2 (optional)"
+                                        options={awsRegionOptions}
+                                        onValueChange={(_, v) => setNewCredRegion(v)}
                                     />
                                     <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
                                         Choose the permissions this role should grant — Flomation generates a least-privilege IAM policy to attach in step 2. Clicking Create mints this credential's dedicated Flomation identity.
