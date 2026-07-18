@@ -719,10 +719,10 @@ export default function EnvironmentDetail() {
                                     </div>
                                     <ol className="env-cred-aws-steps">
                                         <li>
-                                            In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>. Name it anything you like.
+                                            In the AWS console go to <strong>IAM → Roles → Create role</strong>, and choose trusted entity type <em>Custom trust policy</em>. (Not <em>Policies → Create policy</em> — the trust policy has a <code>Principal</code>, which only belongs on a role.)
                                         </li>
                                         <li>
-                                            Paste this as the role's <strong>trust policy</strong>:
+                                            Paste this into that <strong>Custom trust policy</strong> box — it defines <em>who</em> may assume the role:
                                             <pre className="env-cred-trust-policy">{awsRoleResult.trust_policy}</pre>
                                             <button type="button" className="env-cred-copy-btn" onClick={() => copyText(awsRoleResult.trust_policy, "Trust policy")}>
                                                 <Icon name="check" /> Copy trust policy
@@ -745,7 +745,7 @@ export default function EnvironmentDetail() {
                                                 const policy = awsSelectionToPolicy(newCredSelection);
                                                 return policy ? (
                                                     <>
-                                                        Attach this <strong>permissions policy</strong> — generated from the access levels you chose:
+                                                        On the <strong>Add permissions</strong> step of the role, attach this <strong>permissions policy</strong> (this one is a normal IAM policy — no <code>Principal</code>) — generated from the access levels you chose:
                                                         <pre className="env-cred-trust-policy">{policy}</pre>
                                                         <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
                                                             <Icon name="check" /> Copy permissions policy
