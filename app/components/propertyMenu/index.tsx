@@ -778,7 +778,14 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         }
                                                     }
                                                     if (hasAWSRole) {
+                                                        // The credential's dedicated Flomation IAM user keys
+                                                        // are the assume-role base identity; role_arn +
+                                                        // external_id target the customer role. All four are
+                                                        // filled into their (hidden) inputs so the executor's
+                                                        // static-base + assume-role path runs with nothing typed.
                                                         onValueChange("assume_role_arn", "${credentials." + credName + ".role_arn}");
+                                                        onValueChange("aws_access_key", "${credentials." + credName + ".base_access_key_id}");
+                                                        onValueChange("aws_secret_key", "${credentials." + credName + "}");
                                                         if (siblingInputs.some((x: any) => x.name === "external_id")) {
                                                             onValueChange("external_id", "${credentials." + credName + ".external_id}");
                                                         }

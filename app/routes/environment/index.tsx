@@ -658,10 +658,7 @@ export default function EnvironmentDetail() {
                                             </div>
                                             <ol className="env-cred-aws-steps">
                                                 <li>
-                                                    In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>.
-                                                    <div className="env-cred-aws-warn">
-                                                        Name the role starting with <code>flomation-</code> (e.g. <code>flomation-ec2</code>). Flomation can only assume roles matching that prefix.
-                                                    </div>
+                                                    In the AWS IAM console, <strong>create a role</strong> — trusted entity type <em>Custom trust policy</em>. Name it anything you like; this credential has its own dedicated Flomation identity scoped to exactly this role.
                                                 </li>
                                                 <li>
                                                     Paste this as the role's <strong>trust policy</strong>:
