@@ -12,6 +12,10 @@ type PropertyProps = {
     placeholder?: string;
     required?: boolean;
     variables?: VariableItem[];
+    // hideVariablePicker suppresses the ${...} expression button — for contexts
+    // where variable references don't apply (e.g. the credential UI, which has
+    // no flow to reference).
+    hideVariablePicker?: boolean;
     onValueChange?: (property: string, value: any) => void;
 };
 
@@ -57,6 +61,15 @@ const ComboboxProperty = (props: PropertyProps) => {
 
     const options = props.options ?? [];
 
+    // Filter the suggestions by what's been typed (matching the code or label),
+    // unless the value already exactly equals an option — so a chosen value
+    // shows the full list again rather than a single self-match.
+    const q = (value ?? "").trim().toLowerCase();
+    const exactMatch = options.some(o => o.value === value);
+    const visibleOptions = q && !exactMatch
+        ? options.filter(o => `${o.value} ${o.name}`.toLowerCase().includes(q))
+        : options;
+
     return (
         <div className={"property-menu-input-row"} key={props.name}>
             <div className={"property-menu-input-name"}>
@@ -65,17 +78,22 @@ const ComboboxProperty = (props: PropertyProps) => {
             </div>
             <div className="variable-mode-row" ref={ref}>
                 <div className="property-menu-combobox">
-                    <VariableInput
-                        nodeId={props.nodeId}
-                        name={props.name}
-                        placeholder={props.placeholder ?? ""}
-                        label={props.label}
-                        value={value}
-                        required={props.required}
-                        multiline={false}
-                        variables={props.variables ?? []}
-                        onValueChange={(_, v) => setValue(v)}
-                    />
+                    {/* Open the suggestion list when the field is focused (not on
+                        value change — that fires on mount and would open it on
+                        load). display:contents keeps the layout unchanged. */}
+                    <div style={{ display: "contents" }} onFocusCapture={() => setOpen(true)}>
+                        <VariableInput
+                            nodeId={props.nodeId}
+                            name={props.name}
+                            placeholder={props.placeholder ?? ""}
+                            label={props.label}
+                            value={value}
+                            required={props.required}
+                            multiline={false}
+                            variables={props.variables ?? []}
+                            onValueChange={(_, v) => setValue(v)}
+                        />
+                    </div>
                     {options.length > 0 && (
                         <button
                             type="button"
@@ -88,9 +106,9 @@ const ComboboxProperty = (props: PropertyProps) => {
                             </svg>
                         </button>
                     )}
-                    {open && options.length > 0 && (
+                    {open && visibleOptions.length > 0 && (
                         <div className="property-menu-select-list property-menu-combobox-list">
-                            {options.map(opt => (
+                            {visibleOptions.map(opt => (
                                 <div
                                     key={opt.value}
                                     className={`property-menu-select-option ${opt.value === value ? "active" : ""}`}
@@ -102,13 +120,15 @@ const ComboboxProperty = (props: PropertyProps) => {
                         </div>
                     )}
                 </div>
-                <VariablePicker
-                    value={value}
-                    variables={props.variables ?? []}
-                    onSelect={(refValue) => setValue((prev) => prev + refValue)}
-                    onClear={() => setValue("")}
-                    alwaysButton={true}
-                />
+                {!props.hideVariablePicker && (
+                    <VariablePicker
+                        value={value}
+                        variables={props.variables ?? []}
+                        onSelect={(refValue) => setValue((prev) => prev + refValue)}
+                        onClear={() => setValue("")}
+                        alwaysButton={true}
+                    />
+                )}
             </div>
         </div>
     );

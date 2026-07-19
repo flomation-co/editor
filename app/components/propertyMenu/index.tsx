@@ -18,6 +18,7 @@ import FileProperty from "~/components/propertyMenu/fileProperty";
 import ColourProperty from "~/components/propertyMenu/colourProperty";
 import SelectProperty from "~/components/propertyMenu/selectProperty";
 import ComboboxProperty from "~/components/propertyMenu/comboboxProperty";
+import { AWS_REGIONS } from "~/lib/aws-regions";
 import DynamicSelectProperty from "~/components/propertyMenu/dynamicSelectProperty";
 import GoogleAccountsProperty from "~/components/propertyMenu/googleAccountsProperty";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
@@ -32,6 +33,7 @@ import "~/components/propertyMenu/multiSelectProperty/index.css";
 import "~/components/propertyMenu/selectProperty/index.css";
 import "~/components/propertyMenu/comboboxProperty/index.css";
 import { Icon } from "~/components/icons/Icon";
+import { nodeIsStale } from "~/components/editor/staleContext";
 
 type PropertyMenuProps = {
     node: object;
@@ -48,6 +50,7 @@ type PropertyMenuProps = {
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
     onNodeDelete?: (node_id: string) => void;
+    onNodeRefresh?: (node_id: string) => void;
     expanded?: boolean;
     onToggleExpand?: () => void;
 }
@@ -333,6 +336,25 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 <div className={"property-menu-header-title"}>
                                     {props.node.data.config.name}
                                 </div>
+                                {(() => {
+                                    // Stale when the action definition has moved on from the one
+                                    // baked into this node at add-time (hash mismatch, or — for
+                                    // legacy hashless nodes — a differing input/output shape). Offering
+                                    // a one-click refresh avoids delete-and-recreate to adopt the new
+                                    // inputs/outputs. Shares nodeIsStale with the canvas badge.
+                                    const freshDef: any = props.actionDefinitions?.[props.node.data.label];
+                                    const stale = nodeIsStale(props.node.data.config, freshDef);
+                                    if (!stale || !props.onNodeRefresh) return null;
+                                    return (
+                                        <button
+                                            className={"property-menu-update"}
+                                            onClick={() => props.onNodeRefresh!(props.node.data.id)}
+                                            title={"This node was built from an older version of the action. Update to pull in the latest inputs and outputs — your entered values are kept."}
+                                        >
+                                            <Icon name={"arrow-rotate-right"} /> Update available
+                                        </button>
+                                    );
+                                })()}
                                 {props.onToggleExpand && (
                                     <button className={"property-menu-close"} onClick={props.onToggleExpand} style={{ marginRight: 4 }}>
                                         <Icon name={props.expanded ? "compress" : "expand"} />
@@ -631,6 +653,25 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                             );
                                         }
 
+                                        // AWS actions: render the region field as a searchable
+                                        // combobox of AWS regions (still free-text / variable-friendly).
+                                        if (i.name === "aws_region") {
+                                            return (
+                                                <ComboboxProperty
+                                                    nodeId={props.node.data.id}
+                                                    name={i.name}
+                                                    label={i.label}
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    value={i.value}
+                                                    options={AWS_REGIONS}
+                                                    placeholder={i.placeholder}
+                                                    required={i.required}
+                                                    variables={props.variables}
+                                                    onValueChange={onValueChange}
+                                                />
+                                            );
+                                        }
+
                                         switch (resolvedType) {
                                             case "key_value_array":
                                                 return (
@@ -754,9 +795,14 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 const hasTenant = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenant");
                                                 const hasCompany = i.name === "credential" && siblingInputs.some((x: any) => x.name === "company");
                                                 const hasSandbox = siblingInputs.some((x: any) => x.name === "sandbox");
+                                                // AWS actions pair the credential with assume_role_arn +
+                                                // external_id siblings; picking an aws_role credential
+                                                // auto-fills them from its metadata so the (hidden)
+                                                // assume-role fields are populated with nothing typed.
+                                                const hasAWSRole = i.name === "credential" && siblingInputs.some((x: any) => x.name === "assume_role_arn");
                                                 const handleCredentialChange = (property: string, value: any) => {
                                                     onValueChange(property, value);
-                                                    if (!hasTenant && !hasCompany) return;
+                                                    if (!hasTenant && !hasCompany && !hasAWSRole) return;
                                                     const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
                                                     if (!match) return;
                                                     const credName = match[1];
@@ -770,6 +816,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         // input, see the render skip below).
                                                         if (hasSandbox) {
                                                             onValueChange("sandbox", "${credentials." + credName + ".sandbox}");
+                                                        }
+                                                    }
+                                                    if (hasAWSRole) {
+                                                        // The credential's dedicated Flomation IAM user keys
+                                                        // are the assume-role base identity; role_arn +
+                                                        // external_id target the customer role. All four are
+                                                        // filled into their (hidden) inputs so the executor's
+                                                        // static-base + assume-role path runs with nothing typed.
+                                                        onValueChange("assume_role_arn", "${credentials." + credName + ".role_arn}");
+                                                        onValueChange("aws_access_key", "${credentials." + credName + ".base_access_key_id}");
+                                                        onValueChange("aws_secret_key", "${credentials." + credName + "}");
+                                                        if (siblingInputs.some((x: any) => x.name === "external_id")) {
+                                                            onValueChange("external_id", "${credentials." + credName + ".external_id}");
                                                         }
                                                     }
                                                 };
