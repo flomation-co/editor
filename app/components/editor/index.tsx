@@ -10,7 +10,7 @@ import { Icon } from "~/components/icons/Icon";
 import api from "~/lib/api";
 import { detectSecret } from "~/lib/secretDetection";
 import { ValidationProvider, type ValidationProblem } from "~/components/editor/validationContext";
-import { StaleProvider } from "~/components/editor/staleContext";
+import { StaleProvider, nodeIsStale } from "~/components/editor/staleContext";
 import {toast} from "~/components/toast";
 
 import Container from "~/components/container";
@@ -809,8 +809,7 @@ export function Editor(props : EditorProps) {
         if (!plugins) return stale;
         for (const node of nodes as any[]) {
             const fresh: any = plugins[node.data?.label];
-            const nodeHash = node.data?.config?.hash;
-            if (fresh?.hash && nodeHash && fresh.hash !== nodeHash) {
+            if (nodeIsStale(node.data?.config, fresh)) {
                 stale.add(node.id);
             }
         }

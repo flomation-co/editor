@@ -33,6 +33,7 @@ import "~/components/propertyMenu/multiSelectProperty/index.css";
 import "~/components/propertyMenu/selectProperty/index.css";
 import "~/components/propertyMenu/comboboxProperty/index.css";
 import { Icon } from "~/components/icons/Icon";
+import { nodeIsStale } from "~/components/editor/staleContext";
 
 type PropertyMenuProps = {
     node: object;
@@ -336,12 +337,13 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                     {props.node.data.config.name}
                                 </div>
                                 {(() => {
-                                    // Stale when the action's manifest hash has moved on from the
-                                    // one baked into this node at add-time. Offering a one-click
-                                    // refresh avoids delete-and-recreate to adopt new inputs/outputs.
+                                    // Stale when the action definition has moved on from the one
+                                    // baked into this node at add-time (hash mismatch, or — for
+                                    // legacy hashless nodes — a differing input/output shape). Offering
+                                    // a one-click refresh avoids delete-and-recreate to adopt the new
+                                    // inputs/outputs. Shares nodeIsStale with the canvas badge.
                                     const freshDef: any = props.actionDefinitions?.[props.node.data.label];
-                                    const nodeHash = (props.node.data.config as any)?.hash;
-                                    const stale = !!(freshDef?.hash && nodeHash && freshDef.hash !== nodeHash);
+                                    const stale = nodeIsStale(props.node.data.config, freshDef);
                                     if (!stale || !props.onNodeRefresh) return null;
                                     return (
                                         <button
