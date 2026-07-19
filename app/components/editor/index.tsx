@@ -765,6 +765,42 @@ export function Editor(props : EditorProps) {
         setPropertyNode(null);
     }, [setNodes, setEdges]);
 
+    // Reconcile a node's frozen config snapshot with the latest action manifest:
+    // adopt the current inputs/outputs (types, options, labels), pulling in new
+    // fields and dropping removed ones, while preserving the values the user
+    // already entered (matched by input name). Updates the baked hash so the node
+    // is no longer flagged stale.
+    const onNodeRefresh = useCallback((id: string) => {
+        setNodes((prev) => prev.map((node) => {
+            if (node.id !== id) return node;
+            const fresh: any = plugins[node.data.label];
+            if (!fresh) return node;
+            const oldConfig: any = node.data.config || {};
+            const oldInputs: any[] = oldConfig.inputs || [];
+            const mergedInputs = (fresh.inputs || []).map((fi: any) => {
+                const existing = oldInputs.find((oi: any) => oi.name === fi.name);
+                return { ...fi, value: existing?.value ?? fi.value ?? "" };
+            });
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    config: {
+                        ...fresh,
+                        // Keep any custom display name the user set on this node.
+                        name: oldConfig.name ?? fresh.name,
+                        label: oldConfig.label ?? fresh.label,
+                        inputs: mergedInputs,
+                        outputs: fresh.outputs || [],
+                        // Preserve special per-node state the property menu manages.
+                        ...(oldConfig.trigger_inputs ? { trigger_inputs: oldConfig.trigger_inputs } : {}),
+                        ...(oldConfig.run_token !== undefined ? { run_token: oldConfig.run_token } : {}),
+                    },
+                },
+            };
+        }));
+    }, [setNodes, plugins]);
+
     const onValueChange = useCallback((id: string, property: string, value: any) => {
         setNodes((prev) => {
             let changed = false;
@@ -1918,6 +1954,7 @@ export function Editor(props : EditorProps) {
                                                 setNodes((nds: any[]) => nds.map(n => ({...n, selected: false})));
                                             }}
                                             onNodeDelete={onNodeDelete}
+                                            onNodeRefresh={onNodeRefresh}
                                             expanded={propertyExpanded}
                                             onToggleExpand={() => setPropertyExpanded(prev => !prev)}
                                         />

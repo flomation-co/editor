@@ -49,6 +49,7 @@ type PropertyMenuProps = {
     onNameChange?: (node_id: string, value: any) => void;
     onDismiss?: () => void;
     onNodeDelete?: (node_id: string) => void;
+    onNodeRefresh?: (node_id: string) => void;
     expanded?: boolean;
     onToggleExpand?: () => void;
 }
@@ -334,6 +335,24 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                 <div className={"property-menu-header-title"}>
                                     {props.node.data.config.name}
                                 </div>
+                                {(() => {
+                                    // Stale when the action's manifest hash has moved on from the
+                                    // one baked into this node at add-time. Offering a one-click
+                                    // refresh avoids delete-and-recreate to adopt new inputs/outputs.
+                                    const freshDef: any = props.actionDefinitions?.[props.node.data.label];
+                                    const nodeHash = (props.node.data.config as any)?.hash;
+                                    const stale = !!(freshDef?.hash && nodeHash && freshDef.hash !== nodeHash);
+                                    if (!stale || !props.onNodeRefresh) return null;
+                                    return (
+                                        <button
+                                            className={"property-menu-update"}
+                                            onClick={() => props.onNodeRefresh!(props.node.data.id)}
+                                            title={"This node was built from an older version of the action. Update to pull in the latest inputs and outputs — your entered values are kept."}
+                                        >
+                                            <Icon name={"arrow-rotate-right"} /> Update available
+                                        </button>
+                                    );
+                                })()}
                                 {props.onToggleExpand && (
                                     <button className={"property-menu-close"} onClick={props.onToggleExpand} style={{ marginRight: 4 }}>
                                         <Icon name={props.expanded ? "compress" : "expand"} />
