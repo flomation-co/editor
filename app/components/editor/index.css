@@ -1235,3 +1235,28 @@
     height: 8px !important;
     border-radius: 2px !important;
 }
+
+/* Amber "update available" badge on a node whose action manifest has moved on. */
+.node-stale-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e6a817;
+    color: #1a1400;
+    font-size: 9px;
+    box-shadow: 0 0 0 2px #14141f, 0 0 8px rgba(230, 168, 23, 0.6);
+    z-index: 5;
+    pointer-events: auto;
+    cursor: help;
+}
+
+.node-stale-badge svg {
+    width: 10px;
+    height: 10px;
+}

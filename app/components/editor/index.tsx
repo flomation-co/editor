@@ -10,6 +10,7 @@ import { Icon } from "~/components/icons/Icon";
 import api from "~/lib/api";
 import { detectSecret } from "~/lib/secretDetection";
 import { ValidationProvider, type ValidationProblem } from "~/components/editor/validationContext";
+import { StaleProvider } from "~/components/editor/staleContext";
 import {toast} from "~/components/toast";
 
 import Container from "~/components/container";
@@ -800,6 +801,20 @@ export function Editor(props : EditorProps) {
             };
         }));
     }, [setNodes, plugins]);
+
+    // Ids of nodes whose baked action hash no longer matches the current manifest
+    // — surfaced as an at-a-glance badge on the node (StaleProvider → CustomNode).
+    const staleNodeIds = useMemo<Set<string>>(() => {
+        const stale = new Set<string>();
+        for (const node of nodes as any[]) {
+            const fresh: any = plugins[node.data?.label];
+            const nodeHash = node.data?.config?.hash;
+            if (fresh?.hash && nodeHash && fresh.hash !== nodeHash) {
+                stale.add(node.id);
+            }
+        }
+        return stale;
+    }, [nodes, plugins]);
 
     const onValueChange = useCallback((id: string, property: string, value: any) => {
         setNodes((prev) => {
@@ -1890,6 +1905,7 @@ export function Editor(props : EditorProps) {
                             <div className={"flo-editor-graph"} ref={graphRef}>
                                 <ReactFlowProvider>
                                     <ValidationProvider value={validationProblems}>
+                                    <StaleProvider value={staleNodeIds}>
                                     <ReactFlow
                                         onClick={(e) => {onContextMenuClose(e); setDragging(false)}}
                                         onContextMenu={onContextMenuOpen}
@@ -1921,6 +1937,7 @@ export function Editor(props : EditorProps) {
                                             )}
                                         </>
                                     </ReactFlow>
+                                    </StaleProvider>
                                     </ValidationProvider>
                                 </ReactFlowProvider>
                                 {menuVisible && (

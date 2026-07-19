@@ -7,6 +7,7 @@ import { BaseNode } from "~/components/base-node";
 import { Icon } from "~/components/icons/Icon";
 import { detectSecret } from "~/lib/secretDetection";
 import { useValidationProblem } from "~/components/editor/validationContext";
+import { useIsNodeStale } from "~/components/editor/staleContext";
 
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
     1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
@@ -171,6 +172,7 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // the id from data.id, which the editor sets when it mints
     // each node.
     const validationProblem = useValidationProblem(data?.id ?? "");
+    const isStale = useIsNodeStale(data?.id ?? "");
 
     // Severity ordering for the visual: secret > unresolved >
     // required > clean. The fallback to hasIncompleteRequired
@@ -242,6 +244,14 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     } : {}),
                 } as React.CSSProperties}
             >
+                {isStale && (
+                    <div
+                        className="node-stale-badge"
+                        title="An updated version of this action is available. Open the node and click 'Update available'."
+                    >
+                        <Icon name={"arrow-rotate-right"} />
+                    </div>
+                )}
                 {hasInputs && (
                     <Handle
                         type="target"
