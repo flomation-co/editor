@@ -774,7 +774,7 @@ export function Editor(props : EditorProps) {
     const onNodeRefresh = useCallback((id: string) => {
         setNodes((prev) => prev.map((node) => {
             if (node.id !== id) return node;
-            const fresh: any = plugins[node.data.label];
+            const fresh: any = plugins?.[node.data.label];
             if (!fresh) return node;
             const oldConfig: any = node.data.config || {};
             const oldInputs: any[] = oldConfig.inputs || [];
@@ -806,6 +806,7 @@ export function Editor(props : EditorProps) {
     // — surfaced as an at-a-glance badge on the node (StaleProvider → CustomNode).
     const staleNodeIds = useMemo<Set<string>>(() => {
         const stale = new Set<string>();
+        if (!plugins) return stale;
         for (const node of nodes as any[]) {
             const fresh: any = plugins[node.data?.label];
             const nodeHash = node.data?.config?.hash;
