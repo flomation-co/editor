@@ -232,6 +232,8 @@ type FormSubmit = {
     on_submit?: "message" | "restart" | "redirect";
     redirect_url?: string;
     redirect_delay_seconds?: number;
+    // Override the Submit button text (default "Submit"). Display only.
+    submit_label?: string;
 }
 
 type FormDefinition = {
@@ -482,7 +484,7 @@ const FormBuilder = (props: Props) => {
     // post-submit behaviour is already configured.
     const [afterSubmitOpen, setAfterSubmitOpen] = useState(() => {
         const s = form.submit;
-        return !!(s && (s.success_message || (s.on_submit && s.on_submit !== "message") || s.redirect_url));
+        return !!(s && (s.success_message || (s.on_submit && s.on_submit !== "message") || s.redirect_url || s.submit_label));
     });
 
     // Per-field "Computed by a flow" disclosure. Collapsed by default (an absent
@@ -1050,6 +1052,15 @@ const FormBuilder = (props: Props) => {
                                 What the visitor sees after they submit — a thank-you message, a
                                 reset for another response (kiosk), or a redirect.
                             </span>
+                            <div className="fb-field-group fb-full-width">
+                                <span className="fb-field-group-label">Submit button text</span>
+                                <input
+                                    className="fb-input fb-input-sm"
+                                    value={form.submit?.submit_label || ""}
+                                    placeholder="Submit"
+                                    onChange={e => updateForm({submit: {...form.submit, submit_label: e.target.value || undefined}})}
+                                />
+                            </div>
                             <div className="fb-field-group fb-full-width">
                                 <span className="fb-field-group-label">On submit</span>
                                 <select
