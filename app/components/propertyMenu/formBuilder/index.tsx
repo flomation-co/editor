@@ -1950,7 +1950,6 @@ const FormBuilder = (props: Props) => {
                                                     Copy button
                                                 </label>
                                             )}
-                                            <span className="fb-field-name">{comp.name}</span>
                                         </>
                                     ) : comp.type === "payment" ? (
                                         // Payment collects no input — Required/Read-only are

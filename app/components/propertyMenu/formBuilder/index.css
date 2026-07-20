@@ -207,7 +207,9 @@
 .fb-component-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px 16px;
     margin-top: 10px;
     padding-top: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.04);
@@ -221,6 +223,7 @@
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
 }
 
 .fb-toggle-label--prominent {
