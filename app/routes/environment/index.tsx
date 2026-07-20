@@ -87,6 +87,12 @@ interface URLVariable {
     key: string;
     label: string;
     placeholder?: string;
+    // Optional variables may be left blank — the api substitutes the provider's
+    // declared default (e.g. Azure's {tenant} → "organizations"). Required
+    // variables (the default, e.g. Shopify's {shop}) block "Create & Authorise"
+    // until filled.
+    optional?: boolean;
+    default?: string;
 }
 
 // OAuth credential provider as returned by /api/v1/credential/providers.
@@ -837,7 +843,9 @@ export default function EnvironmentDetail() {
                                         onChange={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value }))}
                                         onBlur={e => setNewCredUrlVars(prev => ({ ...prev, [v.key]: e.target.value.trim() }))}
                                     />
-                                    <div className="env-detail-input-hint">{v.label}</div>
+                                    <div className="env-detail-input-hint">
+                                        {v.label}{v.optional ? " (optional)" : ""}
+                                    </div>
                                 </div>
                             ))}
                             {/* Bring-your-own OAuth app: shown when the provider has no
@@ -941,7 +949,7 @@ export default function EnvironmentDetail() {
                                         );
                                     }
                                     const missingVar = (selProvider?.url_variables ?? [])
-                                        .find(v => !(newCredUrlVars[v.key] ?? "").trim());
+                                        .find(v => !v.optional && !(newCredUrlVars[v.key] ?? "").trim());
                                     const needsClient = !selProvider?.configured;
                                     const invalidReason = credentialNameInvalidReason()
                                         || (missingVar ? `Enter the ${missingVar.label} first.` : "")
