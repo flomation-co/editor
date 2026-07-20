@@ -3,6 +3,7 @@ import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import VariableInput, {type VariableItem} from "~/components/propertyMenu/variableInput";
 import FlowSelectProperty from "~/components/propertyMenu/flowSelectProperty";
+import OutputSelect from "~/components/outputSelect";
 import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
@@ -113,6 +114,10 @@ type FormComponent = {
     // Conditional visibility — show this field only when earlier answers
     // satisfy the rule. Absent means always visible.
     visible_if?: VisibilityRule;
+    // Show a "Copy" button at the end of the rendered field so respondents can
+    // copy its current value to the clipboard. Default off (undefined/false).
+    // Useful for read-only / flow-computed values (e.g. a generated reference).
+    allow_copy?: boolean;
 }
 
 // Types whose response is constrained to a curated list. Adding a new
@@ -156,6 +161,20 @@ function supportsComputedValue(type: string): boolean {
     return !DISPLAY_ONLY_TYPES.has(type) && !STRUCTURED_TYPES.has(type) &&
         !UPLOAD_TYPES.has(type) && type !== "consent" && type !== "nps" &&
         type !== "picture_choice" && type !== "payment";
+}
+
+// Field types that render as a single-value control (a lone input / textarea /
+// select) whose value can be copied to the clipboard. The optional "Copy button"
+// toggle is offered only for these — copying a scalar reference (e.g. a
+// flow-computed reference number) is the clear use case; multi-part, choice and
+// upload fields have no single value to copy. Mirrors the form.html renderer,
+// which attaches the button to the same set.
+const COPYABLE_TYPES = new Set([
+    "text", "multiline", "number", "email", "phone", "url", "dropdown",
+    "date", "time", "datetime",
+]);
+function supportsCopy(type: string): boolean {
+    return COPYABLE_TYPES.has(type);
 }
 
 // Recognition types capture a camera frame AND run in-browser recognition,
@@ -465,6 +484,15 @@ const FormBuilder = (props: Props) => {
         const s = form.submit;
         return !!(s && (s.success_message || (s.on_submit && s.on_submit !== "message") || s.redirect_url));
     });
+
+    // Per-field "Computed by a flow" disclosure. Collapsed by default (an absent
+    // key means closed) so the common case — a plain field — stays uncluttered;
+    // authors expand it only when wiring a flow-computed value. Keyed by
+    // "<pageIndex>-<fieldIndex>". A configured value_source shows a badge on the
+    // collapsed header so it's still discoverable without expanding.
+    const [computedOpen, setComputedOpen] = useState<Record<string, boolean>>({});
+    const toggleComputed = (key: string) =>
+        setComputedOpen(prev => ({...prev, [key]: !prev[key]}));
 
     useEffect(() => {
         const serialised = JSON.stringify(form);
@@ -1200,55 +1228,71 @@ const FormBuilder = (props: Props) => {
                                             </div>
                                         </>
                                     )}
-                                    {supportsComputedValue(comp.type) && (
-                                        <div className="fb-field-group fb-full-width fb-computed-source">
-                                            <span className="fb-field-group-label">Computed by a flow</span>
-                                            <span className="fb-field-hint">
-                                                Fill this field's value by running a flow with the current
-                                                answers as <code>{"${input.X}"}</code>. The field becomes
-                                                read-only; the value is authoritative server-side.
-                                            </span>
-                                            <FlowSelectProperty
-                                                nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
-                                                name={`value-source-${comp.name}`}
-                                                label="Value flow"
-                                                value={comp.value_source || ""}
-                                                onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
-                                            />
-                                            {comp.value_source && (() => {
-                                                const dlId = `${props.nodeId}-${pageIndex}-${fieldIndex}-value-outputs`;
-                                                const outs = flowOutputs[comp.value_source] || [];
-                                                return (
-                                                <>
-                                                    <input
-                                                        className="fb-input fb-input-sm"
-                                                        list={outs.length ? dlId : undefined}
-                                                        value={comp.value_output || ""}
-                                                        placeholder="Flow output to read; defaults to the field name"
-                                                        onChange={e => updateField(pageIndex, fieldIndex, {value_output: e.target.value || undefined})}
-                                                    />
-                                                    {outs.length > 0 && (
-                                                        <datalist id={dlId}>
-                                                            {outs.map(o => <option key={o} value={o} />)}
-                                                        </datalist>
-                                                    )}
-                                                    {outs.length > 0 && (
-                                                        <span className="fb-field-hint">
-                                                            Available outputs: {outs.join(", ")}
-                                                        </span>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        className="fb-datasource-clear"
-                                                        onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
-                                                    >
-                                                        <Icon name="xmark" /> Remove value flow
-                                                    </button>
-                                                </>
-                                                );
-                                            })()}
+                                    {supportsComputedValue(comp.type) && (() => {
+                                        const key = `${pageIndex}-${fieldIndex}`;
+                                        const open = !!computedOpen[key];
+                                        return (
+                                        <div className={`fb-field-group fb-full-width fb-computed-source${open ? " fb-computed-source--open" : ""}`}>
+                                            <button
+                                                type="button"
+                                                className="fb-computed-header"
+                                                aria-expanded={open}
+                                                onClick={() => toggleComputed(key)}
+                                            >
+                                                <Icon name={open ? "chevron-down" : "chevron-right"} />
+                                                <span className="fb-computed-header-label">Computed by a flow</span>
+                                                {comp.value_source && (
+                                                    <span className="fb-computed-badge">
+                                                        <Icon name="bolt" /> Active
+                                                    </span>
+                                                )}
+                                            </button>
+                                            {open && (
+                                            <div className="fb-computed-body">
+                                                <span className="fb-field-hint">
+                                                    Fill this field's value by running a flow with the current
+                                                    answers as <code>{"${input.X}"}</code>. The field becomes
+                                                    read-only; the value is authoritative server-side.
+                                                </span>
+                                                <FlowSelectProperty
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-value-source`}
+                                                    name={`value-source-${comp.name}`}
+                                                    label="Value flow"
+                                                    value={comp.value_source || ""}
+                                                    onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
+                                                />
+                                                {comp.value_source && (() => {
+                                                    const outs = flowOutputs[comp.value_source] || [];
+                                                    return (
+                                                    <>
+                                                        <div className="property-menu-input-row">
+                                                            <div className="property-menu-input-name">Value output</div>
+                                                            <OutputSelect
+                                                                value={comp.value_output || ""}
+                                                                options={outs}
+                                                                onChange={(v) => updateField(pageIndex, fieldIndex, {value_output: v || undefined})}
+                                                            />
+                                                        </div>
+                                                        {outs.length > 0 && (
+                                                            <span className="fb-field-hint">
+                                                                Available outputs: {outs.join(", ")}
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="fb-datasource-clear"
+                                                            onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                        >
+                                                            <Icon name="xmark" /> Remove value flow
+                                                        </button>
+                                                    </>
+                                                    );
+                                                })()}
+                                            </div>
+                                            )}
                                         </div>
-                                    )}
+                                        );
+                                    })()}
                                     {comp.type === "location" && (
                                         <div className="fb-field-group fb-full-width">
                                             <span className="fb-field-group-label">Precision</span>
@@ -1894,6 +1938,16 @@ const FormBuilder = (props: Props) => {
                                                         onChange={e => updateField(pageIndex, fieldIndex, {read_only: e.target.checked})}
                                                     />
                                                     Read-only
+                                                </label>
+                                            )}
+                                            {supportsCopy(comp.type) && (
+                                                <label className="fb-toggle-label" title="Show a Copy button at the end of this field so respondents can copy its value.">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={comp.allow_copy || false}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {allow_copy: e.target.checked})}
+                                                    />
+                                                    Copy button
                                                 </label>
                                             )}
                                             <span className="fb-field-name">{comp.name}</span>
