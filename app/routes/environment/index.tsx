@@ -21,7 +21,7 @@ import {
     type ScopeSelection,
 } from "./scope-catalogue";
 import { ScopeServiceRow } from "./ScopeServiceRow";
-import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy } from "./aws-permissions";
+import { awsPermissionCatalogue, defaultAwsSelection, awsSelectionToPolicy, selectionToLevels, levelsToSelection } from "./aws-permissions";
 import { AWS_REGIONS } from "~/lib/aws-regions";
 
 // SearchableSelect is a self-contained type-to-filter dropdown for the credential
@@ -175,6 +175,13 @@ export default function EnvironmentDetail() {
     // the vertical density tight when scanning providers with many
     // services (Google has 8, Microsoft has 6).
     const [ expandedServices, setExpandedServices ] = useState<Map<string, boolean>>(new Map());
+
+    // Edit-permissions flow for an existing aws_role credential. The picker is
+    // pre-filled from the credential's persisted level map (metadata) and, on
+    // save, regenerates the IAM policy for the user to re-attach to their role.
+    const [ editPerms, setEditPerms ] = useState<{ id: string; name: string } | null>(null);
+    const [ editPermsSelection, setEditPermsSelection ] = useState<ScopeSelection>(new Map());
+    const [ editPermsExpanded, setEditPermsExpanded ] = useState<Map<string, boolean>>(new Map());
 
     const getUrl = (path: string) => {
         const config = useConfig();
@@ -342,6 +349,42 @@ export default function EnvironmentDetail() {
         });
     };
 
+    // ── Edit permissions on an existing aws_role credential ──────────────
+    const openEditPerms = (cred: any) => {
+        setEditPerms({ id: cred.id, name: cred.name });
+        // permission_levels is persisted inside the credential's metadata blob,
+        // which the list endpoint already returns.
+        setEditPermsSelection(levelsToSelection(cred.metadata?.permission_levels));
+        setEditPermsExpanded(new Map());
+    };
+    const handleEditPermsLevel = (serviceId: string, level: string) => {
+        setEditPermsSelection(prev => {
+            const next = new Map(prev);
+            const existing = next.get(serviceId) ?? { toggles: new Set<string>() };
+            next.set(serviceId, { ...existing, level, toggles: new Set(existing.toggles) });
+            return next;
+        });
+    };
+    const handleEditPermsExpand = (serviceId: string) => {
+        setEditPermsExpanded(prev => {
+            const next = new Map(prev);
+            next.set(serviceId, !next.get(serviceId));
+            return next;
+        });
+    };
+    const saveEditPerms = () => {
+        if (!editPerms) return;
+        api.put(getUrl('/credential/' + editPerms.id + '/aws-permissions'), {
+            permission_levels: selectionToLevels(editPermsSelection),
+        }, { headers })
+            .then(() => {
+                toast.success("Permissions updated — re-attach the policy to your role");
+                setEditPerms(null);
+                updateCredentials();
+            })
+            .catch(err => toast.error(err.response?.data?.error || "Failed to update permissions"));
+    };
+
     const resetCredentialForm = () => {
         setShowAddCredential(false);
         setNewCredName("");
@@ -429,6 +472,7 @@ export default function EnvironmentDetail() {
                 provider_slug: 'aws_role',
                 name: newCredName.trim(),
                 region: newCredRegion.trim(),
+                permission_levels: selectionToLevels(newCredSelection),
             }, { headers })
                 .then(r => {
                     setAwsRoleResult({
@@ -999,9 +1043,15 @@ export default function EnvironmentDetail() {
                                     )}
                                 </div>
                                 <div className="env-detail-item-actions">
-                                    <button className="env-detail-icon-btn" onClick={() => reauthoriseCredential(cred.id)} title="Re-authorise">
-                                        <Icon name="arrow-rotate-right" />
-                                    </button>
+                                    {cred.provider_slug === 'aws_role' ? (
+                                        <button className="env-detail-icon-btn" onClick={() => openEditPerms(cred)} title="Edit permissions">
+                                            <Icon name="shield-halved" />
+                                        </button>
+                                    ) : (
+                                        <button className="env-detail-icon-btn" onClick={() => reauthoriseCredential(cred.id)} title="Re-authorise">
+                                            <Icon name="arrow-rotate-right" />
+                                        </button>
+                                    )}
                                     <button className="env-detail-icon-btn env-detail-icon-btn--danger" onClick={() => setConfirmDelete({ type: 'credential', id: cred.id, name: cred.name })}>
                                         <Icon name="trash" />
                                     </button>
@@ -1012,6 +1062,51 @@ export default function EnvironmentDetail() {
                 </div>
                 )}
             </div>
+
+            {editPerms && (
+                <Modal
+                    label={`Edit permissions — ${editPerms.name}`}
+                    footerMessage="Re-attach the generated policy to your role in AWS"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setEditPerms(null)}
+                    actions={[{ label: "Save permissions", primary: true, onClick: saveEditPerms }]}
+                >
+                    <div className="env-detail-input-hint" style={{ marginBottom: 8 }}>
+                        Choose the access this role should grant. Flomation regenerates the least-privilege IAM policy below —
+                        copy it onto your role in AWS (<strong>IAM → Roles → your role → Permissions → add/replace policy</strong>).
+                    </div>
+                    <div className="scope-picker">
+                        {awsPermissionCatalogue.map(svc => (
+                            <ScopeServiceRow
+                                key={svc.id}
+                                service={svc}
+                                selection={editPermsSelection.get(svc.id)}
+                                expanded={editPermsExpanded.get(svc.id) ?? false}
+                                onExpandToggle={handleEditPermsExpand}
+                                onLevelChange={handleEditPermsLevel}
+                                onToggleChange={() => { /* AWS services have no orthogonal toggles */ }}
+                            />
+                        ))}
+                    </div>
+                    {(() => {
+                        const policy = awsSelectionToPolicy(editPermsSelection);
+                        return policy ? (
+                            <div style={{ marginTop: 12 }}>
+                                <div className="env-detail-input-hint">Permissions policy to attach to your role:</div>
+                                <pre className="env-cred-trust-policy">{policy}</pre>
+                                <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
+                                    <Icon name="check" /> Copy permissions policy
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="env-cred-aws-warn" style={{ marginTop: 12 }}>
+                                No permissions selected — the role would be able to assume but do nothing.
+                            </div>
+                        );
+                    })()}
+                </Modal>
+            )}
 
             {confirmDelete && (
                 <Modal
