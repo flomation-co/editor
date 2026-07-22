@@ -22,6 +22,9 @@ type ModalProps = {
     // modals can pass "Close" so the affordance reads as a plain
     // dismiss rather than a back-out-of-action.
     dismissLabel?: string;
+    // className adds an extra class to the modal panel — used to opt a specific
+    // modal into a wider/custom layout (e.g. the two-column AWS permissions editor).
+    className?: string;
 }
 
 export default function Modal(props : ModalProps) {
@@ -50,7 +53,7 @@ export default function Modal(props : ModalProps) {
         <>
             {isVisible && (
                 <div className="modal-overlay" onClick={(e) => {handleDismiss(e)}}>
-                    <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+                    <div className={`modal-panel${props.className ? ' ' + props.className : ''}`} onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-title">{props.label}</div>
                             {props.canDismiss && (

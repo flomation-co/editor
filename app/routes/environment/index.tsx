@@ -1070,41 +1070,48 @@ export default function EnvironmentDetail() {
                     visible={true}
                     canDismiss={true}
                     onDismiss={() => setEditPerms(null)}
+                    className="aws-perms-modal"
                     actions={[{ label: "Save permissions", primary: true, onClick: saveEditPerms }]}
                 >
-                    <div className="env-detail-input-hint" style={{ marginBottom: 8 }}>
-                        Choose the access this role should grant. Flomation regenerates the least-privilege IAM policy below —
+                    <div className="env-detail-input-hint" style={{ marginBottom: 10 }}>
+                        Choose the access this role should grant. The IAM policy on the right updates live —
                         copy it onto your role in AWS (<strong>IAM → Roles → your role → Permissions → add/replace policy</strong>).
                     </div>
-                    <div className="scope-picker">
-                        {awsPermissionCatalogue.map(svc => (
-                            <ScopeServiceRow
-                                key={svc.id}
-                                service={svc}
-                                selection={editPermsSelection.get(svc.id)}
-                                expanded={editPermsExpanded.get(svc.id) ?? false}
-                                onExpandToggle={handleEditPermsExpand}
-                                onLevelChange={handleEditPermsLevel}
-                                onToggleChange={() => { /* AWS services have no orthogonal toggles */ }}
-                            />
-                        ))}
+                    <div className="aws-perms-edit">
+                        <div className="aws-perms-edit__list">
+                            <div className="scope-picker">
+                                {awsPermissionCatalogue.map(svc => (
+                                    <ScopeServiceRow
+                                        key={svc.id}
+                                        service={svc}
+                                        selection={editPermsSelection.get(svc.id)}
+                                        expanded={editPermsExpanded.get(svc.id) ?? false}
+                                        onExpandToggle={handleEditPermsExpand}
+                                        onLevelChange={handleEditPermsLevel}
+                                        onToggleChange={() => { /* AWS services have no orthogonal toggles */ }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <div className="aws-perms-edit__policy">
+                            <div className="aws-perms-edit__policy-label">Permissions policy to attach to your role</div>
+                            {(() => {
+                                const policy = awsSelectionToPolicy(editPermsSelection);
+                                return policy ? (
+                                    <>
+                                        <pre className="env-cred-trust-policy">{policy}</pre>
+                                        <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
+                                            <Icon name="check" /> Copy permissions policy
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="env-cred-aws-warn">
+                                        No permissions selected — the role would be able to assume but do nothing.
+                                    </div>
+                                );
+                            })()}
+                        </div>
                     </div>
-                    {(() => {
-                        const policy = awsSelectionToPolicy(editPermsSelection);
-                        return policy ? (
-                            <div style={{ marginTop: 12 }}>
-                                <div className="env-detail-input-hint">Permissions policy to attach to your role:</div>
-                                <pre className="env-cred-trust-policy">{policy}</pre>
-                                <button type="button" className="env-cred-copy-btn" onClick={() => copyText(policy, "Permissions policy")}>
-                                    <Icon name="check" /> Copy permissions policy
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="env-cred-aws-warn" style={{ marginTop: 12 }}>
-                                No permissions selected — the role would be able to assume but do nothing.
-                            </div>
-                        );
-                    })()}
                 </Modal>
             )}
 
