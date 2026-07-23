@@ -847,6 +847,10 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         onValueChange("region", "${credentials." + credName + ".region}");
                                                         onValueChange("fingerprint", "${credentials." + credName + ".fingerprint}");
                                                         onValueChange("private_key", "${credentials." + credName + "}");
+                                                        // compartment_ocid is genuinely optional (unlike tenancy_ocid, which
+                                                        // every OCI action has): a tenancy-scoped credential carries no default
+                                                        // compartment, and some actions aren't compartment-scoped at all — so
+                                                        // this guard is required, not an oversight.
                                                         if (siblingInputs.some((x: any) => x.name === "compartment_ocid")) {
                                                             onValueChange("compartment_ocid", "${credentials." + credName + ".compartment_ocid}");
                                                         }
