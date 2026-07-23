@@ -970,6 +970,9 @@ export default function EnvironmentDetail() {
                                         onChange={e => setNewCredTenancy(e.target.value)}
                                         onBlur={e => setNewCredTenancy(e.target.value.trim())}
                                     />
+                                    <div className="env-detail-input-hint" style={{ marginTop: 4 }}>
+                                        In the OCI console, open the <strong>Profile</strong> menu (top-right) → your tenancy name → copy the <strong>OCID</strong>.
+                                    </div>
                                     <div className="env-detail-input-label">Home region</div>
                                     <input
                                         type="text"
@@ -999,10 +1002,16 @@ export default function EnvironmentDetail() {
                                     </a>
                                     <ol className="env-cred-aws-steps">
                                         <li>
-                                            Click <strong>Deploy to Oracle Cloud</strong> above — it opens your OCI console with a stack preloaded. Pick the compartment (or choose tenancy-wide) and click <strong>Apply</strong>.
+                                            Click <strong>Deploy to Oracle Cloud</strong> above — it opens the <em>Create Stack</em> page in your OCI console with everything pre-filled. In the console:
+                                            <ol style={{ listStyleType: 'lower-alpha', margin: '6px 0 2px', paddingLeft: 20, lineHeight: 1.6 }}>
+                                                <li>Tick <strong>“I have reviewed and accept the Oracle Terms of Use”</strong>, then click <strong>Next</strong>.</li>
+                                                <li>On <strong>Configure variables</strong>, choose the <strong>compartment</strong> Flomation may manage (and the access <strong>scope</strong> — a single compartment, or your whole tenancy), then <strong>Next</strong>.</li>
+                                                <li>On <strong>Review</strong>, tick <strong>“Run apply”</strong> and click <strong>Create</strong>.</li>
+                                                <li>Wait for the job to finish — it should reach <strong>Succeeded</strong> in about a minute.</li>
+                                            </ol>
                                         </li>
                                         <li>
-                                            When it finishes, copy the stack's <code>flomation_user_ocid</code> output (and optionally <code>flomation_compartment_ocid</code>) and paste below:
+                                            On the finished job, open the <strong>Outputs</strong> (under <em>Application information</em>), copy the <code>flomation_user_ocid</code> value, and paste it below (you can optionally copy <code>flomation_compartment_ocid</code> too):
                                             <div className="env-detail-input-label" style={{ marginTop: 8 }}>User OCID</div>
                                             <input
                                                 type="text"
