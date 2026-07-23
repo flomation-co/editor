@@ -800,9 +800,16 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 // auto-fills them from its metadata so the (hidden)
                                                 // assume-role fields are populated with nothing typed.
                                                 const hasAWSRole = i.name === "credential" && siblingInputs.some((x: any) => x.name === "assume_role_arn");
+                                                // OCI actions pair the credential with the signing-key
+                                                // siblings; picking an oci_key credential auto-fills them
+                                                // from its metadata (tenancy/user/region/fingerprint/
+                                                // compartment) and the private key from the credential
+                                                // secret, so the (hidden) signing fields are populated
+                                                // with nothing typed.
+                                                const hasOCIKey = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenancy_ocid");
                                                 const handleCredentialChange = (property: string, value: any) => {
                                                     onValueChange(property, value);
-                                                    if (!hasTenant && !hasCompany && !hasAWSRole) return;
+                                                    if (!hasTenant && !hasCompany && !hasAWSRole && !hasOCIKey) return;
                                                     const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
                                                     if (!match) return;
                                                     const credName = match[1];
@@ -829,6 +836,19 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         onValueChange("aws_secret_key", "${credentials." + credName + "}");
                                                         if (siblingInputs.some((x: any) => x.name === "external_id")) {
                                                             onValueChange("external_id", "${credentials." + credName + ".external_id}");
+                                                        }
+                                                    }
+                                                    if (hasOCIKey) {
+                                                        // The credential's private key PEM is the secret
+                                                        // (${credentials.NAME}); tenancy/user/region/
+                                                        // fingerprint/compartment come from its metadata.
+                                                        onValueChange("tenancy_ocid", "${credentials." + credName + ".tenancy_ocid}");
+                                                        onValueChange("user_ocid", "${credentials." + credName + ".user_ocid}");
+                                                        onValueChange("region", "${credentials." + credName + ".region}");
+                                                        onValueChange("fingerprint", "${credentials." + credName + ".fingerprint}");
+                                                        onValueChange("private_key", "${credentials." + credName + "}");
+                                                        if (siblingInputs.some((x: any) => x.name === "compartment_ocid")) {
+                                                            onValueChange("compartment_ocid", "${credentials." + credName + ".compartment_ocid}");
                                                         }
                                                     }
                                                 };

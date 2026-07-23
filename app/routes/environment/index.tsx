@@ -160,6 +160,17 @@ export default function EnvironmentDetail() {
     const [ newCredRegion, setNewCredRegion ] = useState("");
     const [ awsRoleResult, setAwsRoleResult ] = useState<{ id: string; external_id: string; trust_principal_arn: string; trust_policy: string } | null>(null);
     const [ awsTest, setAwsTest ] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; error?: string }>({ status: 'idle' });
+    // oci_key provider: token-less. On Create the API mints a dedicated OCI API
+    // keypair and returns a deploy_url ("Deploy to Oracle Cloud" stack). The
+    // customer runs the stack, which creates the matching OCI user, then pastes
+    // back the generated user OCID (oci-connection PUT) to activate the credential.
+    const [ newCredTenancy, setNewCredTenancy ] = useState("");
+    const [ ociResult, setOciResult ] = useState<{ id: string; fingerprint: string; public_key: string; deploy_url: string } | null>(null);
+    const [ newCredUserOCID, setNewCredUserOCID ] = useState("");
+    const [ newCredCompartment, setNewCredCompartment ] = useState("");
+    // Set once the oci-connection PUT succeeds, revealing the Test button.
+    const [ ociConnected, setOciConnected ] = useState(false);
+    const [ ociTest, setOciTest ] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; error?: string }>({ status: 'idle' });
     // Structured per-service selection. Empty until a provider is
     // picked, at which point we hydrate from defaultSelection so
     // every service row has a sensible initial state.
@@ -396,6 +407,12 @@ export default function EnvironmentDetail() {
         setNewCredRegion("");
         setAwsRoleResult(null);
         setAwsTest({ status: 'idle' });
+        setNewCredTenancy("");
+        setOciResult(null);
+        setNewCredUserOCID("");
+        setNewCredCompartment("");
+        setOciConnected(false);
+        setOciTest({ status: 'idle' });
         setNewCredSelection(new Map());
         setNewCredOtherScopes(new Set());
         setShowOtherScopes(false);
@@ -426,6 +443,13 @@ export default function EnvironmentDetail() {
     const cancelCredentialForm = () => {
         if (newCredProvider === 'aws_role' && awsRoleResult?.id) {
             api.delete(getUrl('/credential/' + awsRoleResult.id), { headers })
+                .then(() => updateCredentials())
+                .catch(() => {});
+        }
+        // Same teardown for a half-finished oci_key wizard — the keypair credential
+        // is already minted on Create, so an abandoned wizard would orphan it.
+        if (newCredProvider === 'oci_key' && ociResult?.id) {
+            api.delete(getUrl('/credential/' + ociResult.id), { headers })
                 .then(() => updateCredentials())
                 .catch(() => {});
         }
@@ -460,6 +484,36 @@ export default function EnvironmentDetail() {
             .catch(err => toast.error(err.response?.data?.error || "Failed to attach role"));
     };
 
+    // Wizard step 2: verify Flomation's freshly-provisioned key can reach the
+    // tenancy. A new OCI API key takes ~60–90s to propagate, so a first-minute
+    // {ok:false} is expected — the UI keeps the retry button and the ~90s hint.
+    const testOCIAccess = () => {
+        if (!ociResult) return;
+        setOciTest({ status: 'testing' });
+        api.post(getUrl('/credential/' + ociResult.id + '/oci-key/test'), {}, { headers })
+            .then(r => {
+                if (r?.data?.ok) setOciTest({ status: 'ok' });
+                else setOciTest({ status: 'fail', error: r?.data?.error || "Access denied" });
+            })
+            .catch(err => setOciTest({ status: 'fail', error: err.response?.data?.error || "Test failed" }));
+    };
+
+    // Wizard step 2: attach the user OCID the stack generated to the credential,
+    // flipping it active. Reveals the Test button so the user can verify access.
+    const connectOCI = () => {
+        if (!ociResult) return;
+        api.put(getUrl('/credential/' + ociResult.id + '/oci-connection'), {
+            user_ocid: newCredUserOCID.trim(),
+            compartment_ocid: newCredCompartment.trim() || undefined,
+        }, { headers })
+            .then(() => {
+                toast.success("Connected — now test the connection");
+                setOciConnected(true);
+                updateCredentials();
+            })
+            .catch(err => toast.error(err.response?.data?.error || "Failed to connect"));
+    };
+
     const saveCredential = () => {
         if (!newCredName.trim() || !newCredProvider) return;
 
@@ -482,6 +536,30 @@ export default function EnvironmentDetail() {
                         trust_policy: r?.data?.trust_policy || "",
                     });
                     toast.success("Flomation identity created — now build your AWS role");
+                    updateCredentials();
+                })
+                .catch(err => toast.error(err.response?.data?.error || "Failed to create credential"));
+            return;
+        }
+
+        // oci_key: token-less. POST tenancy + region; the API mints an API keypair
+        // and returns a deploy_url (a "Deploy to Oracle Cloud" stack). Keep the form
+        // open and show step 2 so the user can deploy and paste back the user OCID.
+        if (newCredProvider === 'oci_key') {
+            api.post(getUrl('/credential'), {
+                provider_slug: 'oci_key',
+                name: newCredName.trim(),
+                tenancy_ocid: newCredTenancy.trim(),
+                region: newCredRegion.trim(),
+            }, { headers })
+                .then(r => {
+                    setOciResult({
+                        id: r?.data?.id || "",
+                        fingerprint: r?.data?.fingerprint || "",
+                        public_key: r?.data?.public_key || "",
+                        deploy_url: r?.data?.deploy_url || "",
+                    });
+                    toast.success("Keypair generated — now deploy the stack in your Oracle Cloud console");
                     updateCredentials();
                 })
                 .catch(err => toast.error(err.response?.data?.error || "Failed to create credential"));
@@ -723,6 +801,12 @@ export default function EnvironmentDetail() {
                                                 setNewCredProvider(p.slug);
                                                 setNewCredSelection(p.slug === 'aws_role' ? defaultAwsSelection() : defaultSelection(p.slug));
                                                 setNewCredOtherScopes(new Set());
+                                                setNewCredTenancy("");
+                                                setOciResult(null);
+                                                setNewCredUserOCID("");
+                                                setNewCredCompartment("");
+                                                setOciConnected(false);
+                                                setOciTest({ status: 'idle' });
                                             }}
                                         >
                                             <Icon name={p.icon || 'link'} />
@@ -873,6 +957,110 @@ export default function EnvironmentDetail() {
                                     </ol>
                                 </div>
                             )}
+                            {/* Oracle Cloud key: token-less. Enter tenancy + home region; on Create the
+                                API mints an API keypair and returns a "Deploy to Oracle Cloud" stack. */}
+                            {newCredProvider === 'oci_key' && !ociResult && (
+                                <>
+                                    <div className="env-cred-aws-step">Step 1 of 2 — Configure the credential</div>
+                                    <div className="env-detail-input-label">Tenancy OCID</div>
+                                    <input
+                                        type="text"
+                                        placeholder="ocid1.tenancy.oc1..aaaa…"
+                                        value={newCredTenancy}
+                                        onChange={e => setNewCredTenancy(e.target.value)}
+                                        onBlur={e => setNewCredTenancy(e.target.value.trim())}
+                                    />
+                                    <div className="env-detail-input-label">Home region</div>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. uk-london-1"
+                                        value={newCredRegion}
+                                        onChange={e => setNewCredRegion(e.target.value)}
+                                        onBlur={e => setNewCredRegion(e.target.value.trim())}
+                                    />
+                                    <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
+                                        Flomation generates a dedicated API keypair for this credential. Clicking Create opens a stack to deploy in your Oracle Cloud console in step 2.
+                                    </div>
+                                </>
+                            )}
+                            {newCredProvider === 'oci_key' && ociResult && (
+                                <div className="env-cred-aws-result">
+                                    <div className="env-cred-aws-result-title">
+                                        <Icon name="check" /> Step 2 of 2 — Deploy the stack in Oracle Cloud
+                                    </div>
+                                    <a
+                                        className="env-detail-btn-save"
+                                        href={ociResult.deploy_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ textDecoration: 'none', margin: '4px 0 12px', padding: '10px 16px', fontSize: 13 }}
+                                    >
+                                        <Icon name="arrow-up-right-from-square" /> Deploy to Oracle Cloud
+                                    </a>
+                                    <ol className="env-cred-aws-steps">
+                                        <li>
+                                            Click <strong>Deploy to Oracle Cloud</strong> above — it opens your OCI console with a stack preloaded. Pick the compartment (or choose tenancy-wide) and click <strong>Apply</strong>.
+                                        </li>
+                                        <li>
+                                            When it finishes, copy the stack's <code>flomation_user_ocid</code> output (and optionally <code>flomation_compartment_ocid</code>) and paste below:
+                                            <div className="env-detail-input-label" style={{ marginTop: 8 }}>User OCID</div>
+                                            <input
+                                                type="text"
+                                                placeholder="ocid1.user.oc1..aaaa…"
+                                                value={newCredUserOCID}
+                                                onChange={e => { setNewCredUserOCID(e.target.value); if (ociTest.status !== 'idle') setOciTest({ status: 'idle' }); }}
+                                                onBlur={e => setNewCredUserOCID(e.target.value.trim())}
+                                            />
+                                            <div className="env-detail-input-label" style={{ marginTop: 8 }}>Compartment OCID (optional)</div>
+                                            <input
+                                                type="text"
+                                                placeholder="ocid1.compartment.oc1..aaaa… (optional)"
+                                                value={newCredCompartment}
+                                                onChange={e => setNewCredCompartment(e.target.value)}
+                                                onBlur={e => setNewCredCompartment(e.target.value.trim())}
+                                            />
+                                            {(() => {
+                                                const ok = newCredUserOCID.trim().startsWith("ocid1.user.");
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        className="env-cred-copy-btn"
+                                                        style={{ marginTop: 6 }}
+                                                        onClick={connectOCI}
+                                                        disabled={!ok}
+                                                        title={ok ? undefined : "Paste the flomation_user_ocid output first."}
+                                                    >
+                                                        Connect
+                                                    </button>
+                                                );
+                                            })()}
+                                        </li>
+                                        {ociConnected && (
+                                            <li>
+                                                Verify Flomation can reach your tenancy:
+                                                <button
+                                                    type="button"
+                                                    className="env-cred-copy-btn"
+                                                    style={{ marginTop: 6 }}
+                                                    onClick={testOCIAccess}
+                                                    disabled={ociTest.status === 'testing'}
+                                                >
+                                                    {ociTest.status === 'testing' ? "Testing…" : "Test connection"}
+                                                </button>
+                                                {ociTest.status === 'ok' && (
+                                                    <div className="env-cred-test-ok"><Icon name="check" /> Connection confirmed — Flomation can reach your tenancy.</div>
+                                                )}
+                                                {ociTest.status === 'fail' && (
+                                                    <div className="env-cred-aws-warn">
+                                                        <strong>Couldn't reach your tenancy.</strong> {ociTest.error}
+                                                        <div style={{ marginTop: 4 }}>A new key can take up to ~90s to activate — try again.</div>
+                                                    </div>
+                                                )}
+                                            </li>
+                                        )}
+                                    </ol>
+                                </div>
+                            )}
                             {/* Per-tenant URL variables (e.g. Shopify shop subdomain) */}
                             {(providers.find(p => p.slug === newCredProvider)?.url_variables ?? []).map(v => (
                                 <div key={v.key} className="env-detail-url-var">
@@ -894,7 +1082,7 @@ export default function EnvironmentDetail() {
                             ))}
                             {/* Bring-your-own OAuth app: shown when the provider has no
                                 platform-level app configured (e.g. Shopify). Never for aws_role. */}
-                            {newCredProvider !== 'aws_role' && !providers.find(p => p.slug === newCredProvider)?.configured && (
+                            {newCredProvider !== 'aws_role' && newCredProvider !== 'oci_key' && !providers.find(p => p.slug === newCredProvider)?.configured && (
                                 <>
                                     <input
                                         type="text"
@@ -992,6 +1180,31 @@ export default function EnvironmentDetail() {
                                             </button>
                                         );
                                     }
+                                    // oci_key: once the keypair is minted the primary action becomes
+                                    // Done (deploy + connect happen in the step-2 body). Before that,
+                                    // require a name, tenancy OCID and home region to mint the keypair.
+                                    if (newCredProvider === 'oci_key') {
+                                        if (ociResult) {
+                                            return (
+                                                <button className="env-detail-btn-save" onClick={resetCredentialForm}>
+                                                    <Icon name="check" /> Done
+                                                </button>
+                                            );
+                                        }
+                                        const invalidReason = credentialNameInvalidReason()
+                                            || (!newCredTenancy.trim() ? "Enter the Tenancy OCID first." : "")
+                                            || (!newCredRegion.trim() ? "Enter the home region first." : "");
+                                        return (
+                                            <button
+                                                className="env-detail-btn-save"
+                                                onClick={saveCredential}
+                                                disabled={!!invalidReason}
+                                                title={invalidReason || undefined}
+                                            >
+                                                <Icon name="check" /> Create
+                                            </button>
+                                        );
+                                    }
                                     const missingVar = (selProvider?.url_variables ?? [])
                                         .find(v => !v.optional && !(newCredUrlVars[v.key] ?? "").trim());
                                     const needsClient = !selProvider?.configured;
@@ -1047,6 +1260,10 @@ export default function EnvironmentDetail() {
                                         <button className="env-detail-icon-btn" onClick={() => openEditPerms(cred)} title="Edit permissions">
                                             <Icon name="shield-halved" />
                                         </button>
+                                    ) : cred.provider_slug === 'oci_key' ? (
+                                        // Key-based, not OAuth — nothing to re-authorise; the status badge
+                                        // (Active/Pending) above already conveys connection state.
+                                        null
                                     ) : (
                                         <button className="env-detail-icon-btn" onClick={() => reauthoriseCredential(cred.id)} title="Re-authorise">
                                             <Icon name="arrow-rotate-right" />
