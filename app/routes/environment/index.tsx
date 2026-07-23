@@ -168,6 +168,9 @@ export default function EnvironmentDetail() {
     const [ ociResult, setOciResult ] = useState<{ id: string; fingerprint: string; public_key: string; deploy_url: string } | null>(null);
     const [ newCredUserOCID, setNewCredUserOCID ] = useState("");
     const [ newCredCompartment, setNewCredCompartment ] = useState("");
+    // Manual oci_key entry (used only when the server has no managed stack hosting).
+    const [ newCredFingerprint, setNewCredFingerprint ] = useState("");
+    const [ newCredPrivateKey, setNewCredPrivateKey ] = useState("");
     // Set once the oci-connection PUT succeeds, revealing the Test button.
     const [ ociConnected, setOciConnected ] = useState(false);
     const [ ociTest, setOciTest ] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; error?: string }>({ status: 'idle' });
@@ -411,6 +414,8 @@ export default function EnvironmentDetail() {
         setOciResult(null);
         setNewCredUserOCID("");
         setNewCredCompartment("");
+        setNewCredFingerprint("");
+        setNewCredPrivateKey("");
         setOciConnected(false);
         setOciTest({ status: 'idle' });
         setNewCredSelection(new Map());
@@ -542,10 +547,30 @@ export default function EnvironmentDetail() {
             return;
         }
 
-        // oci_key: token-less. POST tenancy + region; the API mints an API keypair
-        // and returns a deploy_url (a "Deploy to Oracle Cloud" stack). Keep the form
-        // open and show step 2 so the user can deploy and paste back the user OCID.
+        // oci_key: token-less. With managed stack hosting the API mints a keypair and
+        // returns a deploy_url ("Deploy to Oracle Cloud" stack) — keep the form open
+        // for step 2. Without hosting there's no stack to deploy, so the operator
+        // pastes an existing OCI API key and we create the credential directly.
         if (newCredProvider === 'oci_key') {
+            const ociHosted = !!providers.find(p => p.slug === 'oci_key')?.configured;
+            if (!ociHosted) {
+                api.post(getUrl('/credential'), {
+                    provider_slug: 'oci_key',
+                    name: newCredName.trim(),
+                    tenancy_ocid: newCredTenancy.trim(),
+                    user_ocid: newCredUserOCID.trim(),
+                    region: newCredRegion.trim(),
+                    fingerprint: newCredFingerprint.trim(),
+                    private_key: newCredPrivateKey,
+                }, { headers })
+                    .then(() => {
+                        toast.success("Oracle Cloud credential created");
+                        resetCredentialForm();
+                        updateCredentials();
+                    })
+                    .catch(err => toast.error(err.response?.data?.error || "Failed to create credential"));
+                return;
+            }
             api.post(getUrl('/credential'), {
                 provider_slug: 'oci_key',
                 name: newCredName.trim(),
@@ -959,9 +984,11 @@ export default function EnvironmentDetail() {
                             )}
                             {/* Oracle Cloud key: token-less. Enter tenancy + home region; on Create the
                                 API mints an API keypair and returns a "Deploy to Oracle Cloud" stack. */}
-                            {newCredProvider === 'oci_key' && !ociResult && (
+                            {newCredProvider === 'oci_key' && !ociResult && (() => {
+                                const ociHosted = !!providers.find(p => p.slug === 'oci_key')?.configured;
+                                return (
                                 <>
-                                    <div className="env-cred-aws-step">Step 1 of 2 — Configure the credential</div>
+                                    <div className="env-cred-aws-step">{ociHosted ? 'Step 1 of 2 — Configure the credential' : 'Configure the credential'}</div>
                                     <div className="env-detail-input-label">Tenancy OCID</div>
                                     <input
                                         type="text"
@@ -981,11 +1008,44 @@ export default function EnvironmentDetail() {
                                         onChange={e => setNewCredRegion(e.target.value)}
                                         onBlur={e => setNewCredRegion(e.target.value.trim())}
                                     />
-                                    <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
-                                        Flomation generates a dedicated API keypair for this credential. Clicking Create opens a stack to deploy in your Oracle Cloud console in step 2.
-                                    </div>
+                                    {ociHosted ? (
+                                        <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
+                                            Flomation generates a dedicated API keypair for this credential. Clicking Create opens a stack to deploy in your Oracle Cloud console in step 2.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="env-detail-input-label" style={{ marginTop: 8 }}>User OCID</div>
+                                            <input
+                                                type="text"
+                                                placeholder="ocid1.user.oc1..aaaa…"
+                                                value={newCredUserOCID}
+                                                onChange={e => setNewCredUserOCID(e.target.value)}
+                                                onBlur={e => setNewCredUserOCID(e.target.value.trim())}
+                                            />
+                                            <div className="env-detail-input-label" style={{ marginTop: 8 }}>Key Fingerprint</div>
+                                            <input
+                                                type="text"
+                                                placeholder="aa:bb:cc:dd:… (shown when you add the API key)"
+                                                value={newCredFingerprint}
+                                                onChange={e => setNewCredFingerprint(e.target.value)}
+                                                onBlur={e => setNewCredFingerprint(e.target.value.trim())}
+                                            />
+                                            <div className="env-detail-input-label" style={{ marginTop: 8 }}>Private Key (PEM)</div>
+                                            <textarea
+                                                placeholder="-----BEGIN PRIVATE KEY-----&#10;…&#10;-----END PRIVATE KEY-----"
+                                                value={newCredPrivateKey}
+                                                onChange={e => setNewCredPrivateKey(e.target.value)}
+                                                rows={6}
+                                                style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
+                                            />
+                                            <div className="env-detail-input-hint" style={{ marginTop: 6 }}>
+                                                Paste an existing OCI API signing key from your automation user (Identity → Users → your user → <strong>API Keys → Add API Key</strong>). Flomation stores it securely — nothing is deployed to your console.
+                                            </div>
+                                        </>
+                                    )}
                                 </>
-                            )}
+                                );
+                            })()}
                             {newCredProvider === 'oci_key' && ociResult && (
                                 <div className="env-cred-aws-result">
                                     <div className="env-cred-aws-result-title">
@@ -1200,9 +1260,13 @@ export default function EnvironmentDetail() {
                                                 </button>
                                             );
                                         }
+                                        const ociHosted = !!providers.find(p => p.slug === 'oci_key')?.configured;
                                         const invalidReason = credentialNameInvalidReason()
                                             || (!newCredTenancy.trim() ? "Enter the Tenancy OCID first." : "")
-                                            || (!newCredRegion.trim() ? "Enter the home region first." : "");
+                                            || (!newCredRegion.trim() ? "Enter the home region first." : "")
+                                            || (!ociHosted && !newCredUserOCID.trim() ? "Enter the User OCID first." : "")
+                                            || (!ociHosted && !newCredFingerprint.trim() ? "Enter the key fingerprint first." : "")
+                                            || (!ociHosted && !newCredPrivateKey.trim() ? "Paste the private key (PEM) first." : "");
                                         return (
                                             <button
                                                 className="env-detail-btn-save"
