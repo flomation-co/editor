@@ -31,6 +31,7 @@ export const awsPermissionCatalogue: ServiceScope[] = [
             {
                 value: "manage", label: "Manage", scopes: [
                     "ec2:Describe*", "ec2:RunInstances", "ec2:StartInstances", "ec2:StopInstances", "ec2:RebootInstances",
+                    "ec2:GetPasswordData",
                     "ec2:CreateTags", "ec2:DeleteTags", "ec2:CreateSnapshot", "ec2:CreateImage",
                     "ec2:CreateSecurityGroup", "ec2:AuthorizeSecurityGroupIngress", "ec2:RevokeSecurityGroupIngress",
                     "ec2:AuthorizeSecurityGroupEgress", "ec2:RevokeSecurityGroupEgress",
@@ -41,6 +42,7 @@ export const awsPermissionCatalogue: ServiceScope[] = [
             {
                 value: "full", label: "Full", scopes: [
                     "ec2:Describe*", "ec2:RunInstances", "ec2:StartInstances", "ec2:StopInstances", "ec2:RebootInstances",
+                    "ec2:GetPasswordData",
                     "ec2:CreateTags", "ec2:DeleteTags", "ec2:CreateSnapshot", "ec2:CreateImage",
                     "ec2:CreateSecurityGroup", "ec2:AuthorizeSecurityGroupIngress", "ec2:RevokeSecurityGroupIngress",
                     "ec2:AuthorizeSecurityGroupEgress", "ec2:RevokeSecurityGroupEgress",
