@@ -126,7 +126,6 @@ type FormComponent = {
     // global search box.
     table_columns?: TableColumn[];
     table_rows?: Record<string, unknown>[];
-    rows_source?: string;
     selection_mode?: "none" | "single" | "multiple";
     value_column?: string;
     page_size?: number;
@@ -1860,21 +1859,46 @@ const FormBuilder = (props: Props) => {
                                                     Show search box
                                                 </label>
                                             </div>
-                                            {form.data_source?.flow_id && (
-                                                <div className="fb-field-group fb-full-width">
-                                                    <span className="fb-field-group-label">Populate rows from flow output</span>
-                                                    <input
-                                                        className="fb-input fb-input-sm"
-                                                        value={comp.rows_source || ""}
-                                                        placeholder="Output key, e.g. claims — leave blank to use the manual rows below"
-                                                        onChange={e => updateField(pageIndex, fieldIndex, {rows_source: e.target.value || undefined})}
-                                                    />
-                                                    <span className="fb-hint">
-                                                        The flow output must be a list of objects (keyed by column) or a list of
-                                                        arrays (bound to the columns in order). Rows load when the page appears.
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <div className="fb-field-group fb-full-width fb-computed-source fb-computed-source--open">
+                                                <span className="fb-field-group-label">Populate rows from a flow</span>
+                                                <span className="fb-field-hint">
+                                                    Run a flow (with the current answers as <code>{"${input.X}"}</code>) and use one
+                                                    of its outputs as the rows — a list of objects (keyed by column) or a list of
+                                                    arrays (bound to the columns in order). Rows load when the page appears.
+                                                </span>
+                                                <FlowSelectProperty
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-rows-source`}
+                                                    name={`rows-source-${comp.name}`}
+                                                    label="Rows flow"
+                                                    value={comp.value_source || ""}
+                                                    onValueChange={(_, flowId) => updateField(pageIndex, fieldIndex, {value_source: flowId || undefined})}
+                                                />
+                                                {comp.value_source && (() => {
+                                                    const outs = flowOutputs[comp.value_source] || [];
+                                                    return (
+                                                        <>
+                                                            <div className="property-menu-input-row">
+                                                                <div className="property-menu-input-name">Rows output</div>
+                                                                <OutputSelect
+                                                                    value={comp.value_output || ""}
+                                                                    options={outs}
+                                                                    onChange={(v) => updateField(pageIndex, fieldIndex, {value_output: v || undefined})}
+                                                                />
+                                                            </div>
+                                                            {outs.length > 0 && (
+                                                                <span className="fb-field-hint">Available outputs: {outs.join(", ")}</span>
+                                                            )}
+                                                            <button
+                                                                type="button"
+                                                                className="fb-datasource-clear"
+                                                                onClick={() => updateField(pageIndex, fieldIndex, {value_source: undefined, value_output: undefined})}
+                                                            >
+                                                                <Icon name="xmark" /> Remove rows flow
+                                                            </button>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
 
                                             <div className="fb-field-group fb-full-width fb-options-editor">
                                                 <span className="fb-field-group-label">Columns</span>
@@ -1945,10 +1969,10 @@ const FormBuilder = (props: Props) => {
                                                 </button>
                                             </div>
 
-                                            {comp.rows_source ? (
+                                            {comp.value_source ? (
                                                 <div className="fb-field-group fb-full-width">
                                                     <span className="fb-field-group-label">Rows</span>
-                                                    <span className="fb-hint">Rows are populated from the flow output <code>{comp.rows_source}</code>. Clear the output above to enter rows manually.</span>
+                                                    <span className="fb-hint">Rows are populated from the flow output <code>{comp.value_output || "(pick an output above)"}</code>. Remove the rows flow to enter rows manually.</span>
                                                 </div>
                                             ) : (
                                                 <div className="fb-field-group fb-full-width fb-options-editor">
