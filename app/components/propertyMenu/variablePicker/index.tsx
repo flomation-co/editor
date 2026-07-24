@@ -106,8 +106,13 @@ const VariablePicker = (props: VariablePickerProps) => {
     }, [open]);
 
     const handleSelect = useCallback((v: VariableItem) => {
+        // Node/parent outputs carry the full "nodeId.output" reference in
+        // insertName; a category="input" item must insert THAT, not the bare
+        // display name — otherwise picking e.g. create_key_pair's key_name output
+        // inserts `${key_name}` (which resolves to empty) instead of
+        // `${<nodeId>.key_name}`. Mirrors VariableInput's insertVariable.
         const ref = v.category === "input"
-            ? `\${${v.name}}`
+            ? `\${${v.insertName || v.name}}`
             : `\${${v.category}.${v.name}}`;
         props.onSelect(ref);
         setOpen(false);
