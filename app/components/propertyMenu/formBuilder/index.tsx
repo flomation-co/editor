@@ -118,6 +118,33 @@ type FormComponent = {
     // copy its current value to the clipboard. Default off (undefined/false).
     // Useful for read-only / flow-computed values (e.g. a generated reference).
     allow_copy?: boolean;
+    // Table (data-grid) field — type "table". table_columns defines the
+    // columns; table_rows holds MANUAL rows (each an object keyed by column
+    // key). selection_mode "none" (display only) or "single" (radio-like — the
+    // value is the selected row object). value_column names the column whose
+    // value is the scalar key. page_size > 0 paginates; filterable shows a
+    // global search box.
+    table_columns?: TableColumn[];
+    table_rows?: Record<string, unknown>[];
+    rows_source?: string;
+    selection_mode?: "none" | "single";
+    value_column?: string;
+    page_size?: number;
+    filterable?: boolean;
+}
+
+// One column of a table field. type drives cell formatting + sort comparator;
+// clickable makes the cell a select button (the table's radio affordance).
+type TableColumn = {
+    key: string;
+    label?: string;
+    type?: "text" | "number" | "date" | "currency" | "boolean" | "link";
+    align?: "left" | "right" | "center";
+    width?: string;
+    format?: string;
+    sortable?: boolean;
+    filterable?: boolean;
+    clickable?: boolean;
 }
 
 // Types whose response is constrained to a curated list. Adding a new
@@ -143,7 +170,7 @@ const DISPLAY_ONLY_TYPES = new Set(["section_header", "divider", "info_text"]);
 // (precision selector for location, nothing for address). Matrix joins them
 // — its response is an object keyed by row value, so placeholder/default make
 // no sense; it keeps the required toggle and its own rows/columns editor.
-const STRUCTURED_TYPES = new Set(["location", "address", "contact_name", "matrix"]);
+const STRUCTURED_TYPES = new Set(["location", "address", "contact_name", "matrix", "table"]);
 
 // Upload types capture a file and store its bytes in the blob store;
 // the response is a flo:blob:... token string. Placeholder / default
@@ -288,6 +315,7 @@ const fieldTypes = [
     {value: "radio", label: "Radio", icon: "circle-dot"},
     {value: "checkboxes", label: "Checkbox Group", icon: "list-check"},
     {value: "matrix", label: "Matrix / Grid", icon: "table"},
+    {value: "table", label: "Data Table", icon: "grid"},
     {value: "dropdown", label: "Dropdown", icon: "chevron-down"},
     {value: "picture_choice", label: "Picture Choice", icon: "image"},
     {value: "email", label: "Email", icon: "envelope"},
@@ -686,6 +714,21 @@ const FormBuilder = (props: Props) => {
             newField.matrix_columns = [{label: "Column 1", value: "column_1"}];
             newField.cell_type = "radio";
         }
+        // Table seeds two columns + a sample row so the editor renders with
+        // something to shape, and single-select keyed on the first column.
+        if (type === "table") {
+            newField.label = "Data Table";
+            newField.table_columns = [
+                {key: "id", label: "ID", type: "text"},
+                {key: "name", label: "Name", type: "text", clickable: true},
+            ];
+            newField.table_rows = [{id: "1", name: "Example row"}];
+            newField.selection_mode = "single";
+            newField.value_column = "id";
+            newField.page_size = 0;
+            newField.filterable = false;
+            newField.required = false;
+        }
         // Payment defaults to £ (GBP) and the conventional secret name. The
         // amount is left blank for the author to fill (a literal or ${data.X}).
         // It collects no input, so it is never required.
@@ -931,6 +974,83 @@ const FormBuilder = (props: Props) => {
                     }),
                 };
             }),
+        }));
+    };
+
+    // ── Table (data-grid) column & row editors ──────────────────────────
+    // A table field has an ordered column list (table_columns) and a set of
+    // manual rows (table_rows, each an object keyed by column key). These
+    // helpers mutate the active field's arrays immutably.
+    const patchField = (pageIndex: number, fieldIndex: number, mut: (c: FormComponent) => FormComponent) => {
+        setForm(prev => ({
+            ...prev,
+            pages: prev.pages.map((p, pi) => pi !== pageIndex ? p : {
+                ...p,
+                components: p.components.map((c, ci) => ci !== fieldIndex ? c : mut(c)),
+            }),
+        }));
+    };
+
+    const updateTableColumn = (pageIndex: number, fieldIndex: number, colIndex: number, patch: Partial<TableColumn>) => {
+        patchField(pageIndex, fieldIndex, c => ({
+            ...c,
+            table_columns: (c.table_columns || []).map((col, i) => i !== colIndex ? col : {...col, ...patch}),
+        }));
+    };
+
+    const addTableColumn = (pageIndex: number, fieldIndex: number) => {
+        patchField(pageIndex, fieldIndex, c => {
+            const cols = c.table_columns || [];
+            const n = cols.length + 1;
+            return {...c, table_columns: [...cols, {key: `col_${n}`, label: `Column ${n}`, type: "text"}]};
+        });
+    };
+
+    const removeTableColumn = (pageIndex: number, fieldIndex: number, colIndex: number) => {
+        patchField(pageIndex, fieldIndex, c => {
+            const cols = c.table_columns || [];
+            const removed = cols[colIndex];
+            const nextCols = cols.filter((_, i) => i !== colIndex);
+            // Drop the removed column's data from every manual row.
+            const nextRows = (c.table_rows || []).map(row => {
+                const {[removed?.key || ""]: _drop, ...rest} = row;
+                return rest;
+            });
+            // Clear value_column if it pointed at the removed column.
+            const value_column = c.value_column === removed?.key ? undefined : c.value_column;
+            return {...c, table_columns: nextCols, table_rows: nextRows, value_column};
+        });
+    };
+
+    const moveTableColumn = (pageIndex: number, fieldIndex: number, colIndex: number, direction: -1 | 1) => {
+        patchField(pageIndex, fieldIndex, c => {
+            const cols = [...(c.table_columns || [])];
+            const target = colIndex + direction;
+            if (target < 0 || target >= cols.length) return c;
+            [cols[colIndex], cols[target]] = [cols[target], cols[colIndex]];
+            return {...c, table_columns: cols};
+        });
+    };
+
+    const updateTableCell = (pageIndex: number, fieldIndex: number, rowIndex: number, key: string, value: string) => {
+        patchField(pageIndex, fieldIndex, c => ({
+            ...c,
+            table_rows: (c.table_rows || []).map((row, i) => i !== rowIndex ? row : {...row, [key]: value}),
+        }));
+    };
+
+    const addTableRow = (pageIndex: number, fieldIndex: number) => {
+        patchField(pageIndex, fieldIndex, c => {
+            const blank: Record<string, unknown> = {};
+            for (const col of c.table_columns || []) blank[col.key] = "";
+            return {...c, table_rows: [...(c.table_rows || []), blank]};
+        });
+    };
+
+    const removeTableRow = (pageIndex: number, fieldIndex: number, rowIndex: number) => {
+        patchField(pageIndex, fieldIndex, c => ({
+            ...c,
+            table_rows: (c.table_rows || []).filter((_, i) => i !== rowIndex),
         }));
     };
 
@@ -1687,6 +1807,149 @@ const FormBuilder = (props: Props) => {
                                                     </div>
                                                 );
                                             })}
+                                        </>
+                                    )}
+                                    {comp.type === "table" && (
+                                        <>
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">Selection</span>
+                                                <select
+                                                    className="fb-input fb-input-sm"
+                                                    value={comp.selection_mode || "none"}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {selection_mode: e.target.value as "none" | "single"})}
+                                                >
+                                                    <option value="none">Display only (no selection)</option>
+                                                    <option value="single">Single row (radio-like)</option>
+                                                </select>
+                                            </div>
+                                            {comp.selection_mode === "single" && (
+                                                <div className="fb-field-group">
+                                                    <span className="fb-field-group-label">Value column</span>
+                                                    <select
+                                                        className="fb-input fb-input-sm"
+                                                        value={comp.value_column || ""}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {value_column: e.target.value || undefined})}
+                                                    >
+                                                        <option value="">First column</option>
+                                                        {(comp.table_columns || []).map(col => (
+                                                            <option key={col.key} value={col.key}>{col.label || col.key}</option>
+                                                        ))}
+                                                    </select>
+                                                    <span className="fb-hint">The selected row's value here is the scalar used in conditions and downstream.</span>
+                                                </div>
+                                            )}
+                                            <div className="fb-field-group">
+                                                <span className="fb-field-group-label">Rows per page</span>
+                                                <input
+                                                    className="fb-input fb-input-sm"
+                                                    type="number"
+                                                    min={0}
+                                                    value={comp.page_size ?? 0}
+                                                    onChange={e => updateField(pageIndex, fieldIndex, {page_size: e.target.value === "" ? 0 : Math.max(0, Number(e.target.value))})}
+                                                />
+                                                <span className="fb-hint">0 shows every row (no pagination).</span>
+                                            </div>
+                                            <div className="fb-field-group">
+                                                <label className="fb-toggle-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={comp.filterable || false}
+                                                        onChange={e => updateField(pageIndex, fieldIndex, {filterable: e.target.checked})}
+                                                    />
+                                                    Show search box
+                                                </label>
+                                            </div>
+
+                                            <div className="fb-field-group fb-full-width fb-options-editor">
+                                                <span className="fb-field-group-label">Columns</span>
+                                                {(comp.table_columns || []).map((col, colIndex) => {
+                                                    const cols = comp.table_columns || [];
+                                                    return (
+                                                        <div key={colIndex} className="fb-table-col-row">
+                                                            <div className="fb-option-row">
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-label-input"
+                                                                    value={col.label || ""}
+                                                                    placeholder="Column label"
+                                                                    onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {label: e.target.value})}
+                                                                />
+                                                                <input
+                                                                    className="fb-input fb-input-sm fb-option-value-input"
+                                                                    value={col.key}
+                                                                    placeholder="key"
+                                                                    onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {key: e.target.value})}
+                                                                />
+                                                                <div className="fb-option-actions">
+                                                                    <button className="fb-icon-btn" onClick={() => moveTableColumn(pageIndex, fieldIndex, colIndex, -1)} disabled={colIndex === 0} title="Move up"><Icon name="chevron-up" /></button>
+                                                                    <button className="fb-icon-btn" onClick={() => moveTableColumn(pageIndex, fieldIndex, colIndex, 1)} disabled={colIndex === cols.length - 1} title="Move down"><Icon name="chevron-down" /></button>
+                                                                    <button className="fb-icon-btn fb-danger" onClick={() => removeTableColumn(pageIndex, fieldIndex, colIndex)} disabled={cols.length <= 1} title="Remove column"><Icon name="trash" /></button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="fb-table-col-opts">
+                                                                <select
+                                                                    className="fb-input fb-input-sm"
+                                                                    value={col.type || "text"}
+                                                                    onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {type: e.target.value as TableColumn["type"]})}
+                                                                    title="Column type"
+                                                                >
+                                                                    <option value="text">Text</option>
+                                                                    <option value="number">Number</option>
+                                                                    <option value="currency">Currency</option>
+                                                                    <option value="date">Date</option>
+                                                                    <option value="boolean">Yes/No</option>
+                                                                    <option value="link">Link</option>
+                                                                </select>
+                                                                <select
+                                                                    className="fb-input fb-input-sm"
+                                                                    value={col.align || "left"}
+                                                                    onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {align: e.target.value as TableColumn["align"]})}
+                                                                    title="Alignment"
+                                                                >
+                                                                    <option value="left">Left</option>
+                                                                    <option value="center">Centre</option>
+                                                                    <option value="right">Right</option>
+                                                                </select>
+                                                                <label className="fb-toggle-label fb-toggle-inline">
+                                                                    <input type="checkbox" checked={col.sortable || false} onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {sortable: e.target.checked})} /> Sort
+                                                                </label>
+                                                                <label className="fb-toggle-label fb-toggle-inline">
+                                                                    <input type="checkbox" checked={col.filterable || false} onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {filterable: e.target.checked})} /> Filter
+                                                                </label>
+                                                                {comp.selection_mode === "single" && (
+                                                                    <label className="fb-toggle-label fb-toggle-inline">
+                                                                        <input type="checkbox" checked={col.clickable || false} onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {clickable: e.target.checked})} /> Clickable
+                                                                    </label>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                <button className="fb-add-option" onClick={() => addTableColumn(pageIndex, fieldIndex)}>
+                                                    <Icon name="plus" /> Add Column
+                                                </button>
+                                            </div>
+
+                                            <div className="fb-field-group fb-full-width fb-options-editor">
+                                                <span className="fb-field-group-label">Rows</span>
+                                                <span className="fb-hint">Rows entered here are shown as-is. (Computed rows from a flow arrive in Phase 2.)</span>
+                                                {(comp.table_rows || []).map((row, rowIndex) => (
+                                                    <div key={rowIndex} className="fb-table-data-row">
+                                                        {(comp.table_columns || []).map(col => (
+                                                            <input
+                                                                key={col.key}
+                                                                className="fb-input fb-input-sm"
+                                                                value={String(row[col.key] ?? "")}
+                                                                placeholder={col.label || col.key}
+                                                                onChange={e => updateTableCell(pageIndex, fieldIndex, rowIndex, col.key, e.target.value)}
+                                                            />
+                                                        ))}
+                                                        <button className="fb-icon-btn fb-danger" onClick={() => removeTableRow(pageIndex, fieldIndex, rowIndex)} title="Remove row"><Icon name="trash" /></button>
+                                                    </div>
+                                                ))}
+                                                <button className="fb-add-option" onClick={() => addTableRow(pageIndex, fieldIndex)}>
+                                                    <Icon name="plus" /> Add Row
+                                                </button>
+                                            </div>
                                         </>
                                     )}
                                     {comp.type === "picture_choice" && (

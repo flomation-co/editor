@@ -461,6 +461,37 @@
     min-width: 0;
 }
 
+/* Table (data-grid) field config */
+.fb-table-col-row {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.fb-table-col-row:last-of-type {
+    border-bottom: none;
+}
+.fb-table-col-opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 5px;
+    padding-left: 2px;
+}
+.fb-toggle-inline {
+    font-size: 12px;
+    gap: 5px;
+}
+.fb-table-data-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+}
+.fb-table-data-row .fb-input {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
 .fb-option-value-input {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
