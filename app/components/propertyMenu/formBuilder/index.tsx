@@ -170,7 +170,7 @@ function supportsComputedValue(type: string): boolean {
 // upload fields have no single value to copy. Mirrors the form.html renderer,
 // which attaches the button to the same set.
 const COPYABLE_TYPES = new Set([
-    "text", "multiline", "number", "email", "phone", "url", "dropdown",
+    "text", "password", "multiline", "number", "email", "phone", "url", "dropdown",
     "date", "time", "datetime",
 ]);
 function supportsCopy(type: string): boolean {
@@ -281,6 +281,7 @@ const parseFormDefinition = (raw: string): FormDefinition => {
 
 const fieldTypes = [
     {value: "text", label: "Text", icon: "i-cursor"},
+    {value: "password", label: "Password", icon: "lock"},
     {value: "multiline", label: "Multi-line", icon: "align-left"},
     {value: "number", label: "Number", icon: "hashtag"},
     {value: "boolean", label: "Checkbox", icon: "check"},
