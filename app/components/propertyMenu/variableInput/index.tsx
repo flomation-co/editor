@@ -741,6 +741,13 @@ const VariableInput = (props: VariableInputProps) => {
                 ref={inputRef as any}
                 className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${props.monospace ? "variable-input-field--monospace" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
                 placeholder={props.placeholder}
+                /* Placeholders carry real guidance ("leave blank and we use your
+                   connection", "plain numbers only, no currency symbols"), and the
+                   property panel is narrow enough that most of them truncate — so
+                   the advice is invisible exactly when it is needed. The native
+                   title attribute reveals the full text on hover, the same
+                   mechanism already used for the secret warning below. */
+                title={props.placeholder}
                 defaultValue={displayText}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
