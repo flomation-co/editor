@@ -58,6 +58,32 @@
     color: #fff;
 }
 
+/* Multi-line embed snippet (e.g. the HTML form) — a scrollable code block with
+   the copy button pinned top-right so it stays reachable on a tall snippet. */
+.trigger-url-box--snippet {
+    align-items: flex-start;
+    position: relative;
+    max-height: 320px;
+}
+.trigger-url-snippet {
+    flex: 1;
+    margin: 0;
+    padding: 10px 12px;
+    max-height: 320px;
+    overflow: auto;
+    font-size: 11px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Courier New', monospace;
+    white-space: pre;
+    tab-size: 2;
+}
+.trigger-url-box--snippet .trigger-url-copy {
+    position: sticky;
+    top: 0;
+    align-self: stretch;
+}
+
 .trigger-qr-container {
     margin-top: 10px;
     display: flex;

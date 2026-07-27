@@ -492,9 +492,23 @@ textarea:focus {
 
 .property-menu-content {
   overflow-y: auto;
+  /* Clip horizontal bleed: the panel is a fixed 380px, and leaving overflow-x
+     unset makes it compute to `auto` (a stray horizontal scrollbar) whenever a
+     child is wider than the panel. Long content should wrap, not scroll sideways. */
+  overflow-x: hidden;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   padding-bottom: 12px;
+}
+
+/* Long inline hints (e.g. those embedding ${user.X} / ${data.X} in <code>)
+   must wrap within the fixed-width panel rather than force it wider. */
+.property-menu-content .fb-hint,
+.property-menu-content .fb-datasource-desc,
+.property-menu-content .fb-collapsible-desc,
+.property-menu-content .property-menu-help-desc {
+  overflow-wrap: anywhere;
 }
 
 .property-menu-title {
