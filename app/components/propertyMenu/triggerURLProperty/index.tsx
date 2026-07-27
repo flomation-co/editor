@@ -36,21 +36,42 @@ function fieldToHtml(c: any): string {
             .map((o) => `    <label><input type="${tag}" name="${name}" value="${esc(o?.value)}"${tag === "radio" ? req : ""}> ${esc(o?.label ?? o?.value)}</label>`)
             .join("\n");
 
+    // Optional numeric attributes (slider/rating/nps carry min/max/step/scale).
+    const numAttr = (): string => {
+        const bits: string[] = [];
+        if (c?.min !== undefined && c?.min !== null) bits.push(`min="${esc(c.min)}"`);
+        if (c?.max !== undefined && c?.max !== null) bits.push(`max="${esc(c.max)}"`);
+        if (c?.step !== undefined && c?.step !== null) bits.push(`step="${esc(c.step)}"`);
+        return bits.length ? " " + bits.join(" ") : "";
+    };
+
     switch (c?.type) {
-        case "text": case "email": case "number": case "url": case "phone":
-        case "date": case "time": case "datetime": {
+        case "text": case "password": case "email": case "number": case "url":
+        case "phone": case "date": case "time": case "datetime": {
             const t: Record<string, string> = {
-                text: "text", email: "email", number: "number", url: "url",
-                phone: "tel", date: "date", time: "time", datetime: "datetime-local",
+                text: "text", password: "password", email: "email", number: "number",
+                url: "url", phone: "tel", date: "date", time: "time", datetime: "datetime-local",
             };
             return `  <label>${label}${star}<br>\n    <input type="${t[c.type]}" name="${name}"${req}>\n  </label>`;
         }
         case "multiline":
             return `  <label>${label}${star}<br>\n    <textarea name="${name}"${req}></textarea>\n  </label>`;
+        case "slider":
+            return `  <label>${label}${star}<br>\n    <input type="range" name="${name}"${numAttr()}${req}>\n  </label>`;
+        case "rating":
+            // 1..scale, plain number input (the star widget needs the hosted form).
+            return `  <label>${label}${star}<br>\n    <input type="number" name="${name}" min="1" max="${esc(c?.scale ?? 5)}"${req}>\n  </label>`;
+        case "nps":
+            // 0..scale (typically 0..10), plain number input.
+            return `  <label>${label}${star}<br>\n    <input type="number" name="${name}" min="0" max="${esc(c?.scale ?? 10)}"${req}>\n  </label>`;
         case "dropdown":
             return `  <label>${label}${star}<br>\n    <select name="${name}"${req}>\n      <option value="">Choose…</option>\n${opts.map((o) => `      <option value="${esc(o?.value)}">${esc(o?.label ?? o?.value)}</option>`).join("\n")}\n    </select>\n  </label>`;
         case "radio": case "opinion_scale":
             return `  <fieldset>\n    <legend>${label}${star}</legend>\n${optList("radio")}\n  </fieldset>`;
+        case "picture_choice":
+            // Images can't render in a plain form, but the option VALUES post fine
+            // as radios (single) or checkboxes (multiple).
+            return `  <fieldset>\n    <legend>${label}${star}</legend>\n${optList(c?.multiple ? "checkbox" : "radio")}\n  </fieldset>`;
         case "checkboxes":
             return `  <fieldset>\n    <legend>${label}</legend>\n${optList("checkbox")}\n  </fieldset>`;
         case "boolean": case "consent":
@@ -111,6 +132,7 @@ const TriggerURLProperty = (props: Props) => {
     let snippetLabel = "Embed Code";
     let snippetMultiline = false;
     let snippetHint = "";
+    let noticeHint = "";
 
     switch (typeName) {
         case "webhook":
@@ -133,14 +155,24 @@ const TriggerURLProperty = (props: Props) => {
         case "form": {
             triggerPath = `/form/${trigger.id}`;
             triggerUrl = launchUrl + triggerPath;
-            // Copy-paste plain HTML <form> that posts straight to the endpoint.
             const formDef = props.node?.data?.config?.inputs
                 ?.find((i: any) => i?.name === "form_definition")?.value || "";
-            showSnippet = true;
-            snippetMultiline = true;
-            snippetLabel = "HTML Form Embed";
-            snippetHint = "Drop this into any page to post directly to the form. Simple fields are included; structured/interactive fields (matrix, table, file upload, payment, …) need the hosted form or SDK. Public forms only — a login-gated form needs the hosted page or SDK.";
-            snippetCode = buildFormEmbedSnippet(formDef, triggerUrl);
+            let requiresLogin = false;
+            try { requiresLogin = !!JSON.parse(formDef || "{}").require_login; } catch { /* ignore */ }
+            if (requiresLogin) {
+                // A cross-origin plain HTML form can't send the flomation-token
+                // cookie (SameSite), so an embed can't authenticate — hide it and
+                // point the author at the hosted page / SDK instead.
+                noticeHint = "This form requires login, so a plain HTML embed can't be used — a cross-origin form won't carry the session. Share the form link above, or use the Embed SDK.";
+                showSnippet = false;
+            } else {
+                // Copy-paste plain HTML <form> that posts straight to the endpoint.
+                showSnippet = true;
+                snippetMultiline = true;
+                snippetLabel = "HTML Form Embed";
+                snippetHint = "Drop this into any page to post directly to the form. Simple fields are included; structured/interactive fields (matrix, table, file upload, payment, …) need the hosted form or SDK.";
+                snippetCode = buildFormEmbedSnippet(formDef, triggerUrl);
+            }
             break;
         }
         case "web":
@@ -245,6 +277,10 @@ const TriggerURLProperty = (props: Props) => {
                     <Icon name={copied? "check" : "copy"} />
                 </button>
             </div>
+
+            {noticeHint && (
+                <div className="trigger-url-hint" style={{marginTop: 8}}>{noticeHint}</div>
+            )}
 
             {showQR && (
                 <div className="trigger-qr-container">
