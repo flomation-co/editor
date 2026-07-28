@@ -1939,6 +1939,22 @@ const FormBuilder = (props: Props) => {
                                                                     <option value="boolean">Yes/No</option>
                                                                     <option value="link">Link</option>
                                                                 </select>
+                                                                {col.type === "date" && (
+                                                                    <select
+                                                                        className="fb-input fb-input-sm"
+                                                                        value={col.format || "date_medium"}
+                                                                        onChange={e => updateTableColumn(pageIndex, fieldIndex, colIndex, {format: e.target.value})}
+                                                                        title="Date format"
+                                                                    >
+                                                                        <option value="date_long">28 July 2026</option>
+                                                                        <option value="date_medium">28 Jul 2026</option>
+                                                                        <option value="date_short">28/07/2026</option>
+                                                                        <option value="datetime_medium">28 Jul 2026, 18:24</option>
+                                                                        <option value="time">18:24</option>
+                                                                        <option value="date_iso">2026-07-28</option>
+                                                                        <option value="relative">3 days ago</option>
+                                                                    </select>
+                                                                )}
                                                                 <select
                                                                     className="fb-input fb-input-sm"
                                                                     value={col.align || "left"}
