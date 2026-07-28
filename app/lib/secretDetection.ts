@@ -60,8 +60,11 @@ const PREFIX_PATTERNS: RegExp[] = [
 // SENSITIVE_KEY_NAME matches against object property names (used by
 // the node inspector). A key called "api_key" should be obfuscated
 // even if the value happens not to match a prefix pattern.
+// NB: "auth" is scoped to the whole word or "authorization"/"authorize" — a
+// bare `auth` alternative over-matched innocent fields like "author"
+// (author.name is a routine GitLab/GitHub field, not a secret).
 export const SENSITIVE_KEY_NAME =
-    /secret|password|key|token|credential|auth|access_token|refresh_token|api_key|apikey/i;
+    /secret|password|key|token|credential|\bauth\b|authoriz|access_token|refresh_token|api_key|apikey/i;
 
 // MIN_LENGTH is the floor below which we don't bother checking. Short
 // strings are dominated by false positives (a user's title "sk-rep"
