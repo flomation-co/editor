@@ -134,16 +134,27 @@ type FormComponent = {
 
 // One column of a table field. type drives cell formatting + sort comparator;
 // clickable makes the cell a select button (the table's radio affordance).
+// One enum-column pill: a cell whose value equals `value` renders as a coloured
+// badge with `label` (default: the value) and the given colours.
+type TableColumnPill = {
+    value: string;
+    label?: string;
+    bg?: string;
+    fg?: string;
+}
+
 type TableColumn = {
     key: string;
     label?: string;
-    type?: "text" | "number" | "date" | "currency" | "boolean" | "link";
+    type?: "text" | "number" | "date" | "currency" | "boolean" | "link" | "enum";
     align?: "left" | "right" | "center";
     width?: string;
     format?: string;
     sortable?: boolean;
     filterable?: boolean;
     clickable?: boolean;
+    /** For type === "enum": the value→pill definitions. */
+    pills?: TableColumnPill[];
 }
 
 // Types whose response is constrained to a curated list. Adding a new
@@ -1896,6 +1907,7 @@ const FormBuilder = (props: Props) => {
                                                                     <option value="date">Date</option>
                                                                     <option value="boolean">Yes/No</option>
                                                                     <option value="link">Link</option>
+                                                                    <option value="enum">Enum (pills)</option>
                                                                 </select>
                                                                 {col.type === "date" && (
                                                                     <select
@@ -1913,6 +1925,35 @@ const FormBuilder = (props: Props) => {
                                                                         <option value="relative">3 days ago</option>
                                                                     </select>
                                                                 )}
+                                                                {col.type === "enum" && (() => {
+                                                                    const pills = col.pills || [];
+                                                                    const setPills = (next: TableColumnPill[]) => updateTableColumn(pageIndex, fieldIndex, colIndex, {pills: next});
+                                                                    const patchPill = (i: number, patch: Partial<TableColumnPill>) => setPills(pills.map((p, j) => j === i ? {...p, ...patch} : p));
+                                                                    return (
+                                                                        <div className="fb-full-width" style={{display: "flex", flexDirection: "column", gap: 6, marginTop: 4}}>
+                                                                            <span className="fb-hint">Map a cell value to a coloured pill. A value with no matching pill renders as plain text.</span>
+                                                                            {pills.map((pill, pillIndex) => (
+                                                                                <div key={pillIndex} className="fb-option-row" style={{alignItems: "center", gap: 6}}>
+                                                                                    <input className="fb-input fb-input-sm" style={{flex: 1}} value={pill.value} placeholder="Value (e.g. opened)"
+                                                                                        onChange={e => patchPill(pillIndex, {value: e.target.value})} />
+                                                                                    <input className="fb-input fb-input-sm" style={{flex: 1}} value={pill.label || ""} placeholder="Label (optional)"
+                                                                                        onChange={e => patchPill(pillIndex, {label: e.target.value || undefined})} />
+                                                                                    <input type="color" title="Background" style={{width: 28, height: 28, padding: 0, border: "none", background: "none", cursor: "pointer"}}
+                                                                                        value={pill.bg || "#e5f0fb"} onChange={e => patchPill(pillIndex, {bg: e.target.value})} />
+                                                                                    <input type="color" title="Text colour" style={{width: 28, height: 28, padding: 0, border: "none", background: "none", cursor: "pointer"}}
+                                                                                        value={pill.fg || "#0b0c0c"} onChange={e => patchPill(pillIndex, {fg: e.target.value})} />
+                                                                                    <span style={{display: "inline-block", padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", background: pill.bg || "#e5f0fb", color: pill.fg || "#0b0c0c"}}>
+                                                                                        {pill.label || pill.value || "pill"}
+                                                                                    </span>
+                                                                                    <button className="fb-icon-btn fb-danger" title="Remove pill" onClick={() => setPills(pills.filter((_, j) => j !== pillIndex))}><Icon name="trash" /></button>
+                                                                                </div>
+                                                                            ))}
+                                                                            <button className="fb-add-option" onClick={() => setPills([...pills, {value: "", label: "", bg: "#e5f0fb", fg: "#0b0c0c"}])}>
+                                                                                <Icon name="plus" /> Add Pill
+                                                                            </button>
+                                                                        </div>
+                                                                    );
+                                                                })()}
                                                                 <select
                                                                     className="fb-input fb-input-sm"
                                                                     value={col.align || "left"}

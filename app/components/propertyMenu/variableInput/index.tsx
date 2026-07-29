@@ -635,8 +635,64 @@ const VariableInput = (props: VariableInputProps) => {
         [displayText, value, toRaw, checkForAutocomplete]
     );
 
+    // Tab-to-indent for code editors. Operates on the RAW value (with the
+    // display↔raw mapping used to place the cursor), so variable pills stay
+    // intact. No selection → insert two spaces at the cursor; a selection (or
+    // Shift+Tab) indents / outdents every line it touches, like a real editor.
+    const INDENT = "  ";
+    const applyRawEdit = useCallback((newValue: string, rawSelStart: number, rawSelEnd: number) => {
+        setValue(newValue);
+        requestAnimationFrame(() => {
+            const el = inputRef.current;
+            if (!el) return;
+            el.focus();
+            const mapping = buildDisplayMapping(parseSegments(newValue, props.variables));
+            el.value = mapping.displayText;
+            const ds = rawPosToDisplay(rawSelStart, mapping.toRaw);
+            const de = rawPosToDisplay(rawSelEnd, mapping.toRaw);
+            el.setSelectionRange(ds, de);
+        });
+    }, [props.variables]);
+
+    const handleTabIndent = useCallback((shift: boolean) => {
+        const el = inputRef.current;
+        if (!el) return;
+        const rawStart = displayPosToRaw(el.selectionStart ?? 0, toRaw);
+        const rawEnd = displayPosToRaw(el.selectionEnd ?? 0, toRaw);
+
+        // Single caret, plain Tab → just insert an indent there.
+        if (rawStart === rawEnd && !shift) {
+            const nv = value.slice(0, rawStart) + INDENT + value.slice(rawStart);
+            applyRawEdit(nv, rawStart + INDENT.length, rawStart + INDENT.length);
+            return;
+        }
+
+        // Selection / Shift+Tab → (out)dent every touched line.
+        const lineStart = value.lastIndexOf("\n", Math.max(rawStart - 1, 0)) + 1;
+        const head = value.slice(0, lineStart);
+        const body = value.slice(lineStart, rawEnd);
+        const tail = value.slice(rawEnd);
+        const lines = body.split("\n");
+        const newLines = lines.map((l) => {
+            if (shift) return l.startsWith(INDENT) ? l.slice(INDENT.length) : l.replace(/^ {1,2}/, "");
+            return INDENT + l;
+        });
+        const newBody = newLines.join("\n");
+        const nv = head + newBody + tail;
+        applyRawEdit(nv, lineStart, head.length + newBody.length);
+    }, [value, toRaw, applyRawEdit]);
+
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
+            // Code editors: Tab manages indentation instead of moving focus —
+            // unless the variable autocomplete is open (Tab accepts a suggestion).
+            const isCode = !!props.multiline && (!!props.monospace || !!props.language);
+            if (e.key === "Tab" && isCode && !autocomplete.visible) {
+                e.preventDefault();
+                handleTabIndent(e.shiftKey);
+                return;
+            }
+
             if (!autocomplete.visible || filteredVariables.length === 0) return;
 
             if (e.key === "ArrowDown") {
@@ -657,7 +713,7 @@ const VariableInput = (props: VariableInputProps) => {
                 setAutocomplete((prev) => ({ ...prev, visible: false }));
             }
         },
-        [autocomplete.visible, filteredVariables, selectedIndex, insertVariable]
+        [autocomplete.visible, filteredVariables, selectedIndex, insertVariable, props.multiline, props.monospace, props.language, handleTabIndent]
     );
 
     const handleBlur = useCallback((e: React.FocusEvent) => {
