@@ -1231,6 +1231,54 @@ export function Editor(props : EditorProps) {
             // by walking ancestors (same logic as allVariables, but per-node)
             const nodeVarNames = new Set<string>();
             const seenNodes = new Set<string>();
+
+            // A trigger's declared fields (Form components, Manual-trigger
+            // fields, declared outputs) are injected into the execution data
+            // and resolvable as BARE references from any downstream node —
+            // regardless of how many action nodes sit between the trigger and
+            // this node. The ancestor walk below only steps THROUGH pass-through
+            // nodes (Switch/Conditional/Loop/Await), so a bare ${title} on a
+            // node several action-hops from a Form trigger would otherwise be
+            // reported as unresolved even though it resolves fine at runtime.
+            // Seed those fields from every trigger that is an ancestor of this
+            // node (a full upstream walk, not restricted to pass-through nodes).
+            const addTriggerDeclaredFields = (pn: any) => {
+                const isTrig = pn?.type?.startsWith('trigger/') || pn?.data?.label?.startsWith('trigger/');
+                if (!isTrig || !pn?.data?.config) return;
+                for (const o of pn.data.config.outputs || []) {
+                    if (o?.name) nodeVarNames.add(o.name);
+                }
+                for (const ti of pn.data.config.trigger_inputs || []) {
+                    if (ti?.name) nodeVarNames.add(ti.name);
+                }
+                if (pn.data?.label === 'trigger/form' || pn.type === 'trigger/form') {
+                    const fdInput = pn.data.config.inputs?.find((i: any) => i.name === 'form_definition');
+                    if (fdInput?.value) {
+                        try {
+                            const fd = typeof fdInput.value === 'string' ? JSON.parse(fdInput.value) : fdInput.value;
+                            for (const pg of fd?.pages || []) {
+                                for (const c of pg?.components || []) {
+                                    if (c?.name) nodeVarNames.add(c.name);
+                                }
+                            }
+                        } catch { /* ignore malformed form definition */ }
+                    }
+                }
+            };
+            const seenTriggerWalk = new Set<string>();
+            const collectAncestorTriggerFields = (nid: string) => {
+                if (seenTriggerWalk.has(nid)) return;
+                seenTriggerWalk.add(nid);
+                for (const e of edges as any[]) {
+                    if (e.target !== nid) continue;
+                    const pn = nodes.find((n: any) => n.id === e.source) as any;
+                    if (!pn) continue;
+                    addTriggerDeclaredFields(pn);
+                    collectAncestorTriggerFields(pn.id);
+                }
+            };
+            collectAncestorTriggerFields(node.id);
+
             const walkParents = (nid: string) => {
                 if (seenNodes.has(nid)) return;
                 seenNodes.add(nid);
