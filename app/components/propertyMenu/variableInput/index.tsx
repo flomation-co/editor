@@ -53,6 +53,11 @@ type VariableInputProps = {
      *  references are tokenised and colour-rendered into the
      *  highlight overlay. Variable pill rendering is unchanged. */
     language?: string;
+    /** When true (used by the expand popup for code inputs), render a
+     *  left line-number gutter and switch the code area to no-wrap +
+     *  horizontal scroll so gutter numbers stay 1:1 with code lines
+     *  (wrapped lines would desync the numbering). */
+    lineNumbers?: boolean;
     variables: VariableItem[];
     onValueChange?: (property: string, value: any) => void;
 };
@@ -409,6 +414,7 @@ const VariableInput = (props: VariableInputProps) => {
     const highlightRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const autocompleteRef = useRef<HTMLDivElement>(null);
+    const gutterRef = useRef<HTMLDivElement>(null);
 
     // Track the last value we emitted upward so the resync effect below can
     // distinguish an external change (e.g. the variable picker inserting a
@@ -451,6 +457,9 @@ const VariableInput = (props: VariableInputProps) => {
         const syncScroll = () => {
             highlight.scrollTop = input.scrollTop;
             highlight.scrollLeft = input.scrollLeft;
+            // Gutter tracks vertical scroll only — it's pinned left and
+            // does not scroll horizontally with the code.
+            if (gutterRef.current) gutterRef.current.scrollTop = input.scrollTop;
         };
 
         input.addEventListener("scroll", syncScroll);
@@ -491,6 +500,7 @@ const VariableInput = (props: VariableInputProps) => {
             requestAnimationFrame(() => {
                 highlight.scrollTop = input.scrollTop;
                 highlight.scrollLeft = input.scrollLeft;
+                if (gutterRef.current) gutterRef.current.scrollTop = input.scrollTop;
             });
         }
     }, [displayText, toRaw]);
@@ -780,14 +790,29 @@ const VariableInput = (props: VariableInputProps) => {
     // and the rules about which references are exempt.
     const secretWarning = useMemo(() => detectSecret(value), [value]);
 
+    // Line count drives the gutter. Newlines are identical in the raw
+    // value and the friendly display (pill labels never contain a
+    // newline), so counting either is equivalent.
+    const lineCount = useMemo(
+        () => (displayText.match(/\n/g)?.length ?? 0) + 1,
+        [displayText]
+    );
+
     return (
         <div
-            className={`variable-input-container ${secretWarning ? "variable-input-container--has-secret" : ""}`}
+            className={`variable-input-container ${secretWarning ? "variable-input-container--has-secret" : ""} ${props.lineNumbers ? "variable-input-container--gutter" : ""}`}
             ref={containerRef}
         >
+            {props.lineNumbers && (
+                <div className="variable-input-gutter" ref={gutterRef} aria-hidden="true">
+                    {Array.from({ length: lineCount }, (_, i) => (
+                        <div key={i}>{i + 1}</div>
+                    ))}
+                </div>
+            )}
             <div
                 ref={highlightRef}
-                className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""} ${props.monospace ? "variable-input-highlight--monospace" : ""}`}
+                className={`variable-input-highlight ${props.multiline ? "variable-input-highlight--multiline" : ""} ${props.monospace ? "variable-input-highlight--monospace" : ""} ${props.lineNumbers ? "variable-input-highlight--nowrap" : ""}`}
                 aria-hidden="true"
             >
                 {renderHighlight()}
@@ -795,7 +820,7 @@ const VariableInput = (props: VariableInputProps) => {
             </div>
             <InputElement
                 ref={inputRef as any}
-                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${props.monospace ? "variable-input-field--monospace" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
+                className={`variable-input-field ${props.multiline ? "variable-input-field--multiline" : ""} ${props.monospace ? "variable-input-field--monospace" : ""} ${props.lineNumbers ? "variable-input-field--nowrap" : ""} ${secretWarning ? "variable-input-field--has-secret" : ""}`}
                 placeholder={props.placeholder}
                 /* Placeholders carry real guidance ("leave blank and we use your
                    connection", "plain numbers only, no currency symbols"), and the

@@ -276,8 +276,8 @@
 }
 
 .text-popup {
-    width: 600px;
-    max-width: 90vw;
+    width: 960px;
+    max-width: 92vw;
     max-height: 80vh;
     background: #1a1a2e;
     border: 1px solid rgba(255,255,255,0.1);
