@@ -503,11 +503,6 @@ const FormBuilder = (props: Props) => {
     // as our own and doesn't trigger a needless re-seed.
     const lastEmitted = useRef<string>(props.value);
 
-    // The data-driven (prefill-from-a-flow) section is collapsed by default so
-    // it doesn't crowd the common case — but starts open if a flow is already
-    // configured, so an existing data source is never hidden away.
-    const [dataDrivenOpen, setDataDrivenOpen] = useState(() => !!form.data_source?.flow_id);
-
     // "After submission" section — collapsed by default; opens if any
     // post-submit behaviour is already configured.
     const [afterSubmitOpen, setAfterSubmitOpen] = useState(() => {
@@ -1111,48 +1106,11 @@ const FormBuilder = (props: Props) => {
                         </span>
                     </label>
                 </div>
-                <div className="fb-field-row fb-collapsible">
-                    <button
-                        type="button"
-                        className="fb-collapsible-header"
-                        onClick={() => setDataDrivenOpen(o => !o)}
-                        aria-expanded={dataDrivenOpen}
-                    >
-                        <Icon name={dataDrivenOpen ? "chevron-down" : "chevron-right"} />
-                        <span className="fb-collapsible-title">Data-driven form</span>
-                        {form.data_source?.flow_id && (
-                            <span className="fb-collapsible-badge">1 flow</span>
-                        )}
-                    </button>
-                    {dataDrivenOpen && (
-                        <div className="fb-datasource">
-                            <span className="fb-datasource-desc">
-                                Run a flow when the form loads and use its outputs to fill fields
-                                with <code>{" ${data.X} "}</code>(e.g. a default of
-                                <code>{" ${data.customer_name} "}</code>). The flow runs once and the
-                                result is cached, so many visitors share a single run.
-                            </span>
-                            <FlowSelectProperty
-                                nodeId={`${props.nodeId}-datasource`}
-                                name="data_source_flow"
-                                label="Data flow"
-                                value={form.data_source?.flow_id || ""}
-                                onValueChange={(_, flowId) =>
-                                    updateForm({data_source: flowId ? {...form.data_source, flow_id: flowId} : undefined})
-                                }
-                            />
-                            {form.data_source?.flow_id && (
-                                <button
-                                    type="button"
-                                    className="fb-datasource-clear"
-                                    onClick={() => updateForm({data_source: undefined})}
-                                >
-                                    <Icon name="xmark" /> Remove data flow
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
+                {/* The form-level "Data-driven form" data source has been retired —
+                    data sources are field-level now: a field's "Computed by a flow"
+                    (value_source) drives its value, a table's rows and an option
+                    field's options. Any data_source on an existing form is still
+                    honoured server-side (and preserved on save) for back-compat. */}
                 <div className="fb-field-row fb-collapsible">
                     <button
                         type="button"
@@ -2174,23 +2132,10 @@ const FormBuilder = (props: Props) => {
                                     {OPTION_BASED_TYPES.has(comp.type) && (
                                         <div className="fb-field-group fb-full-width fb-options-editor">
                                             <span className="fb-field-group-label">Options</span>
-                                            {form.data_source?.flow_id && (
-                                                <div className="fb-options-source">
-                                                    <label className="fb-field-group-label">Populate from flow output</label>
-                                                    <input
-                                                        className="fb-input fb-input-sm"
-                                                        value={comp.options_source || ""}
-                                                        placeholder="Output key, e.g. countries — leave blank for the fixed list below"
-                                                        onChange={e => updateField(pageIndex, fieldIndex, {options_source: e.target.value || undefined})}
-                                                    />
-                                                    <span className="fb-options-source-hint">
-                                                        The data flow output must be a list of strings or
-                                                        <code>{" {label, value} "}</code>objects. Options load in the
-                                                        browser after the form appears; the fixed list below is used if
-                                                        this is blank.
-                                                    </span>
-                                                </div>
-                                            )}
+                                            {/* Dynamic options now come from the field's own
+                                                "Computed by a flow" (value_source) above — the
+                                                form-level options_source was retired. The fixed
+                                                list below is the manual fallback. */}
                                             {(comp.options || []).map((opt, optionIndex) => {
                                                 // Auto-track slug when value hasn't been hand-edited off the current
                                                 // slug. Empty value also tracks (typical during rapid label typing).
