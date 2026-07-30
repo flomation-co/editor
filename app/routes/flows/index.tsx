@@ -117,6 +117,13 @@ export default function Flows() {
     const [moveModal, setMoveModal] = useState<{ floIds: string[] } | null>(null);
     const [moveTarget, setMoveTarget] = useState<string>("");
 
+    // Access (per-project RBAC) dialog — org mode only.
+    const [aclModal, setAclModal] = useState<{ id: string; name: string } | null>(null);
+    const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
+    const [aclDirect, setAclDirect] = useState<{ group_id: string; group_name: string; role: string }[]>([]);
+    const [aclInherited, setAclInherited] = useState<{ group_id: string; group_name: string; role: string }[]>([]);
+    const [aclLoading, setAclLoading] = useState(false);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             window.localStorage.setItem('flomation-flows-grouped', String(groupByProject));
@@ -330,6 +337,53 @@ export default function Flows() {
                 refreshFlows();
             })
             .catch(() => toast.error("Failed to move flows"));
+    };
+
+    // Open the Access dialog for a project — loads the org's Teams and the
+    // project's current grants (direct + inherited).
+    const openAcl = (project: Project) => {
+        setAclModal({ id: project.id, name: project.name });
+        setAclLoading(true);
+        const teamsReq = currentOrg
+            ? api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/group`, { headers: { Authorization: "Bearer " + token } })
+            : Promise.resolve({ data: [] });
+        Promise.all([
+            teamsReq,
+            api.get(`${API_URL}/api/v1/project/${project.id}/acl`, { headers: { Authorization: "Bearer " + token } }),
+        ])
+            .then(([teamsRes, aclRes]) => {
+                setOrgTeams(Array.isArray(teamsRes.data) ? teamsRes.data.map((g: any) => ({ id: g.id, name: g.name })) : []);
+                setAclDirect(aclRes.data?.direct || []);
+                setAclInherited(aclRes.data?.inherited || []);
+            })
+            .catch(() => { toast.error("Failed to load access settings"); })
+            .finally(() => setAclLoading(false));
+    };
+
+    const roleForTeam = (groupId: string): string => {
+        const g = aclDirect.find(d => d.group_id === groupId);
+        return g ? g.role : "";
+    };
+
+    const setTeamRole = (groupId: string, role: string) => {
+        if (!aclModal) return;
+        api.put(`${API_URL}/api/v1/project/${aclModal.id}/acl`, { group_id: groupId, role: role || null }, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                // Optimistic local update, then refresh the tree so the lock
+                // badge + visibility reflect the change.
+                setAclDirect(prev => {
+                    const next = prev.filter(d => d.group_id !== groupId);
+                    if (role) {
+                        const team = orgTeams.find(t => t.id === groupId);
+                        next.push({ group_id: groupId, group_name: team?.name || groupId, role });
+                    }
+                    return next;
+                });
+                refreshProjects();
+            })
+            .catch(() => toast.error("Failed to update access"));
     };
 
     function deleteFlo(id : string) {
@@ -917,6 +971,11 @@ export default function Flows() {
                                 <button className="flo-more-item" onClick={() => { setProjectModal({ mode: 'edit', id: project.id, name: project.name, description: project.description || '', parentId: project.parent_id || '' }); setProjectMenuId(null); }}>
                                     <Icon name="pencil" /> Rename / move
                                 </button>
+                                {currentOrg && (
+                                    <button className="flo-more-item" onClick={() => { openAcl(project); setProjectMenuId(null); }}>
+                                        <Icon name="lock" /> Access…
+                                    </button>
+                                )}
                                 <button className="flo-more-item flo-more-item--danger" onClick={() => { setDeleteProjectId(project.id); setProjectMenuId(null); }}>
                                     <Icon name="trash" /> Delete
                                 </button>
@@ -1313,6 +1372,55 @@ export default function Flows() {
                                 <option key={p.id} value={p.id}>{" ".repeat(depth * 2)}{p.name}</option>
                             ))}
                         </select>
+                    </div>
+                </Modal>
+            )}
+
+            {aclModal && (
+                <Modal
+                    label={`Access — ${aclModal.name}`}
+                    footerMessage="A project with no team granted is visible to everyone in the org"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setAclModal(null)}
+                >
+                    <div className="project-modal-body project-acl-body">
+                        {aclLoading && <div className="flo-project-loading"><Icon name="spinner" spin /> Loading…</div>}
+
+                        {!aclLoading && aclInherited.length > 0 && (
+                            <div className="project-acl-inherited">
+                                <label className="project-modal-label">Inherited from parent projects</label>
+                                {aclInherited.map(g => (
+                                    <div key={g.group_id} className="project-acl-inherited-row">
+                                        <Icon name="lock" /> <span>{g.group_name}</span>
+                                        <span className="project-acl-role-chip">{g.role}</span>
+                                    </div>
+                                ))}
+                                <div className="project-acl-hint">Inherited grants can't be removed here — edit the parent project.</div>
+                            </div>
+                        )}
+
+                        {!aclLoading && (
+                            <>
+                                <label className="project-modal-label">Team access</label>
+                                {orgTeams.length === 0 && <div className="flo-project-empty">No teams yet — create Teams in the Organisation area to share projects.</div>}
+                                {orgTeams.map(team => (
+                                    <div key={team.id} className="project-acl-row">
+                                        <span className="project-acl-team">{team.name}</span>
+                                        <select
+                                            className="project-modal-select project-acl-select"
+                                            value={roleForTeam(team.id)}
+                                            onChange={e => setTeamRole(team.id, e.target.value)}
+                                        >
+                                            <option value="">No access</option>
+                                            <option value="view">View</option>
+                                            <option value="edit">Edit</option>
+                                            <option value="manage">Manage</option>
+                                        </select>
+                                    </div>
+                                ))}
+                            </>
+                        )}
                     </div>
                 </Modal>
             )}
