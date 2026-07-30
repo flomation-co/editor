@@ -896,7 +896,7 @@ export default function Flows() {
         const isGroupLoading = loadingGroups.has(project.id);
         return (
             <div key={project.id} className="flo-project-group">
-                <div className="flo-project-header" style={{ paddingLeft: 8 + depth * 20 }}>
+                <div className="flo-project-header" style={{ marginLeft: depth * 20 }}>
                     <span className="exec-tree-expander" onClick={() => toggleProject(project.id)}>
                         {isExpanded ? "▼" : "▶"}
                     </span>
@@ -927,12 +927,12 @@ export default function Flows() {
                 {isExpanded && (
                     <div className="flo-project-children">
                         {project.children && project.children.map(child => renderProjectNode(child, depth + 1))}
-                        {isGroupLoading && <div className="flo-project-loading"><Icon name="spinner" spin /> Loading flows…</div>}
+                        {isGroupLoading && <div className="flo-project-loading" style={{ marginLeft: (depth + 1) * 20 }}><Icon name="spinner" spin /> Loading flows…</div>}
                         {!isGroupLoading && groupFlows.length === 0 && (!project.children || project.children.length === 0) && (
-                            <div className="flo-project-empty">No flows in this project yet.</div>
+                            <div className="flo-project-empty" style={{ marginLeft: (depth + 1) * 20 }}>No flows in this project yet.</div>
                         )}
                         {!isGroupLoading && groupFlows.length > 0 && (
-                            <div className="flow-cards" style={{ paddingLeft: 8 + (depth + 1) * 20 }}>
+                            <div className="flow-cards" style={{ marginLeft: (depth + 1) * 20 }}>
                                 {groupFlows.map(renderFlowCard)}
                             </div>
                         )}
