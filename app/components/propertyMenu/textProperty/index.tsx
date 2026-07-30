@@ -89,7 +89,11 @@ const TextProperty = (props: PropertyProps) => {
             </div>
 
             {popupOpen && (
-                <div className="text-popup-overlay" onClick={() => setPopupOpen(false)}>
+                /* No overlay onClick — the expanded editor must only be
+                   dismissed via the Cancel/Apply buttons (or the header
+                   close), so a stray click outside can't silently discard
+                   an in-progress edit. */
+                <div className="text-popup-overlay">
                     <div className="text-popup" onClick={e => e.stopPropagation()}>
                         <div className="text-popup-header">
                             <span>{props.label || props.name}</span>
@@ -113,6 +117,7 @@ const TextProperty = (props: PropertyProps) => {
                                 multiline={true}
                                 monospace={props.monospace || !!props.language}
                                 language={props.language}
+                                lineNumbers={props.monospace || !!props.language}
                                 variables={props.variables ?? []}
                                 onValueChange={(_, v) => setPopupValue(v)}
                             />
