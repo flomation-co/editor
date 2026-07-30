@@ -851,3 +851,44 @@
    zeroing the padding is safe. */
 .flo-project-tree .flow-cards { padding: 0; }
 .flo-root-flows { margin-top: 6px; }
+
+/* Access (per-project RBAC) dialog */
+.project-acl-body { min-width: 420px; }
+.project-acl-inherited {
+    background: rgba(139, 92, 246, 0.06);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+.project-acl-inherited-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #e5e7eb;
+    padding: 3px 0;
+}
+.project-acl-role-chip {
+    margin-left: auto;
+    font-size: 11px;
+    text-transform: capitalize;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 8px;
+    border-radius: 10px;
+}
+.project-acl-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 6px;
+}
+.project-acl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.project-acl-team { font-size: 14px; color: #e5e7eb; }
+.project-acl-select { width: auto; margin-left: auto; min-width: 130px; }
