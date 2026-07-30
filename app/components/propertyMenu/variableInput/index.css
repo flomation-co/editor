@@ -47,6 +47,11 @@
     white-space: pre;
     word-wrap: normal;
     overflow-wrap: normal;
+    /* Whole-pixel line box. 13px × 1.5 = 19.5px rounds per-line, and the
+       multi-div gutter and single highlight div round differently, so the
+       numbering drifts by ~half a pixel per line. Pinning to an integer
+       (matched by the gutter below) keeps them locked together. */
+    line-height: 20px;
 }
 
 /* Leave room on the left for the gutter on both layers so the code
@@ -73,7 +78,8 @@
     color: rgba(255, 255, 255, 0.3);
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     font-size: 13px;
-    line-height: 1.5;
+    /* Must match the code layers' integer line box exactly (see --nowrap). */
+    line-height: 20px;
     text-align: right;
     white-space: pre;
     overflow: hidden;
