@@ -266,14 +266,15 @@ export default function Flows() {
     const refreshProjects = () => {
         fetchProjectTree();
         setProjectFlows({});
+        loadGroupFlows(UNGROUPED);
         expandedProjects.forEach(loadGroupFlows);
     };
 
-    // On first entering the grouped view, open + load the Ungrouped group so
-    // the page shows content immediately rather than a set of collapsed rows.
+    // Ungrouped flows (project_id IS NULL) sit at the root of the grouped view
+    // alongside the top-level projects — there is no "Ungrouped" group — so we
+    // load them whenever the grouped view is active.
     useEffect(() => {
         if (groupByProject && !search && token && projectFlows[UNGROUPED] === undefined && !loadingGroups.has(UNGROUPED)) {
-            setExpandedProjects(prev => new Set(prev).add(UNGROUPED));
             loadGroupFlows(UNGROUPED);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -942,7 +943,6 @@ export default function Flows() {
     };
 
     const ungroupedFlows = projectFlows[UNGROUPED] || [];
-    const ungroupedExpanded = expandedProjects.has(UNGROUPED);
 
     return (
         <Container help={FLOWS_HELP}>
@@ -1103,26 +1103,16 @@ export default function Flows() {
                         <div className="flo-project-tree" style={isLoading ? {opacity: 0.5} : undefined}>
                             {projectTree.map(p => renderProjectNode(p, 0))}
 
-                            <div className="flo-project-group">
-                                <div className="flo-project-header" style={{ paddingLeft: 8 }}>
-                                    <span className="exec-tree-expander" onClick={() => toggleProject(UNGROUPED)}>
-                                        {ungroupedExpanded ? "▼" : "▶"}
-                                    </span>
-                                    <Icon name="layer-group" className="flo-project-icon" />
-                                    <span className="flo-project-name" onClick={() => toggleProject(UNGROUPED)}>Ungrouped</span>
+                            {/* Flows with no project sit at the root alongside the
+                                top-level projects — no wrapping group. */}
+                            {loadingGroups.has(UNGROUPED) && ungroupedFlows.length === 0 && (
+                                <div className="flo-project-loading"><Icon name="spinner" spin /> Loading flows…</div>
+                            )}
+                            {ungroupedFlows.length > 0 && (
+                                <div className="flow-cards flo-root-flows">
+                                    {ungroupedFlows.map(renderFlowCard)}
                                 </div>
-                                {ungroupedExpanded && (
-                                    <div className="flo-project-children">
-                                        {loadingGroups.has(UNGROUPED) && <div className="flo-project-loading"><Icon name="spinner" spin /> Loading flows…</div>}
-                                        {!loadingGroups.has(UNGROUPED) && ungroupedFlows.length === 0 && <div className="flo-project-empty">No ungrouped flows.</div>}
-                                        {ungroupedFlows.length > 0 && (
-                                            <div className="flow-cards" style={{ paddingLeft: 28 }}>
-                                                {ungroupedFlows.map(renderFlowCard)}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
                     )}
                 </>

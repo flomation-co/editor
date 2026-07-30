@@ -843,3 +843,7 @@
 }
 .project-modal-textarea { resize: vertical; }
 .project-modal-select { text-transform: none; }
+
+/* Ungrouped flows render at the root of the grouped tree, alongside the
+   top-level project folders. */
+.flo-root-flows { margin-top: 6px; }
