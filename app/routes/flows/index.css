@@ -466,6 +466,14 @@
     cursor: pointer;
     text-decoration: none;
     transition: background 0.1s ease;
+    /* Keep menu labels on one line — the dropdown (shrink-to-fit) grows to the
+       widest item instead of wrapping "New sub-project" / "Rename / move". */
+    white-space: nowrap;
+}
+
+/* The project menu has longer labels than the flow menu — give it more room. */
+.flo-project-menu .flo-more-dropdown {
+    min-width: 190px;
 }
 
 .flo-more-item:hover {
@@ -852,8 +860,9 @@
 .flo-project-tree .flow-cards { padding: 0; }
 .flo-root-flows { margin-top: 6px; }
 
-/* Access (per-project RBAC) dialog */
-.project-acl-body { min-width: 420px; }
+/* Access (per-project RBAC) dialog. No min-width — the modal's inner width is
+   ~392px, so a wider body would overflow it. Long team lists scroll. */
+.project-acl-body { max-height: 55vh; overflow-y: auto; }
 .project-acl-inherited {
     background: rgba(139, 92, 246, 0.06);
     border: 1px solid rgba(139, 92, 246, 0.2);
@@ -890,5 +899,15 @@
     padding: 6px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-.project-acl-team { font-size: 14px; color: #e5e7eb; }
-.project-acl-select { width: auto; margin-left: auto; min-width: 130px; }
+/* Team name takes the slack and truncates; the role select stays a fixed
+   size on the right so it can never be pushed past the modal edge. */
+.project-acl-team {
+    font-size: 14px;
+    color: #e5e7eb;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.project-acl-select { flex: 0 0 auto; width: auto; margin-left: 12px; min-width: 120px; }
