@@ -92,6 +92,24 @@ export type Flo = {
     notify_on_failure?: boolean,
     notification_emails?: string,
     max_concurrent_executions?: number,
+    project_id?: string,
+}
+
+// Project is a nested grouping of flows shown on the Flows page. children is
+// populated by the tree endpoint; flow_count is the direct (non-recursive)
+// count. restricted/effective_role are Phase-2 (per-project RBAC) fields.
+export type Project = {
+    id: string,
+    name: string,
+    description?: string,
+    parent_id?: string,
+    organisation_id?: string,
+    owner_id?: string,
+    created_at?: string,
+    flow_count: number,
+    children?: Project[],
+    restricted?: boolean,
+    effective_role?: string,
 }
 
 export type ExecutionStatusDot = {
@@ -598,6 +616,10 @@ export const PERMISSIONS = {
     EMBED_VIEW: "embed.view",
     GATEWAY_MANAGE: "gateway.manage",
     GATEWAY_VIEW: "gateway.view",
+    PROJECT_VIEW: "project.view",
+    PROJECT_CREATE: "project.create",
+    PROJECT_EDIT: "project.edit",
+    PROJECT_MANAGE: "project.manage",
 } as const;
 
 // EmbedApp is a publishable-key credential for the developer SDK, with its
@@ -707,6 +729,15 @@ export const PERMISSION_CATEGORIES = [
         permissions: [
             { key: PERMISSIONS.GATEWAY_VIEW, label: "View Gateway APIs" },
             { key: PERMISSIONS.GATEWAY_MANAGE, label: "Manage Gateway APIs" },
+        ]
+    },
+    {
+        name: "Projects",
+        permissions: [
+            { key: PERMISSIONS.PROJECT_VIEW, label: "View Projects" },
+            { key: PERMISSIONS.PROJECT_CREATE, label: "Create Projects" },
+            { key: PERMISSIONS.PROJECT_EDIT, label: "Edit Projects" },
+            { key: PERMISSIONS.PROJECT_MANAGE, label: "Manage Projects" },
         ]
     },
 ] as const;

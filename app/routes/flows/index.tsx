@@ -2,7 +2,7 @@ import type {Route} from "../+types/home";
 import { uuidv4 } from "~/lib/uuid";
 import {useEffect, useState, useRef} from "react";
 import api from "~/lib/api";
-import type {Flo} from "~/types";
+import type {Flo, Project} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
 import type {HelpContent} from "~/components/helpPane";
@@ -48,6 +48,7 @@ const FLOWS_HELP: HelpContent = {
         "Drag in actions and connect them to shape the logic",
         "Run a flow by hand, or add a trigger to run it for you",
         "Duplicate or tidy up flows as your work grows",
+        "Group related flows into Projects — folders that can nest, and (with Teams) be kept private",
     ],
     tip: "Every flow starts from a trigger. Add one to decide what kicks it off: a schedule, a form, a webhook and more.",
 };
@@ -91,6 +92,43 @@ export default function Flows() {
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [templateModalVisible, setTemplateModalVisible] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // ── Projects (grouped view) ──────────────────────────────────────────
+    // Group-by-project is the default view; the flat list is the toggle's
+    // off-state. Persisted so it survives reloads (mirrors the Executions
+    // hierarchical toggle). Search always falls back to the flat list.
+    const [groupByProject, setGroupByProject] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return true;
+        const stored = window.localStorage.getItem('flomation-flows-grouped');
+        return stored === null ? true : stored === 'true';
+    });
+    const [projectTree, setProjectTree] = useState<Project[]>([]);
+    const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+    // Flows fetched per group; keyed by project id, or "__ungrouped__".
+    const [projectFlows, setProjectFlows] = useState<Record<string, Flo[]>>({});
+    const [loadingGroups, setLoadingGroups] = useState<Set<string>>(new Set());
+    const [projectMenuId, setProjectMenuId] = useState<string | null>(null);
+    const projectMenuRef = useRef<HTMLDivElement>(null);
+    const UNGROUPED = "__ungrouped__";
+
+    // Project management modals.
+    const [projectModal, setProjectModal] = useState<{ mode: 'create' | 'edit'; id?: string; name: string; description: string; parentId: string } | null>(null);
+    const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+    const [moveModal, setMoveModal] = useState<{ floIds: string[] } | null>(null);
+    const [moveTarget, setMoveTarget] = useState<string>("");
+
+    // Access (per-project RBAC) dialog — org mode only.
+    const [aclModal, setAclModal] = useState<{ id: string; name: string } | null>(null);
+    const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
+    const [aclDirect, setAclDirect] = useState<{ group_id: string; group_name: string; role: string }[]>([]);
+    const [aclInherited, setAclInherited] = useState<{ group_id: string; group_name: string; role: string }[]>([]);
+    const [aclLoading, setAclLoading] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.localStorage.setItem('flomation-flows-grouped', String(groupByProject));
+        }
+    }, [groupByProject]);
 
     const fetchFavourites = () => {
         api.get(API_URL + '/api/v1/favourite', {
@@ -183,6 +221,170 @@ export default function Flows() {
                 setIsLoading(false);
             })
     }, [search, offset, limit, refreshKey]);
+
+    // Fetch the project tree for the grouped view. Cheap (metadata only); the
+    // flows within each project are lazy-loaded on expand.
+    const fetchProjectTree = () => {
+        api.get(API_URL + '/api/v1/project', { headers: { Authorization: "Bearer " + token } })
+            .then(res => setProjectTree(Array.isArray(res.data) ? res.data : []))
+            .catch(() => setProjectTree([]));
+    };
+
+    useEffect(() => {
+        if (token && groupByProject) fetchProjectTree();
+    }, [token, currentOrg, groupByProject, refreshKey]);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (projectMenuRef.current && !projectMenuRef.current.contains(e.target as Node)) setProjectMenuId(null);
+        };
+        if (projectMenuId) document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [projectMenuId]);
+
+    // Lazy-load (and cache) the flows for one group. key is a project id or the
+    // UNGROUPED sentinel.
+    const loadGroupFlows = (key: string) => {
+        setLoadingGroups(prev => new Set(prev).add(key));
+        const projectParam = key === UNGROUPED ? "none" : key;
+        api.get(API_URL + '/api/v1/flo?project_id=' + projectParam + '&offset=0&limit=200', {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(res => setProjectFlows(prev => ({ ...prev, [key]: Array.isArray(res.data) ? res.data : [] })))
+            .catch(() => setProjectFlows(prev => ({ ...prev, [key]: [] })))
+            .finally(() => setLoadingGroups(prev => { const n = new Set(prev); n.delete(key); return n; }));
+    };
+
+    const toggleProject = (key: string) => {
+        setExpandedProjects(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+                if (!projectFlows[key]) loadGroupFlows(key);
+            }
+            return next;
+        });
+    };
+
+    // Reload any groups currently expanded plus the tree — used after a move,
+    // create, rename or delete so counts and membership stay fresh.
+    const refreshProjects = () => {
+        fetchProjectTree();
+        setProjectFlows({});
+        loadGroupFlows(UNGROUPED);
+        expandedProjects.forEach(loadGroupFlows);
+    };
+
+    // Ungrouped flows (project_id IS NULL) sit at the root of the grouped view
+    // alongside the top-level projects — there is no "Ungrouped" group — so we
+    // load them whenever the grouped view is active.
+    useEffect(() => {
+        if (groupByProject && !search && token && projectFlows[UNGROUPED] === undefined && !loadingGroups.has(UNGROUPED)) {
+            loadGroupFlows(UNGROUPED);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [groupByProject, search, token]);
+
+    // Flatten the tree to a depth-labelled list for the parent/target pickers.
+    const flattenProjects = (nodes: Project[], depth = 0, out: { p: Project; depth: number }[] = []): { p: Project; depth: number }[] => {
+        for (const p of nodes) {
+            out.push({ p, depth });
+            if (p.children && p.children.length) flattenProjects(p.children, depth + 1, out);
+        }
+        return out;
+    };
+
+    const saveProject = () => {
+        if (!projectModal || !projectModal.name.trim()) { toast.error("Name is required"); return; }
+        const body = {
+            name: projectModal.name.trim(),
+            description: projectModal.description || null,
+            parent_id: projectModal.parentId || null,
+        };
+        const req = projectModal.mode === 'create'
+            ? api.post(API_URL + '/api/v1/project', body, { headers: { Authorization: "Bearer " + token } })
+            : api.patch(API_URL + '/api/v1/project/' + projectModal.id, body, { headers: { Authorization: "Bearer " + token } });
+        req.then(() => {
+            toast.success(projectModal.mode === 'create' ? "Project created" : "Project updated");
+            setProjectModal(null);
+            refreshProjects();
+        }).catch(err => {
+            toast.error(err?.response?.data?.error || "Failed to save project");
+        });
+    };
+
+    const confirmDeleteProject = () => {
+        if (!deleteProjectId) return;
+        api.delete(API_URL + '/api/v1/project/' + deleteProjectId, { headers: { Authorization: "Bearer " + token } })
+            .then(() => { toast.success("Project deleted — its flows moved up a level"); setDeleteProjectId(null); refreshProjects(); })
+            .catch(() => { toast.error("Failed to delete project"); setDeleteProjectId(null); });
+    };
+
+    const doMoveFlos = () => {
+        if (!moveModal) return;
+        api.post(API_URL + '/api/v1/flo/move', {
+            flo_ids: moveModal.floIds,
+            project_id: moveTarget || null,
+        }, { headers: { Authorization: "Bearer " + token } })
+            .then(() => {
+                toast.success(`Moved ${moveModal.floIds.length} flow${moveModal.floIds.length > 1 ? 's' : ''}`);
+                setMoveModal(null);
+                setMoveTarget("");
+                setSelectedFlows(new Set());
+                refreshProjects();
+                refreshFlows();
+            })
+            .catch(() => toast.error("Failed to move flows"));
+    };
+
+    // Open the Access dialog for a project — loads the org's Teams and the
+    // project's current grants (direct + inherited).
+    const openAcl = (project: Project) => {
+        setAclModal({ id: project.id, name: project.name });
+        setAclLoading(true);
+        const teamsReq = currentOrg
+            ? api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/group`, { headers: { Authorization: "Bearer " + token } })
+            : Promise.resolve({ data: [] });
+        Promise.all([
+            teamsReq,
+            api.get(`${API_URL}/api/v1/project/${project.id}/acl`, { headers: { Authorization: "Bearer " + token } }),
+        ])
+            .then(([teamsRes, aclRes]) => {
+                setOrgTeams(Array.isArray(teamsRes.data) ? teamsRes.data.map((g: any) => ({ id: g.id, name: g.name })) : []);
+                setAclDirect(aclRes.data?.direct || []);
+                setAclInherited(aclRes.data?.inherited || []);
+            })
+            .catch(() => { toast.error("Failed to load access settings"); })
+            .finally(() => setAclLoading(false));
+    };
+
+    const roleForTeam = (groupId: string): string => {
+        const g = aclDirect.find(d => d.group_id === groupId);
+        return g ? g.role : "";
+    };
+
+    const setTeamRole = (groupId: string, role: string) => {
+        if (!aclModal) return;
+        api.put(`${API_URL}/api/v1/project/${aclModal.id}/acl`, { group_id: groupId, role: role || null }, {
+            headers: { Authorization: "Bearer " + token }
+        })
+            .then(() => {
+                // Optimistic local update, then refresh the tree so the lock
+                // badge + visibility reflect the change.
+                setAclDirect(prev => {
+                    const next = prev.filter(d => d.group_id !== groupId);
+                    if (role) {
+                        const team = orgTeams.find(t => t.id === groupId);
+                        next.push({ group_id: groupId, group_name: team?.name || groupId, role });
+                    }
+                    return next;
+                });
+                refreshProjects();
+            })
+            .catch(() => toast.error("Failed to update access"));
+    };
 
     function deleteFlo(id : string) {
         setDeleteFloID(id);
@@ -642,6 +844,165 @@ export default function Flows() {
         }
     };
 
+    // Shared flow-card renderer — used by both the flat list and the grouped
+    // (project) view so they stay identical.
+    const renderFlowCard = (flo: Flo) => (
+        <div key={flo.id} className="flow-card">
+            <label className="flo-checkbox flow-card-checkbox" onClick={e => e.stopPropagation()}>
+                <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
+                <span className="flo-checkbox-box" />
+            </label>
+
+            <div className="flow-card-body" onClick={() => navigate("/flo/" + flo.id)}>
+                <div className="flow-card-header">
+                    <span className="fav-toggle" onClick={e => { e.stopPropagation(); toggleFavourite(flo.id); }}>
+                        <Icon name={favourites.has(flo.id)? "star-solid" : "star-outline"} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
+                    </span>
+                    <span className="flow-card-name">{flo.name}</span>
+                    {flo.has_validation_errors && (
+                        <>
+                            <Icon name="triangle-exclamation" className="flow-card-warning" data-tooltip-id={"validation-" + flo.id} data-tooltip-content="Required fields are incomplete" data-tooltip-place="right" />
+                            <Tooltip id={"validation-" + flo.id} />
+                        </>
+                    )}
+                    {flo.environment_id && (
+                        <span className="environment-label" onClick={e => e.stopPropagation()}><Link to={"/environment/" + flo.environment_id}>{flo.environment_name}</Link></span>
+                    )}
+                </div>
+
+                <div className="flow-card-meta">
+                    {flo.recent_executions && flo.recent_executions.length > 0 && (
+                        <div className="flo-recent-dots" onClick={e => e.stopPropagation()}>
+                            {flo.recent_executions.map((exec, i) => (
+                                <Link key={exec.id} to={"/execution/" + exec.id} className={`flo-dot flo-dot--${exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status}`} data-tooltip-id={`dot-${flo.id}-${i}`} data-tooltip-content={exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status} data-tooltip-place="bottom" />
+                            ))}
+                            {flo.recent_executions.map((exec, i) => (
+                                <Tooltip key={`tip-${i}`} id={`dot-${flo.id}-${i}`} />
+                            ))}
+                        </div>
+                    )}
+                    {flo.last_run && (
+                        <span className="flow-card-detail" data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place="bottom">
+                            {formatDate(flo.last_run)}
+                        </span>
+                    )}
+                    <Tooltip id={"tooltip-time-" + flo.id} />
+                    {flo.last_execution?.duration ? (
+                        <span className="flow-card-detail">{friendlyDuration(flo.last_execution.duration)}</span>
+                    ) : null}
+                    {flo.execution_count > 0 ? (
+                        <span className="flow-card-detail">{flo.execution_count} run{flo.execution_count !== 1 ? 's' : ''}</span>
+                    ) : null}
+                </div>
+            </div>
+
+            <div className="flow-card-actions" onClick={e => e.stopPropagation()}>
+                <button
+                    className="flo-run-btn"
+                    disabled={flo.has_validation_errors}
+                    onClick={() => { if (!flo.has_validation_errors) handleRunClick(flo); }}
+                    data-tooltip-id={"trigger-" + flo.id}
+                    data-tooltip-content={flo.has_validation_errors ? "Complete all required fields" : "Run"}
+                    data-tooltip-place="bottom"
+                >
+                    {flo.triggers?.some(e => e.name === "Default Trigger") && (
+                        currentTrigger == flo.id
+                            ? <Icon name="spinner" spin />
+                            : <Icon name="play" />
+                    )}
+                </button>
+                <Tooltip id={"trigger-" + flo.id} />
+
+                <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
+                    <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
+                        <Icon name="ellipsis-vertical" />
+                    </button>
+                    {openMenuId === flo.id && (
+                        <div className="flo-more-dropdown">
+                            <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
+                                <Icon name="pencil" /> Edit
+                            </Link>
+                            <button className="flo-more-item" onClick={() => { duplicateFlow(flo); setOpenMenuId(null); }}>
+                                <Icon name="copy" /> Duplicate
+                            </button>
+                            <button className="flo-more-item" onClick={() => { setMoveModal({ floIds: [flo.id] }); setMoveTarget(flo.project_id || ""); setOpenMenuId(null); }}>
+                                <Icon name="folder-tree" /> Move to project
+                            </button>
+                            <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
+                                <Icon name="file-export" /> Export
+                            </button>
+                            <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
+                                <Icon name="trash" /> Delete
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    // Recursive project group renderer for the grouped view. depth drives the
+    // indent (mirrors the Executions tree). Each header expands to reveal its
+    // sub-projects then its flows.
+    const renderProjectNode = (project: Project, depth: number) => {
+        const isExpanded = expandedProjects.has(project.id);
+        const groupFlows = projectFlows[project.id] || [];
+        const isGroupLoading = loadingGroups.has(project.id);
+        return (
+            <div key={project.id} className="flo-project-group">
+                <div className="flo-project-header" style={{ marginLeft: depth * 20 }}>
+                    <span className="exec-tree-expander" onClick={() => toggleProject(project.id)}>
+                        {isExpanded ? "▼" : "▶"}
+                    </span>
+                    <Icon name={isExpanded ? "folder-open" : "folder"} className="flo-project-icon" />
+                    <span className="flo-project-name" onClick={() => toggleProject(project.id)}>{project.name}</span>
+                    {project.restricted && <Icon name="lock" className="flo-project-lock" data-tooltip-id={"proj-lock-" + project.id} data-tooltip-content="Restricted to specific teams" data-tooltip-place="top" />}
+                    <Tooltip id={"proj-lock-" + project.id} />
+                    <span className="flo-project-count">{project.flow_count} flow{project.flow_count !== 1 ? 's' : ''}</span>
+                    <div className="flo-more-menu-wrap flo-project-menu" ref={projectMenuId === project.id ? projectMenuRef : undefined}>
+                        <button className="flo-more-btn" onClick={() => setProjectMenuId(projectMenuId === project.id ? null : project.id)}>
+                            <Icon name="ellipsis-vertical" />
+                        </button>
+                        {projectMenuId === project.id && (
+                            <div className="flo-more-dropdown">
+                                <button className="flo-more-item" onClick={() => { setProjectModal({ mode: 'create', name: '', description: '', parentId: project.id }); setProjectMenuId(null); }}>
+                                    <Icon name="folder" /> New sub-project
+                                </button>
+                                <button className="flo-more-item" onClick={() => { setProjectModal({ mode: 'edit', id: project.id, name: project.name, description: project.description || '', parentId: project.parent_id || '' }); setProjectMenuId(null); }}>
+                                    <Icon name="pencil" /> Rename / move
+                                </button>
+                                {currentOrg && (
+                                    <button className="flo-more-item" onClick={() => { openAcl(project); setProjectMenuId(null); }}>
+                                        <Icon name="lock" /> Access…
+                                    </button>
+                                )}
+                                <button className="flo-more-item flo-more-item--danger" onClick={() => { setDeleteProjectId(project.id); setProjectMenuId(null); }}>
+                                    <Icon name="trash" /> Delete
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className="flo-project-children">
+                        {project.children && project.children.map(child => renderProjectNode(child, depth + 1))}
+                        {isGroupLoading && <div className="flo-project-loading" style={{ marginLeft: (depth + 1) * 20 }}><Icon name="spinner" spin /> Loading flows…</div>}
+                        {!isGroupLoading && groupFlows.length === 0 && (!project.children || project.children.length === 0) && (
+                            <div className="flo-project-empty" style={{ marginLeft: (depth + 1) * 20 }}>No flows in this project yet.</div>
+                        )}
+                        {!isGroupLoading && groupFlows.length > 0 && (
+                            <div className="flow-cards" style={{ marginLeft: (depth + 1) * 20 }}>
+                                {groupFlows.map(renderFlowCard)}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const ungroupedFlows = projectFlows[UNGROUPED] || [];
+
     return (
         <Container help={FLOWS_HELP}>
             <ProtectedRoute permissions={[PERMISSIONS.FLOW_CREATE, PERMISSIONS.FLOW_EDIT, PERMISSIONS.FLOW_EXECUTE]}>
@@ -679,6 +1040,23 @@ export default function Flows() {
                                     <span>Export{selectedFlows.size > 0 ? ` (${selectedFlows.size})` : ''}</span>
                                 </button>
                                 <Tooltip id="export-tip" />
+
+                                {selectedFlows.size > 0 && (
+                                    <button className="flows-action-btn" onClick={() => { setMoveModal({ floIds: Array.from(selectedFlows) }); setMoveTarget(""); }} data-tooltip-id="move-tip" data-tooltip-content={`Move ${selectedFlows.size} flow${selectedFlows.size > 1 ? 's' : ''} to a project`} data-tooltip-place="bottom">
+                                        <Icon name="folder-tree" /><span>Move ({selectedFlows.size})</span>
+                                    </button>
+                                )}
+                                <Tooltip id="move-tip" />
+
+                                <button className="flows-action-btn" onClick={() => setProjectModal({ mode: 'create', name: '', description: '', parentId: '' })} data-tooltip-id="new-project-tip" data-tooltip-content="Create a project" data-tooltip-place="bottom">
+                                    <Icon name="folder" /><span>New project</span>
+                                </button>
+                                <Tooltip id="new-project-tip" />
+
+                                <button className={`flows-action-btn ${groupByProject ? 'flows-action-btn--active' : ''}`} onClick={() => setGroupByProject(v => !v)} data-tooltip-id="group-tip" data-tooltip-content={groupByProject ? "Switch to a flat list" : "Group flows by project"} data-tooltip-place="bottom">
+                                    <Icon name={groupByProject ? "layer-group" : "list"} /><span>{groupByProject ? "Grouped" : "Flat"}</span>
+                                </button>
+                                <Tooltip id="group-tip" />
                             </div>
                         </>
                     )}
@@ -768,106 +1146,32 @@ export default function Flows() {
                         </div>
                     )}
 
-                    {flos && flos.length > 0 && (
+                    {/* Flat list — the toggle's off-state, and always used while
+                        searching (grouping + a text filter don't combine cleanly). */}
+                    {flos && flos.length > 0 && (!groupByProject || !!search) && (
                         <div className="flow-cards" style={isLoading ? {opacity: 0.5, pointerEvents: 'none'} : undefined}>
-                            {flos.map(flo => (
-                                <div key={flo.id} className="flow-card">
-                                    <label className="flo-checkbox flow-card-checkbox" onClick={e => e.stopPropagation()}>
-                                        <input type="checkbox" checked={selectedFlows.has(flo.id)} onChange={() => toggleSelectFlow(flo.id)} />
-                                        <span className="flo-checkbox-box" />
-                                    </label>
-
-                                    <div className="flow-card-body" onClick={() => navigate("/flo/" + flo.id)}>
-                                        <div className="flow-card-header">
-                                            <span className="fav-toggle" onClick={e => { e.stopPropagation(); toggleFavourite(flo.id); }}>
-                                                <Icon name={favourites.has(flo.id)? "star-solid" : "star-outline"} className={favourites.has(flo.id) ? "fav-active" : "fav-inactive"} />
-                                            </span>
-                                            <span className="flow-card-name">{flo.name}</span>
-                                            {flo.has_validation_errors && (
-                                                <>
-                                                    <Icon name="triangle-exclamation" className="flow-card-warning" data-tooltip-id={"validation-" + flo.id} data-tooltip-content="Required fields are incomplete" data-tooltip-place="right" />
-                                                    <Tooltip id={"validation-" + flo.id} />
-                                                </>
-                                            )}
-                                            {flo.environment_id && (
-                                                <span className="environment-label" onClick={e => e.stopPropagation()}><Link to={"/environment/" + flo.environment_id}>{flo.environment_name}</Link></span>
-                                            )}
-                                        </div>
-
-                                        <div className="flow-card-meta">
-                                            {flo.recent_executions && flo.recent_executions.length > 0 && (
-                                                <div className="flo-recent-dots" onClick={e => e.stopPropagation()}>
-                                                    {flo.recent_executions.map((exec, i) => (
-                                                        <Link key={exec.id} to={"/execution/" + exec.id} className={`flo-dot flo-dot--${exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status}`} data-tooltip-id={`dot-${flo.id}-${i}`} data-tooltip-content={exec.execution_status === 'executed' ? exec.completion_status : exec.execution_status} data-tooltip-place="bottom" />
-                                                    ))}
-                                                    {flo.recent_executions.map((exec, i) => (
-                                                        <Tooltip key={`tip-${i}`} id={`dot-${flo.id}-${i}`} />
-                                                    ))}
-                                                </div>
-                                            )}
-                                            {flo.last_run && (
-                                                <span className="flow-card-detail" data-tooltip-id={"tooltip-time-" + flo.id} data-tooltip-content={formatDateString(flo.last_run)} data-tooltip-place="bottom">
-                                                    {formatDate(flo.last_run)}
-                                                </span>
-                                            )}
-                                            <Tooltip id={"tooltip-time-" + flo.id} />
-                                            {/* Ternary + null (not &&) — when duration is 0 the &&
-                                                short-circuits to the number 0 which React renders as the
-                                                literal "0" in JSX. friendlyDuration() already returns ""
-                                                for a 0-ms duration, so we could feed it unconditionally,
-                                                but keeping the guard here means we don't emit the empty
-                                                span at all. */}
-                                            {flo.last_execution?.duration ? (
-                                                <span className="flow-card-detail">{friendlyDuration(flo.last_execution.duration)}</span>
-                                            ) : null}
-                                            {flo.execution_count > 0 ? (
-                                                <span className="flow-card-detail">{flo.execution_count} run{flo.execution_count !== 1 ? 's' : ''}</span>
-                                            ) : null}
-                                        </div>
-                                    </div>
-
-                                    <div className="flow-card-actions" onClick={e => e.stopPropagation()}>
-                                        <button
-                                            className="flo-run-btn"
-                                            disabled={flo.has_validation_errors}
-                                            onClick={() => { if (!flo.has_validation_errors) handleRunClick(flo); }}
-                                            data-tooltip-id={"trigger-" + flo.id}
-                                            data-tooltip-content={flo.has_validation_errors ? "Complete all required fields" : "Run"}
-                                            data-tooltip-place="bottom"
-                                        >
-                                            {flo.triggers?.some(e => e.name === "Default Trigger") && (
-                                                currentTrigger == flo.id
-                                                    ? <Icon name="spinner" spin />
-                                                    : <Icon name="play" />
-                                            )}
-                                        </button>
-                                        <Tooltip id={"trigger-" + flo.id} />
-
-                                        <div className="flo-more-menu-wrap" ref={openMenuId === flo.id ? menuRef : undefined}>
-                                            <button className="flo-more-btn" onClick={() => setOpenMenuId(openMenuId === flo.id ? null : flo.id)}>
-                                                <Icon name="ellipsis-vertical" />
-                                            </button>
-                                            {openMenuId === flo.id && (
-                                                <div className="flo-more-dropdown">
-                                                    <Link className="flo-more-item" to={"/flo/" + flo.id} onClick={() => setOpenMenuId(null)}>
-                                                        <Icon name="pencil" /> Edit
-                                                    </Link>
-                                                    <button className="flo-more-item" onClick={() => { duplicateFlow(flo); setOpenMenuId(null); }}>
-                                                        <Icon name="copy" /> Duplicate
-                                                    </button>
-                                                    <button className="flo-more-item" onClick={() => { exportSingleFlow(flo); setOpenMenuId(null); }}>
-                                                        <Icon name="file-export" /> Export
-                                                    </button>
-                                                    <button className="flo-more-item flo-more-item--danger" onClick={() => { deleteFlo(flo.id); setOpenMenuId(null); }}>
-                                                        <Icon name="trash" /> Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                            {flos.map(renderFlowCard)}
                             <PaginationControls onPageChange={handlePageChange} disableRightPagination={disableRightPagination} totalCount={totalFloCount}/>
+                        </div>
+                    )}
+
+                    {/* Grouped view — nested project tree + an Ungrouped group.
+                        Only when there is at least one flow (the empty state above
+                        handles a brand-new account). */}
+                    {groupByProject && !search && flos && (flos.length > 0 || projectTree.length > 0) && (
+                        <div className="flo-project-tree" style={isLoading ? {opacity: 0.5} : undefined}>
+                            {projectTree.map(p => renderProjectNode(p, 0))}
+
+                            {/* Flows with no project sit at the root alongside the
+                                top-level projects — no wrapping group. */}
+                            {loadingGroups.has(UNGROUPED) && ungroupedFlows.length === 0 && (
+                                <div className="flo-project-loading"><Icon name="spinner" spin /> Loading flows…</div>
+                            )}
+                            {ungroupedFlows.length > 0 && (
+                                <div className="flow-cards flo-root-flows">
+                                    {ungroupedFlows.map(renderFlowCard)}
+                                </div>
+                            )}
                         </div>
                     )}
                 </>
@@ -995,6 +1299,130 @@ export default function Flows() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {projectModal && (
+                <Modal
+                    label={projectModal.mode === 'create' ? "New Project" : "Edit Project"}
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setProjectModal(null)}
+                    actions={[{ label: projectModal.mode === 'create' ? "Create" : "Save", primary: true, onClick: saveProject }]}
+                >
+                    <div className="project-modal-body">
+                        <label className="project-modal-label">Name</label>
+                        <input
+                            className="project-modal-input"
+                            value={projectModal.name}
+                            autoFocus
+                            placeholder="e.g. Onboarding"
+                            onChange={e => setProjectModal(m => m && ({ ...m, name: e.target.value }))}
+                        />
+                        <label className="project-modal-label">Description</label>
+                        <textarea
+                            className="project-modal-textarea"
+                            value={projectModal.description}
+                            placeholder="Optional"
+                            rows={2}
+                            onChange={e => setProjectModal(m => m && ({ ...m, description: e.target.value }))}
+                        />
+                        <label className="project-modal-label">Parent project</label>
+                        <select
+                            className="project-modal-select"
+                            value={projectModal.parentId}
+                            onChange={e => setProjectModal(m => m && ({ ...m, parentId: e.target.value }))}
+                        >
+                            <option value="">— Top level —</option>
+                            {flattenProjects(projectTree)
+                                .filter(({ p }) => p.id !== projectModal.id)
+                                .map(({ p, depth }) => (
+                                    <option key={p.id} value={p.id}>{" ".repeat(depth * 2)}{p.name}</option>
+                                ))}
+                        </select>
+                    </div>
+                </Modal>
+            )}
+
+            {deleteProjectId && (
+                <Modal
+                    label="Delete Project"
+                    footerMessage="Flows and sub-projects move up to the parent — nothing is deleted"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setDeleteProjectId(null)}
+                    actions={[{ label: "Delete", primary: false, variant: 'danger', onClick: confirmDeleteProject }]}
+                >
+                    Delete this project? Its flows and any sub-projects will be moved up to its parent (or become ungrouped). No flows are removed.
+                </Modal>
+            )}
+
+            {moveModal && (
+                <Modal
+                    label={`Move ${moveModal.floIds.length} Flow${moveModal.floIds.length > 1 ? 's' : ''}`}
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => { setMoveModal(null); setMoveTarget(""); }}
+                    actions={[{ label: "Move", primary: true, onClick: doMoveFlos }]}
+                >
+                    <div className="project-modal-body">
+                        <label className="project-modal-label">Destination project</label>
+                        <select className="project-modal-select" value={moveTarget} onChange={e => setMoveTarget(e.target.value)}>
+                            <option value="">— Ungrouped —</option>
+                            {flattenProjects(projectTree).map(({ p, depth }) => (
+                                <option key={p.id} value={p.id}>{" ".repeat(depth * 2)}{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                </Modal>
+            )}
+
+            {aclModal && (
+                <Modal
+                    label={`Access — ${aclModal.name}`}
+                    footerMessage="A project with no team granted is visible to everyone in the org"
+                    visible={true}
+                    canDismiss={true}
+                    onDismiss={() => setAclModal(null)}
+                >
+                    <div className="project-modal-body project-acl-body">
+                        {aclLoading && <div className="flo-project-loading"><Icon name="spinner" spin /> Loading…</div>}
+
+                        {!aclLoading && aclInherited.length > 0 && (
+                            <div className="project-acl-inherited">
+                                <label className="project-modal-label">Inherited from parent projects</label>
+                                {aclInherited.map(g => (
+                                    <div key={g.group_id} className="project-acl-inherited-row">
+                                        <Icon name="lock" /> <span>{g.group_name}</span>
+                                        <span className="project-acl-role-chip">{g.role}</span>
+                                    </div>
+                                ))}
+                                <div className="project-acl-hint">Inherited grants can't be removed here — edit the parent project.</div>
+                            </div>
+                        )}
+
+                        {!aclLoading && (
+                            <>
+                                <label className="project-modal-label">Team access</label>
+                                {orgTeams.length === 0 && <div className="flo-project-empty">No teams yet — create Teams in the Organisation area to share projects.</div>}
+                                {orgTeams.map(team => (
+                                    <div key={team.id} className="project-acl-row">
+                                        <span className="project-acl-team">{team.name}</span>
+                                        <select
+                                            className="project-modal-select project-acl-select"
+                                            value={roleForTeam(team.id)}
+                                            onChange={e => setTeamRole(team.id, e.target.value)}
+                                        >
+                                            <option value="">No access</option>
+                                            <option value="view">View</option>
+                                            <option value="edit">Edit</option>
+                                            <option value="manage">Manage</option>
+                                        </select>
+                                    </div>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                </Modal>
             )}
 
             </ProtectedRoute>
