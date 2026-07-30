@@ -61,6 +61,16 @@
     padding-left: 56px;
 }
 
+/* A <textarea> is display:inline-block by default, so it sits on the
+   text baseline and leaves a few px of descender space BELOW its box.
+   That phantom space makes the container taller than the field, and
+   the gutter (height:100%) fills the container — so it pokes out below
+   the textarea. display:block removes the baseline gap so the gutter's
+   bottom lines up with the field's. */
+.variable-input-container--gutter .variable-input-field {
+    display: block;
+}
+
 .variable-input-gutter {
     position: absolute;
     top: 0;
