@@ -845,5 +845,9 @@
 .project-modal-select { text-transform: none; }
 
 /* Ungrouped flows render at the root of the grouped tree, alongside the
-   top-level project folders. */
+   top-level project folders. The flat list's 20px side inset (added in a
+   min-width media query) must NOT apply here, or the cards sit indented from
+   the project header rows. Depth indentation is applied inline per node, so
+   zeroing the padding is safe. */
+.flo-project-tree .flow-cards { padding: 0; }
 .flo-root-flows { margin-top: 6px; }
