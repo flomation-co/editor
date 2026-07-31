@@ -122,3 +122,6 @@
 }
 .sso-docs-link:hover { text-decoration: underline; }
 .sso-docs-ext { font-size: 10px; opacity: 0.8; }
+
+/* Let the "Add domain" button match the input's height (flex row stretches). */
+.sso-domain-add .sso-btn { height: auto; }
