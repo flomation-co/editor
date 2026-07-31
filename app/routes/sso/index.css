@@ -125,3 +125,7 @@
 
 /* Let the "Add domain" button match the input's height (flex row stretches). */
 .sso-domain-add .sso-btn { height: auto; }
+
+/* Group→Team mapping */
+.sso-team-select { max-width: 240px; text-transform: none; }
+.sso-domain-add .sso-team-select { height: auto; }

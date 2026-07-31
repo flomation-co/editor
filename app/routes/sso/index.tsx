@@ -70,6 +70,9 @@ export default function SSO() {
     const [form, setForm] = useState({ ...blankForm });
     const [newDomain, setNewDomain] = useState<Record<string, string>>({});
     const [txtHint, setTxtHint] = useState<{ name: string; value: string } | null>(null);
+    const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+    const [mappings, setMappings] = useState<{ id: string; idp_group: string; organisation_group_id: string; group_name: string }[]>([]);
+    const [newMapping, setNewMapping] = useState<{ idp_group: string; group_id: string }>({ idp_group: "", group_id: "" });
 
     const base = () => `${API_URL}/api/v1/organisation/${currentOrg?.id}/sso`;
     const hdr = { headers: { Authorization: "Bearer " + token } };
@@ -85,8 +88,25 @@ export default function SSO() {
     const loadDomains = (connID: string) => {
         api.get(`${base()}/connection/${connID}/domain`, hdr).then(r => setDomains(p => ({ ...p, [connID]: Array.isArray(r.data) ? r.data : [] }))).catch(() => setDomains(p => ({ ...p, [connID]: [] })));
     };
+    const loadTeams = () => {
+        if (!currentOrg) return;
+        api.get(`${API_URL}/api/v1/organisation/${currentOrg.id}/group`, hdr).then(r => setTeams(Array.isArray(r.data) ? r.data.map((g: any) => ({ id: g.id, name: g.name })) : [])).catch(() => setTeams([]));
+    };
+    const loadMappings = () => {
+        if (!currentOrg) return;
+        api.get(`${base()}/group-mapping`, hdr).then(r => setMappings(Array.isArray(r.data) ? r.data : [])).catch(() => setMappings([]));
+    };
+    const addMapping = () => {
+        if (!newMapping.idp_group.trim() || !newMapping.group_id) { toast.error("Enter a group and pick a Team"); return; }
+        api.post(`${base()}/group-mapping`, { idp_group: newMapping.idp_group.trim(), organisation_group_id: newMapping.group_id }, hdr)
+            .then(() => { setNewMapping({ idp_group: "", group_id: "" }); loadMappings(); })
+            .catch(() => toast.error("Failed to add mapping"));
+    };
+    const deleteMapping = (id: string) => {
+        api.delete(`${base()}/group-mapping/${id}`, hdr).then(loadMappings).catch(() => toast.error("Failed to delete mapping"));
+    };
 
-    useEffect(() => { loadConnections(); }, [currentOrg]);
+    useEffect(() => { loadConnections(); loadTeams(); loadMappings(); }, [currentOrg]);
     useEffect(() => { connections.forEach(c => loadDomains(c.id)); /* eslint-disable-next-line */ }, [connections.length]);
 
     const applyPreset = (key: string) => {
@@ -251,6 +271,31 @@ export default function SSO() {
                                 </div>
                             </div>
                         ))}
+
+                        {connections.length > 0 && (
+                            <div className="sso-card">
+                                <div className="sso-domains-title" style={{ marginBottom: 6 }}>Group → Team mapping</div>
+                                <div className="sso-hint" style={{ margin: "0 0 12px" }}>
+                                    Members of an identity-provider group are added to the mapped Team on sign-in (and removed when they leave it). Teams with no mapping are managed manually. Use the group's name or object id, exactly as your provider emits it in the token.
+                                </div>
+                                {mappings.length === 0 && <div className="sso-empty" style={{ marginTop: 0 }}>No mappings yet.</div>}
+                                {mappings.map(m => (
+                                    <div key={m.id} className="sso-domain-row">
+                                        <span className="sso-domain-name"><code>{m.idp_group}</code> &nbsp;→&nbsp; {m.group_name}</span>
+                                        <button className="sso-btn sso-btn--danger" onClick={() => deleteMapping(m.id)}><Icon name="trash" /></button>
+                                    </div>
+                                ))}
+                                <div className="sso-domain-add">
+                                    <input className="sso-input" placeholder="IdP group (name or object id)" value={newMapping.idp_group} onChange={e => setNewMapping({ ...newMapping, idp_group: e.target.value })} />
+                                    <select className="sso-input sso-team-select" value={newMapping.group_id} onChange={e => setNewMapping({ ...newMapping, group_id: e.target.value })}>
+                                        <option value="">Select a Team…</option>
+                                        {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    </select>
+                                    <button className="sso-btn" onClick={addMapping}>Add mapping</button>
+                                </div>
+                                {teams.length === 0 && <div className="sso-hint">No Teams yet — create Teams in the Organisation area to map groups to them.</div>}
+                            </div>
+                        )}
                     </>
                 )}
             </ProtectedRoute>
