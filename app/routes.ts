@@ -17,6 +17,7 @@ export default [
     route("organisation", "routes/organisations/index.tsx"),
     route("invite/:code", "routes/invite/index.tsx"),
     route("team", "routes/teams/index.tsx"),
+    route("sso", "routes/sso/index.tsx"),
     route("usage", "routes/usage/index.tsx"),
     route("status", "routes/status/index.tsx"),
     
