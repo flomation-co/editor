@@ -28,11 +28,15 @@ const SSO_HELP: HelpContent = {
 
 // Provider presets. Entra is the guided default; the engine itself is generic
 // OIDC, so any compliant provider works. Tenant ID is Entra-only.
-const PRESETS: Record<string, { label: string; issuerHint: string; tenant: boolean; note?: string }> = {
-    entra:   { label: "Microsoft Entra ID", issuerHint: "https://login.microsoftonline.com/<tenant-id>/v2.0", tenant: true,  note: "Client secret comes from Entra → Certificates & secrets." },
-    okta:    { label: "Okta",               issuerHint: "https://<your-org>.okta.com",                        tenant: false },
-    google:  { label: "Google Workspace",   issuerHint: "https://accounts.google.com",                       tenant: false },
-    generic: { label: "",                   issuerHint: "https://idp.example.com",                            tenant: false },
+const PRESETS: Record<string, { label: string; issuerHint: string; tenant: boolean; note?: string; docs?: string; docsLabel?: string }> = {
+    entra:   { label: "Microsoft Entra ID", issuerHint: "https://login.microsoftonline.com/<tenant-id>/v2.0", tenant: true,  note: "Client secret comes from Entra → Certificates & secrets.",
+               docs: "https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app", docsLabel: "Register an app in Microsoft Entra ID" },
+    okta:    { label: "Okta",               issuerHint: "https://<your-org>.okta.com",                        tenant: false,
+               docs: "https://developer.okta.com/docs/guides/implement-grant-type/authcode/main/", docsLabel: "Create an OIDC app in Okta" },
+    google:  { label: "Google Workspace",   issuerHint: "https://accounts.google.com",                       tenant: false,
+               docs: "https://developers.google.com/identity/openid-connect/openid-connect#registeringyourapp", docsLabel: "Create OAuth credentials in Google Cloud" },
+    generic: { label: "",                   issuerHint: "https://idp.example.com",                            tenant: false,
+               docs: "https://openid.net/developers/how-connect-works/", docsLabel: "How OpenID Connect works" },
 };
 
 type Connection = {
@@ -163,6 +167,11 @@ export default function SSO() {
                                         </button>
                                     ))}
                                 </div>
+                                {activePreset.docs && (
+                                    <a className="sso-docs-link" href={activePreset.docs} target="_blank" rel="noopener noreferrer">
+                                        <Icon name="book" /> {activePreset.docsLabel || "Provider setup guide"} <Icon name="arrow-up-right-from-square" className="sso-docs-ext" />
+                                    </a>
+                                )}
 
                                 <div className="sso-form-redirect">
                                     <label className="sso-label">Redirect URI <span className="sso-label-note">— register this in your provider (must match exactly)</span></label>

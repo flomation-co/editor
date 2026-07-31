@@ -109,3 +109,16 @@
     border-radius: 8px;
 }
 .sso-form-redirect .sso-copy { padding-top: 6px; }
+
+/* Provider setup-doc link */
+.sso-docs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 4px;
+    font-size: 12px;
+    color: #a78bfa;
+    text-decoration: none;
+}
+.sso-docs-link:hover { text-decoration: underline; }
+.sso-docs-ext { font-size: 10px; opacity: 0.8; }
