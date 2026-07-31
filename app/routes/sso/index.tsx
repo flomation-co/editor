@@ -108,7 +108,7 @@ export default function SSO() {
             enabled: true,
         }, hdr)
             .then(() => { toast.success("Connection created"); setShowForm(false); setForm({ ...blankForm }); loadConnections(); })
-            .catch(() => toast.error("Failed to create connection"));
+            .catch(err => toast.error(err?.response?.data?.error || "Failed to create connection"));
     };
 
     const toggleEnabled = (c: Connection) => {
