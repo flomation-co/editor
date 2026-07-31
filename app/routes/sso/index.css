@@ -99,3 +99,13 @@
 .sso-preset:hover { background: rgba(255, 255, 255, 0.07); }
 .sso-preset--active { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.45); color: #a78bfa; }
 .sso-label-note { font-weight: 400; color: rgba(255, 255, 255, 0.4); }
+
+/* Redirect URI block inside the connection form */
+.sso-form-redirect {
+    margin: 10px 0 6px;
+    padding: 12px;
+    border: 1px solid rgba(0, 170, 156, 0.28);
+    background: rgba(0, 170, 156, 0.06);
+    border-radius: 8px;
+}
+.sso-form-redirect .sso-copy { padding-top: 6px; }

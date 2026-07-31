@@ -55,8 +55,14 @@ export default function SSO() {
 
     const [connections, setConnections] = useState<Connection[]>([]);
     const [domains, setDomains] = useState<Record<string, Domain[]>>({});
-    const [redirectUri, setRedirectUri] = useState<string>("");
     const [showForm, setShowForm] = useState(false);
+
+    // The redirect URI is Sentinel's login host + /sso/callback. Derived from
+    // LOGIN_URL so it's always populated (no cross-service call to load it).
+    const redirectUri = (() => {
+        try { const u = config("LOGIN_URL"); return u ? new URL(u).origin + "/sso/callback" : ""; }
+        catch { return ""; }
+    })();
     const [form, setForm] = useState({ ...blankForm });
     const [newDomain, setNewDomain] = useState<Record<string, string>>({});
     const [txtHint, setTxtHint] = useState<{ name: string; value: string } | null>(null);
@@ -72,15 +78,11 @@ export default function SSO() {
         if (!currentOrg) return;
         api.get(`${base()}/connection`, hdr).then(r => setConnections(Array.isArray(r.data) ? r.data : [])).catch(() => setConnections([]));
     };
-    const loadRedirect = () => {
-        if (!currentOrg) return;
-        api.get(`${base()}/redirect-uri`, hdr).then(r => setRedirectUri(r.data?.redirect_uri || "")).catch(() => setRedirectUri(""));
-    };
     const loadDomains = (connID: string) => {
         api.get(`${base()}/connection/${connID}/domain`, hdr).then(r => setDomains(p => ({ ...p, [connID]: Array.isArray(r.data) ? r.data : [] }))).catch(() => setDomains(p => ({ ...p, [connID]: [] })));
     };
 
-    useEffect(() => { loadConnections(); loadRedirect(); }, [currentOrg]);
+    useEffect(() => { loadConnections(); }, [currentOrg]);
     useEffect(() => { connections.forEach(c => loadDomains(c.id)); /* eslint-disable-next-line */ }, [connections.length]);
 
     const applyPreset = (key: string) => {
@@ -128,9 +130,9 @@ export default function SSO() {
         api.delete(`${base()}/connection/${connID}/domain/${dom.id}`, hdr).then(() => loadDomains(connID)).catch(() => toast.error("Failed to delete domain"));
     };
 
-    const CopyField = ({ label, value }: { label: string; value: string }) => (
+    const CopyField = ({ label, value }: { label?: string; value: string }) => (
         <div className="sso-copy">
-            <span className="sso-copy-label">{label}</span>
+            {label ? <span className="sso-copy-label">{label}</span> : null}
             <code className="sso-copy-value">{value || "—"}</code>
             <button className="sso-btn" disabled={!value} onClick={() => copy(value)}><Icon name="copy" /> Copy</button>
         </div>
@@ -145,12 +147,6 @@ export default function SSO() {
 
                 {currentOrg && (
                     <>
-                        {/* The redirect URI is the same for every connection — register it in your IdP. */}
-                        <div className="sso-card sso-redirect">
-                            <div className="sso-redirect-title"><Icon name="circle-info" /> Register this redirect URI (a.k.a. reply URL) in your identity provider</div>
-                            <CopyField label="Redirect URI" value={redirectUri} />
-                        </div>
-
                         <div className="sso-actions">
                             <button className="sso-btn sso-btn--primary" onClick={() => { setForm({ ...blankForm }); setShowForm(v => !v); }}>
                                 <Icon name="plus" /> New connection
@@ -166,6 +162,11 @@ export default function SSO() {
                                             {p.label || "Generic OIDC"}
                                         </button>
                                     ))}
+                                </div>
+
+                                <div className="sso-form-redirect">
+                                    <label className="sso-label">Redirect URI <span className="sso-label-note">— register this in your provider (must match exactly)</span></label>
+                                    <CopyField value={redirectUri} />
                                 </div>
 
                                 <label className="sso-label">Display name</label>
@@ -188,7 +189,6 @@ export default function SSO() {
                                 <input className="sso-input" type="password" value={form.client_secret} onChange={e => setForm({ ...form, client_secret: e.target.value })} />
 
                                 {activePreset.note && <div className="sso-hint">{activePreset.note}</div>}
-                                <div className="sso-hint">Redirect URI to register: <code>{redirectUri || "(loading…)"}</code></div>
 
                                 <div className="sso-form-actions">
                                     <button className="sso-btn" onClick={() => { setShowForm(false); setForm({ ...blankForm }); }}>Cancel</button>
