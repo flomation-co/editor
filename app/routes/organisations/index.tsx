@@ -3,6 +3,7 @@ import Container from "~/components/container";
 import type {HelpContent} from "~/components/helpPane";
 import React, {useEffect, useState} from "react";
 import {useOrganisation} from "~/context/organisation/use";
+import {Link} from "react-router";
 import {useAuth} from "~/context/auth/use";
 import type {OrganisationMember, OrganisationInvite, OrganisationAgentMember} from "~/types";
 import api from "~/lib/api";
@@ -214,6 +215,17 @@ export default function Organisations() {
                             />
                             <span className={"org-toggle-slider"}></span>
                         </label>
+                    </div>
+                    <div className={"org-setting-row"}>
+                        <div className={"org-setting-label"}>
+                            <div className={"org-setting-name"}>Single Sign-On</div>
+                            <div className={"org-setting-description"}>
+                                Let members sign in with your own identity provider (Microsoft Entra ID) and map its groups to Teams.
+                            </div>
+                        </div>
+                        <Link to="/sso" className={"org-setting-link"}>
+                            Configure <Icon name="chevron-right" />
+                        </Link>
                     </div>
                 </div>
             )}
