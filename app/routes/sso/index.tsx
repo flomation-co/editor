@@ -23,7 +23,7 @@ const SSO_HELP: HelpContent = {
         "Claim your email domains and verify each with a DNS TXT record",
         "Once verified, anyone typing an address at that domain is sent to your provider to sign in",
     ],
-    tip: "Keep a Flomation password on at least one admin (break-glass) so a misconfigured connection can't lock you out.",
+    tip: "Organisation admins can always sign in with a password (automatic break-glass), so a misconfigured connection can never lock them out.",
 };
 
 // Provider presets. Entra is the guided default; the engine itself is generic
