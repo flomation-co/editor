@@ -24,7 +24,7 @@ enum Page {
     Loop
 }
 
-type SubGroup = {
+type SubSubGroup = {
     key: string;
     name: string;
     icon: string;
@@ -32,11 +32,24 @@ type SubGroup = {
     actions: PluginDefinition[];
 }
 
+type SubGroup = {
+    key: string;
+    name: string;
+    icon: string;
+    description: string;
+    actions: PluginDefinition[];
+    subSubGroups: SubSubGroup[];
+}
+
 type CategoryGroup = {
     category: PluginCategory;
     actions: PluginDefinition[];
     subGroups: SubGroup[];
 }
+
+// Total actions in a sub-group, including any third-tier sub-sub-groups.
+const subGroupCount = (sg: SubGroup): number =>
+    sg.actions.length + sg.subSubGroups.reduce((sum, ssg) => sum + ssg.actions.length, 0);
 
 // ── Fuzzy search ──────────────────────────────────────────────────────────
 // A lightweight scored fuzzy matcher (no dependency — the action set is small
@@ -87,6 +100,7 @@ const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
     3.0 * fuzzyScore(query, p.label || ""),
     1.8 * fuzzyScore(query, p.category?.name || ""),
     1.8 * fuzzyScore(query, p.category?.sub_name || ""),
+    1.8 * fuzzyScore(query, p.category?.sub_sub_name || ""),
     1.0 * fuzzyScore(query, p.description || ""),
 );
 
@@ -95,6 +109,7 @@ const ContextMenu = (props: ContextMenuProps) => {
     const [ searchTerm, setSearchTerm ] = useState<string>("");
     const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
     const [ expandedSubGroup, setExpandedSubGroup ] = useState<string | null>(null);
+    const [ expandedSubSubGroup, setExpandedSubSubGroup ] = useState<string | null>(null);
 
     const handleNodeClick = (name: string) => {
         if (props.onNodeAdd) {
@@ -112,6 +127,7 @@ const ContextMenu = (props: ContextMenuProps) => {
             setCurrentPage(Page.Root);
             setExpandedGroup(null);
             setExpandedSubGroup(null);
+            setExpandedSubSubGroup(null);
         }
     }, [props.visible]);
 
@@ -119,6 +135,7 @@ const ContextMenu = (props: ContextMenuProps) => {
     useEffect(() => {
         setExpandedGroup(null);
         setExpandedSubGroup(null);
+        setExpandedSubSubGroup(null);
     }, [currentPage]);
 
     // Group plugins by category for a given node type, with optional sub-groups
@@ -151,22 +168,43 @@ const ContextMenu = (props: ContextMenuProps) => {
                         name: plugin.category?.sub_name || subKey,
                         icon: plugin.category?.sub_icon || group.category.icon,
                         description: plugin.category?.sub_description || "",
-                        actions: []
+                        actions: [],
+                        subSubGroups: []
                     };
                     group.subGroups.push(subGroup);
                 }
-                subGroup.actions.push(plugin);
+
+                const subSubKey = plugin.category?.sub_sub_key;
+                if (subSubKey) {
+                    let subSubGroup = subGroup.subSubGroups.find(ssg => ssg.key === subSubKey);
+                    if (!subSubGroup) {
+                        subSubGroup = {
+                            key: subSubKey,
+                            name: plugin.category?.sub_sub_name || subSubKey,
+                            icon: plugin.category?.sub_sub_icon || subGroup.icon,
+                            description: plugin.category?.sub_sub_description || "",
+                            actions: []
+                        };
+                        subGroup.subSubGroups.push(subSubGroup);
+                    }
+                    subSubGroup.actions.push(plugin);
+                } else {
+                    subGroup.actions.push(plugin);
+                }
             } else {
                 group.actions.push(plugin);
             }
         }
 
-        // Sort groups and sub-groups alphabetically
+        // Sort groups, sub-groups and sub-sub-groups alphabetically
         const result = Array.from(groupMap.values()).sort((a, b) =>
             a.category.name.localeCompare(b.category.name)
         );
         for (const group of result) {
             group.subGroups.sort((a, b) => a.name.localeCompare(b.name));
+            for (const subGroup of group.subGroups) {
+                subGroup.subSubGroups.sort((a, b) => a.name.localeCompare(b.name));
+            }
         }
         return result;
     }
@@ -199,15 +237,57 @@ const ContextMenu = (props: ContextMenuProps) => {
         </div>
     );
 
+    const renderSubSubGroup = (subSubGroup: SubSubGroup) => {
+        const isExpanded = expandedSubSubGroup === subSubGroup.key;
+        const actionCount = subSubGroup.actions.length;
+
+        return (
+            <div key={subSubGroup.key} className={"context-sub-sub-group"}>
+                <div
+                    className={`context-node-type context-sub-sub-header ${isExpanded ? "expanded" : ""}`}
+                    onClick={() => setExpandedSubSubGroup(isExpanded ? null : subSubGroup.key)}
+                >
+                    <div className={"node-type-icon-column"}>
+                        {subSubGroup.icon && (
+                            <Icon name={subSubGroup.icon} size="1.125em" />
+                        )}
+                    </div>
+                    <div className={"node-type-text-column"}>
+                        <div className={"node-type-title"}>
+                            {subSubGroup.name}
+                            <span className={"category-count"}>{actionCount}</span>
+                        </div>
+                        {subSubGroup.description && (
+                            <div className={"node-type-description"}>
+                                {subSubGroup.description}
+                            </div>
+                        )}
+                    </div>
+                    <div className={"category-chevron"}>
+                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className={"context-category-actions"}>
+                        {subSubGroup.actions.map(renderActionItem)}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderSubGroup = (subGroup: SubGroup) => {
         const isExpanded = expandedSubGroup === subGroup.key;
-        const actionCount = subGroup.actions.length;
+        const actionCount = subGroupCount(subGroup);
 
         return (
             <div key={subGroup.key} className={"context-sub-group"}>
                 <div
                     className={`context-node-type context-sub-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => setExpandedSubGroup(isExpanded ? null : subGroup.key)}
+                    onClick={() => {
+                        setExpandedSubGroup(isExpanded ? null : subGroup.key);
+                        setExpandedSubSubGroup(null);
+                    }}
                 >
                     <div className={"node-type-icon-column"}>
                         {subGroup.icon && (
@@ -232,6 +312,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                 {isExpanded && (
                     <div className={"context-category-actions"}>
                         {subGroup.actions.map(renderActionItem)}
+                        {subGroup.subSubGroups.map(renderSubSubGroup)}
                     </div>
                 )}
             </div>
@@ -240,7 +321,7 @@ const ContextMenu = (props: ContextMenuProps) => {
 
     const renderCategoryGroup = (group: CategoryGroup) => {
         const isExpanded = expandedGroup === group.category.key;
-        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + sg.actions.length, 0);
+        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + subGroupCount(sg), 0);
 
         return (
             <div key={group.category.key} className={"context-category-group"}>
