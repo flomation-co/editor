@@ -194,7 +194,12 @@ export type PluginCategory = {
     sub_key?: string,
     sub_name?: string,
     sub_icon?: string,
-    sub_description?: string
+    sub_description?: string,
+    // Third grouping tier for 4-segment action IDs (e.g. CRM ▸ Apollo ▸ Enrichment).
+    sub_sub_key?: string,
+    sub_sub_name?: string,
+    sub_sub_icon?: string,
+    sub_sub_description?: string
 }
 
 export type PluginDefinition = {
