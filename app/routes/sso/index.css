@@ -129,3 +129,72 @@
 /* Group→Team mapping */
 .sso-team-select { max-width: 240px; text-transform: none; }
 .sso-domain-add .sso-team-select { height: auto; }
+
+/* Directory-credential block (group picker setup) */
+.sso-directory {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+.sso-directory-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #c4b5fd;
+    margin-bottom: 8px;
+}
+.sso-textarea {
+    min-height: 88px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    text-transform: none;
+    resize: vertical;
+}
+
+/* Searchable group picker */
+.sso-mapping-conn { margin: 4px 0 8px; }
+.sso-group-picker { position: relative; flex: 1; min-width: 0; }
+.sso-group-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #17141f;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    padding: 4px;
+}
+.sso-group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #ede9fe;
+    cursor: pointer;
+    font-size: 13px;
+}
+.sso-group-item:hover { background: rgba(139, 92, 246, 0.16); }
+.sso-group-item--muted { color: #8b8698; cursor: default; font-size: 12px; }
+.sso-group-item--muted:hover { background: transparent; }
+.sso-group-name { font-weight: 500; }
+.sso-group-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: #8b8698;
+    word-break: break-all;
+}
