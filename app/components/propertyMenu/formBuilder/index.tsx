@@ -14,6 +14,8 @@ type FormOption = {
     // Option-tile image URL used by the picture_choice field. Empty renders
     // a text fallback tile.
     image?: string;
+    // When true the option is shown but not selectable in the rendered form.
+    disabled?: boolean;
 }
 
 // A single "show when" condition: one earlier answer, compared to a value.
@@ -2182,7 +2184,7 @@ const FormBuilder = (props: Props) => {
                                                 // slug. Empty value also tracks (typical during rapid label typing).
                                                 const valueTracksLabel = opt.value === "" || opt.value === slugifyOptionValue(opt.label);
                                                 return (
-                                                    <div key={optionIndex} className="fb-option-row">
+                                                    <div key={optionIndex} className={opt.disabled ? "fb-option-row fb-option-disabled" : "fb-option-row"}>
                                                         <input
                                                             className="fb-input fb-input-sm fb-option-label-input"
                                                             value={opt.label}
@@ -2200,6 +2202,14 @@ const FormBuilder = (props: Props) => {
                                                             onChange={e => updateOption(pageIndex, fieldIndex, optionIndex, {value: e.target.value})}
                                                         />
                                                         <div className="fb-option-actions">
+                                                            <button
+                                                                className={opt.disabled ? "fb-icon-btn fb-active" : "fb-icon-btn"}
+                                                                onClick={() => updateOption(pageIndex, fieldIndex, optionIndex, {disabled: !opt.disabled})}
+                                                                title={opt.disabled ? "Option disabled (shown but not selectable) — click to enable" : "Disable this option (shown but not selectable)"}
+                                                                aria-pressed={!!opt.disabled}
+                                                            >
+                                                                <Icon name="ban" />
+                                                            </button>
                                                             <button
                                                                 className="fb-icon-btn"
                                                                 onClick={() => moveOption(pageIndex, fieldIndex, optionIndex, -1)}

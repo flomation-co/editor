@@ -337,6 +337,24 @@
     color: #f87171;
 }
 
+/* Active "disable option" toggle — amber to read as "shown but off". */
+.fb-icon-btn.fb-active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #fbbf24;
+}
+.fb-icon-btn.fb-active:hover {
+    background: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+}
+
+/* A disabled option's label/value read as muted in the builder; its action
+   buttons stay full-strength so the toggle remains obvious. */
+.fb-option-row.fb-option-disabled .fb-option-label-input,
+.fb-option-row.fb-option-disabled .fb-option-value-input {
+    opacity: 0.5;
+}
+
 /* ── Add buttons ── */
 
 .fb-add-field, .fb-add-page {
