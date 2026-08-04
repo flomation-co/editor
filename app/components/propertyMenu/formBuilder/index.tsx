@@ -644,7 +644,9 @@ const FormBuilder = (props: Props) => {
     // should be made in the default language.
     const defaultLang = form.default_language || "en";
     const langs = form.languages && form.languages.length ? form.languages : [defaultLang];
-    const [languagesOpen, setLanguagesOpen] = useState(() => langs.length > 1);
+    // Collapsed by default (like the other sections) — authors expand it only
+    // when they want to add languages or translate.
+    const [languagesOpen, setLanguagesOpen] = useState(false);
     const [authLang, setAuthLang] = useState(defaultLang);
     // If the authoring language is removed (or the default changes out from under
     // it), fall back to the default so we never author into a dropped language.
