@@ -14,24 +14,81 @@ import useCookieToken from "~/components/cookie";
 // translated. Mirrors the SDK i18n.ts / launch form.go twins.
 type I18nMap = Record<string, string>;
 
-// The 13 supported form languages (roadmap order), with endonyms for the UI.
-const FORM_LANGUAGES: {code: string; name: string}[] = [
-    {code: "en", name: "English"},
-    {code: "fr", name: "Français"},
-    {code: "de", name: "Deutsch"},
-    {code: "it", name: "Italiano"},
-    {code: "es", name: "Español"},
-    {code: "pt", name: "Português"},
-    {code: "cy", name: "Cymraeg"},
-    {code: "uk", name: "Українська"},
-    {code: "pl", name: "Polski"},
-    {code: "da", name: "Dansk"},
-    {code: "sv", name: "Svenska"},
-    {code: "no", name: "Norsk"},
-    {code: "fi", name: "Suomi"},
+// The 13 supported form languages (roadmap order), with endonyms + a flag emoji
+// for the UI. Flag ≠ language, but the conventional national flag is the clearest
+// visual cue (Welsh uses its own flag; "uk" is Ukrainian → 🇺🇦, not the UK).
+const FORM_LANGUAGES: {code: string; name: string; flag: string}[] = [
+    {code: "en", name: "English", flag: "🇬🇧"},
+    {code: "fr", name: "Français", flag: "🇫🇷"},
+    {code: "de", name: "Deutsch", flag: "🇩🇪"},
+    {code: "it", name: "Italiano", flag: "🇮🇹"},
+    {code: "es", name: "Español", flag: "🇪🇸"},
+    {code: "pt", name: "Português", flag: "🇵🇹"},
+    {code: "cy", name: "Cymraeg", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿"},
+    {code: "uk", name: "Українська", flag: "🇺🇦"},
+    {code: "pl", name: "Polski", flag: "🇵🇱"},
+    {code: "da", name: "Dansk", flag: "🇩🇰"},
+    {code: "sv", name: "Svenska", flag: "🇸🇪"},
+    {code: "no", name: "Norsk", flag: "🇳🇴"},
+    {code: "fi", name: "Suomi", flag: "🇫🇮"},
 ];
 const languageName = (code: string): string =>
     FORM_LANGUAGES.find(l => l.code === code)?.name ?? code;
+const languageFlag = (code: string): string =>
+    FORM_LANGUAGES.find(l => l.code === code)?.flag ?? "";
+
+// LanguageDropdown is a stylised (non-native) select reusing the property menu's
+// dropdown look (`property-menu-select*`), rendering a flag beside each language.
+// Passing no `value` (the "add" case) keeps it showing the placeholder.
+const LanguageDropdown = ({value, placeholder, options, onSelect}: {
+    value?: string;
+    placeholder: string;
+    options: {code: string; name: string; flag: string}[];
+    onSelect: (code: string) => void;
+}) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!open) return;
+        const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+        document.addEventListener("mousedown", onDoc);
+        document.addEventListener("keydown", onKey);
+        return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+    }, [open]);
+    const selected = value ? options.find(o => o.code === value) : undefined;
+    return (
+        <div className="property-menu-select fb-lang-select" ref={ref}>
+            <button
+                type="button"
+                className={`property-menu-select-trigger ${open ? "open" : ""}`}
+                onClick={() => setOpen(o => !o)}
+            >
+                {selected ? (
+                    <span className="fb-lang-opt"><span className="fb-flag">{selected.flag}</span>{selected.name}</span>
+                ) : (
+                    <span className="property-menu-select-placeholder">{placeholder}</span>
+                )}
+                <svg className="property-menu-select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+            </button>
+            {open && (
+                <div className="property-menu-select-list">
+                    {options.map(opt => (
+                        <div
+                            key={opt.code}
+                            className={`property-menu-select-option ${opt.code === value ? "active" : ""}`}
+                            onMouseDown={() => { onSelect(opt.code); setOpen(false); }}
+                        >
+                            <span className="fb-flag">{opt.flag}</span>{opt.name}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 type FormOption = {
     label: string;
@@ -1286,6 +1343,22 @@ const FormBuilder = (props: Props) => {
                         Supports line breaks, <strong>*bold*</strong> and <em>_italic_</em>.
                     </span>
                 </div>
+                <div className="fb-field-row">
+                    <label className="fb-toggle-label fb-toggle-label--prominent">
+                        <input
+                            type="checkbox"
+                            checked={form.require_login || false}
+                            onChange={e => updateForm({require_login: e.target.checked})}
+                        />
+                        <span>
+                            <strong>Require login</strong>
+                            <span className="fb-toggle-desc">
+                                Users must be signed in to view or submit. Enables
+                                <code>{" ${user.X} "}</code>substitution in labels and default values.
+                            </span>
+                        </span>
+                    </label>
+                </div>
                 <div className="fb-field-row fb-collapsible">
                     <button
                         type="button"
@@ -1303,15 +1376,12 @@ const FormBuilder = (props: Props) => {
                         <div className="fb-datasource fb-languages">
                             <div className="fb-field-group">
                                 <span className="fb-field-group-label">Default language</span>
-                                <select
-                                    className="fb-input fb-input-sm"
+                                <LanguageDropdown
                                     value={defaultLang}
-                                    onChange={e => setDefaultLanguage(e.target.value)}
-                                >
-                                    {FORM_LANGUAGES.map(l => (
-                                        <option key={l.code} value={l.code}>{l.name}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Select…"
+                                    options={FORM_LANGUAGES}
+                                    onSelect={setDefaultLanguage}
+                                />
                                 <span className="fb-hint">The language your base text is written in. Base values fall back for any missing translation.</span>
                             </div>
 
@@ -1329,6 +1399,7 @@ const FormBuilder = (props: Props) => {
                                                     onClick={() => setAuthLang(authLang === code ? defaultLang : code)}
                                                     title={authLang === code ? "Currently editing" : `Translate into ${languageName(code)}`}
                                                 >
+                                                    <span className="fb-flag">{languageFlag(code)}</span>
                                                     <span className="fb-lang-chip-name">{languageName(code)}</span>
                                                     <span className={`fb-lang-coverage${complete ? " fb-lang-coverage--complete" : ""}`}>
                                                         {cov.done}/{cov.total}
@@ -1350,36 +1421,15 @@ const FormBuilder = (props: Props) => {
                                     )}
                                 </div>
                                 <div className="fb-lang-add">
-                                    <select
-                                        className="fb-input fb-input-sm"
-                                        value=""
-                                        onChange={e => { if (e.target.value) addLanguage(e.target.value); }}
-                                    >
-                                        <option value="">Add a language…</option>
-                                        {FORM_LANGUAGES.filter(l => !langs.includes(l.code)).map(l => (
-                                            <option key={l.code} value={l.code}>{l.name}</option>
-                                        ))}
-                                    </select>
+                                    <LanguageDropdown
+                                        placeholder="Add a language…"
+                                        options={FORM_LANGUAGES.filter(l => !langs.includes(l.code))}
+                                        onSelect={addLanguage}
+                                    />
                                 </div>
                             </div>
                         </div>
                     )}
-                </div>
-                <div className="fb-field-row">
-                    <label className="fb-toggle-label fb-toggle-label--prominent">
-                        <input
-                            type="checkbox"
-                            checked={form.require_login || false}
-                            onChange={e => updateForm({require_login: e.target.checked})}
-                        />
-                        <span>
-                            <strong>Require login</strong>
-                            <span className="fb-toggle-desc">
-                                Users must be signed in to view or submit. Enables
-                                <code>{" ${user.X} "}</code>substitution in labels and default values.
-                            </span>
-                        </span>
-                    </label>
                 </div>
                 {/* The form-level "Data-driven form" data source has been retired —
                     data sources are field-level now: a field's "Computed by a flow"
