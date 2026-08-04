@@ -713,6 +713,28 @@
     border-color: rgba(255, 255, 255, 0.14);
 }
 
+/* When expanded, the body (.fb-datasource) is present — unify the header and
+   body into ONE bordered container so the settings read as belonging to the
+   section, rather than floating beneath a separate header pill. */
+.fb-collapsible:has(> .fb-datasource) {
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header {
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px 8px 0 0;
+    background: rgba(255, 255, 255, 0.03);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-datasource {
+    padding: 14px 12px;
+}
+
 .fb-collapsible-header svg {
     width: 11px;
     height: 11px;
@@ -893,3 +915,121 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
 }
+
+/* ── Multi-lingual authoring (dark property-menu theme) ───────────────── */
+
+/* A flag glyph sits before a language name in dropdowns and chips. */
+.fb-flag {
+    font-size: 15px;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+/* Persistent banner shown while translating into a non-default language. */
+.fb-translate-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(0, 170, 156, 0.4);
+    background: rgba(0, 170, 156, 0.12);
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.88);
+}
+.fb-translate-banner svg {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: #23c7b8;
+}
+.fb-translate-banner span { flex: 1 1 auto; line-height: 1.4; }
+.fb-translate-banner strong { color: #fff; }
+.fb-translate-exit {
+    flex: 0 0 auto;
+    border: 1px solid rgba(0, 170, 156, 0.5);
+    background: rgba(0, 170, 156, 0.15);
+    color: #23c7b8;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.fb-translate-exit:hover { background: rgba(0, 170, 156, 0.28); color: #fff; }
+
+.fb-languages { display: flex; flex-direction: column; gap: 16px; }
+
+/* The stylised language dropdown (reuses .property-menu-select*). Flag+name in
+   the trigger. */
+.fb-lang-select { width: 100%; }
+.fb-lang-opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.property-menu-select-option .fb-flag { margin-right: 8px; }
+
+/* Translation-language chips (flag + endonym + coverage) with a remove control,
+   styled for the dark panel. */
+.fb-lang-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0;
+}
+.fb-lang-chip {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.fb-lang-chip:hover { border-color: rgba(255, 255, 255, 0.22); }
+.fb-lang-chip--active {
+    border-color: #00aa9c;
+    background: rgba(0, 170, 156, 0.12);
+    box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.6) inset;
+}
+.fb-lang-chip-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+.fb-lang-chip-main:hover { background: rgba(255, 255, 255, 0.04); }
+.fb-lang-chip--active .fb-lang-chip-main { color: #fff; }
+.fb-lang-chip-name { font-weight: 600; }
+.fb-lang-coverage {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 1px 7px;
+    letter-spacing: 0.02em;
+}
+.fb-lang-coverage--complete { color: #0b1210; background: #23c7b8; }
+.fb-lang-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 0 8px;
+    cursor: pointer;
+    transition: color 0.12s ease, background 0.12s ease;
+}
+.fb-lang-chip-remove:hover { color: #ff6b6b; background: rgba(255, 107, 107, 0.12); }
+.fb-lang-chip-remove svg { width: 11px; height: 11px; }
+.fb-lang-add { max-width: 260px; }
