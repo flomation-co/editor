@@ -713,6 +713,28 @@
     border-color: rgba(255, 255, 255, 0.14);
 }
 
+/* When expanded, the body (.fb-datasource) is present — unify the header and
+   body into ONE bordered container so the settings read as belonging to the
+   section, rather than floating beneath a separate header pill. */
+.fb-collapsible:has(> .fb-datasource) {
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header {
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px 8px 0 0;
+    background: rgba(255, 255, 255, 0.03);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.fb-collapsible:has(> .fb-datasource) > .fb-datasource {
+    padding: 14px 12px;
+}
+
 .fb-collapsible-header svg {
     width: 11px;
     height: 11px;

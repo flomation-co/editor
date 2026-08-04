@@ -1387,6 +1387,13 @@ const FormBuilder = (props: Props) => {
 
                             <div className="fb-field-group">
                                 <span className="fb-field-group-label">Translations</span>
+                                <div className="fb-lang-add">
+                                    <LanguageDropdown
+                                        placeholder="Add a language…"
+                                        options={FORM_LANGUAGES.filter(l => !langs.includes(l.code))}
+                                        onSelect={addLanguage}
+                                    />
+                                </div>
                                 <div className="fb-lang-chips">
                                     {langs.filter(l => l !== defaultLang).map(code => {
                                         const cov = translationCoverage(code);
@@ -1417,15 +1424,8 @@ const FormBuilder = (props: Props) => {
                                         );
                                     })}
                                     {langs.filter(l => l !== defaultLang).length === 0 && (
-                                        <span className="fb-hint">No translations yet. Add a language to start translating.</span>
+                                        <span className="fb-hint">No translations yet — add a language above to start.</span>
                                     )}
-                                </div>
-                                <div className="fb-lang-add">
-                                    <LanguageDropdown
-                                        placeholder="Add a language…"
-                                        options={FORM_LANGUAGES.filter(l => !langs.includes(l.code))}
-                                        onSelect={addLanguage}
-                                    />
                                 </div>
                             </div>
                         </div>
