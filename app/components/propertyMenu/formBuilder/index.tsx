@@ -8,6 +8,31 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 
+// I18nMap holds translations of one display string, keyed by BCP-47 language
+// code. The base field (e.g. `label`) is the default-language value; a missing
+// entry falls back to it at render. Canonical data (name, option value) is never
+// translated. Mirrors the SDK i18n.ts / launch form.go twins.
+type I18nMap = Record<string, string>;
+
+// The 13 supported form languages (roadmap order), with endonyms for the UI.
+const FORM_LANGUAGES: {code: string; name: string}[] = [
+    {code: "en", name: "English"},
+    {code: "fr", name: "Français"},
+    {code: "de", name: "Deutsch"},
+    {code: "it", name: "Italiano"},
+    {code: "es", name: "Español"},
+    {code: "pt", name: "Português"},
+    {code: "cy", name: "Cymraeg"},
+    {code: "uk", name: "Українська"},
+    {code: "pl", name: "Polski"},
+    {code: "da", name: "Dansk"},
+    {code: "sv", name: "Svenska"},
+    {code: "no", name: "Norsk"},
+    {code: "fi", name: "Suomi"},
+];
+const languageName = (code: string): string =>
+    FORM_LANGUAGES.find(l => l.code === code)?.name ?? code;
+
 type FormOption = {
     label: string;
     value: string;
@@ -16,6 +41,8 @@ type FormOption = {
     image?: string;
     // When true the option is shown but not selectable in the rendered form.
     disabled?: boolean;
+    // Per-language translations of `label` (value never translates).
+    label_i18n?: I18nMap;
 }
 
 // A single "show when" condition: one earlier answer, compared to a value.
@@ -78,6 +105,11 @@ type FormComponent = {
     max_date?: string;
     // Paragraph text used by info_text display-only components.
     display_text?: string;
+    // Per-language translations of the display strings above (label, placeholder,
+    // display_text). Base values remain the default-language strings.
+    label_i18n?: I18nMap;
+    placeholder_i18n?: I18nMap;
+    display_text_i18n?: I18nMap;
     // Location precision — "coarse" rounds coordinates client-side to
     // ~110m; "fine" (or unset) uses raw device precision.
     precision?: "coarse" | "fine";
@@ -268,6 +300,8 @@ type FormDataSource = {
 // response (kiosk), or redirecting the browser.
 type FormSubmit = {
     success_message?: string;
+    // Per-language translations of success_message.
+    success_message_i18n?: I18nMap;
     on_submit?: "message" | "restart" | "redirect";
     redirect_url?: string;
     redirect_delay_seconds?: number;
@@ -286,6 +320,14 @@ type FormDefinition = {
     data_source?: FormDataSource;
     // What happens after a successful submission (thank-you / restart / redirect).
     submit?: FormSubmit;
+    // Multi-lingual authoring. default_language is the language the base strings
+    // are written in (default "en"); languages lists every authored language.
+    // A monolingual form leaves both unset. title_i18n/description_i18n translate
+    // the header.
+    default_language?: string;
+    languages?: string[];
+    title_i18n?: I18nMap;
+    description_i18n?: I18nMap;
 }
 
 type Props = {
@@ -311,6 +353,10 @@ const parseFormDefinition = (raw: string): FormDefinition => {
             require_login: parsed.require_login || false,
             data_source: parsed.data_source || undefined,
             submit: parsed.submit || undefined,
+            default_language: parsed.default_language || undefined,
+            languages: Array.isArray(parsed.languages) ? parsed.languages : undefined,
+            title_i18n: parsed.title_i18n || undefined,
+            description_i18n: parsed.description_i18n || undefined,
         };
     } catch {
         return {title: "Untitled Form", description: "", pages: [{components: []}], require_login: false};
@@ -531,6 +577,131 @@ const FormBuilder = (props: Props) => {
     const [computedOpen, setComputedOpen] = useState<Record<string, boolean>>({});
     const toggleComputed = (key: string) =>
         setComputedOpen(prev => ({...prev, [key]: !prev[key]}));
+
+    // ---- Multi-lingual authoring ------------------------------------------
+    // defaultLang is the language the base strings are written in; langs is every
+    // authored language (default: just the default). authLang is the language
+    // currently being AUTHORED — when it's not the default, the translatable text
+    // inputs rebind to the string's *_i18n[authLang] value (with the base shown as
+    // a placeholder for reference). Structural edits (name, type, values, toggles)
+    // should be made in the default language.
+    const defaultLang = form.default_language || "en";
+    const langs = form.languages && form.languages.length ? form.languages : [defaultLang];
+    const [languagesOpen, setLanguagesOpen] = useState(() => langs.length > 1);
+    const [authLang, setAuthLang] = useState(defaultLang);
+    // If the authoring language is removed (or the default changes out from under
+    // it), fall back to the default so we never author into a dropped language.
+    useEffect(() => {
+        if (!langs.includes(authLang)) setAuthLang(defaultLang);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.languages, form.default_language]);
+    const translating = authLang !== defaultLang;
+
+    // getT returns the value to SHOW in a translatable input: the base value when
+    // authoring the default language, else the translation (empty if absent).
+    const getT = (base: string | undefined, map: I18nMap | undefined): string =>
+        translating ? (map?.[authLang] ?? "") : (base ?? "");
+
+    // mergeI18n returns a new i18n map with authLang set to v (or the key removed
+    // when v is empty, so a cleared translation falls back to the base).
+    const mergeI18n = (map: I18nMap | undefined, v: string): I18nMap | undefined => {
+        const next: I18nMap = {...(map || {})};
+        if (v) next[authLang] = v; else delete next[authLang];
+        return Object.keys(next).length ? next : undefined;
+    };
+
+    // setFormT / setFieldT / setOptionT write a translatable string to the base
+    // field when authoring the default language, or to its *_i18n map otherwise.
+    const setFormT = (baseField: keyof FormDefinition, i18nField: keyof FormDefinition, v: string) => {
+        if (!translating) { updateForm({[baseField]: v} as Partial<FormDefinition>); return; }
+        updateForm({[i18nField]: mergeI18n(form[i18nField] as I18nMap | undefined, v)} as Partial<FormDefinition>);
+    };
+    const setSubmitT = (v: string) => {
+        if (!translating) { updateForm({submit: {...form.submit, success_message: v}}); return; }
+        updateForm({submit: {...form.submit, success_message_i18n: mergeI18n(form.submit?.success_message_i18n, v)}});
+    };
+    const setFieldT = (
+        pageIndex: number, fieldIndex: number, comp: FormComponent,
+        baseField: "label" | "placeholder" | "display_text",
+        i18nField: "label_i18n" | "placeholder_i18n" | "display_text_i18n",
+        v: string,
+    ) => {
+        if (!translating) { updateField(pageIndex, fieldIndex, {[baseField]: v}); return; }
+        updateField(pageIndex, fieldIndex, {[i18nField]: mergeI18n(comp[i18nField], v)});
+    };
+    const setOptionT = (pageIndex: number, fieldIndex: number, optionIndex: number, opt: FormOption, v: string) => {
+        if (!translating) { updateOption(pageIndex, fieldIndex, optionIndex, {label: v}); return; }
+        updateOption(pageIndex, fieldIndex, optionIndex, {label_i18n: mergeI18n(opt.label_i18n, v)});
+    };
+
+    // Language management. addLanguage seeds an empty translation set (the maps
+    // fill in as the author types); removeLanguage drops it from the list AND
+    // purges its translations everywhere so the payload stays clean.
+    const addLanguage = (code: string) => {
+        if (!code || langs.includes(code)) return;
+        updateForm({default_language: defaultLang, languages: [...langs, code]});
+    };
+    const purgeLangFromMap = (map: I18nMap | undefined, code: string): I18nMap | undefined => {
+        if (!map || !(code in map)) return map;
+        const next = {...map}; delete next[code];
+        return Object.keys(next).length ? next : undefined;
+    };
+    const removeLanguage = (code: string) => {
+        if (code === defaultLang) return;
+        const nextLangs = langs.filter(l => l !== code);
+        const pages = form.pages.map(p => ({
+            ...p,
+            components: p.components.map(c => ({
+                ...c,
+                label_i18n: purgeLangFromMap(c.label_i18n, code),
+                placeholder_i18n: purgeLangFromMap(c.placeholder_i18n, code),
+                display_text_i18n: purgeLangFromMap(c.display_text_i18n, code),
+                options: c.options?.map(o => ({...o, label_i18n: purgeLangFromMap(o.label_i18n, code)})),
+            })),
+        }));
+        updateForm({
+            languages: nextLangs.length > 1 ? nextLangs : undefined,
+            default_language: nextLangs.length > 1 ? defaultLang : undefined,
+            title_i18n: purgeLangFromMap(form.title_i18n, code),
+            description_i18n: purgeLangFromMap(form.description_i18n, code),
+            submit: form.submit ? {...form.submit, success_message_i18n: purgeLangFromMap(form.submit.success_message_i18n, code)} : form.submit,
+            pages,
+        });
+        if (authLang === code) setAuthLang(defaultLang);
+    };
+    const setDefaultLanguage = (code: string) => {
+        // Ensure the new default is in the language list; keep the rest.
+        const rest = langs.filter(l => l !== code);
+        const nextLangs = [code, ...rest];
+        updateForm({default_language: code, languages: nextLangs.length > 1 ? nextLangs : undefined});
+        setAuthLang(code);
+    };
+
+    // translationCoverage counts, for a language, how many translatable base
+    // strings have a non-empty translation (translated / total). Drives the
+    // per-language coverage chips.
+    const translationCoverage = (code: string): {done: number; total: number} => {
+        let done = 0, total = 0;
+        const tally = (base: string | undefined, map: I18nMap | undefined) => {
+            if (!base) return; // only base strings that exist need translating
+            total++;
+            if (map?.[code]) done++;
+        };
+        tally(form.title, form.title_i18n);
+        tally(form.description, form.description_i18n);
+        tally(form.submit?.success_message, form.submit?.success_message_i18n);
+        for (const p of form.pages) {
+            for (const c of p.components) {
+                tally(c.label, c.label_i18n);
+                tally(c.placeholder, c.placeholder_i18n);
+                tally(c.display_text, c.display_text_i18n);
+                for (const o of c.options ?? []) tally(o.label, o.label_i18n);
+                for (const o of c.matrix_rows ?? []) tally(o.label, o.label_i18n);
+                for (const o of c.matrix_columns ?? []) tally(o.label, o.label_i18n);
+            }
+        }
+        return {done, total};
+    };
 
     useEffect(() => {
         const serialised = JSON.stringify(form);
@@ -1075,33 +1246,124 @@ const FormBuilder = (props: Props) => {
     return (
         <div className="form-builder">
             <div className="fb-section">
+                {translating && (
+                    <div className="fb-translate-banner" role="status">
+                        <Icon name="globe" />
+                        <span>
+                            Translating into <strong>{languageName(authLang)}</strong>. Only text translations are
+                            saved here — edit structure (field names, options, types) in the default language.
+                        </span>
+                        <button type="button" className="fb-translate-exit" onClick={() => setAuthLang(defaultLang)}>
+                            Back to {languageName(defaultLang)}
+                        </button>
+                    </div>
+                )}
                 <div className="fb-field-row">
-                    <label className="fb-label">Form Title</label>
+                    <label className="fb-label">Form Title{translating ? ` (${languageName(authLang)})` : ""}</label>
                     <VariableInput
-                        nodeId={`${props.nodeId}-title`}
+                        nodeId={`${props.nodeId}-title-${authLang}`}
                         name="form_title"
-                        placeholder=""
+                        placeholder={translating ? (form.title || "") : ""}
                         label="Form Title"
-                        value={form.title}
+                        value={getT(form.title, form.title_i18n)}
                         variables={props.variables || []}
-                        onValueChange={(_, v) => updateForm({title: v})}
+                        onValueChange={(_, v) => setFormT("title", "title_i18n", v)}
                     />
                 </div>
                 <div className="fb-field-row">
-                    <label className="fb-label">Description</label>
+                    <label className="fb-label">Description{translating ? ` (${languageName(authLang)})` : ""}</label>
                     <VariableInput
-                        nodeId={`${props.nodeId}-description`}
+                        nodeId={`${props.nodeId}-description-${authLang}`}
                         name="form_description"
-                        placeholder="Optional description"
+                        placeholder={translating ? (form.description || "Optional description") : "Optional description"}
                         label="Description"
-                        value={form.description}
+                        value={getT(form.description, form.description_i18n)}
                         variables={props.variables || []}
                         multiline
-                        onValueChange={(_, v) => updateForm({description: v})}
+                        onValueChange={(_, v) => setFormT("description", "description_i18n", v)}
                     />
                     <span className="fb-hint">
                         Supports line breaks, <strong>*bold*</strong> and <em>_italic_</em>.
                     </span>
+                </div>
+                <div className="fb-field-row fb-collapsible">
+                    <button
+                        type="button"
+                        className="fb-collapsible-header"
+                        onClick={() => setLanguagesOpen(o => !o)}
+                        aria-expanded={languagesOpen}
+                    >
+                        <Icon name={languagesOpen ? "chevron-down" : "chevron-right"} />
+                        <span className="fb-collapsible-title">Languages</span>
+                        {langs.length > 1 && (
+                            <span className="fb-collapsible-badge">{langs.length} languages</span>
+                        )}
+                    </button>
+                    {languagesOpen && (
+                        <div className="fb-datasource fb-languages">
+                            <div className="fb-field-group">
+                                <span className="fb-field-group-label">Default language</span>
+                                <select
+                                    className="fb-input fb-input-sm"
+                                    value={defaultLang}
+                                    onChange={e => setDefaultLanguage(e.target.value)}
+                                >
+                                    {FORM_LANGUAGES.map(l => (
+                                        <option key={l.code} value={l.code}>{l.name}</option>
+                                    ))}
+                                </select>
+                                <span className="fb-hint">The language your base text is written in. Base values fall back for any missing translation.</span>
+                            </div>
+
+                            <div className="fb-field-group">
+                                <span className="fb-field-group-label">Translations</span>
+                                <div className="fb-lang-chips">
+                                    {langs.filter(l => l !== defaultLang).map(code => {
+                                        const cov = translationCoverage(code);
+                                        const complete = cov.total > 0 && cov.done >= cov.total;
+                                        return (
+                                            <div key={code} className={`fb-lang-chip${authLang === code ? " fb-lang-chip--active" : ""}`}>
+                                                <button
+                                                    type="button"
+                                                    className="fb-lang-chip-main"
+                                                    onClick={() => setAuthLang(authLang === code ? defaultLang : code)}
+                                                    title={authLang === code ? "Currently editing" : `Translate into ${languageName(code)}`}
+                                                >
+                                                    <span className="fb-lang-chip-name">{languageName(code)}</span>
+                                                    <span className={`fb-lang-coverage${complete ? " fb-lang-coverage--complete" : ""}`}>
+                                                        {cov.done}/{cov.total}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="fb-lang-chip-remove"
+                                                    title={`Remove ${languageName(code)}`}
+                                                    onClick={() => removeLanguage(code)}
+                                                >
+                                                    <Icon name="xmark" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                    {langs.filter(l => l !== defaultLang).length === 0 && (
+                                        <span className="fb-hint">No translations yet. Add a language to start translating.</span>
+                                    )}
+                                </div>
+                                <div className="fb-lang-add">
+                                    <select
+                                        className="fb-input fb-input-sm"
+                                        value=""
+                                        onChange={e => { if (e.target.value) addLanguage(e.target.value); }}
+                                    >
+                                        <option value="">Add a language…</option>
+                                        {FORM_LANGUAGES.filter(l => !langs.includes(l.code)).map(l => (
+                                            <option key={l.code} value={l.code}>{l.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="fb-field-row">
                     <label className="fb-toggle-label fb-toggle-label--prominent">
@@ -1170,9 +1432,9 @@ const FormBuilder = (props: Props) => {
                                     <textarea
                                         className="fb-input fb-input-sm"
                                         rows={2}
-                                        value={form.submit?.success_message || ""}
-                                        placeholder="Your response has been submitted successfully."
-                                        onChange={e => updateForm({submit: {...form.submit, success_message: e.target.value}})}
+                                        value={getT(form.submit?.success_message, form.submit?.success_message_i18n)}
+                                        placeholder={translating ? (form.submit?.success_message || "Your response has been submitted successfully.") : "Your response has been submitted successfully."}
+                                        onChange={e => setSubmitT(e.target.value)}
                                     />
                                 </div>
                             )}
@@ -1270,13 +1532,20 @@ const FormBuilder = (props: Props) => {
                                     <div className="fb-field-group">
                                         <span className="fb-field-group-label">Label</span>
                                         <VariableInput
-                                            nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-label`}
+                                            nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-label-${authLang}`}
                                             name={`label-${comp.name}`}
-                                            placeholder="Display label"
+                                            placeholder={translating ? (comp.label || "Display label") : "Display label"}
                                             label="Label"
-                                            value={comp.label}
+                                            value={getT(comp.label, comp.label_i18n)}
                                             variables={props.variables || []}
                                             onValueChange={(_, v) => {
+                                                // While translating, only the label_i18n map is
+                                                // written — never the identifier (structure is
+                                                // authored in the default language).
+                                                if (translating) {
+                                                    setFieldT(pageIndex, fieldIndex, comp, "label", "label_i18n", v);
+                                                    return;
+                                                }
                                                 // Auto-track: if the identifier still looks
                                                 // like it was derived from the label (either
                                                 // the initial "field_N" or the previous
@@ -1307,13 +1576,13 @@ const FormBuilder = (props: Props) => {
                                             <div className="fb-field-group fb-full-width">
                                                 <span className="fb-field-group-label">Placeholder</span>
                                                 <VariableInput
-                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-placeholder`}
+                                                    nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-placeholder-${authLang}`}
                                                     name={`placeholder-${comp.name}`}
-                                                    placeholder="Hint text shown to user"
+                                                    placeholder={translating ? (comp.placeholder || "Hint text shown to user") : "Hint text shown to user"}
                                                     label="Placeholder"
-                                                    value={comp.placeholder}
+                                                    value={getT(comp.placeholder, comp.placeholder_i18n)}
                                                     variables={props.variables || []}
-                                                    onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {placeholder: v})}
+                                                    onValueChange={(_, v) => setFieldT(pageIndex, fieldIndex, comp, "placeholder", "placeholder_i18n", v)}
                                                 />
                                             </div>
                                             <div className="fb-field-group fb-full-width">
@@ -1544,13 +1813,13 @@ const FormBuilder = (props: Props) => {
                                         <div className="fb-field-group fb-full-width">
                                             <span className="fb-field-group-label">Display Text</span>
                                             <VariableInput
-                                                nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-display-text`}
+                                                nodeId={`${props.nodeId}-${pageIndex}-${fieldIndex}-display-text-${authLang}`}
                                                 name={`display-text-${comp.name}`}
-                                                placeholder="Paragraph text shown to the user"
+                                                placeholder={translating ? (comp.display_text || "Paragraph text shown to the user") : "Paragraph text shown to the user"}
                                                 label="Display Text"
-                                                value={comp.display_text || ""}
+                                                value={getT(comp.display_text, comp.display_text_i18n)}
                                                 variables={props.variables || []}
-                                                onValueChange={(_, v) => updateField(pageIndex, fieldIndex, {display_text: v})}
+                                                onValueChange={(_, v) => setFieldT(pageIndex, fieldIndex, comp, "display_text", "display_text_i18n", v)}
                                             />
                                         </div>
                                     )}
@@ -1725,9 +1994,10 @@ const FormBuilder = (props: Props) => {
                                                                 <div key={itemIndex} className="fb-option-row">
                                                                     <input
                                                                         className="fb-input fb-input-sm fb-option-label-input"
-                                                                        value={item.label}
-                                                                        placeholder={`${listKey === "matrix_rows" ? "Row" : "Column"} label`}
+                                                                        value={getT(item.label, item.label_i18n)}
+                                                                        placeholder={translating ? (item.label || `${listKey === "matrix_rows" ? "Row" : "Column"} label`) : `${listKey === "matrix_rows" ? "Row" : "Column"} label`}
                                                                         onChange={e => {
+                                                                            if (translating) { updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {label_i18n: mergeI18n(item.label_i18n, e.target.value)}); return; }
                                                                             const newLabel = e.target.value;
                                                                             const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : item.value;
                                                                             updateListItem(pageIndex, fieldIndex, listKey, itemIndex, {label: newLabel, value: nextValue});
@@ -2037,9 +2307,10 @@ const FormBuilder = (props: Props) => {
                                                             <div className="fb-option-row">
                                                                 <input
                                                                     className="fb-input fb-input-sm fb-option-label-input"
-                                                                    value={opt.label}
-                                                                    placeholder="Option label"
+                                                                    value={getT(opt.label, opt.label_i18n)}
+                                                                    placeholder={translating ? (opt.label || "Option label") : "Option label"}
                                                                     onChange={e => {
+                                                                        if (translating) { setOptionT(pageIndex, fieldIndex, optionIndex, opt, e.target.value); return; }
                                                                         const newLabel = e.target.value;
                                                                         const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : opt.value;
                                                                         updateOption(pageIndex, fieldIndex, optionIndex, {label: newLabel, value: nextValue});
@@ -2135,9 +2406,9 @@ const FormBuilder = (props: Props) => {
                                             <textarea
                                                 className="fb-input fb-input-sm"
                                                 rows={3}
-                                                value={comp.display_text || ""}
-                                                placeholder="Please read and accept our terms."
-                                                onChange={e => updateField(pageIndex, fieldIndex, {display_text: e.target.value})}
+                                                value={getT(comp.display_text, comp.display_text_i18n)}
+                                                placeholder={translating ? (comp.display_text || "Please read and accept our terms.") : "Please read and accept our terms."}
+                                                onChange={e => setFieldT(pageIndex, fieldIndex, comp, "display_text", "display_text_i18n", e.target.value)}
                                             />
                                         </div>
                                     )}
@@ -2187,9 +2458,10 @@ const FormBuilder = (props: Props) => {
                                                     <div key={optionIndex} className={opt.disabled ? "fb-option-row fb-option-disabled" : "fb-option-row"}>
                                                         <input
                                                             className="fb-input fb-input-sm fb-option-label-input"
-                                                            value={opt.label}
-                                                            placeholder="Option label"
+                                                            value={getT(opt.label, opt.label_i18n)}
+                                                            placeholder={translating ? (opt.label || "Option label") : "Option label"}
                                                             onChange={e => {
+                                                                if (translating) { setOptionT(pageIndex, fieldIndex, optionIndex, opt, e.target.value); return; }
                                                                 const newLabel = e.target.value;
                                                                 const nextValue = valueTracksLabel ? slugifyOptionValue(newLabel) : opt.value;
                                                                 updateOption(pageIndex, fieldIndex, optionIndex, {label: newLabel, value: nextValue});

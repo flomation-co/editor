@@ -893,3 +893,96 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
 }
+
+/* ── Multi-lingual authoring ──────────────────────────────────────────── */
+
+/* Persistent banner shown while translating into a non-default language. */
+.fb-translate-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(0, 170, 156, 0.35);
+    background: rgba(0, 170, 156, 0.08);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--fb-text, #2a2a33);
+}
+.fb-translate-banner svg {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: #00aa9c;
+}
+.fb-translate-banner span { flex: 1 1 auto; line-height: 1.4; }
+.fb-translate-exit {
+    flex: 0 0 auto;
+    border: 1px solid rgba(0, 170, 156, 0.4);
+    background: #fff;
+    color: #00857a;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.fb-translate-exit:hover { background: rgba(0, 170, 156, 0.12); }
+
+.fb-languages { display: flex; flex-direction: column; gap: 16px; }
+
+/* Translation-language chips (endonym + coverage) with a remove control. */
+.fb-lang-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0;
+}
+.fb-lang-chip {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--fb-border, #d8d8e0);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+.fb-lang-chip--active {
+    border-color: #00aa9c;
+    box-shadow: 0 0 0 1px #00aa9c inset;
+}
+.fb-lang-chip-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--fb-text, #2a2a33);
+}
+.fb-lang-chip-main:hover { background: rgba(0, 170, 156, 0.08); }
+.fb-lang-chip-name { font-weight: 600; }
+.fb-lang-coverage {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8a8a96;
+    background: #f0f0f4;
+    border-radius: 10px;
+    padding: 1px 7px;
+}
+.fb-lang-coverage--complete { color: #00857a; background: rgba(0, 170, 156, 0.14); }
+.fb-lang-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    border-left: 1px solid var(--fb-border, #eaeaf0);
+    background: transparent;
+    color: #b0b0ba;
+    padding: 0 8px;
+    cursor: pointer;
+}
+.fb-lang-chip-remove:hover { color: #d64545; background: rgba(214, 69, 69, 0.08); }
+.fb-lang-chip-remove svg { width: 11px; height: 11px; }
+.fb-lang-add { max-width: 220px; }
