@@ -45,6 +45,26 @@ export default function Organisations() {
     const [inviteEmail, setInviteEmail] = useState("");
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
+    // Legal-entity details used to identify the organisation as the Controller
+    // on the generated Data Processing Agreement. Editable by admins; seeded
+    // from the current organisation and re-seeded whenever it changes.
+    type LegalDetails = {
+        legal_name: string;
+        company_number: string;
+        address_line_1: string;
+        address_line_2: string;
+        city: string;
+        region: string;
+        postcode: string;
+        country: string;
+    };
+    const emptyLegal: LegalDetails = {
+        legal_name: "", company_number: "", address_line_1: "", address_line_2: "",
+        city: "", region: "", postcode: "", country: "",
+    };
+    const [legal, setLegal] = useState<LegalDetails>(emptyLegal);
+    const [savingLegal, setSavingLegal] = useState(false);
+
     const API_URL = config("AUTOMATE_API_URL");
     const isAdmin = currentOrg?.role === "admin";
 
@@ -191,6 +211,36 @@ export default function Organisations() {
             .catch(err => console.error("Unable to update organisation", err));
     };
 
+    // Seed the legal-details form from the current organisation.
+    useEffect(() => {
+        if (!currentOrg) { setLegal(emptyLegal); return; }
+        setLegal({
+            legal_name: currentOrg.legal_name || "",
+            company_number: currentOrg.company_number || "",
+            address_line_1: currentOrg.address_line_1 || "",
+            address_line_2: currentOrg.address_line_2 || "",
+            city: currentOrg.city || "",
+            region: currentOrg.region || "",
+            postcode: currentOrg.postcode || "",
+            country: currentOrg.country || "",
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentOrg?.id]);
+
+    const saveLegalDetails = () => {
+        if (!currentOrg || !isAdmin || savingLegal) return;
+        setSavingLegal(true);
+        // Spread the whole organisation so name/icon/runner-flag are preserved,
+        // then overlay the legal fields the admin has edited.
+        const updated = { ...currentOrg, ...legal };
+        api.post(`${API_URL}/api/v1/organisation/${currentOrg.id}`, updated, {
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }
+        })
+            .then(res => { if (res.data) setCurrentOrg(res.data); return refreshOrganisations(); })
+            .catch(err => console.error("Unable to update organisation legal details", err))
+            .finally(() => setSavingLegal(false));
+    };
+
     return (
         <Container help={ORGANISATION_HELP}>
             <ProtectedRoute permission={PERMISSIONS.ORGANISATION_VIEW}>
@@ -214,6 +264,95 @@ export default function Organisations() {
                             />
                             <span className={"org-toggle-slider"}></span>
                         </label>
+                    </div>
+                </div>
+            )}
+
+            {isAdmin && (
+                <div className={"org-section"}>
+                    <div className={"org-section-header"}>Legal Details</div>
+                    <div className={"org-setting-description"} style={{ marginBottom: 18 }}>
+                        Your organisation's registered legal identity. These details identify your
+                        organisation as the data controller on the Data Processing Agreement available
+                        from your Compliance settings, and are used on official documents.
+                    </div>
+
+                    <div className={"org-legal-grid"}>
+                        <div className={"org-legal-field org-legal-field--wide"}>
+                            <label>Registered legal name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Acme Widgets Limited"
+                                value={legal.legal_name}
+                                onChange={e => setLegal({ ...legal, legal_name: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field"}>
+                            <label>Company number</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. 12345678"
+                                value={legal.company_number}
+                                onChange={e => setLegal({ ...legal, company_number: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field org-legal-field--wide"}>
+                            <label>Registered address line 1</label>
+                            <input
+                                type="text"
+                                placeholder="Building and street"
+                                value={legal.address_line_1}
+                                onChange={e => setLegal({ ...legal, address_line_1: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field org-legal-field--wide"}>
+                            <label>Address line 2</label>
+                            <input
+                                type="text"
+                                placeholder="Optional"
+                                value={legal.address_line_2}
+                                onChange={e => setLegal({ ...legal, address_line_2: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field"}>
+                            <label>Town / City</label>
+                            <input
+                                type="text"
+                                value={legal.city}
+                                onChange={e => setLegal({ ...legal, city: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field"}>
+                            <label>County / Region</label>
+                            <input
+                                type="text"
+                                value={legal.region}
+                                onChange={e => setLegal({ ...legal, region: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field"}>
+                            <label>Postcode</label>
+                            <input
+                                type="text"
+                                value={legal.postcode}
+                                onChange={e => setLegal({ ...legal, postcode: e.target.value })}
+                            />
+                        </div>
+                        <div className={"org-legal-field"}>
+                            <label>Country</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. United Kingdom"
+                                value={legal.country}
+                                onChange={e => setLegal({ ...legal, country: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: 18 }}>
+                        <button className={"org-legal-save"} onClick={saveLegalDetails} disabled={savingLegal}>
+                            <Icon name="check" /> {savingLegal ? "Saving…" : "Save Legal Details"}
+                        </button>
                     </div>
                 </div>
             )}

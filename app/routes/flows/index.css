@@ -911,3 +911,40 @@
     white-space: nowrap;
 }
 .project-acl-select { flex: 0 0 auto; width: auto; margin-left: 12px; min-width: 120px; }
+
+/* Legal-details execution gate banner */
+.flows-legal-gate {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 4px 0 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.flows-legal-gate svg {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    fill: #f59e0b;
+}
+
+.flows-legal-gate__text strong {
+    color: #fff;
+}
+
+.flows-legal-gate a {
+    color: #00ccbb;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.flows-legal-gate a:hover {
+    text-decoration: underline;
+}
