@@ -321,7 +321,17 @@ export type Organisation = {
     icon?: string,
     role: string,
     allow_public_runners: boolean,
-    created_at?: string
+    created_at?: string,
+    // Legal-entity details used to identify the organisation as the Controller
+    // on the generated Data Processing Agreement. All optional.
+    legal_name?: string | null,
+    company_number?: string | null,
+    address_line_1?: string | null,
+    address_line_2?: string | null,
+    city?: string | null,
+    region?: string | null,
+    postcode?: string | null,
+    country?: string | null,
 }
 
 export type OrganisationMember = {
