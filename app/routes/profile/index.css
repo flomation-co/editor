@@ -473,8 +473,8 @@
 }
 
 .compliance-cert-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
@@ -534,10 +534,4 @@
     border-radius: 999px;
     padding: 4px 10px;
     white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-    .compliance-cert-grid {
-        grid-template-columns: 1fr;
-    }
 }
