@@ -280,10 +280,15 @@ export default function Profile() {
             responseType: "blob",
         })
             .then(res => {
-                // Derive the filename from the response, falling back to a sane default.
+                // Name the download after the agreement reference. Prefer the
+                // reference we already hold (cross-origin CORS often hides the
+                // Content-Disposition header from the browser), then fall back
+                // to the header, then a sane default.
                 const disposition: string = res.headers?.["content-disposition"] || "";
-                const match = disposition.match(/filename="?([^"]+)"?/);
-                const filename = match ? match[1] : "flomation-dpa.pdf";
+                const headerName = disposition.match(/filename="?([^"]+)"?/)?.[1];
+                const filename = compliance?.reference
+                    ? `${compliance.reference}.pdf`
+                    : (headerName || "DPA.pdf");
                 const blob = new Blob([res.data], { type: "application/pdf" });
                 const objectUrl = URL.createObjectURL(blob);
                 const a = document.createElement("a");
