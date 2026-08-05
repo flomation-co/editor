@@ -65,6 +65,23 @@ export default function Organisations() {
     const [legal, setLegal] = useState<LegalDetails>(emptyLegal);
     const [savingLegal, setSavingLegal] = useState(false);
 
+    // Seed the legal-details form from the current organisation. Declared here,
+    // above every early return, so the hook order stays stable across renders.
+    useEffect(() => {
+        if (!currentOrg) { setLegal(emptyLegal); return; }
+        setLegal({
+            legal_name: currentOrg.legal_name || "",
+            company_number: currentOrg.company_number || "",
+            address_line_1: currentOrg.address_line_1 || "",
+            address_line_2: currentOrg.address_line_2 || "",
+            city: currentOrg.city || "",
+            region: currentOrg.region || "",
+            postcode: currentOrg.postcode || "",
+            country: currentOrg.country || "",
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentOrg?.id]);
+
     const API_URL = config("AUTOMATE_API_URL");
     const isAdmin = currentOrg?.role === "admin";
 
@@ -210,22 +227,6 @@ export default function Organisations() {
             .then(() => refreshOrganisations())
             .catch(err => console.error("Unable to update organisation", err));
     };
-
-    // Seed the legal-details form from the current organisation.
-    useEffect(() => {
-        if (!currentOrg) { setLegal(emptyLegal); return; }
-        setLegal({
-            legal_name: currentOrg.legal_name || "",
-            company_number: currentOrg.company_number || "",
-            address_line_1: currentOrg.address_line_1 || "",
-            address_line_2: currentOrg.address_line_2 || "",
-            city: currentOrg.city || "",
-            region: currentOrg.region || "",
-            postcode: currentOrg.postcode || "",
-            country: currentOrg.country || "",
-        });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentOrg?.id]);
 
     const saveLegalDetails = () => {
         if (!currentOrg || !isAdmin || savingLegal) return;
