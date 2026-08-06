@@ -1,0 +1,117 @@
+.styled-select {
+    position: relative;
+    width: 100%;
+}
+
+.styled-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    background-color: var(--primary-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--primary-font-colour);
+    font-size: 14px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.styled-select__trigger:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.styled-select__trigger:focus-visible {
+    outline: none;
+    box-shadow: 0 0 10px 3px var(--highlight-colour);
+}
+
+.styled-select__trigger--placeholder .styled-select__trigger-label {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.styled-select__trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.styled-select__trigger svg {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    fill: rgba(255, 255, 255, 0.5);
+}
+
+.styled-select__panel {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 6px;
+    background: #1a1626;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.styled-select__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.styled-select__option:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.styled-select__option--selected {
+    background: rgba(0, 170, 156, 0.12);
+}
+
+.styled-select__option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.styled-select__option-label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.styled-select__option-description {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.35;
+}
+
+.styled-select__option-check {
+    flex: 0 0 auto;
+}
+
+.styled-select__option-check svg {
+    width: 13px;
+    height: 13px;
+    fill: #00ccbb;
+}

@@ -441,3 +441,20 @@
         grid-template-columns: 1fr;
     }
 }
+
+.org-legal-req {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.org-legal-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.org-legal-hint {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+}
