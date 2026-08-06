@@ -324,6 +324,7 @@ export type Organisation = {
     created_at?: string,
     // Legal-entity details used to identify the organisation as the Controller
     // on the generated Data Processing Agreement. All optional.
+    company_type?: string | null,
     legal_name?: string | null,
     company_number?: string | null,
     address_line_1?: string | null,

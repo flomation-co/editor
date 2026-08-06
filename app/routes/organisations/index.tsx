@@ -12,6 +12,33 @@ import "./index.css";
 import { Icon } from "~/components/icons/Icon";
 import ProtectedRoute from "~/components/protected-route";
 import {PERMISSIONS} from "~/types";
+import StyledSelect from "~/components/styledSelect";
+import type {StyledSelectOption} from "~/components/styledSelect";
+
+// Company types offered on the legal-details form. Values match the API's
+// company-type codes (see the dpa package). The types with a Companies House
+// registration number are listed in COMPANY_TYPES_REQUIRING_NUMBER.
+const COMPANY_TYPE_OPTIONS: StyledSelectOption[] = [
+    { value: "sole_trader", label: "Sole Trader", description: "An individual running their own business" },
+    { value: "limited_company", label: "Limited Company (Ltd)", description: "A private company limited by shares or guarantee" },
+    { value: "llp", label: "Limited Liability Partnership (LLP)", description: "A partnership with limited liability" },
+    { value: "plc", label: "Public Limited Company (PLC)", description: "A company whose shares may be publicly traded" },
+    { value: "partnership", label: "Partnership", description: "Two or more people in business together" },
+    { value: "charity", label: "Charity", description: "A registered charitable organisation" },
+    { value: "other", label: "Other", description: "Any other legal structure" },
+];
+
+const COMPANY_TYPES_REQUIRING_NUMBER = new Set(["limited_company", "llp", "plc"]);
+
+// A pragmatic country list, United Kingdom and common markets first.
+const COUNTRY_OPTIONS: StyledSelectOption[] = [
+    "United Kingdom", "Ireland", "United States", "Canada", "Australia", "New Zealand",
+    "France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Luxembourg",
+    "Portugal", "Switzerland", "Austria", "Denmark", "Sweden", "Norway", "Finland",
+    "Iceland", "Poland", "Czech Republic", "Slovakia", "Hungary", "Romania", "Bulgaria",
+    "Greece", "Croatia", "Slovenia", "Estonia", "Latvia", "Lithuania", "Malta", "Cyprus",
+    "India", "Singapore", "Hong Kong", "United Arab Emirates", "South Africa", "Japan",
+].map(c => ({ value: c, label: c }));
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -49,6 +76,7 @@ export default function Organisations() {
     // on the generated Data Processing Agreement. Editable by admins; seeded
     // from the current organisation and re-seeded whenever it changes.
     type LegalDetails = {
+        company_type: string;
         legal_name: string;
         company_number: string;
         address_line_1: string;
@@ -59,7 +87,7 @@ export default function Organisations() {
         country: string;
     };
     const emptyLegal: LegalDetails = {
-        legal_name: "", company_number: "", address_line_1: "", address_line_2: "",
+        company_type: "", legal_name: "", company_number: "", address_line_1: "", address_line_2: "",
         city: "", region: "", postcode: "", country: "",
     };
     const [legal, setLegal] = useState<LegalDetails>(emptyLegal);
@@ -70,6 +98,7 @@ export default function Organisations() {
     useEffect(() => {
         if (!currentOrg) { setLegal(emptyLegal); return; }
         setLegal({
+            company_type: currentOrg.company_type || "",
             legal_name: currentOrg.legal_name || "",
             company_number: currentOrg.company_number || "",
             address_line_1: currentOrg.address_line_1 || "",
@@ -81,6 +110,21 @@ export default function Organisations() {
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentOrg?.id]);
+
+    // Whether the selected company type has a Companies House number (and so
+    // requires one). Mirrors the API's dpa.RequiresCompanyNumber.
+    const requiresCompanyNumber = COMPANY_TYPES_REQUIRING_NUMBER.has(legal.company_type);
+
+    // The form is complete when every required legal field is present. Address
+    // line 1 is optional; company number is required only for registered types.
+    // Mirrors the API's missingOrgLegalFields (the execution gate) exactly.
+    const legalComplete =
+        legal.company_type.trim() !== "" &&
+        legal.legal_name.trim() !== "" &&
+        (!requiresCompanyNumber || legal.company_number.trim() !== "") &&
+        legal.city.trim() !== "" &&
+        legal.postcode.trim() !== "" &&
+        legal.country.trim() !== "";
 
     const API_URL = config("AUTOMATE_API_URL");
     const isAdmin = currentOrg?.role === "admin";
@@ -229,11 +273,13 @@ export default function Organisations() {
     };
 
     const saveLegalDetails = () => {
-        if (!currentOrg || !isAdmin || savingLegal) return;
+        if (!currentOrg || !isAdmin || savingLegal || !legalComplete) return;
         setSavingLegal(true);
         // Spread the whole organisation so name/icon/runner-flag are preserved,
-        // then overlay the legal fields the admin has edited.
-        const updated = { ...currentOrg, ...legal };
+        // then overlay the legal fields the admin has edited. Drop a company
+        // number that no longer applies to the selected type.
+        const cleaned = requiresCompanyNumber ? legal : { ...legal, company_number: "" };
+        const updated = { ...currentOrg, ...cleaned };
         api.post(`${API_URL}/api/v1/organisation/${currentOrg.id}`, updated, {
             headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }
         })
@@ -280,7 +326,16 @@ export default function Organisations() {
 
                     <div className={"org-legal-grid"}>
                         <div className={"org-legal-field org-legal-field--wide"}>
-                            <label>Registered legal name</label>
+                            <label>Company type <span className={"org-legal-req"}>*</span></label>
+                            <StyledSelect
+                                value={legal.company_type}
+                                options={COMPANY_TYPE_OPTIONS}
+                                placeholder="Select company type…"
+                                onChange={v => setLegal({ ...legal, company_type: v })}
+                            />
+                        </div>
+                        <div className={"org-legal-field org-legal-field--wide"}>
+                            <label>Registered legal name <span className={"org-legal-req"}>*</span></label>
                             <input
                                 type="text"
                                 placeholder="e.g. Acme Widgets Limited"
@@ -288,20 +343,22 @@ export default function Organisations() {
                                 onChange={e => setLegal({ ...legal, legal_name: e.target.value })}
                             />
                         </div>
-                        <div className={"org-legal-field"}>
-                            <label>Company number</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. 12345678"
-                                value={legal.company_number}
-                                onChange={e => setLegal({ ...legal, company_number: e.target.value })}
-                            />
-                        </div>
+                        {requiresCompanyNumber && (
+                            <div className={"org-legal-field org-legal-field--wide"}>
+                                <label>Company number <span className={"org-legal-req"}>*</span></label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 12345678"
+                                    value={legal.company_number}
+                                    onChange={e => setLegal({ ...legal, company_number: e.target.value })}
+                                />
+                            </div>
+                        )}
                         <div className={"org-legal-field org-legal-field--wide"}>
                             <label>Registered address line 1</label>
                             <input
                                 type="text"
-                                placeholder="Building and street"
+                                placeholder="Building and street (optional)"
                                 value={legal.address_line_1}
                                 onChange={e => setLegal({ ...legal, address_line_1: e.target.value })}
                             />
@@ -316,7 +373,7 @@ export default function Organisations() {
                             />
                         </div>
                         <div className={"org-legal-field"}>
-                            <label>Town / City</label>
+                            <label>Town / City <span className={"org-legal-req"}>*</span></label>
                             <input
                                 type="text"
                                 value={legal.city}
@@ -332,7 +389,7 @@ export default function Organisations() {
                             />
                         </div>
                         <div className={"org-legal-field"}>
-                            <label>Postcode</label>
+                            <label>Postcode <span className={"org-legal-req"}>*</span></label>
                             <input
                                 type="text"
                                 value={legal.postcode}
@@ -340,20 +397,29 @@ export default function Organisations() {
                             />
                         </div>
                         <div className={"org-legal-field"}>
-                            <label>Country</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. United Kingdom"
+                            <label>Country <span className={"org-legal-req"}>*</span></label>
+                            <StyledSelect
                                 value={legal.country}
-                                onChange={e => setLegal({ ...legal, country: e.target.value })}
+                                options={COUNTRY_OPTIONS}
+                                placeholder="Select country…"
+                                onChange={v => setLegal({ ...legal, country: v })}
                             />
                         </div>
                     </div>
 
-                    <div style={{ marginTop: 18 }}>
-                        <button className={"org-legal-save"} onClick={saveLegalDetails} disabled={savingLegal}>
+                    <div className={"org-legal-actions"}>
+                        <button
+                            className={"org-legal-save"}
+                            onClick={saveLegalDetails}
+                            disabled={savingLegal || !legalComplete}
+                        >
                             <Icon name="check" /> {savingLegal ? "Saving…" : "Save Legal Details"}
                         </button>
+                        {!legalComplete && (
+                            <span className={"org-legal-hint"}>
+                                Complete the required fields (<span className={"org-legal-req"}>*</span>) to save.
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
