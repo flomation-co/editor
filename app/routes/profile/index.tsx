@@ -1017,7 +1017,7 @@ export default function Profile() {
                             </div>
                             <div className="compliance-cert-grid">
                                 {[
-                                    { icon: "shield-halved", name: "Cyber Essentials", desc: "UK government-backed security baseline" },
+                                    { icon: "shield-halved", name: "Cyber Essentials", desc: "UK government-backed security baseline", url: "https://demo.flomation.app/compliance/cyber-essentials-certificate.pdf" },
                                     { icon: "shield-halved", name: "Cyber Essentials Plus", desc: "Independently audited security controls" },
                                     { icon: "lock", name: "ISO/IEC 27001", desc: "Information security management" },
                                     { icon: "leaf", name: "Data Centre Carbon Neutral", desc: "Sustainability and carbon reporting" },
@@ -1030,7 +1030,18 @@ export default function Profile() {
                                             <div className="compliance-cert__name">{cert.name}</div>
                                             <div className="compliance-cert__desc">{cert.desc}</div>
                                         </div>
-                                        <span className="compliance-cert__badge">Available soon</span>
+                                        {cert.url ? (
+                                            <a
+                                                className="compliance-cert__download"
+                                                href={cert.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <Icon name="file-arrow-down" /> Download
+                                            </a>
+                                        ) : (
+                                            <span className="compliance-cert__badge">Available soon</span>
+                                        )}
                                     </div>
                                 ))}
                             </div>

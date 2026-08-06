@@ -535,3 +535,29 @@
     padding: 4px 10px;
     white-space: nowrap;
 }
+
+.compliance-cert__download {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: #00aa9c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.12s ease;
+}
+
+.compliance-cert__download:hover {
+    background: #00ccbb;
+}
+
+.compliance-cert__download svg {
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+}
