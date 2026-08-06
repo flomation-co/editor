@@ -20,7 +20,7 @@ import type {StyledSelectOption} from "~/components/styledSelect";
 // registration number are listed in COMPANY_TYPES_REQUIRING_NUMBER.
 const COMPANY_TYPE_OPTIONS: StyledSelectOption[] = [
     { value: "sole_trader", label: "Sole Trader", description: "An individual running their own business" },
-    { value: "limited_company", label: "Limited Company (Ltd)", description: "A private company limited by shares or guarantee" },
+    { value: "limited_company", label: "Limited Company (LTD)", description: "A private company limited by shares or guarantee" },
     { value: "llp", label: "Limited Liability Partnership (LLP)", description: "A partnership with limited liability" },
     { value: "plc", label: "Public Limited Company (PLC)", description: "A company whose shares may be publicly traded" },
     { value: "partnership", label: "Partnership", description: "Two or more people in business together" },
