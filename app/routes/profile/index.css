@@ -561,3 +561,26 @@
     height: 13px;
     fill: currentColor;
 }
+
+/* On phones, restack each certification card: icon + text on the top row, and
+   the badge/download button on its own full-width row below, so the name no
+   longer over-wraps and the action never overlaps the description. */
+@media (max-width: 640px) {
+    .compliance-cert {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        column-gap: 14px;
+        row-gap: 12px;
+    }
+
+    .compliance-cert__body {
+        grid-column: 2;
+    }
+
+    .compliance-cert__badge,
+    .compliance-cert__download {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+}
