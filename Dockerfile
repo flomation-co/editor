@@ -12,7 +12,13 @@ COPY . .
 RUN npm run build
 
 FROM ${NODE_IMAGE}
-RUN addgroup -S flomation && adduser -S flomation -G flomation
+# Create the flomation user and group, pinned to an explicit uid/gid — the same
+# 10001 every other Flomation image uses, so the estate runs as one id.
+# Pinning matters: `adduser -S` with no -u takes the first free system id, which
+# collides with package-provided accounts (this is how the runner image ended up
+# on uid 101). 10001 is free in every base image we use.
+RUN addgroup -g 10001 -S flomation && \
+    adduser  -u 10001 -S flomation -G flomation
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
@@ -23,7 +29,10 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
     chown flomation:flomation /app/build/client
 
-USER flomation
+# Numeric rather than a name: with `runAsNonRoot: true` the kubelet refuses an
+# image whose USER is a name, because it cannot verify the name is not root.
+# The account is still called `flomation`, so `ps` and `ls -l` stay readable.
+USER 10001:10001
 ENV PORT=8080
 EXPOSE 8080
 
