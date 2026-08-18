@@ -1018,7 +1018,7 @@ export default function Profile() {
                             <div className="compliance-cert-grid">
                                 {[
                                     { icon: "shield-halved", name: "Cyber Essentials", desc: "UK government-backed security baseline", url: "https://demo.flomation.app/compliance/cyber-essentials-certificate.pdf" },
-                                    { icon: "shield-halved", name: "Cyber Essentials Plus", desc: "Independently audited security controls" },
+                                    { icon: "shield-halved", name: "Cyber Essentials Plus", desc: "Independently audited security controls", url: "https://demo.flomation.app/compliance/cyber-essentials-plus-certificate-2026.pdf" },
                                     { icon: "lock", name: "ISO/IEC 27001", desc: "Information security management" },
                                     { icon: "leaf", name: "Data Centre Carbon Neutral", desc: "Sustainability and carbon reporting" },
                                 ].map((cert) => (
