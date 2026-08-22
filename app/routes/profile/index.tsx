@@ -896,7 +896,7 @@ export default function Profile() {
                     <div className="profile-card">
                         <div className="profile-section-label">Marketing Emails</div>
                         <div className="profile-meta" style={{ marginBottom: 16 }}>
-                            Occasional product updates and tips. We'll never share your email with anyone, and you can unsubscribe at any time.
+                            New integrations, actions and flow templates, about twice a month. We'll never share your address with anyone, and you can unsubscribe at any time.
                         </div>
                         <div
                             className="profile-field"

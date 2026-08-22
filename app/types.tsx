@@ -262,6 +262,10 @@ export type AuthUser = {
     email_address?: string
     created_at?: string
     marketing_opt_in?: boolean
+    // Set once the user has actually been asked about marketing email, on
+    // whichever surface asked. Absent means never asked — which is why the
+    // welcome modal can tell "declined" from "not yet put to them".
+    marketing_consent_at?: string,
     eula_version?: number,
     eula_accepted_at?: string,
     onboarding_step?: number,
