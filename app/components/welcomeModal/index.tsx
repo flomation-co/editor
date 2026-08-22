@@ -20,6 +20,14 @@ import "./index.css";
 //
 // Display name is hard-required to dismiss the modal; marketing opt-in
 // is genuinely optional with no nag if the user leaves it unchecked.
+//
+// The marketing question is only shown to users who have not already
+// answered it. Sign-up asks it now (that being where the address is
+// collected), so most users arrive here having decided already; asking
+// again would be a nag, and submitting a second answer would overwrite
+// the evidence of the consent they actually gave. Users who arrive
+// without a decision — SSO sign-ups, and accounts created before the
+// sign-up question existed — still get asked here.
 export default function WelcomeModal() {
   const { user, setUser, token } = useAuth();
   const config = useConfig();
@@ -27,6 +35,7 @@ export default function WelcomeModal() {
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const askMarketing = !user?.marketing_consent_at;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,9 +57,14 @@ export default function WelcomeModal() {
 
     try {
       const API_URL = config("AUTOMATE_API_URL");
+      // Omitting marketing_opt_in tells the API to leave the existing
+      // decision, and its evidence, exactly as recorded. Sending false
+      // here would read as a fresh refusal.
       await api.post(
         API_URL + "/api/v1/user/welcome-complete",
-        { name: trimmedName, marketing_opt_in: marketingOptIn },
+        askMarketing
+          ? { name: trimmedName, marketing_opt_in: marketingOptIn }
+          : { name: trimmedName },
         { headers: { Authorization: "Bearer " + token } }
       );
 
@@ -58,7 +72,10 @@ export default function WelcomeModal() {
         setUser({
           ...user,
           name: trimmedName,
-          marketing_opt_in: marketingOptIn,
+          marketing_opt_in: askMarketing ? marketingOptIn : user.marketing_opt_in,
+          marketing_consent_at: askMarketing
+            ? new Date().toISOString()
+            : user.marketing_consent_at,
           welcome_completed_at: new Date().toISOString(),
         });
       }
@@ -90,7 +107,9 @@ export default function WelcomeModal() {
         </div>
 
         <div className="welcome-body">
-          Just two quick things before you dive in.
+          {askMarketing
+            ? "Just two quick things before you dive in."
+            : "One quick thing before you dive in."}
         </div>
 
         <div className="welcome-form">
@@ -113,20 +132,22 @@ export default function WelcomeModal() {
             </span>
           </div>
 
-          <label className="welcome-checkbox-row">
-            <input
-              className="welcome-checkbox"
-              type="checkbox"
-              checked={marketingOptIn}
-              onChange={(e) => setMarketingOptIn(e.target.checked)}
-            />
-            <span className="welcome-checkbox-text">
-              Send me occasional product updates and tips by email
-              <span className="welcome-checkbox-subtext">
-                We'll never share your email. Unsubscribe any time from your profile.
+          {askMarketing && (
+            <label className="welcome-checkbox-row">
+              <input
+                className="welcome-checkbox"
+                type="checkbox"
+                checked={marketingOptIn}
+                onChange={(e) => setMarketingOptIn(e.target.checked)}
+              />
+              <span className="welcome-checkbox-text">
+                Email me new integrations, actions and flow templates &mdash; about twice a month
+                <span className="welcome-checkbox-subtext">
+                  Optional. We'll never share your address, and you can unsubscribe at any time.
+                </span>
               </span>
-            </span>
-          </label>
+            </label>
+          )}
 
           {error && (
             <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>
