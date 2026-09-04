@@ -114,6 +114,7 @@ const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
     // subsequence-match almost anything: at weight 1.0 a search for "send"
     // pulled in 2,612 of 3,660 actions. Low enough to break a tie, not to
     // create a result.
+    0.9 * fuzzyScore(query, p.summary || ""),
     0.35 * fuzzyScore(query, p.description || ""),
 );
 
@@ -257,7 +258,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                     {nt.name}
                 </div>
                 <div className={"node-type-description"}>
-                    {nt.description}
+                    {nt.summary || nt.description}
                 </div>
             </div>
         </div>
