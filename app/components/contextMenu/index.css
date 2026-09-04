@@ -142,12 +142,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .node-type-description {
     padding: 3px;
     font-size: 1.0em;
     color: rgba(255,255,255,0.45);
+
+    /* Descriptions are written for the AI, so 47% of them run past 90
+       characters and the longest is 736. Unclamped they produced rows from one
+       to five lines tall and the last row of the menu was sliced mid-word. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+
+    /* Fifteen descriptions carry an unbroken token over 28 characters — OCIDs,
+       paths, blob handles — which pushed the panel sideways. */
+    overflow-wrap: anywhere;
 }
 
 /* Category group styles */
