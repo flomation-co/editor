@@ -24,7 +24,7 @@ enum Page {
     Loop
 }
 
-type SubGroup = {
+type SubSubGroup = {
     key: string;
     name: string;
     icon: string;
@@ -32,11 +32,24 @@ type SubGroup = {
     actions: PluginDefinition[];
 }
 
+type SubGroup = {
+    key: string;
+    name: string;
+    icon: string;
+    description: string;
+    actions: PluginDefinition[];
+    subSubGroups: SubSubGroup[];
+}
+
 type CategoryGroup = {
     category: PluginCategory;
     actions: PluginDefinition[];
     subGroups: SubGroup[];
 }
+
+// Total actions in a sub-group, including any third-tier sub-sub-groups.
+const subGroupCount = (sg: SubGroup): number =>
+    sg.actions.length + sg.subSubGroups.reduce((sum, ssg) => sum + ssg.actions.length, 0);
 
 // ── Fuzzy search ──────────────────────────────────────────────────────────
 // A lightweight scored fuzzy matcher (no dependency — the action set is small
@@ -46,6 +59,14 @@ type CategoryGroup = {
 // match (the query characters appearing in order, e.g. "gche" -> "git/checkout")
 // scores below that, rewarding consecutive runs and word-start hits.
 const WORD_BOUNDARY = /[\s\-_/.]/;
+
+// One character subsequence-matches 100% of a 3,660-action catalogue and two
+// still matches 97%, so the first useful query length is two AND the result set
+// has to be bounded. Without the cap the menu rendered thousands of rows per
+// keystroke, which is what made it feel broken rather than merely broad.
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_RESULT_LIMIT = 50;
+const SEARCH_DEBOUNCE_MS = 120;
 
 const fuzzyScore = (needle: string, haystack: string): number => {
     if (!needle || !haystack) return 0;
@@ -87,14 +108,23 @@ const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
     3.0 * fuzzyScore(query, p.label || ""),
     1.8 * fuzzyScore(query, p.category?.name || ""),
     1.8 * fuzzyScore(query, p.category?.sub_name || ""),
-    1.0 * fuzzyScore(query, p.description || ""),
+    1.8 * fuzzyScore(query, p.category?.sub_sub_name || ""),
+    // Descriptions are weighted low deliberately. They are written for the AI
+    // (see the AI-native action pattern), so they are long, prose-like, and
+    // subsequence-match almost anything: at weight 1.0 a search for "send"
+    // pulled in 2,612 of 3,660 actions. Low enough to break a tie, not to
+    // create a result.
+    0.9 * fuzzyScore(query, p.summary || ""),
+    0.35 * fuzzyScore(query, p.description || ""),
 );
 
 const ContextMenu = (props: ContextMenuProps) => {
     const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
+    const [ searchInput, setSearchInput ] = useState<string>("");
     const [ searchTerm, setSearchTerm ] = useState<string>("");
     const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
     const [ expandedSubGroup, setExpandedSubGroup ] = useState<string | null>(null);
+    const [ expandedSubSubGroup, setExpandedSubSubGroup ] = useState<string | null>(null);
 
     const handleNodeClick = (name: string) => {
         if (props.onNodeAdd) {
@@ -103,15 +133,25 @@ const ContextMenu = (props: ContextMenuProps) => {
     }
 
     const onSearchChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(evt.target.value.toLowerCase());
+        setSearchInput(evt.target.value);
     }
+
+    // Scoring runs over every action across six fields, so a keystroke costs
+    // roughly 22,000 comparisons. Debounce so holding a key does not queue one
+    // pass per character.
+    useEffect(() => {
+        const id = setTimeout(() => setSearchTerm(searchInput.trim().toLowerCase()), SEARCH_DEBOUNCE_MS);
+        return () => clearTimeout(id);
+    }, [searchInput]);
 
     useEffect(() => {
         if (!props.visible) {
+            setSearchInput("");
             setSearchTerm("");
             setCurrentPage(Page.Root);
             setExpandedGroup(null);
             setExpandedSubGroup(null);
+            setExpandedSubSubGroup(null);
         }
     }, [props.visible]);
 
@@ -119,6 +159,7 @@ const ContextMenu = (props: ContextMenuProps) => {
     useEffect(() => {
         setExpandedGroup(null);
         setExpandedSubGroup(null);
+        setExpandedSubSubGroup(null);
     }, [currentPage]);
 
     // Group plugins by category for a given node type, with optional sub-groups
@@ -151,22 +192,43 @@ const ContextMenu = (props: ContextMenuProps) => {
                         name: plugin.category?.sub_name || subKey,
                         icon: plugin.category?.sub_icon || group.category.icon,
                         description: plugin.category?.sub_description || "",
-                        actions: []
+                        actions: [],
+                        subSubGroups: []
                     };
                     group.subGroups.push(subGroup);
                 }
-                subGroup.actions.push(plugin);
+
+                const subSubKey = plugin.category?.sub_sub_key;
+                if (subSubKey) {
+                    let subSubGroup = subGroup.subSubGroups.find(ssg => ssg.key === subSubKey);
+                    if (!subSubGroup) {
+                        subSubGroup = {
+                            key: subSubKey,
+                            name: plugin.category?.sub_sub_name || subSubKey,
+                            icon: plugin.category?.sub_sub_icon || subGroup.icon,
+                            description: plugin.category?.sub_sub_description || "",
+                            actions: []
+                        };
+                        subGroup.subSubGroups.push(subSubGroup);
+                    }
+                    subSubGroup.actions.push(plugin);
+                } else {
+                    subGroup.actions.push(plugin);
+                }
             } else {
                 group.actions.push(plugin);
             }
         }
 
-        // Sort groups and sub-groups alphabetically
+        // Sort groups, sub-groups and sub-sub-groups alphabetically
         const result = Array.from(groupMap.values()).sort((a, b) =>
             a.category.name.localeCompare(b.category.name)
         );
         for (const group of result) {
             group.subGroups.sort((a, b) => a.name.localeCompare(b.name));
+            for (const subGroup of group.subGroups) {
+                subGroup.subSubGroups.sort((a, b) => a.name.localeCompare(b.name));
+            }
         }
         return result;
     }
@@ -174,12 +236,15 @@ const ContextMenu = (props: ContextMenuProps) => {
     // Get all plugins matching the search — a fuzzy match across name, label,
     // category and description, ranked most-relevant first.
     const getSearchResults = (): PluginDefinition[] => {
-        if (!props.plugins || !searchTerm) return [];
+        if (!props.plugins || searchTerm.length < SEARCH_MIN_CHARS) return [];
         return Object.keys(props.plugins)
             .map(k => props.plugins[k])
             .map(p => ({p, score: scorePlugin(p, searchTerm)}))
             .filter(x => x.score > 0)
-            .sort((a, b) => b.score - a.score)
+            // Ties broken by name so the list stops reshuffling between
+            // keystrokes — unstable order is most of what "flaky" meant.
+            .sort((a, b) => b.score - a.score || a.p.name.localeCompare(b.p.name))
+            .slice(0, SEARCH_RESULT_LIMIT)
             .map(x => x.p);
     }
 
@@ -193,21 +258,63 @@ const ContextMenu = (props: ContextMenuProps) => {
                     {nt.name}
                 </div>
                 <div className={"node-type-description"}>
-                    {nt.description}
+                    {nt.summary || nt.description}
                 </div>
             </div>
         </div>
     );
 
+    const renderSubSubGroup = (subSubGroup: SubSubGroup) => {
+        const isExpanded = expandedSubSubGroup === subSubGroup.key;
+        const actionCount = subSubGroup.actions.length;
+
+        return (
+            <div key={subSubGroup.key} className={"context-sub-sub-group"}>
+                <div
+                    className={`context-node-type context-sub-sub-header ${isExpanded ? "expanded" : ""}`}
+                    onClick={() => setExpandedSubSubGroup(isExpanded ? null : subSubGroup.key)}
+                >
+                    <div className={"node-type-icon-column"}>
+                        {subSubGroup.icon && (
+                            <Icon name={subSubGroup.icon} size="1.125em" />
+                        )}
+                    </div>
+                    <div className={"node-type-text-column"}>
+                        <div className={"node-type-title"}>
+                            {subSubGroup.name}
+                            <span className={"category-count"}>{actionCount}</span>
+                        </div>
+                        {subSubGroup.description && (
+                            <div className={"node-type-description"}>
+                                {subSubGroup.description}
+                            </div>
+                        )}
+                    </div>
+                    <div className={"category-chevron"}>
+                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
+                    </div>
+                </div>
+                {isExpanded && (
+                    <div className={"context-category-actions"}>
+                        {subSubGroup.actions.map(renderActionItem)}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderSubGroup = (subGroup: SubGroup) => {
         const isExpanded = expandedSubGroup === subGroup.key;
-        const actionCount = subGroup.actions.length;
+        const actionCount = subGroupCount(subGroup);
 
         return (
             <div key={subGroup.key} className={"context-sub-group"}>
                 <div
                     className={`context-node-type context-sub-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => setExpandedSubGroup(isExpanded ? null : subGroup.key)}
+                    onClick={() => {
+                        setExpandedSubGroup(isExpanded ? null : subGroup.key);
+                        setExpandedSubSubGroup(null);
+                    }}
                 >
                     <div className={"node-type-icon-column"}>
                         {subGroup.icon && (
@@ -232,6 +339,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                 {isExpanded && (
                     <div className={"context-category-actions"}>
                         {subGroup.actions.map(renderActionItem)}
+                        {subGroup.subSubGroups.map(renderSubSubGroup)}
                     </div>
                 )}
             </div>
@@ -240,7 +348,7 @@ const ContextMenu = (props: ContextMenuProps) => {
 
     const renderCategoryGroup = (group: CategoryGroup) => {
         const isExpanded = expandedGroup === group.category.key;
-        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + sg.actions.length, 0);
+        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + subGroupCount(sg), 0);
 
         return (
             <div key={group.category.key} className={"context-category-group"}>
@@ -298,7 +406,7 @@ const ContextMenu = (props: ContextMenuProps) => {
             {props.visible && (
                 <div className={"context-menu"} style={positionStyle} onClick={(e) => e.stopPropagation()}>
                     <div className={"context-menu-header"}>
-                        <input placeholder={"Search for Trigger, Action or Output..."} onChange={onSearchChange} autoFocus />
+                        <input placeholder={"Search actions..."} value={searchInput} onChange={onSearchChange} autoFocus />
                         <button className={"context-menu-close"} onClick={props.onClose}>
                             <Icon name="xmark" />
                         </button>

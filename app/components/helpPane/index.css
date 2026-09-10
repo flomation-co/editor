@@ -169,3 +169,20 @@
         border-top: 1px solid rgba(255, 255, 255, 0.09);
     }
 }
+
+/* On phones the help rail is removed entirely — it is supplementary reading and
+   at this width it only crowds the page. The content column takes the full
+   width. */
+@media (max-width: 768px) {
+    .help-pane {
+        display: none;
+    }
+
+    .flo-container.flo-container--with-help {
+        padding-right: 0;
+    }
+
+    .flo-container--with-help .help-main {
+        padding-right: 0;
+    }
+}

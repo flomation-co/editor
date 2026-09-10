@@ -194,14 +194,25 @@ export type PluginCategory = {
     sub_key?: string,
     sub_name?: string,
     sub_icon?: string,
-    sub_description?: string
+    sub_description?: string,
+    // Third grouping tier for 4-segment action IDs (e.g. CRM ▸ Apollo ▸ Enrichment).
+    sub_sub_key?: string,
+    sub_sub_name?: string,
+    sub_sub_icon?: string,
+    sub_sub_description?: string
 }
 
 export type PluginDefinition = {
     id: string,
     name: string,
     label: string,
+    // description is written for the AI — long, prose-like, often carrying
+    // "Use this when…" instructions meant for a model choosing a tool.
     description: string,
+    // summary is the human one-liner for the Add Node menu. Optional while the
+    // catalogue is being written, so anything without one falls back to
+    // description rather than showing nothing.
+    summary?: string,
     type: NodeCategoryType,
     icon: string[],
     inputs?: ParameterDefinition[],
@@ -257,6 +268,10 @@ export type AuthUser = {
     email_address?: string
     created_at?: string
     marketing_opt_in?: boolean
+    // Set once the user has actually been asked about marketing email, on
+    // whichever surface asked. Absent means never asked — which is why the
+    // welcome modal can tell "declined" from "not yet put to them".
+    marketing_consent_at?: string,
     eula_version?: number,
     eula_accepted_at?: string,
     onboarding_step?: number,
@@ -316,7 +331,18 @@ export type Organisation = {
     icon?: string,
     role: string,
     allow_public_runners: boolean,
-    created_at?: string
+    created_at?: string,
+    // Legal-entity details used to identify the organisation as the Controller
+    // on the generated Data Processing Agreement. All optional.
+    company_type?: string | null,
+    legal_name?: string | null,
+    company_number?: string | null,
+    address_line_1?: string | null,
+    address_line_2?: string | null,
+    city?: string | null,
+    region?: string | null,
+    postcode?: string | null,
+    country?: string | null,
 }
 
 export type OrganisationMember = {

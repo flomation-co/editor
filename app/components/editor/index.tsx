@@ -8,6 +8,7 @@ import {useState, useCallback, useEffect, useMemo, useRef} from "react";
 import { Icon } from "~/components/icons/Icon";
 
 import api from "~/lib/api";
+import {executionErrorMessage} from "~/lib/execError";
 import { detectSecret } from "~/lib/secretDetection";
 import { ValidationProvider, type ValidationProblem } from "~/components/editor/validationContext";
 import { StaleProvider, nodeIsStale } from "~/components/editor/staleContext";
@@ -1759,6 +1760,7 @@ export function Editor(props : EditorProps) {
             })
             .catch(error => {
                 console.error(error);
+                toast.error(executionErrorMessage(error));
             })
             .finally(() => {
                 setIsTriggering(false);

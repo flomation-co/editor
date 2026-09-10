@@ -17,7 +17,18 @@ import { Icon } from "~/components/icons/Icon";
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-type Tab = "account" | "security" | "identities" | "communications";
+type Tab = "account" | "security" | "identities" | "communications" | "compliance";
+
+type ComplianceStatus = {
+    template_version: string;
+    controller_type: "organisation" | "individual";
+    controller_name: string;
+    reference: string;
+    legal_details_complete: boolean;
+    missing_legal_fields: string[] | null;
+    processor: string;
+    processor_company_no: string;
+};
 
 type UserIdentity = {
     user_id: string;
@@ -190,6 +201,11 @@ export default function Profile() {
         external_id: "",
         display_name: "",
     });
+    // Compliance: DPA status + download state. Loaded lazily when the tab is
+    // first opened so the profile page's initial paint isn't slowed.
+    const [compliance, setCompliance] = useState<ComplianceStatus | null>(null);
+    const [loadingCompliance, setLoadingCompliance] = useState(false);
+    const [downloadingDPA, setDownloadingDPA] = useState(false);
 
     useEffect(() => { setUser(auth.user); }, [auth]);
     useEffect(() => { setName(user?.name || ""); }, [user]);
@@ -238,6 +254,55 @@ export default function Profile() {
         reloadIdentities();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, token, currentOrg?.id]);
+
+    // Compliance status is loaded when the tab opens, and re-loaded when the
+    // acting organisation changes (the DPA and its legal-details completeness
+    // are org-scoped). The api wrapper appends ?organisation automatically.
+    useEffect(() => {
+        if (activeTab !== "compliance" || !token) return;
+        setLoadingCompliance(true);
+        const url = config("AUTOMATE_API_URL");
+        api.get(url + "/api/v1/compliance/status", {
+            headers: { Authorization: "Bearer " + token },
+        })
+            .then(res => setCompliance(res.data))
+            .catch(() => setCompliance(null))
+            .finally(() => setLoadingCompliance(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, token, currentOrg?.id]);
+
+    const downloadDPA = () => {
+        if (!token || downloadingDPA) return;
+        setDownloadingDPA(true);
+        const url = config("AUTOMATE_API_URL");
+        api.get(url + "/api/v1/compliance/dpa", {
+            headers: { Authorization: "Bearer " + token },
+            responseType: "blob",
+        })
+            .then(res => {
+                // Name the download after the agreement reference. Prefer the
+                // reference we already hold (cross-origin CORS often hides the
+                // Content-Disposition header from the browser), then fall back
+                // to the header, then a sane default.
+                const disposition: string = res.headers?.["content-disposition"] || "";
+                const headerName = disposition.match(/filename="?([^"]+)"?/)?.[1];
+                const filename = compliance?.reference
+                    ? `${compliance.reference}.pdf`
+                    : (headerName || "DPA.pdf");
+                const blob = new Blob([res.data], { type: "application/pdf" });
+                const objectUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = objectUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+                showToast("Data Processing Agreement downloaded", "success");
+            })
+            .catch(() => showToast("Failed to generate the DPA", "error"))
+            .finally(() => setDownloadingDPA(false));
+    };
 
     const addIdentity = () => {
         if (!token) return;
@@ -455,6 +520,12 @@ export default function Profile() {
                         onClick={() => setActiveTab("communications")}
                     >
                         <Icon name="envelope" /> Communications
+                    </button>
+                    <button
+                        className={`profile-tab ${activeTab === "compliance" ? "active" : ""}`}
+                        onClick={() => setActiveTab("compliance")}
+                    >
+                        <Icon name="file-lines" /> Compliance
                     </button>
                 </div>
 
@@ -825,7 +896,7 @@ export default function Profile() {
                     <div className="profile-card">
                         <div className="profile-section-label">Marketing Emails</div>
                         <div className="profile-meta" style={{ marginBottom: 16 }}>
-                            Occasional product updates and tips. We'll never share your email with anyone, and you can unsubscribe at any time.
+                            New integrations, actions and flow templates, about twice a month. We'll never share your address with anyone, and you can unsubscribe at any time.
                         </div>
                         <div
                             className="profile-field"
@@ -859,6 +930,123 @@ export default function Profile() {
                             </label>
                         </div>
                     </div>
+                )}
+
+                {activeTab === "compliance" && (
+                    <>
+                        <div className="profile-card">
+                            <div className="profile-section-label">Data Processing Agreement</div>
+                            <div className="profile-meta" style={{ marginBottom: 16 }}>
+                                A Data Processing Agreement (DPA) names Flomation Ltd as your nominated
+                                data processor under UK and EU data-protection law. It confirms that you
+                                remain the owner and controller of your data, sets out how we process it
+                                on your behalf, and records your right to export or request deletion of
+                                your data at any time. It is generated specifically for you and
+                                pre-signed on Flomation's side, ready for you to counter-sign.
+                            </div>
+
+                            {loadingCompliance && (
+                                <div className="profile-meta">Loading…</div>
+                            )}
+
+                            {!loadingCompliance && compliance && (
+                                <>
+                                    <div className="compliance-summary">
+                                        <div className="compliance-summary__row">
+                                            <span className="compliance-summary__label">Agreement between</span>
+                                            <span className="compliance-summary__value">
+                                                {compliance.controller_name || "your account"} and {compliance.processor}
+                                            </span>
+                                        </div>
+                                        <div className="compliance-summary__row">
+                                            <span className="compliance-summary__label">Party type</span>
+                                            <span className="compliance-summary__value">
+                                                {compliance.controller_type === "organisation" ? "Organisation" : "Individual"}
+                                            </span>
+                                        </div>
+                                        <div className="compliance-summary__row">
+                                            <span className="compliance-summary__label">Reference</span>
+                                            <span className="compliance-summary__value">{compliance.reference}</span>
+                                        </div>
+                                        <div className="compliance-summary__row">
+                                            <span className="compliance-summary__label">Template version</span>
+                                            <span className="compliance-summary__value">v{compliance.template_version}</span>
+                                        </div>
+                                    </div>
+
+                                    {compliance.controller_type === "organisation" &&
+                                        !compliance.legal_details_complete && (
+                                        <div className="compliance-notice">
+                                            <Icon name="circle-exclamation" />
+                                            <span>
+                                                Add your organisation's registered legal details in{" "}
+                                                <a href="/organisation">Organisation settings</a> for a
+                                                fully-populated agreement. You can still download it now.
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center" }}>
+                                        <button
+                                            className="profile-btn profile-btn--primary"
+                                            onClick={downloadDPA}
+                                            disabled={downloadingDPA}
+                                        >
+                                            <Icon name="file-arrow-down" />{" "}
+                                            {downloadingDPA ? "Generating…" : "Download DPA (PDF)"}
+                                        </button>
+                                        <span className="profile-meta" style={{ margin: 0 }}>
+                                            Always regenerated from the latest template.
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+
+                            {!loadingCompliance && !compliance && (
+                                <div className="profile-meta">
+                                    We couldn't load your agreement details just now. Please try again shortly.
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="profile-card">
+                            <div className="profile-section-label">Certifications &amp; Reports</div>
+                            <div className="profile-meta" style={{ marginBottom: 16 }}>
+                                Our security certifications and sustainability reports. Downloads will
+                                appear here as each certification is issued.
+                            </div>
+                            <div className="compliance-cert-grid">
+                                {[
+                                    { icon: "shield-halved", name: "Cyber Essentials", desc: "UK government-backed security baseline", url: "https://demo.flomation.app/compliance/cyber-essentials-certificate.pdf" },
+                                    { icon: "shield-halved", name: "Cyber Essentials Plus", desc: "Independently audited security controls", url: "https://demo.flomation.app/compliance/cyber-essentials-plus-certificate-2026.pdf" },
+                                    { icon: "lock", name: "ISO/IEC 27001", desc: "Information security management" },
+                                    { icon: "leaf", name: "Data Centre Carbon Neutral", desc: "Sustainability and carbon reporting" },
+                                ].map((cert) => (
+                                    <div className="compliance-cert" key={cert.name}>
+                                        <div className="compliance-cert__icon">
+                                            <Icon name={cert.icon} />
+                                        </div>
+                                        <div className="compliance-cert__body">
+                                            <div className="compliance-cert__name">{cert.name}</div>
+                                            <div className="compliance-cert__desc">{cert.desc}</div>
+                                        </div>
+                                        {cert.url ? (
+                                            <a
+                                                className="compliance-cert__download"
+                                                href={cert.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <Icon name="file-arrow-down" /> Download
+                                            </a>
+                                        ) : (
+                                            <span className="compliance-cert__badge">Available soon</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
         </Container>

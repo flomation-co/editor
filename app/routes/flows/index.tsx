@@ -2,6 +2,7 @@ import type {Route} from "../+types/home";
 import { uuidv4 } from "~/lib/uuid";
 import {useEffect, useState, useRef} from "react";
 import api from "~/lib/api";
+import {executionErrorMessage} from "~/lib/execError";
 import type {Flo, Project} from "~/types";
 import {Link, useSearchParams, useNavigate} from "react-router";
 import Container from "~/components/container";
@@ -59,6 +60,10 @@ export default function Flows() {
     const [ flos, setFlos ] = useState<Flo[]>();
     const [ totalFloCount, setTotalFloCount ] = useState<number>(0);
     const [ isLoading, setIsLoading ] = useState<boolean>(false);
+    // When the acting organisation hasn't provided its legal details, the API
+    // blocks all of its flow executions. Surface that up front so users aren't
+    // surprised on Run. Personal mode is never gated.
+    const [ legalGateBlocked, setLegalGateBlocked ] = useState<boolean>(false);
 
     const [ deleteModalVisible, setDeleteModalVisible ] = useState<boolean>(false);
     const [ deleteFloID, setDeleteFloID ] = useState<string | undefined>()
@@ -82,6 +87,21 @@ export default function Flows() {
     const auth = useAuth();
     const token = useCookieToken();
     const { currentOrg } = useOrganisation();
+
+    // Check whether the acting organisation is blocked from executing flows
+    // because its legal details are incomplete. Re-runs when the org changes.
+    useEffect(() => {
+        if (!token || !currentOrg?.id) { setLegalGateBlocked(false); return; }
+        api.get(API_URL + "/api/v1/compliance/status", {
+            headers: { Authorization: "Bearer " + token },
+        })
+            .then(res => {
+                const d = res.data;
+                setLegalGateBlocked(d?.controller_type === "organisation" && d?.legal_details_complete === false);
+            })
+            .catch(() => setLegalGateBlocked(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token, currentOrg?.id]);
 
     const [refreshKey, setRefreshKey] = useState<number>(0);
     const [favourites, setFavourites] = useState<Set<string>>(new Set());
@@ -463,6 +483,7 @@ export default function Flows() {
             })
             .catch(error => {
                 console.error(error);
+                toast.error(executionErrorMessage(error));
             })
             .finally(() => {
                 setIsTriggering(false);
@@ -1007,6 +1028,19 @@ export default function Flows() {
         <Container help={FLOWS_HELP}>
             <ProtectedRoute permissions={[PERMISSIONS.FLOW_CREATE, PERMISSIONS.FLOW_EDIT, PERMISSIONS.FLOW_EXECUTE]}>
                 <div className={"header"}>Flows</div>
+
+                {legalGateBlocked && (
+                    <div className="flows-legal-gate">
+                        <Icon name="circle-exclamation" />
+                        <div className="flows-legal-gate__text">
+                            <strong>Flow execution is paused for {currentOrg?.name}.</strong> This
+                            organisation must provide its registered legal details before any of its
+                            flows can run. {currentOrg?.role === "admin"
+                                ? <>Add them in <Link to="/organisation">Organisation settings</Link>.</>
+                                : "Ask an organisation administrator to complete them."}
+                        </div>
+                    </div>
+                )}
 
                 <div className="flows-action-bar">
                     <div className="flows-action-bar-search">

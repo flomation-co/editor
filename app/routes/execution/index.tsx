@@ -6,6 +6,7 @@ import {CompletionStateValue, ExecuteState, ExecutionStateValue} from "~/compone
 import type {Execution, NodeStatus} from "~/types";
 import {useCallback, useEffect, useRef, useState} from "react";
 import api from "~/lib/api";
+import {executionErrorMessage} from "~/lib/execError";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import utc from "dayjs/plugin/utc";
@@ -122,7 +123,7 @@ export default function ExecutionDetail() {
             })
             .catch(error => {
                 console.error(error);
-                showToast("Failed to re-run flow", "error");
+                showToast(executionErrorMessage(error, "Failed to re-run flow"), "error");
             })
             .finally(() => setIsRerunning(false));
     };
