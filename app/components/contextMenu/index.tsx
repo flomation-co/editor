@@ -60,6 +60,14 @@ const subGroupCount = (sg: SubGroup): number =>
 // scores below that, rewarding consecutive runs and word-start hits.
 const WORD_BOUNDARY = /[\s\-_/.]/;
 
+// One character subsequence-matches 100% of a 3,660-action catalogue and two
+// still matches 97%, so the first useful query length is two AND the result set
+// has to be bounded. Without the cap the menu rendered thousands of rows per
+// keystroke, which is what made it feel broken rather than merely broad.
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_RESULT_LIMIT = 50;
+const SEARCH_DEBOUNCE_MS = 120;
+
 const fuzzyScore = (needle: string, haystack: string): number => {
     if (!needle || !haystack) return 0;
     const h = haystack.toLowerCase();
@@ -101,11 +109,18 @@ const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
     1.8 * fuzzyScore(query, p.category?.name || ""),
     1.8 * fuzzyScore(query, p.category?.sub_name || ""),
     1.8 * fuzzyScore(query, p.category?.sub_sub_name || ""),
-    1.0 * fuzzyScore(query, p.description || ""),
+    // Descriptions are weighted low deliberately. They are written for the AI
+    // (see the AI-native action pattern), so they are long, prose-like, and
+    // subsequence-match almost anything: at weight 1.0 a search for "send"
+    // pulled in 2,612 of 3,660 actions. Low enough to break a tie, not to
+    // create a result.
+    0.9 * fuzzyScore(query, p.summary || ""),
+    0.35 * fuzzyScore(query, p.description || ""),
 );
 
 const ContextMenu = (props: ContextMenuProps) => {
     const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
+    const [ searchInput, setSearchInput ] = useState<string>("");
     const [ searchTerm, setSearchTerm ] = useState<string>("");
     const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
     const [ expandedSubGroup, setExpandedSubGroup ] = useState<string | null>(null);
@@ -118,11 +133,20 @@ const ContextMenu = (props: ContextMenuProps) => {
     }
 
     const onSearchChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(evt.target.value.toLowerCase());
+        setSearchInput(evt.target.value);
     }
+
+    // Scoring runs over every action across six fields, so a keystroke costs
+    // roughly 22,000 comparisons. Debounce so holding a key does not queue one
+    // pass per character.
+    useEffect(() => {
+        const id = setTimeout(() => setSearchTerm(searchInput.trim().toLowerCase()), SEARCH_DEBOUNCE_MS);
+        return () => clearTimeout(id);
+    }, [searchInput]);
 
     useEffect(() => {
         if (!props.visible) {
+            setSearchInput("");
             setSearchTerm("");
             setCurrentPage(Page.Root);
             setExpandedGroup(null);
@@ -212,12 +236,15 @@ const ContextMenu = (props: ContextMenuProps) => {
     // Get all plugins matching the search — a fuzzy match across name, label,
     // category and description, ranked most-relevant first.
     const getSearchResults = (): PluginDefinition[] => {
-        if (!props.plugins || !searchTerm) return [];
+        if (!props.plugins || searchTerm.length < SEARCH_MIN_CHARS) return [];
         return Object.keys(props.plugins)
             .map(k => props.plugins[k])
             .map(p => ({p, score: scorePlugin(p, searchTerm)}))
             .filter(x => x.score > 0)
-            .sort((a, b) => b.score - a.score)
+            // Ties broken by name so the list stops reshuffling between
+            // keystrokes — unstable order is most of what "flaky" meant.
+            .sort((a, b) => b.score - a.score || a.p.name.localeCompare(b.p.name))
+            .slice(0, SEARCH_RESULT_LIMIT)
             .map(x => x.p);
     }
 
@@ -231,7 +258,7 @@ const ContextMenu = (props: ContextMenuProps) => {
                     {nt.name}
                 </div>
                 <div className={"node-type-description"}>
-                    {nt.description}
+                    {nt.summary || nt.description}
                 </div>
             </div>
         </div>
@@ -379,7 +406,7 @@ const ContextMenu = (props: ContextMenuProps) => {
             {props.visible && (
                 <div className={"context-menu"} style={positionStyle} onClick={(e) => e.stopPropagation()}>
                     <div className={"context-menu-header"}>
-                        <input placeholder={"Search for Trigger, Action or Output..."} onChange={onSearchChange} autoFocus />
+                        <input placeholder={"Search actions..."} value={searchInput} onChange={onSearchChange} autoFocus />
                         <button className={"context-menu-close"} onClick={props.onClose}>
                             <Icon name="xmark" />
                         </button>

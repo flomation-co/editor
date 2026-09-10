@@ -206,7 +206,13 @@ export type PluginDefinition = {
     id: string,
     name: string,
     label: string,
+    // description is written for the AI — long, prose-like, often carrying
+    // "Use this when…" instructions meant for a model choosing a tool.
     description: string,
+    // summary is the human one-liner for the Add Node menu. Optional while the
+    // catalogue is being written, so anything without one falls back to
+    // description rather than showing nothing.
+    summary?: string,
     type: NodeCategoryType,
     icon: string[],
     inputs?: ParameterDefinition[],
