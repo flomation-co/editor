@@ -13,7 +13,9 @@ type ContextMenuProps = {
     isMobile?: boolean;
     onNodeAdd?: (nodeType: string) => void;
     onClose?: () => void;
-    plugins: PluginDefinition[];
+    // Either shape: the API hands back an object keyed by action id, callers in
+    // tests and previews pass an array. Normalised on the way in.
+    plugins: PluginDefinition[] | Record<string, PluginDefinition> | null;
 }
 
 // Where the browse is standing. Search cuts across all three.
@@ -94,7 +96,16 @@ const ContextMenu = (props: ContextMenuProps) => {
     const [ searchInput, setSearchInput ] = useState<string>("");
     const [ searchTerm, setSearchTerm ] = useState<string>("");
 
-    const plugins = useMemo(() => props.plugins ?? [], [props.plugins]);
+    // The API returns the action catalogue as an OBJECT keyed by action id, not
+    // an array — despite the prop's type. Normalise both shapes: reading it as
+    // an array put a non-iterable into buildGroups and every right-click threw
+    // "e is not iterable".
+    const plugins = useMemo(() => {
+        const source: unknown = props.plugins;
+        if (Array.isArray(source)) return source as PluginDefinition[];
+        if (source && typeof source === "object") return Object.values(source) as PluginDefinition[];
+        return [];
+    }, [props.plugins]);
 
     // Grouping walks the whole catalogue, so do it once per plugin set rather
     // than on every keystroke or navigation.
