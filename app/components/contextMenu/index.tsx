@@ -2,8 +2,9 @@ import "./index.css"
 
 import React, {useEffect, useMemo, useState} from "react";
 import { Icon } from "~/components/icons/Icon";
-import type { PluginDefinition, PluginCategory } from "~/types";
-import { NodeCategoryType } from "~/types";
+import type { PluginDefinition } from "~/types";
+import { buildGroups, CLOUD_GROUP, POPULAR_ACTION_IDS } from "./groups";
+import type { Group, Service } from "./groups";
 
 type ContextMenuProps = {
     visible: boolean
@@ -15,41 +16,11 @@ type ContextMenuProps = {
     plugins: PluginDefinition[];
 }
 
-enum Page {
-    Root = 0,
-    Triggers,
-    Processing,
-    Outputs,
-    Conditional,
-    Loop
-}
-
-type SubSubGroup = {
-    key: string;
-    name: string;
-    icon: string;
-    description: string;
-    actions: PluginDefinition[];
-}
-
-type SubGroup = {
-    key: string;
-    name: string;
-    icon: string;
-    description: string;
-    actions: PluginDefinition[];
-    subSubGroups: SubSubGroup[];
-}
-
-type CategoryGroup = {
-    category: PluginCategory;
-    actions: PluginDefinition[];
-    subGroups: SubGroup[];
-}
-
-// Total actions in a sub-group, including any third-tier sub-sub-groups.
-const subGroupCount = (sg: SubGroup): number =>
-    sg.actions.length + sg.subSubGroups.reduce((sum, ssg) => sum + ssg.actions.length, 0);
+// Where the browse is standing. Search cuts across all three.
+type View =
+    | { level: "home" }
+    | { level: "group"; group: string }
+    | { level: "service"; group: string; service: string };
 
 // ── Fuzzy search ──────────────────────────────────────────────────────────
 // A lightweight scored fuzzy matcher (no dependency — the action set is small
@@ -119,12 +90,40 @@ const scorePlugin = (p: PluginDefinition, query: string): number => Math.max(
 );
 
 const ContextMenu = (props: ContextMenuProps) => {
-    const [ currentPage, setCurrentPage ] = useState<Page>(Page.Root)
+    const [ view, setView ] = useState<View>({ level: "home" });
     const [ searchInput, setSearchInput ] = useState<string>("");
     const [ searchTerm, setSearchTerm ] = useState<string>("");
-    const [ expandedGroup, setExpandedGroup ] = useState<string | null>(null);
-    const [ expandedSubGroup, setExpandedSubGroup ] = useState<string | null>(null);
-    const [ expandedSubSubGroup, setExpandedSubSubGroup ] = useState<string | null>(null);
+
+    const plugins = useMemo(() => props.plugins ?? [], [props.plugins]);
+
+    // Grouping walks the whole catalogue, so do it once per plugin set rather
+    // than on every keystroke or navigation.
+    const groups = useMemo(() => buildGroups(plugins), [plugins]);
+    const totalActions = useMemo(
+        () => groups.reduce((total, group) => total + group.count, 0),
+        [groups],
+    );
+    const serviceOfAction = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const group of groups) {
+            for (const service of group.services) {
+                for (const action of service.actions) map.set(action.id, service.name);
+            }
+        }
+        return map;
+    }, [groups]);
+
+    const popular = useMemo(() => {
+        const byId = new Map(plugins.map(p => [p.id, p]));
+        return POPULAR_ACTION_IDS.map(id => byId.get(id)).filter((p): p is PluginDefinition => !!p);
+    }, [plugins]);
+
+    const currentGroup: Group | undefined = view.level === "home"
+        ? undefined
+        : groups.find(g => g.name === view.group);
+    const currentService: Service | undefined = view.level === "service"
+        ? currentGroup?.services.find(s => s.key === view.service)
+        : undefined;
 
     const handleNodeClick = (name: string) => {
         if (props.onNodeAdd) {
@@ -148,97 +147,15 @@ const ContextMenu = (props: ContextMenuProps) => {
         if (!props.visible) {
             setSearchInput("");
             setSearchTerm("");
-            setCurrentPage(Page.Root);
-            setExpandedGroup(null);
-            setExpandedSubGroup(null);
-            setExpandedSubSubGroup(null);
+            setView({ level: "home" });
         }
     }, [props.visible]);
-
-    // Reset expanded group when changing pages
-    useEffect(() => {
-        setExpandedGroup(null);
-        setExpandedSubGroup(null);
-        setExpandedSubSubGroup(null);
-    }, [currentPage]);
-
-    // Group plugins by category for a given node type, with optional sub-groups
-    const getGroupedPlugins = (nodeType: NodeCategoryType): CategoryGroup[] => {
-        if (!props.plugins) return [];
-
-        const filtered = Object.keys(props.plugins)
-            .map(k => props.plugins[k])
-            .filter(p => p.type === nodeType);
-
-        const groupMap = new Map<string, CategoryGroup>();
-
-        for (const plugin of filtered) {
-            const key = plugin.category?.key || "other";
-            if (!groupMap.has(key)) {
-                groupMap.set(key, {
-                    category: plugin.category || { key: "other", name: "Other", icon: "puzzle-piece", description: "" },
-                    actions: [],
-                    subGroups: []
-                });
-            }
-            const group = groupMap.get(key)!;
-
-            const subKey = plugin.category?.sub_key;
-            if (subKey) {
-                let subGroup = group.subGroups.find(sg => sg.key === subKey);
-                if (!subGroup) {
-                    subGroup = {
-                        key: subKey,
-                        name: plugin.category?.sub_name || subKey,
-                        icon: plugin.category?.sub_icon || group.category.icon,
-                        description: plugin.category?.sub_description || "",
-                        actions: [],
-                        subSubGroups: []
-                    };
-                    group.subGroups.push(subGroup);
-                }
-
-                const subSubKey = plugin.category?.sub_sub_key;
-                if (subSubKey) {
-                    let subSubGroup = subGroup.subSubGroups.find(ssg => ssg.key === subSubKey);
-                    if (!subSubGroup) {
-                        subSubGroup = {
-                            key: subSubKey,
-                            name: plugin.category?.sub_sub_name || subSubKey,
-                            icon: plugin.category?.sub_sub_icon || subGroup.icon,
-                            description: plugin.category?.sub_sub_description || "",
-                            actions: []
-                        };
-                        subGroup.subSubGroups.push(subSubGroup);
-                    }
-                    subSubGroup.actions.push(plugin);
-                } else {
-                    subGroup.actions.push(plugin);
-                }
-            } else {
-                group.actions.push(plugin);
-            }
-        }
-
-        // Sort groups, sub-groups and sub-sub-groups alphabetically
-        const result = Array.from(groupMap.values()).sort((a, b) =>
-            a.category.name.localeCompare(b.category.name)
-        );
-        for (const group of result) {
-            group.subGroups.sort((a, b) => a.name.localeCompare(b.name));
-            for (const subGroup of group.subGroups) {
-                subGroup.subSubGroups.sort((a, b) => a.name.localeCompare(b.name));
-            }
-        }
-        return result;
-    }
 
     // Get all plugins matching the search — a fuzzy match across name, label,
     // category and description, ranked most-relevant first.
     const getSearchResults = (): PluginDefinition[] => {
-        if (!props.plugins || searchTerm.length < SEARCH_MIN_CHARS) return [];
-        return Object.keys(props.plugins)
-            .map(k => props.plugins[k])
+        if (searchTerm.length < SEARCH_MIN_CHARS) return [];
+        return plugins
             .map(p => ({p, score: scorePlugin(p, searchTerm)}))
             .filter(x => x.score > 0)
             // Ties broken by name so the list stops reshuffling between
@@ -248,158 +165,131 @@ const ContextMenu = (props: ContextMenuProps) => {
             .map(x => x.p);
     }
 
-    const renderActionItem = (nt: PluginDefinition) => (
-        <div className={"context-node-type context-node-action"} onClick={() => handleNodeClick(nt.id)} key={nt.id}>
+    // An action row. Search shows the service it belongs to, because a result
+    // list cut from fourteen shelves is otherwise unplaceable — "Create Record"
+    // means nothing until you know it is Airtable's.
+    // compact drops the description line. The shortcuts at the top of the menu
+    // are recognised by name, and at two lines each the six of them filled the
+    // whole 500px panel, leaving the shelves below the fold — which defeats the
+    // point of opening on them.
+    const renderActionItem = (nt: PluginDefinition, withService = false, compact = false) => (
+        <div
+            className={`context-node-type context-node-action${compact ? " context-node-action--compact" : ""}`}
+            onClick={() => handleNodeClick(nt.id)}
+            key={nt.id}
+        >
             <div className={"node-type-icon-column"}>
                 <Icon name={nt.icon} size="1.25em" />
             </div>
             <div className={"node-type-text-column"}>
                 <div className={"node-type-title"}>
                     {nt.name}
+                    {withService && serviceOfAction.get(nt.id) && (
+                        <span className={"context-service-chip"}>{serviceOfAction.get(nt.id)}</span>
+                    )}
                 </div>
-                <div className={"node-type-description"}>
-                    {nt.summary || nt.description}
-                </div>
+                {!compact && (
+                    <div className={"node-type-description"}>
+                        {nt.summary || nt.description}
+                    </div>
+                )}
             </div>
         </div>
     );
 
-    const renderSubSubGroup = (subSubGroup: SubSubGroup) => {
-        const isExpanded = expandedSubSubGroup === subSubGroup.key;
-        const actionCount = subSubGroup.actions.length;
-
-        return (
-            <div key={subSubGroup.key} className={"context-sub-sub-group"}>
-                <div
-                    className={`context-node-type context-sub-sub-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => setExpandedSubSubGroup(isExpanded ? null : subSubGroup.key)}
-                >
-                    <div className={"node-type-icon-column"}>
-                        {subSubGroup.icon && (
-                            <Icon name={subSubGroup.icon} size="1.125em" />
-                        )}
-                    </div>
-                    <div className={"node-type-text-column"}>
-                        <div className={"node-type-title"}>
-                            {subSubGroup.name}
-                            <span className={"category-count"}>{actionCount}</span>
-                        </div>
-                        {subSubGroup.description && (
-                            <div className={"node-type-description"}>
-                                {subSubGroup.description}
-                            </div>
-                        )}
-                    </div>
-                    <div className={"category-chevron"}>
-                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
-                    </div>
+    const renderServiceRow = (group: Group, service: Service) => (
+        <div
+            className={"context-node-type context-service-row"}
+            key={service.key}
+            onClick={() => setView({ level: "service", group: group.name, service: service.key })}
+        >
+            <div className={"node-type-icon-column"}>
+                <Icon name={service.icon} size="1.25em" />
+            </div>
+            <div className={"node-type-text-column"}>
+                <div className={"node-type-title"}>
+                    {service.name}
+                    <span className={"category-count"}>{service.actions.length}</span>
                 </div>
-                {isExpanded && (
-                    <div className={"context-category-actions"}>
-                        {subSubGroup.actions.map(renderActionItem)}
-                    </div>
+                {service.description && (
+                    <div className={"node-type-description"}>{service.description}</div>
                 )}
             </div>
-        );
-    };
-
-    const renderSubGroup = (subGroup: SubGroup) => {
-        const isExpanded = expandedSubGroup === subGroup.key;
-        const actionCount = subGroupCount(subGroup);
-
-        return (
-            <div key={subGroup.key} className={"context-sub-group"}>
-                <div
-                    className={`context-node-type context-sub-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => {
-                        setExpandedSubGroup(isExpanded ? null : subGroup.key);
-                        setExpandedSubSubGroup(null);
-                    }}
-                >
-                    <div className={"node-type-icon-column"}>
-                        {subGroup.icon && (
-                            <Icon name={subGroup.icon} size="1.25em" />
-                        )}
-                    </div>
-                    <div className={"node-type-text-column"}>
-                        <div className={"node-type-title"}>
-                            {subGroup.name}
-                            <span className={"category-count"}>{actionCount}</span>
-                        </div>
-                        {subGroup.description && (
-                            <div className={"node-type-description"}>
-                                {subGroup.description}
-                            </div>
-                        )}
-                    </div>
-                    <div className={"category-chevron"}>
-                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
-                    </div>
-                </div>
-                {isExpanded && (
-                    <div className={"context-category-actions"}>
-                        {subGroup.actions.map(renderActionItem)}
-                        {subGroup.subSubGroups.map(renderSubSubGroup)}
-                    </div>
-                )}
+            <div className={"category-chevron"}>
+                <Icon name="chevron-right" size="0.875em" />
             </div>
-        );
-    };
+        </div>
+    );
 
-    const renderCategoryGroup = (group: CategoryGroup) => {
-        const isExpanded = expandedGroup === group.category.key;
-        const totalCount = group.actions.length + group.subGroups.reduce((sum, sg) => sum + subGroupCount(sg), 0);
+    const renderGroupTile = (group: Group) => (
+        <button
+            type="button"
+            className={`context-group-tile ${group.name === CLOUD_GROUP ? "demoted" : ""}`}
+            key={group.name}
+            onClick={() => setView({ level: "group", group: group.name })}
+        >
+            <span className={"context-group-tile-icon"}>
+                <Icon name={group.icon} size="1.125em" />
+            </span>
+            <span className={"context-group-tile-text"}>
+                <span className={"context-group-tile-name"}>{group.name}</span>
+                <span className={"context-group-tile-count"}>
+                    {group.count.toLocaleString()} action{group.count === 1 ? "" : "s"}
+                </span>
+            </span>
+        </button>
+    );
 
-        return (
-            <div key={group.category.key} className={"context-category-group"}>
-                <div
-                    className={`context-node-type context-category-header ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => {
-                        setExpandedGroup(isExpanded ? null : group.category.key);
-                        setExpandedSubGroup(null);
-                    }}
-                >
-                    <div className={"node-type-icon-column"}>
-                        <Icon name={group.category.icon} size="1.5em" />
-                    </div>
-                    <div className={"node-type-text-column"}>
-                        <div className={"node-type-title"}>
-                            {group.category.name}
-                            <span className={"category-count"}>{totalCount}</span>
-                        </div>
-                        <div className={"node-type-description"}>
-                            {group.category.description}
-                        </div>
-                    </div>
-                    <div className={"category-chevron"}>
-                        <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size="0.875em" />
-                    </div>
+    const renderBreadcrumbs = () => {
+        if (searchTerm) {
+            return (
+                <div className={"context-crumbs"}>
+                    <span className={"context-crumb here"}>Results for &ldquo;{searchInput.trim()}&rdquo;</span>
                 </div>
-                {isExpanded && (
-                    <div className={"context-category-actions"}>
-                        {group.actions.map(renderActionItem)}
-                        {group.subGroups.map(renderSubGroup)}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    const renderGroupedPage = (nodeType: NodeCategoryType) => {
-        const groups = getGroupedPlugins(nodeType);
-
-        // If there's only one group, expand it automatically
-        if (groups.length === 1 && expandedGroup === null) {
-            // Use a flat list instead of nesting for single groups
-            return groups[0].actions.map(renderActionItem);
+            );
         }
-
-        return groups.map(renderCategoryGroup);
+        return (
+            <div className={"context-crumbs"}>
+                <button
+                    type="button"
+                    className={`context-crumb ${view.level === "home" ? "here" : ""}`}
+                    onClick={() => setView({ level: "home" })}
+                    disabled={view.level === "home"}
+                >
+                    Browse
+                </button>
+                {currentGroup && (
+                    <>
+                        <span className={"context-crumb-sep"}>
+                            <Icon name="chevron-right" size="0.625em" />
+                        </span>
+                        <button
+                            type="button"
+                            className={`context-crumb ${view.level === "group" ? "here" : ""}`}
+                            onClick={() => setView({ level: "group", group: currentGroup.name })}
+                            disabled={view.level === "group"}
+                        >
+                            {currentGroup.name}
+                        </button>
+                    </>
+                )}
+                {currentService && (
+                    <>
+                        <span className={"context-crumb-sep"}>
+                            <Icon name="chevron-right" size="0.625em" />
+                        </span>
+                        <span className={"context-crumb here"}>{currentService.name}</span>
+                    </>
+                )}
+            </div>
+        );
     };
 
     const positionStyle = (!props.isMobile && props.x !== undefined && props.y !== undefined)
         ? { top: props.y + "px", left: props.x + "px" }
         : {};
+
+    const searchResults = searchTerm ? getSearchResults() : [];
 
     return (
         <>
@@ -411,108 +301,54 @@ const ContextMenu = (props: ContextMenuProps) => {
                             <Icon name="xmark" />
                         </button>
                     </div>
-                    {currentPage != Page.Root && !searchTerm && (
-                        <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Root)} key={"back"}>
-                            <div className={"node-type-icon-column"}>
-                                <Icon name="arrow-left" size="1.5em" />
-                            </div>
-                            <div className={"node-type-text-column"}>
-                                <div className={"node-type-description"}>
-                                    Go back...
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
+                    {renderBreadcrumbs()}
+
                     <div className={"context-node-type-list"}>
-                        {/* Search results */}
+                        {/* Search cuts across every shelf. */}
                         {searchTerm && (
                             <>
-                                {getSearchResults().map(renderActionItem)}
-                                {getSearchResults().length === 0 && (
+                                {searchResults.map(p => renderActionItem(p, true))}
+                                {searchResults.length === 0 && (
                                     <div className={"context-no-results"}>
-                                        No actions found
+                                        {searchTerm.length < SEARCH_MIN_CHARS
+                                            ? "Keep typing — one character matches almost everything."
+                                            : "No actions found"}
                                     </div>
                                 )}
                             </>
                         )}
 
-                        {/* Root menu */}
-                        {!searchTerm && currentPage == Page.Root && (
+                        {/* Home: a few shortcuts, then the shelves. */}
+                        {!searchTerm && view.level === "home" && (
                             <>
-                                <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Triggers)} key={"triggers"}>
-                                    <div className={"node-type-icon-column"}>
-                                        <Icon name="bolt-lightning" size="1.5em" />
-                                    </div>
-                                    <div className={"node-type-text-column"}>
-                                        <div className={"node-type-title"}>
-                                            Triggers
-                                        </div>
-                                        <div className={"node-type-description"}>
-                                            Start a Flow
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Processing)} key={"actions"}>
-                                    <div className={"node-type-icon-column"}>
-                                        <Icon name="microchip" size="1.5em" />
-                                    </div>
-                                    <div className={"node-type-text-column"}>
-                                        <div className={"node-type-title"}>
-                                            Actions
-                                        </div>
-                                        <div className={"node-type-description"}>
-                                            Do something
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Outputs)} key={"outputs"}>
-                                    <div className={"node-type-icon-column"}>
-                                        <Icon name="location-arrow" size="1.5em" />
-                                    </div>
-                                    <div className={"node-type-text-column"}>
-                                        <div className={"node-type-title"}>
-                                            Outputs
-                                        </div>
-                                        <div className={"node-type-description"}>
-                                            Send data somewhere else to be used
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Conditional)} key={"conditionals"}>
-                                    <div className={"node-type-icon-column"}>
-                                        <Icon name="code-branch" size="1.5em" />
-                                    </div>
-                                    <div className={"node-type-text-column"}>
-                                        <div className={"node-type-title"}>
-                                            Conditionals
-                                        </div>
-                                        <div className={"node-type-description"}>
-                                            Control Flow based on dynamic conditions
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={"context-node-type"} onClick={() => setCurrentPage(Page.Loop)} key={"looping"}>
-                                    <div className={"node-type-icon-column"}>
-                                        <Icon name="recycle" size="1.5em" />
-                                    </div>
-                                    <div className={"node-type-text-column"}>
-                                        <div className={"node-type-title"}>
-                                            Looping
-                                        </div>
-                                        <div className={"node-type-description"}>
-                                            Iterate within Flows via looping
-                                        </div>
-                                    </div>
+                                {popular.length > 0 && (
+                                    <>
+                                        <div className={"context-section-title"}>Popular</div>
+                                        {popular.map(p => renderActionItem(p, true, true))}
+                                    </>
+                                )}
+                                <div className={"context-section-title"}>Browse by service</div>
+                                <div className={"context-group-tiles"}>
+                                    {groups.map(renderGroupTile)}
                                 </div>
                             </>
                         )}
 
-                        {/* Category pages with nested groups */}
-                        {!searchTerm && currentPage == Page.Triggers && renderGroupedPage(NodeCategoryType.Trigger)}
-                        {!searchTerm && currentPage == Page.Processing && renderGroupedPage(NodeCategoryType.Processing)}
-                        {!searchTerm && currentPage == Page.Outputs && renderGroupedPage(NodeCategoryType.Output)}
-                        {!searchTerm && currentPage == Page.Conditional && renderGroupedPage(NodeCategoryType.Conditional)}
-                        {!searchTerm && currentPage == Page.Loop && renderGroupedPage(NodeCategoryType.Loop)}
+                        {/* A shelf: the services on it. */}
+                        {!searchTerm && view.level === "group" && currentGroup && (
+                            <>
+                                {currentGroup.blurb && (
+                                    <div className={"context-group-blurb"}>{currentGroup.blurb}</div>
+                                )}
+                                {currentGroup.services.map(service => renderServiceRow(currentGroup, service))}
+                            </>
+                        )}
+
+                        {/* A service: its actions. */}
+                        {!searchTerm && view.level === "service" && currentService && (
+                            currentService.actions.map(p => renderActionItem(p))
+                        )}
                     </div>
                 </div>
             )}

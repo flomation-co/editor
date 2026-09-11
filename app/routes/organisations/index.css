@@ -357,6 +357,23 @@
     color: #00ccbb;
 }
 
+/* Link-style setting row action (e.g. Single Sign-On → Configure) */
+.org-setting-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid rgba(0, 170, 156, 0.35);
+    border-radius: 6px;
+    background: rgba(0, 170, 156, 0.12);
+    color: #00ccbb;
+    font-size: 13px;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.org-setting-link:hover { background: rgba(0, 170, 156, 0.2); }
+
 /* ── Legal details form ─────────────────────────────────────────────── */
 
 .org-legal-grid {

@@ -1,0 +1,200 @@
+.sso-actions { margin: 12px 0 16px; }
+
+.sso-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--secondary-font-colour, #d1d5db);
+    font-size: 13px;
+    cursor: pointer;
+}
+.sso-btn:hover { background: rgba(255, 255, 255, 0.09); }
+.sso-btn--primary { background: #00aa9c; border-color: rgba(0, 170, 156, 0.3); color: #fff; }
+.sso-btn--primary:hover { background: #00ccbb; }
+.sso-btn--danger { color: #f87171; }
+.sso-btn--danger:hover { background: rgba(248, 113, 113, 0.12); }
+
+.sso-empty {
+    padding: 24px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 14px;
+    text-align: center;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-top: 12px;
+}
+
+.sso-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.sso-form { display: flex; flex-direction: column; gap: 6px; max-width: 620px; }
+.sso-label { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-top: 8px; }
+.sso-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+    border-radius: 6px;
+    background: #17202e;
+    color: #fff;
+    font-size: 14px;
+    text-transform: none;
+}
+.sso-form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.sso-hint { font-size: 12px; color: rgba(255, 255, 255, 0.4); margin-top: 10px; }
+.sso-hint code, .sso-txt code { background: rgba(255, 255, 255, 0.08); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+.sso-txt { border-color: rgba(0, 170, 156, 0.3); background: rgba(0, 170, 156, 0.06); }
+.sso-txt-title { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #e5e7eb; margin-bottom: 10px; }
+.sso-txt-row { display: flex; align-items: center; gap: 12px; padding: 3px 0; font-size: 13px; }
+.sso-txt-row span { width: 60px; color: rgba(255, 255, 255, 0.5); }
+
+.sso-conn-head { display: flex; align-items: center; gap: 12px; }
+.sso-conn-icon { color: #a78bfa; font-size: 18px; }
+.sso-conn-title { flex: 1; min-width: 0; }
+.sso-conn-name { font-size: 15px; font-weight: 600; color: #e5e7eb; }
+.sso-conn-issuer { font-size: 12px; color: rgba(255, 255, 255, 0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sso-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; }
+.sso-badge--on { background: rgba(46, 255, 56, 0.15); color: #4ade80; }
+.sso-badge--off { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.55); }
+
+.sso-domains { margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 12px; }
+.sso-domains-title { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.55); margin-bottom: 8px; }
+.sso-domain-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.sso-domain-name { flex: 1; min-width: 0; font-size: 14px; color: #e5e7eb; }
+.sso-domain-add { display: flex; gap: 8px; margin-top: 8px; }
+.sso-domain-add .sso-input { max-width: 320px; }
+
+/* Redirect URI + copy fields */
+.sso-redirect { border-color: rgba(0, 170, 156, 0.3); background: rgba(0, 170, 156, 0.06); }
+.sso-redirect-title { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #e5e7eb; margin-bottom: 10px; }
+.sso-copy { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.sso-copy-label { width: 90px; flex-shrink: 0; font-size: 12px; color: rgba(255, 255, 255, 0.5); }
+.sso-copy-value {
+    flex: 1; min-width: 0;
+    overflow-x: auto; white-space: nowrap;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 10px; border-radius: 6px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: #e5e7eb;
+}
+
+/* Provider preset picker */
+.sso-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.sso-preset {
+    padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03); color: #d1d5db; font-size: 13px; cursor: pointer;
+}
+.sso-preset:hover { background: rgba(255, 255, 255, 0.07); }
+.sso-preset--active { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.45); color: #a78bfa; }
+.sso-label-note { font-weight: 400; color: rgba(255, 255, 255, 0.4); }
+
+/* Redirect URI block inside the connection form */
+.sso-form-redirect {
+    margin: 10px 0 6px;
+    padding: 12px;
+    border: 1px solid rgba(0, 170, 156, 0.28);
+    background: rgba(0, 170, 156, 0.06);
+    border-radius: 8px;
+}
+.sso-form-redirect .sso-copy { padding-top: 6px; }
+
+/* Provider setup-doc link */
+.sso-docs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 4px;
+    font-size: 12px;
+    color: #a78bfa;
+    text-decoration: none;
+}
+.sso-docs-link:hover { text-decoration: underline; }
+.sso-docs-ext { font-size: 10px; opacity: 0.8; }
+
+/* Let the "Add domain" button match the input's height (flex row stretches). */
+.sso-domain-add .sso-btn { height: auto; }
+
+/* Group→Team mapping */
+.sso-team-select { max-width: 240px; text-transform: none; }
+.sso-domain-add .sso-team-select { height: auto; }
+
+/* Directory-credential block (group picker setup) */
+.sso-directory {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+.sso-directory-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #c4b5fd;
+    margin-bottom: 8px;
+}
+.sso-textarea {
+    min-height: 88px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    text-transform: none;
+    resize: vertical;
+}
+
+/* Searchable group picker */
+.sso-mapping-conn { margin: 4px 0 8px; }
+.sso-group-picker { position: relative; flex: 1; min-width: 0; }
+.sso-group-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #17141f;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    padding: 4px;
+}
+.sso-group-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #ede9fe;
+    cursor: pointer;
+    font-size: 13px;
+}
+.sso-group-item:hover { background: rgba(139, 92, 246, 0.16); }
+.sso-group-item--muted { color: #8b8698; cursor: default; font-size: 12px; }
+.sso-group-item--muted:hover { background: transparent; }
+.sso-group-name { font-weight: 500; }
+.sso-group-id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: #8b8698;
+    word-break: break-all;
+}

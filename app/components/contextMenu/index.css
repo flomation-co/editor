@@ -325,3 +325,168 @@
         animation: slideUp 0.2s ease-out;
     }
 }
+
+/* ── Service-led browse ──────────────────────────────────────────────────
+   The menu opens on shelves of services rather than the five node types and
+   a category tree, so it needs a trail (where am I), tiles (the shelves) and
+   a chip on search results (which service is this from). */
+
+.context-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.95em;
+    color: rgba(255,255,255,0.45);
+}
+
+.context-crumb {
+    background: none;
+    border: 0;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font: inherit;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.context-crumb:hover:not(:disabled) {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+}
+
+.context-crumb.here {
+    color: rgba(255,255,255,0.85);
+    font-weight: 600;
+    cursor: default;
+}
+
+.context-crumb-sep {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(255,255,255,0.22);
+}
+
+.context-section-title {
+    padding: 11px 10px 5px;
+    font-size: 0.75em;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    font-weight: 650;
+}
+
+.context-group-blurb {
+    padding: 8px 12px 4px;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.95em;
+}
+
+.context-group-tiles {
+    display: grid;
+    /* minmax(0, 1fr) rather than 1fr: a plain fr track floors at min-content,
+       and the widest shelf name ("Calendars & scheduling") then pushed the
+       right-hand column past the menu's 340px edge. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 2px 4px 6px;
+}
+
+.context-group-tile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 7px;
+    padding: 8px 9px;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.context-group-tile:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(139,0,222,0.35);
+}
+
+/* Cloud is 59% of the catalogue and wanted by a minority of flows. It keeps
+   its place on the shelf, but it does not get to shout. */
+.context-group-tile.demoted {
+    opacity: 0.6;
+}
+
+.context-group-tile.demoted:hover {
+    opacity: 1;
+}
+
+.context-group-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.75);
+}
+
+.context-group-tile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.context-group-tile-name {
+    font-weight: 600;
+    font-size: 1.0em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.context-group-tile-count {
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.35);
+    font-variant-numeric: tabular-nums;
+    margin-top: 1px;
+}
+
+.context-service-row .category-chevron {
+    margin-left: auto;
+}
+
+/* On a search result the service is the context that makes the name legible:
+   "Create Record" only means something once you know it is Airtable's. */
+.context-service-chip {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 20px;
+    background: rgba(0,170,156,0.12);
+    border: 1px solid rgba(0,170,156,0.22);
+    color: rgba(0,170,156,0.95);
+    font-size: 0.72em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+    .context-group-tiles {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.context-node-action--compact {
+    padding: 6px 12px;
+    align-items: center;
+}
+
+.context-node-action--compact .node-type-icon-column {
+    align-items: center;
+}
