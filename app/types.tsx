@@ -214,7 +214,10 @@ export type PluginDefinition = {
     // description rather than showing nothing.
     summary?: string,
     type: NodeCategoryType,
-    icon: string[],
+    // A single icon name, not a list: the manifest ships "bell+plus" style
+    // composites as one string. Typed as string[] since the cutover, which is
+    // why every <Icon name={plugin.icon}> was a type error.
+    icon: string,
     inputs?: ParameterDefinition[],
     outputs?: ParameterDefinition[],
     category?: PluginCategory
