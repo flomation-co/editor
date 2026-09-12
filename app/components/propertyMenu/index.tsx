@@ -807,9 +807,23 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                 // secret, so the (hidden) signing fields are populated
                                                 // with nothing typed.
                                                 const hasOCIKey = i.name === "credential" && siblingInputs.some((x: any) => x.name === "tenancy_ocid");
+                                                // Google Ads actions pair the credential with an optional
+                                                // login_customer_id sibling, which is the manager (MCC)
+                                                // account an agency acts through. It is captured at connect
+                                                // time only when the login reaches exactly one manager, so
+                                                // the accessor resolves to empty for a direct advertiser —
+                                                // which is correct, since sending that header for a
+                                                // non-manager token is an authorisation error.
+                                                //
+                                                // customer_id is deliberately NOT auto-filled: which ad
+                                                // account a flow acts on is a real choice, and a login that
+                                                // reaches several advertisers has no captured default, so
+                                                // filling it would put an accessor resolving to empty into a
+                                                // REQUIRED field.
+                                                const hasLoginCustomer = i.name === "credential" && siblingInputs.some((x: any) => x.name === "login_customer_id");
                                                 const handleCredentialChange = (property: string, value: any) => {
                                                     onValueChange(property, value);
-                                                    if (!hasTenant && !hasCompany && !hasAWSRole && !hasOCIKey) return;
+                                                    if (!hasTenant && !hasCompany && !hasAWSRole && !hasOCIKey && !hasLoginCustomer) return;
                                                     const match = String(value ?? "").match(/\$\{credentials\.([^}.]+)\}/);
                                                     if (!match) return;
                                                     const credName = match[1];
@@ -824,6 +838,9 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         if (hasSandbox) {
                                                             onValueChange("sandbox", "${credentials." + credName + ".sandbox}");
                                                         }
+                                                    }
+                                                    if (hasLoginCustomer) {
+                                                        onValueChange("login_customer_id", "${credentials." + credName + ".login_customer_id}");
                                                     }
                                                     if (hasAWSRole) {
                                                         // The credential's dedicated Flomation IAM user keys
