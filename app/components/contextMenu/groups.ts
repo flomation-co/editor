@@ -21,6 +21,7 @@ export const GROUP_ORDER: string[] = [
     "Documents",
     "Calendars",
     "Sales & CRM",
+    "Advertising",
     "Work tracking",
     "Finance",
     "Developer tools",
@@ -39,6 +40,7 @@ export const GROUP_ICON: Record<string, string> = {
     "Documents": "file-lines",
     "Calendars": "calendar",
     "Sales & CRM": "user-group",
+    "Advertising": "bullhorn",
     "Work tracking": "list-check",
     "Finance": "cart-shopping",
     "Developer tools": "code",
@@ -57,6 +59,7 @@ export const GROUP_BLURB: Record<string, string> = {
     "Documents": "Drives, documents, spreadsheets and mail",
     "Calendars": "Bookings, calendars and availability",
     "Sales & CRM": "Contacts, pipelines and campaigns",
+    "Advertising": "Paid advertising — campaigns, budgets, keywords and reporting",
     "Work tracking": "Boards, tickets and issues",
     "Finance": "Payments, ledgers and storefronts",
     "Developer tools": "Repositories, pipelines and machines",
@@ -162,6 +165,13 @@ const GROUP_OF_SERVICE: Record<string, string> = {
     "google/calendar": "Calendars",
     "microsoft/outlook": "Calendars",
     "google/gmail": "Messaging",
+
+    // The ad platforms live under the "marketing" category key alongside
+    // SendGrid and Mailchimp, which puts them on the Messaging shelf — nobody
+    // looks for their ad account under Messaging. Overriding by service rather
+    // than remapping the category keeps the email tools where they belong.
+    "marketing/meta_ads": "Advertising",
+    "marketing/google_ads": "Advertising",
 };
 
 export type Service = {
