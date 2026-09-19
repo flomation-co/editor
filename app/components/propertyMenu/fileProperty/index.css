@@ -20,7 +20,7 @@
 
 .file-asset-drop:hover {
     border-color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--text);
 }
 

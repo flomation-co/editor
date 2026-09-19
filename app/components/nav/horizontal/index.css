@@ -2,7 +2,7 @@
     width: 100%;
     height: 50px;
     padding: 5px 8px;
-    border-bottom: 1px solid var(--primary-background);
+    border-bottom: 1px solid var(--border);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -26,6 +26,9 @@
 
 .flo-logo {
     height: 20px;
+    /* Height-only sizing on a flex child stretches to the container width and
+       skews the mark; auto pins it to the aspect ratio. */
+    width: auto;
     margin: 10px;
 }
 

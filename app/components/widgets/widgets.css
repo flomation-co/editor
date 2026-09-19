@@ -6,7 +6,7 @@
     background: var(--primary-background);
     border-radius: 8px;
     padding: 24px;
-    border: 1px solid var(--primary-foreground);
+    border: 1px solid var(--border);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -317,7 +317,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid var(--primary-foreground);
+    border: 1px solid var(--border);
 }
 
 .upgrade-button.primary {

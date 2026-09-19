@@ -183,11 +183,11 @@
 
 .actions-menu-item--active {
     color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
 }
 
 .actions-menu-item--active:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -355,7 +355,7 @@
 .ghost-add-panel:hover {
     border-color: var(--border-2);
     color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
 }
 
 /* ═══════════════════════════════════════════════
@@ -521,7 +521,7 @@
 }
 
 .flow-autocomplete-option--selected {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -557,8 +557,8 @@
 .flow-key-tag {
     padding: 2px 6px;
     border-radius: 4px;
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     color: var(--teal);
     font-size: 10px;
     font-family: monospace;
@@ -764,9 +764,9 @@
 
 .key-suggestion-btn {
     padding: 3px 8px;
-    border: 1px solid var(--border-2);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 4px;
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     font-size: 10px;
     font-family: monospace;
@@ -775,7 +775,7 @@
 }
 
 .key-suggestion-btn:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -823,13 +823,13 @@
 }
 
 .panel-type-option--selected {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     border-color: var(--border-2);
     color: var(--teal);
 }
 
 .panel-type-option--selected:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     border-color: var(--border-2);
     color: var(--teal);
 }

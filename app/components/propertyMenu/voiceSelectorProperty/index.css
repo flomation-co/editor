@@ -190,7 +190,7 @@
 }
 
 .voice-preview-btn:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     border-color: var(--border-2);
     color: var(--teal);
 }
@@ -234,12 +234,12 @@
 }
 
 .voice-tab--active {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
 .voice-tab--active:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -266,8 +266,8 @@
 }
 
 .voice-add-btn {
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     color: var(--teal);
     padding: 5px 10px;
     border-radius: 4px;
@@ -282,7 +282,7 @@
 }
 
 .voice-add-btn:hover {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 

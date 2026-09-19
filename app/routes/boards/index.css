@@ -70,7 +70,7 @@
 .boards-action-btn--primary {
     background: var(--teal);
     border-color: var(--border-2);
-    color: var(--soft);
+    color: #fff;
 }
 
 .boards-action-btn--primary > span {
@@ -172,9 +172,9 @@
 }
 
 .board-card-badge--public {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
-    border: 1px solid var(--border-2);
+    border: 1px solid rgba(47, 107, 100, 0.28);
 }
 
 .board-card-badge--private {
@@ -289,7 +289,7 @@
     border: none;
     border-radius: 8px;
     background: var(--teal);
-    color: var(--soft);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;

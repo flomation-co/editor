@@ -33,8 +33,8 @@
 .trigger-inputs-add-btn {
     font-size: 11px;
     padding: 4px 10px;
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 6px;
     color: var(--teal);
     cursor: pointer;
@@ -346,7 +346,7 @@
     background: var(--teal);
     border: none;
     border-radius: 6px;
-    color: var(--text);
+    color: #fff;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;

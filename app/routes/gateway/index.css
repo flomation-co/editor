@@ -5,7 +5,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     height: 34px; padding: 0 14px; margin-bottom: 20px;
     background: var(--teal); border: 1px solid var(--border-2); border-radius: 6px;
-    color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s ease;
+    color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s ease;
 }
 .gw-create-btn:hover { background: var(--teal); }
 
@@ -32,7 +32,7 @@
     background: transparent; border: 1px solid var(--border-2); color: var(--muted);
 }
 .gw-btn:hover { background: var(--surface-2); }
-.gw-btn--primary { background: var(--teal); border-color: var(--border-2); color: var(--text); }
+.gw-btn--primary { background: var(--teal); border-color: var(--border-2); color: #fff; }
 .gw-btn--primary:hover { background: var(--teal); }
 .gw-btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .gw-btn--danger { background: var(--danger-fill); border-color: var(--danger-border); color: var(--text); }
@@ -96,7 +96,7 @@
     border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
     background: var(--surface-hover); color: var(--muted);
 }
-.gw-method--get { background: var(--surface-2); color: var(--teal); }
+.gw-method--get { background: rgba(47, 107, 100, 0.12); color: var(--teal); }
 .gw-method--post { background: var(--surface); color: var(--lilac); }
 .gw-method--put, .gw-method--patch { background: var(--warning-fill); color: var(--warning); }
 .gw-method--delete { background: var(--danger-fill); color: var(--danger); }
@@ -161,7 +161,7 @@
 .gwt-send {
     display: inline-flex; align-items: center; justify-content: center; gap: 7px;
     margin-top: 4px; padding: 9px 12px; border: none; border-radius: 6px; cursor: pointer;
-    background: var(--teal); color: var(--text); font-size: 13px; font-weight: 600;
+    background: var(--teal); color: #fff; font-size: 13px; font-weight: 600;
     transition: background 0.12s ease;
 }
 .gwt-send:hover:not(:disabled) { background: var(--teal); }

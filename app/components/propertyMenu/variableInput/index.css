@@ -255,7 +255,7 @@
 }
 
 .variable-pill--env {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
     color: var(--teal);
     --pill-color: var(--teal);
@@ -355,7 +355,7 @@
 }
 
 .variable-autocomplete-badge--env {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -375,7 +375,7 @@
 }
 
 .variable-pill--var {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
     color: var(--teal);
     --pill-color: var(--teal);
@@ -384,7 +384,7 @@
 }
 
 .variable-autocomplete-badge--var {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 

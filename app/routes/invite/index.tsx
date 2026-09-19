@@ -5,7 +5,7 @@ import api from "~/lib/api";
 import useConfig from "~/components/config";
 import useCookieToken from "~/components/cookie";
 import {useOrganisation} from "~/context/organisation/use";
-import logo from "~/components/nav/horizontal/flomation-wordtype-small-white.png";
+import logo from "~/components/nav/horizontal/flomation-wordmark-ink.png";
 
 export function meta({}: Route.MetaArgs) {
     return [

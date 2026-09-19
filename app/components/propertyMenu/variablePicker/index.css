@@ -36,8 +36,8 @@
 }
 
 .vp-pill--env {
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     color: var(--teal);
 }
 
@@ -76,8 +76,8 @@
    any future picker-mode input that uses them gets a coherent look
    instead of falling back to the unstyled default. */
 .vp-pill--var {
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     color: var(--teal);
 }
 
@@ -190,7 +190,7 @@
 }
 
 .vp-badge--env {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -215,7 +215,7 @@
 }
 
 .vp-badge--var {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 

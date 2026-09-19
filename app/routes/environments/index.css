@@ -18,7 +18,7 @@
     background: var(--teal);
     border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -69,7 +69,7 @@
     background: var(--teal);
     border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -154,7 +154,7 @@
     align-items: center;
     justify-content: center;
     font-size: 15px;
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     flex-shrink: 0;
 }

@@ -20,7 +20,13 @@
 :root {
   --background-colour: var(--bg);
   --primary-foreground: var(--violet);
-  --primary-background: var(--bg);
+
+  /* A panel, not the page.
+     On the dark scheme this was #33263a lifted off a #161019 ground, so its
+     role was always "surface". Aliasing it to the page colour gave thirty
+     panels the same fill as what they sit on, and the dashboard columns lost
+     every edge between them. */
+  --primary-background: var(--surface);
   --primary-background-muted: var(--surface-2);
   --secondary-background: var(--teal);
   --primary-font-colour: var(--text);
@@ -150,7 +156,7 @@ body {
      to inherit white and on paper it inherited near-black: 1.03:1. A button
      carrying its own ground has to carry its own ink. */
   background: var(--grad-cta);
-  color: var(--text);
+  color: #fff;
   box-shadow: var(--glow-cta);
   text-align: center;
   border-radius: 10px;
@@ -247,8 +253,8 @@ body {
 }
 
 .execution-state-running {
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
+  background: rgba(47, 107, 100, 0.12);
+  border: 1px solid rgba(47, 107, 100, 0.28);
   color: var(--teal);
   animation: pulse-glow 2s ease-in-out infinite;
 }
@@ -778,8 +784,8 @@ a.active {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
+  background: rgba(47, 107, 100, 0.12);
+  border: 1px solid rgba(47, 107, 100, 0.28);
   color: var(--teal);
 }
 

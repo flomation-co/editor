@@ -101,7 +101,7 @@
 
 .modal-btn-primary {
     background: var(--teal);
-    color: var(--text);
+    color: #fff;
     border-color: transparent;
 }
 

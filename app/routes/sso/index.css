@@ -14,7 +14,7 @@
     cursor: pointer;
 }
 .sso-btn:hover { background: var(--surface-hover); }
-.sso-btn--primary { background: var(--teal); border-color: var(--border-2); color: var(--text); }
+.sso-btn--primary { background: var(--teal); border-color: var(--border-2); color: #fff; }
 .sso-btn--primary:hover { background: var(--teal); }
 .sso-btn--danger { color: var(--danger); }
 .sso-btn--danger:hover { background: var(--danger-fill); }

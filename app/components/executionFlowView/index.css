@@ -98,7 +98,7 @@
 
 .exec-node-status-badge--running {
     background: var(--teal);
-    color: var(--text);
+    color: #fff;
 }
 
 .exec-node-status-badge--success {
@@ -436,9 +436,9 @@
 }
 
 .node-inspector-badge--running {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
-    border: 1px solid var(--border-2);
+    border: 1px solid rgba(47, 107, 100, 0.28);
 }
 
 .node-inspector-badge--pending {
@@ -598,8 +598,8 @@
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 5px;
     color: var(--teal);
     font-size: 12px;
@@ -663,7 +663,7 @@
 }
 
 .ni-type-badge--object {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }
 
@@ -758,7 +758,7 @@
     top: -6px;
     left: -6px;
     background: var(--violet);
-    color: var(--text);
+    color: #fff;
     font-size: 10px;
     padding: 1px 5px;
     border-radius: 8px;

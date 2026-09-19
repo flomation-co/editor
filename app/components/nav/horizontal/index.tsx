@@ -1,6 +1,6 @@
 import "./index.css"
 import type {NavItem} from "~/types";
-import logo from "./flomation-wordtype-small-white.png";
+import logo from "./flomation-wordmark-ink.png";
 import {Link, useNavigate} from "react-router";
 import {ProfileBall} from "~/components/profileBall";
 import useConfig from "~/components/config";

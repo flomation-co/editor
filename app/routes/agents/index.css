@@ -225,7 +225,7 @@
     border-radius: 6px;
     border: 1px solid var(--border-2);
     background: var(--teal);
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;

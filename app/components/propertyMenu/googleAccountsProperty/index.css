@@ -65,7 +65,7 @@
 .google-account-purpose {
     color: var(--teal);
     font-size: 10px;
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     padding: 1px 5px;
     border-radius: 3px;
 }
@@ -109,8 +109,8 @@
     align-items: center;
     gap: 6px;
     padding: 7px 10px;
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 6px;
     color: var(--teal);
     font-size: 12px;

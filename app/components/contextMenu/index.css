@@ -468,8 +468,8 @@
     margin-left: 6px;
     padding: 1px 6px;
     border-radius: 20px;
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     color: var(--teal);
     font-size: 0.72em;
     font-weight: 600;

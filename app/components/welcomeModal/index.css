@@ -136,7 +136,7 @@
 
 .welcome-btn-primary {
   background: linear-gradient(135deg, var(--violet), var(--surface-2));
-  color: var(--text);
+  color: #fff;
   border: 1px solid var(--border-2);
   border-radius: 8px;
   padding: 10px 22px;

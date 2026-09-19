@@ -4,7 +4,10 @@
     display: inline-block;
     overflow: hidden;
     border-right: 1px solid var(--border);
-    background: var(--surface-sunken);
+    /* A 3% tint is the page with extra steps. The sidebar is a panel, so it
+       takes the panel surface and the page keeps its own colour behind the
+       content -- which is what separates the two without a heavy rule. */
+    background: var(--surface);
     transition: width 0.15s ease;
     flex-shrink: 0;
 }

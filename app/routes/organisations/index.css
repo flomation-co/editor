@@ -55,7 +55,7 @@
     background: var(--teal);
     border: none;
     border-radius: 8px;
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -363,9 +363,9 @@
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    border: 1px solid var(--border-2);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 6px;
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     font-size: 13px;
     text-decoration: none;
@@ -430,7 +430,7 @@
     background: var(--teal);
     border: none;
     border-radius: 8px;
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;

@@ -78,7 +78,7 @@
 .flows-action-btn--primary {
     background: var(--teal);
     border-color: var(--border-2);
-    color: var(--text);
+    color: #fff;
 }
 
 .flows-action-btn--primary > span {

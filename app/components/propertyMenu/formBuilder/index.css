@@ -750,7 +750,7 @@
     font-size: 10px;
     font-weight: 500;
     color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     border-radius: 20px;
     padding: 2px 9px;
 }
@@ -771,7 +771,7 @@
 }
 
 .fb-datasource-desc code {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     padding: 1px 4px;
     border-radius: 4px;
@@ -820,7 +820,7 @@
 }
 
 .fb-options-source-hint code {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     padding: 1px 4px;
     border-radius: 4px;
@@ -888,7 +888,7 @@
     gap: 4px;
     padding: 1px 7px;
     border-radius: 10px;
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     font-size: 10px;
     font-weight: 600;
@@ -948,8 +948,8 @@
 .fb-translate-banner strong { color: var(--text); }
 .fb-translate-exit {
     flex: 0 0 auto;
-    border: 1px solid var(--border-2);
-    background: var(--surface-2);
+    border: 1px solid rgba(47, 107, 100, 0.28);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
     font-size: 11px;
     font-weight: 600;
@@ -992,7 +992,7 @@
 .fb-lang-chip:hover { border-color: var(--border-3); }
 .fb-lang-chip--active {
     border-color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     box-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16) inset;
 }
 .fb-lang-chip-main {

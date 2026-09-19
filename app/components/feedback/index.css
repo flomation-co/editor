@@ -8,7 +8,7 @@
     background: var(--teal);
     border: none;
     border-radius: 8px 0 0 8px;
-    color: var(--text);
+    color: #fff;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -145,7 +145,7 @@
     background: var(--teal);
     border: none;
     border-radius: 8px;
-    color: var(--text);
+    color: #fff;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;

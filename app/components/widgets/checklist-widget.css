@@ -128,13 +128,13 @@
 
 .checklist-check:hover:not(:disabled) {
     border-color: var(--teal);
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
 }
 
 .checklist-check.checked {
     border-color: var(--teal);
     background: var(--teal);
-    color: var(--text);
+    color: #fff;
     cursor: default;
 }
 

@@ -81,6 +81,6 @@
 }
 
 .property-menu-select-option.active {
-    background: var(--surface-2);
+    background: rgba(47, 107, 100, 0.12);
     color: var(--teal);
 }

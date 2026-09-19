@@ -1,7 +1,14 @@
 .card {
-    border: 1px solid var(--primary-background);
+    /* The card carried no fill: on a dark page a single lifted rule was enough
+       to separate it from the ground. Paper needs the opposite -- the card is
+       the lighter surface and the rule is the quiet part -- or neighbouring
+       columns run into each other with nothing between them. */
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--lift);
     min-height: 100px;
-    padding: 10px;
+    padding: 16px;
     align-items: center;
     justify-content: center;
     display: block;
