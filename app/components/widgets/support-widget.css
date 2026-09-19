@@ -12,7 +12,7 @@
 .support-widget-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin: 0;
     flex: 1;
 }
@@ -21,11 +21,11 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: rgba(99, 102, 241, 0.12);
+    background: var(--info-fill);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #818cf8;
+    color: var(--info);
 }
 
 .support-widget-badge svg {
@@ -44,8 +44,8 @@
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
     text-decoration: none;
     color: inherit;
@@ -54,8 +54,8 @@
 }
 
 .support-channel:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border-color: var(--border);
 }
 
 .support-channel-icon {
@@ -74,18 +74,18 @@
 }
 
 .support-channel-icon--email {
-    background: rgba(139, 92, 246, 0.12);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .support-channel-icon--github {
-    background: rgba(255, 255, 255, 0.06);
-    color: #d1d5db;
+    background: var(--surface-2);
+    color: var(--dim);
 }
 
 .support-channel-icon--discord {
-    background: rgba(88, 101, 242, 0.12);
-    color: #818cf8;
+    background: var(--info-fill);
+    color: var(--info);
 }
 
 .support-channel-text {
@@ -98,23 +98,23 @@
 .support-channel-title {
     font-size: 13px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .support-channel-detail {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .support-widget-footer {
     margin-top: 14px;
     padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .support-widget-footer-icon {
@@ -124,11 +124,11 @@
 }
 
 .support-widget-footer a {
-    color: #00aa9c;
+    color: var(--teal);
     text-decoration: none;
     font-weight: 500;
 }
 
 .support-widget-footer a:hover {
-    color: #00ccbb;
+    color: var(--teal);
 }

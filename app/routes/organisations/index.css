@@ -4,7 +4,7 @@
 }
 
 .org-description {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-size: 14px;
     line-height: 1.6;
     max-width: 500px;
@@ -14,10 +14,10 @@
 .org-section-header {
     font-size: 16px;
     font-weight: 600;
-    color: #d1d5db;
+    color: var(--dim);
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border);
 }
 
 .org-create-form {
@@ -32,7 +32,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -42,7 +42,7 @@
 }
 
 .org-create-form input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .org-create-form input:focus {
@@ -52,10 +52,10 @@
 .org-create-form button,
 .org-invite-form button {
     padding: 8px 16px;
-    background: #00aa9c;
+    background: var(--teal);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--text);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -77,15 +77,15 @@
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
 }
 
 .org-member-name {
     flex: 1;
     font-size: 14px;
-    color: #e5e7eb;
+    color: var(--soft);
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -93,7 +93,7 @@
 
 .org-member-email {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -109,13 +109,13 @@
 }
 
 .org-member-role.admin {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .org-member-role.member {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--surface-2);
+    color: var(--dim);
 }
 
 .org-action-button {
@@ -124,23 +124,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     cursor: pointer;
     font-size: 12px;
     transition: background 0.15s ease;
 }
 
 .org-action-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: var(--surface-hover);
+    color: var(--text);
 }
 
 .org-action-button.danger:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .org-invite-form {
@@ -156,7 +156,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -166,7 +166,7 @@
 }
 
 .org-invite-form input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .org-invite-form input:focus {
@@ -184,8 +184,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
 }
 
@@ -194,12 +194,12 @@
     display: flex;
     flex-direction: column;
     font-size: 13px;
-    color: #d1d5db;
+    color: var(--dim);
 }
 
 .org-invite-expires {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     margin-top: 2px;
 }
 
@@ -208,8 +208,8 @@
     align-items: center;
     gap: 16px;
     padding: 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
 }
 
@@ -220,13 +220,13 @@
 .org-setting-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
     margin-bottom: 4px;
 }
 
 .org-setting-description {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     line-height: 1.5;
 }
 
@@ -248,7 +248,7 @@
     position: absolute;
     cursor: pointer;
     inset: 0;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
     border-radius: 24px;
     transition: background 0.2s ease;
 }
@@ -260,13 +260,13 @@
     height: 18px;
     left: 3px;
     bottom: 3px;
-    background: #fff;
+    background: var(--surface);
     border-radius: 50%;
     transition: transform 0.2s ease;
 }
 
 .org-toggle input:checked + .org-toggle-slider {
-    background: #8b5cf6;
+    background: var(--violet);
 }
 
 .org-toggle input:checked + .org-toggle-slider::before {
@@ -281,9 +281,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(139, 92, 246, 0.12);
+    background: var(--surface-2);
     border-radius: 6px;
-    color: #a78bfa;
+    color: var(--lilac);
     font-size: 13px;
     flex-shrink: 0;
 }
@@ -308,45 +308,45 @@
 }
 
 .org-agent-status.running {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .org-agent-status.running .org-agent-status-dot {
-    background: #22c55e;
+    background: var(--success-fill);
 }
 
 .org-agent-status.stopped {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.4);
+    background: var(--surface-2);
+    color: var(--dimmer);
 }
 
 .org-agent-status.stopped .org-agent-status-dot {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--surface-active);
 }
 
 .org-agent-status.paused {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .org-agent-status.paused .org-agent-status-dot {
-    background: #f59e0b;
+    background: var(--warning-fill);
 }
 
 .org-agent-status.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .org-agent-status.error .org-agent-status-dot {
-    background: #ef4444;
+    background: var(--danger-fill);
 }
 
 .org-switch-link {
     font-size: 11px;
     font-weight: 500;
-    color: #00aa9c;
+    color: var(--teal);
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
@@ -354,7 +354,7 @@
 }
 
 .org-switch-link:hover {
-    color: #00ccbb;
+    color: var(--teal);
 }
 
 /* Link-style setting row action (e.g. Single Sign-On → Configure) */
@@ -363,16 +363,16 @@
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    border: 1px solid rgba(0, 170, 156, 0.35);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    background: rgba(0, 170, 156, 0.12);
-    color: #00ccbb;
+    background: var(--surface-2);
+    color: var(--teal);
     font-size: 13px;
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
 }
-.org-setting-link:hover { background: rgba(0, 170, 156, 0.2); }
+.org-setting-link:hover { background: var(--surface-2); }
 
 /* ── Legal details form ─────────────────────────────────────────────── */
 
@@ -398,14 +398,14 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .org-legal-field input {
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -415,7 +415,7 @@
 }
 
 .org-legal-field input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .org-legal-field input:focus {
@@ -427,10 +427,10 @@
     align-items: center;
     gap: 6px;
     padding: 9px 18px;
-    background: #00aa9c;
+    background: var(--teal);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--text);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -439,7 +439,7 @@
 }
 
 .org-legal-save:hover:not(:disabled) {
-    background: #00ccbb;
+    background: var(--teal);
 }
 
 .org-legal-save:disabled {
@@ -460,7 +460,7 @@
 }
 
 .org-legal-req {
-    color: #f59e0b;
+    color: var(--warning);
     font-weight: 600;
 }
 
@@ -473,5 +473,5 @@
 
 .org-legal-hint {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
 }

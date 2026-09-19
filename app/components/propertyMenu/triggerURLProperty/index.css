@@ -1,6 +1,6 @@
 .trigger-url-section {
     padding: 10px 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--border);
     margin-top: 8px;
 }
 
@@ -9,13 +9,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-bottom: 6px;
 }
 
 .trigger-url-hint {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-style: italic;
     padding: 8px 0;
 }
@@ -23,8 +23,8 @@
 .trigger-url-box {
     display: flex;
     align-items: stretch;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--border);
     border-radius: 6px;
     overflow: hidden;
 }
@@ -33,7 +33,7 @@
     flex: 1;
     padding: 8px 10px;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     word-break: break-all;
     line-height: 1.4;
     font-family: 'Courier New', monospace;
@@ -44,18 +44,18 @@
     align-items: center;
     justify-content: center;
     width: 34px;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
     border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.4);
+    border-left: 1px solid var(--border);
+    color: var(--dimmer);
     cursor: pointer;
     font-size: 12px;
     transition: background 0.1s ease;
 }
 
 .trigger-url-copy:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: var(--surface-hover);
+    color: var(--text);
 }
 
 /* Multi-line embed snippet (e.g. the HTML form) — a scrollable code block with
@@ -73,7 +73,7 @@
     overflow: auto;
     font-size: 11px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
     font-family: 'Courier New', monospace;
     white-space: pre;
     tab-size: 2;

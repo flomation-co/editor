@@ -15,10 +15,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--surface-raise);
+    color: var(--dim);
     font-size: 13px;
     cursor: pointer;
     transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
@@ -32,24 +32,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
     border-radius: 6px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--faint);
     font-size: 13px;
     cursor: not-allowed;
 }
 
 .pagination-button:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    border-color: var(--border-2);
+    color: var(--soft);
 }
 
 .pagination-button-active {
-    background: rgba(139, 92, 246, 0.15);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #a78bfa;
+    background: var(--surface-2);
+    border-color: var(--border-2);
+    color: var(--lilac);
 }
 
 .pagination-ellipsis {
@@ -58,7 +58,7 @@
     justify-content: center;
     min-width: 28px;
     height: 36px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-size: 14px;
     letter-spacing: 2px;
 }

@@ -1,6 +1,6 @@
 .form-builder {
     padding: 14px 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--border);
     margin-top: 10px;
 }
 
@@ -18,7 +18,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-bottom: 4px;
 }
 
@@ -27,26 +27,26 @@
     margin-top: 5px;
     font-size: 11px;
     line-height: 1.4;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .fb-hint strong {
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--soft);
     font-weight: 700;
 }
 
 .fb-hint em {
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--soft);
     font-style: italic;
 }
 
 .fb-input {
     width: 100%;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     font-family: inherit;
     outline: none;
@@ -55,7 +55,7 @@
 }
 
 .fb-input:focus {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: var(--border-2);
 }
 
 .fb-input-sm {
@@ -66,10 +66,10 @@
 .fb-select {
     width: 100%;
     padding: 6px 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 12px;
     font-family: inherit;
     outline: none;
@@ -83,19 +83,19 @@
 }
 
 .fb-select:focus {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: var(--border-2);
 }
 
 .fb-select option {
-    background: #1a1a2e;
-    color: #d1d5db;
+    background: var(--surface);
+    color: var(--dim);
 }
 
 /* ── Page container ── */
 
 .fb-page {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
@@ -107,13 +107,13 @@
     justify-content: space-between;
     margin-bottom: 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--border);
 }
 
 .fb-page-title {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -132,14 +132,14 @@
 
 .fb-component-card {
     padding: 12px;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
     transition: border-color 0.15s ease;
 }
 
 .fb-component-card:hover {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-2);
 }
 
 /* Top row: drag handle, field number badge, actions */
@@ -159,16 +159,16 @@
 .fb-field-badge {
     font-size: 10px;
     font-weight: 600;
-    color: rgba(139, 92, 246, 0.8);
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.15);
+    color: var(--lilac);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
     border-radius: 4px;
     padding: 2px 8px;
     letter-spacing: 0.3px;
 }
 
 .fb-grip {
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--faint);
     font-size: 10px;
     cursor: grab;
 }
@@ -200,7 +200,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 /* Bottom row: required toggle + field name */
@@ -212,7 +212,7 @@
     gap: 8px 16px;
     margin-top: 10px;
     padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--border);
 }
 
 .fb-toggle-label {
@@ -220,7 +220,7 @@
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
@@ -229,7 +229,7 @@
 .fb-toggle-label--prominent {
     align-items: flex-start;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--muted);
     line-height: 1.5;
 }
 .fb-toggle-label--prominent strong {
@@ -240,12 +240,12 @@
 .fb-toggle-label--prominent .fb-toggle-desc {
     display: block;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     font-weight: 400;
 }
 .fb-toggle-label--prominent code {
-    background: rgba(244, 114, 182, 0.15);
-    color: #f9a8d4;
+    background: var(--surface-2);
+    color: var(--lilac);
     padding: 1px 4px;
     border-radius: 4px;
     font-size: 10px;
@@ -264,7 +264,7 @@
     max-height: 16px;
     margin: 0;
     padding: 0;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--surface-active);
     border: none;
     border-radius: 8px;
     position: relative;
@@ -281,23 +281,23 @@
     left: 2px;
     width: 12px;
     height: 12px;
-    background: rgba(255, 255, 255, 0.45);
+    background: var(--surface-2);
     border-radius: 50%;
     transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .fb-toggle-label input[type="checkbox"]:checked {
-    background: rgba(139, 92, 246, 0.5);
+    background: var(--surface-2);
 }
 
 .fb-toggle-label input[type="checkbox"]:checked::after {
     transform: translateX(12px);
-    background: #c4b5fd;
+    background: var(--surface-2);
 }
 
 .fb-field-name {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-family: 'SF Mono', 'Fira Code', monospace;
     letter-spacing: 0.3px;
 }
@@ -313,7 +313,7 @@
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     cursor: pointer;
     font-size: 9px;
     padding: 0;
@@ -321,9 +321,9 @@
 }
 
 .fb-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--surface-hover);
+    border-color: var(--border);
+    color: var(--muted);
 }
 
 .fb-icon-btn:disabled {
@@ -332,20 +332,20 @@
 }
 
 .fb-icon-btn.fb-danger:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    background: var(--danger-fill);
+    border-color: var(--danger-border);
+    color: var(--danger);
 }
 
 /* Active "disable option" toggle — amber to read as "shown but off". */
 .fb-icon-btn.fb-active {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.25);
-    color: #fbbf24;
+    background: var(--warning-fill);
+    border-color: var(--warning-border);
+    color: var(--warning);
 }
 .fb-icon-btn.fb-active:hover {
-    background: rgba(245, 158, 11, 0.25);
-    color: #fcd34d;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 /* A disabled option's label/value read as muted in the builder; its action
@@ -361,9 +361,9 @@
     width: 100%;
     padding: 10px;
     background: transparent;
-    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border: 1px dashed var(--border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 11px;
     font-weight: 500;
     font-family: inherit;
@@ -377,9 +377,9 @@
 }
 
 .fb-add-field:hover, .fb-add-page:hover {
-    background: rgba(139, 92, 246, 0.06);
-    border-color: rgba(139, 92, 246, 0.2);
-    color: rgba(139, 92, 246, 0.8);
+    background: var(--surface-2);
+    border-color: var(--border-2);
+    color: var(--lilac);
 }
 
 .fb-add-page {
@@ -391,8 +391,8 @@
 .fb-type-picker {
     margin-top: 8px;
     padding: 10px;
-    background: rgba(139, 92, 246, 0.04);
-    border: 1px solid rgba(139, 92, 246, 0.12);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
     border-radius: 8px;
 }
 
@@ -402,7 +402,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-bottom: 8px;
 }
 
@@ -417,10 +417,10 @@
     align-items: center;
     gap: 8px;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-size: 11px;
     font-weight: 500;
     font-family: inherit;
@@ -429,9 +429,9 @@
 }
 
 .fb-type-picker-option:hover {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.25);
-    color: #c4b5fd;
+    background: var(--surface-2);
+    border-color: var(--border-2);
+    color: var(--lilac);
 }
 
 .fb-type-picker-cancel {
@@ -441,7 +441,7 @@
     background: transparent;
     border: none;
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 10px;
     font-family: inherit;
     cursor: pointer;
@@ -449,15 +449,15 @@
 }
 
 .fb-type-picker-cancel:hover {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
 }
 
 /* ── Options sub-editor (radio / checkboxes / dropdown) ── */
 
 .fb-options-editor {
     padding: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 6px;
 }
 
@@ -482,7 +482,7 @@
 /* Table (data-grid) field config */
 .fb-table-col-row {
     padding: 6px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border);
 }
 .fb-table-col-row:last-of-type {
     border-bottom: none;
@@ -513,7 +513,7 @@
 .fb-option-value-input {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
 }
 
 .fb-option-actions {
@@ -527,9 +527,9 @@
     margin-top: 8px;
     padding: 6px;
     background: transparent;
-    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border: 1px dashed var(--border);
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-size: 10px;
     font-family: inherit;
     cursor: pointer;
@@ -541,9 +541,9 @@
 }
 
 .fb-add-option:hover {
-    background: rgba(139, 92, 246, 0.06);
-    border-color: rgba(139, 92, 246, 0.2);
-    color: rgba(139, 92, 246, 0.8);
+    background: var(--surface-2);
+    border-color: var(--border-2);
+    color: var(--lilac);
 }
 
 /* ── Picture Choice option editor — a label/value row plus an image URL ── */
@@ -554,8 +554,8 @@
     gap: 6px;
     padding: 8px;
     margin-top: 6px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 6px;
 }
 
@@ -572,7 +572,7 @@
     min-width: 0;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
 }
 
 /* ── Address preview (informational, no interactive controls) ── */
@@ -582,25 +582,25 @@
     flex-direction: column;
     gap: 4px;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed rgba(255, 255, 255, 0.08);
+    background: var(--surface-sunken);
+    border: 1px dashed var(--border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     font-size: 11px;
 }
 
 .fb-address-preview small {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-size: 10px;
 }
 
 .fb-address-preview code {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--surface);
     padding: 1px 5px;
     border-radius: 3px;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 10px;
-    color: rgba(196, 181, 253, 0.9);
+    color: var(--lilac);
 }
 
 /* ---- Conditional visibility ("show this when…") ---------------------- */
@@ -611,8 +611,8 @@
 .fb-visibility {
     margin-top: 10px;
     padding: 10px;
-    border-left: 2px solid rgba(139, 92, 246, 0.5);
-    background: rgba(139, 92, 246, 0.05);
+    border-left: 2px solid var(--border-2);
+    background: var(--surface-2);
     border-radius: 0 6px 6px 0;
     display: flex;
     flex-direction: column;
@@ -635,7 +635,7 @@
     gap: 6px;
     font-size: 11px;
     font-weight: 600;
-    color: rgba(196, 181, 253, 0.9);
+    color: var(--lilac);
     flex: 1;
 }
 
@@ -670,17 +670,17 @@
     padding: 6px 10px;
     width: 100%;
     background: transparent;
-    border: 1px dashed rgba(139, 92, 246, 0.35);
+    border: 1px dashed var(--border-2);
     border-radius: 6px;
-    color: rgba(196, 181, 253, 0.75);
+    color: var(--lilac);
     font-size: 11px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .fb-visibility-enable:hover {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.5);
-    color: #c4b5fd;
+    background: var(--surface-2);
+    border-color: var(--border-2);
+    color: var(--lilac);
 }
 
 /* ---- Collapsible section (e.g. Data-driven form) --------------------- */
@@ -696,12 +696,12 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 9px 12px;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
     font-size: 12px;
     font-weight: 600;
     text-align: left;
@@ -709,8 +709,8 @@
 }
 
 .fb-collapsible-header:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: var(--surface-raise);
+    border-color: var(--border-2);
 }
 
 /* When expanded, the body (.fb-datasource) is present — unify the header and
@@ -718,18 +718,18 @@
    section, rather than floating beneath a separate header pill. */
 .fb-collapsible:has(> .fb-datasource) {
     gap: 0;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
 }
 .fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header {
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--border);
     border-radius: 8px 8px 0 0;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-sunken);
 }
 .fb-collapsible:has(> .fb-datasource) > .fb-collapsible-header:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-raise);
 }
 .fb-collapsible:has(> .fb-datasource) > .fb-datasource {
     padding: 14px 12px;
@@ -749,8 +749,8 @@
 .fb-collapsible-badge {
     font-size: 10px;
     font-weight: 500;
-    color: #5eead4;
-    background: rgba(0, 170, 156, 0.16);
+    color: var(--teal);
+    background: var(--surface-2);
     border-radius: 20px;
     padding: 2px 9px;
 }
@@ -767,12 +767,12 @@
 .fb-datasource-desc {
     font-size: 11px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
 }
 
 .fb-datasource-desc code {
-    background: rgba(0, 170, 156, 0.15);
-    color: #5eead4;
+    background: var(--surface-2);
+    color: var(--teal);
     padding: 1px 4px;
     border-radius: 4px;
     font-family: 'SF Mono', 'Fira Code', monospace;
@@ -787,18 +787,18 @@
     margin-top: 2px;
     padding: 4px 8px;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-size: 11px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .fb-datasource-clear:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    background: var(--danger-fill);
+    border-color: var(--danger-border);
+    color: var(--danger);
 }
 
 /* Dynamic-options binding inside an option-based field's editor. */
@@ -809,19 +809,19 @@
     margin-bottom: 8px;
     padding: 8px;
     border-radius: 6px;
-    background: rgba(0, 170, 156, 0.06);
-    border: 1px solid rgba(0, 170, 156, 0.15);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
 }
 
 .fb-options-source-hint {
     font-size: 10px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .fb-options-source-hint code {
-    background: rgba(0, 170, 156, 0.15);
-    color: #5eead4;
+    background: var(--surface-2);
+    color: var(--teal);
     padding: 1px 4px;
     border-radius: 4px;
     font-family: 'SF Mono', 'Fira Code', monospace;
@@ -834,7 +834,7 @@
     margin-top: 4px;
     font-size: 10px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 /* "Computed by a flow" / "Amount from a flow" field section — a distinct
@@ -845,8 +845,8 @@
     gap: 6px;
     padding: 8px;
     border-radius: 6px;
-    background: rgba(70, 0, 112, 0.08);
-    border: 1px solid rgba(70, 0, 112, 0.25);
+    background: var(--surface);
+    border: 1px solid var(--border-2);
 }
 
 /* Collapsed state: no inner gap so the header sits flush; the tinted panel
@@ -865,7 +865,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #c4b5fd;
+    color: var(--lilac);
     font-size: 12px;
     font-weight: 600;
     text-align: left;
@@ -888,8 +888,8 @@
     gap: 4px;
     padding: 1px 7px;
     border-radius: 10px;
-    background: rgba(0, 170, 156, 0.18);
-    color: #00aa9c;
+    background: var(--surface-2);
+    color: var(--teal);
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -908,8 +908,8 @@
 }
 
 .fb-computed-source code {
-    background: rgba(70, 0, 112, 0.2);
-    color: #c4b5fd;
+    background: var(--surface);
+    color: var(--lilac);
     padding: 1px 4px;
     border-radius: 4px;
     font-family: 'SF Mono', 'Fira Code', monospace;
@@ -932,25 +932,25 @@
     gap: 10px;
     padding: 10px 12px;
     margin-bottom: 14px;
-    border: 1px solid rgba(0, 170, 156, 0.4);
-    background: rgba(0, 170, 156, 0.12);
+    border: 1px solid var(--border-2);
+    background: var(--surface-2);
     border-radius: 8px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--text);
 }
 .fb-translate-banner svg {
     flex: 0 0 auto;
     width: 16px;
     height: 16px;
-    color: #23c7b8;
+    color: var(--teal);
 }
 .fb-translate-banner span { flex: 1 1 auto; line-height: 1.4; }
-.fb-translate-banner strong { color: #fff; }
+.fb-translate-banner strong { color: var(--text); }
 .fb-translate-exit {
     flex: 0 0 auto;
-    border: 1px solid rgba(0, 170, 156, 0.5);
-    background: rgba(0, 170, 156, 0.15);
-    color: #23c7b8;
+    border: 1px solid var(--border-2);
+    background: var(--surface-2);
+    color: var(--teal);
     font-size: 11px;
     font-weight: 600;
     padding: 5px 10px;
@@ -958,7 +958,7 @@
     cursor: pointer;
     white-space: nowrap;
 }
-.fb-translate-exit:hover { background: rgba(0, 170, 156, 0.28); color: #fff; }
+.fb-translate-exit:hover { background: var(--surface-2); color: var(--text); }
 
 .fb-languages { display: flex; flex-direction: column; gap: 16px; }
 
@@ -983,17 +983,17 @@
 .fb-lang-chip {
     display: inline-flex;
     align-items: stretch;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--border-2);
     border-radius: 8px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-raise);
     transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
-.fb-lang-chip:hover { border-color: rgba(255, 255, 255, 0.22); }
+.fb-lang-chip:hover { border-color: var(--border-3); }
 .fb-lang-chip--active {
-    border-color: #00aa9c;
-    background: rgba(0, 170, 156, 0.12);
-    box-shadow: 0 0 0 1px rgba(0, 170, 156, 0.6) inset;
+    border-color: var(--teal);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16) inset;
 }
 .fb-lang-chip-main {
     display: inline-flex;
@@ -1004,32 +1004,32 @@
     padding: 6px 10px;
     cursor: pointer;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text);
 }
-.fb-lang-chip-main:hover { background: rgba(255, 255, 255, 0.04); }
-.fb-lang-chip--active .fb-lang-chip-main { color: #fff; }
+.fb-lang-chip-main:hover { background: var(--surface-raise); }
+.fb-lang-chip--active .fb-lang-chip-main { color: var(--text); }
 .fb-lang-chip-name { font-weight: 600; }
 .fb-lang-coverage {
     font-size: 10px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.09);
+    color: var(--dim);
+    background: var(--surface-hover);
     border-radius: 10px;
     padding: 1px 7px;
     letter-spacing: 0.02em;
 }
-.fb-lang-coverage--complete { color: #0b1210; background: #23c7b8; }
+.fb-lang-coverage--complete { color: var(--success); background: var(--surface-2); }
 .fb-lang-chip-remove {
     display: inline-flex;
     align-items: center;
     border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid var(--border-2);
     background: transparent;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     padding: 0 8px;
     cursor: pointer;
     transition: color 0.12s ease, background 0.12s ease;
 }
-.fb-lang-chip-remove:hover { color: #ff6b6b; background: rgba(255, 107, 107, 0.12); }
+.fb-lang-chip-remove:hover { color: var(--danger); background: var(--danger-fill); }
 .fb-lang-chip-remove svg { width: 11px; height: 11px; }
 .fb-lang-add { max-width: 260px; }

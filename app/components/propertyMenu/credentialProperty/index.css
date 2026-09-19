@@ -30,9 +30,9 @@
     padding: 8px 12px;
     display: flex;
     align-items: center;
-    background: #17202e;
-    color: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    background: var(--surface);
+    color: var(--dimmer);
+    border: 1px solid var(--neutral-border);
     border-radius: 6px 0 0 6px;
     font-size: 13px;
     line-height: 1.4;
@@ -42,9 +42,9 @@
 
 .credential-property-empty:hover .credential-property-placeholder,
 .credential-property-empty:focus-visible .credential-property-placeholder {
-    border-color: rgba(139, 0, 222, 0.4);
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(139, 0, 222, 0.04);
+    border-color: var(--border-2);
+    color: var(--muted);
+    background: var(--surface-2);
 }
 
 /* Keyboard focus ring on the row itself — accessibility for users
@@ -55,5 +55,5 @@
 }
 
 .credential-property-empty:focus-visible .credential-property-placeholder {
-    box-shadow: 0 0 0 2px rgba(139, 0, 222, 0.35);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
 }

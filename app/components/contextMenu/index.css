@@ -34,15 +34,15 @@
 .context-menu {
     position: absolute;
     z-index: 1000;
-    background: #131313;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-top: 2px solid rgba(139,0,222,0.4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--border-2);
     border-radius: 10px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 24px rgba(70, 45, 84, 0.16);
     width: 340px;
     max-height: min(70vh, 500px);
     font-size: 12px;
-    color: #fff;
+    color: var(--text);
     text-align: left;
     display: flex;
     flex-direction: column;
@@ -59,22 +59,22 @@
     flex: 1;
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid var(--border);
     border-radius: 0;
     padding: 12px 14px;
     font-size: 13px;
-    color: #fff;
+    color: var(--text);
     outline: none;
     box-shadow: none;
 }
 
 .context-menu-header input:focus {
     box-shadow: none;
-    border-bottom-color: rgba(139,0,222,0.4);
+    border-bottom-color: var(--border-2);
 }
 
 .context-menu-header input::placeholder {
-    color: rgba(255,255,255,0.3);
+    color: var(--faint);
 }
 
 .context-menu-close {
@@ -87,7 +87,7 @@
     border-radius: 6px;
     border: none;
     background: transparent;
-    color: rgba(255,255,255,0.4);
+    color: var(--dimmer);
     cursor: pointer;
     margin-right: 8px;
     font-size: 14px;
@@ -95,8 +95,8 @@
 }
 
 .context-menu-close:hover {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
+    background: var(--surface-hover);
+    color: var(--text);
 }
 
 .context-node-type-list {
@@ -118,8 +118,8 @@
 }
 
 .context-node-type:hover {
-    border-left: 2px solid rgba(139,0,222,0.5);
-    background: rgba(255,255,255,0.04);
+    border-left: 2px solid var(--border-2);
+    background: var(--surface-raise);
 }
 
 .node-type-icon-column {
@@ -149,7 +149,7 @@
 .node-type-description {
     padding: 3px;
     font-size: 1.0em;
-    color: rgba(255,255,255,0.45);
+    color: var(--dimmer);
 
     /* Descriptions are written for the AI, so 47% of them run past 90
        characters and the longest is 736. Unclamped they produced rows from one
@@ -175,8 +175,8 @@
 }
 
 .context-category-header.expanded {
-    border-left: 2px solid rgba(139,0,222,0.35);
-    background: rgba(255,255,255,0.02);
+    border-left: 2px solid var(--border-2);
+    background: var(--surface-sunken);
 }
 
 .category-count {
@@ -187,8 +187,8 @@
     height: 18px;
     padding: 0 6px;
     border-radius: 9px;
-    background: rgba(139,0,222,0.15);
-    color: rgba(255,255,255,0.5);
+    background: var(--surface-2);
+    color: var(--dim);
     font-size: 0.7em;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -200,18 +200,18 @@
     justify-content: center;
     width: 24px;
     min-width: 24px;
-    color: rgba(255,255,255,0.25);
+    color: var(--faint);
     transition: color 0.12s ease;
 }
 
 .context-category-header:hover .category-chevron {
-    color: rgba(255,255,255,0.5);
+    color: var(--dim);
 }
 
 /* Nested action items within a group */
 .context-category-actions {
     padding-left: 12px;
-    border-left: 2px solid rgba(139,0,222,0.12);
+    border-left: 2px solid var(--border-2);
     margin-left: 16px;
     animation: expandIn 0.15s ease-out;
     overflow: hidden;
@@ -259,12 +259,12 @@
 }
 
 .context-sub-header.expanded {
-    border-left: 2px solid rgba(0,170,156,0.35);
-    background: rgba(255,255,255,0.02);
+    border-left: 2px solid var(--border-2);
+    background: var(--surface-sunken);
 }
 
 .context-sub-group .context-category-actions {
-    border-left-color: rgba(0,170,156,0.12);
+    border-left-color: var(--border-2);
     margin-left: 12px;
     padding-left: 10px;
 }
@@ -293,12 +293,12 @@
 }
 
 .context-sub-sub-header.expanded {
-    border-left: 2px solid rgba(0,170,156,0.28);
-    background: rgba(255,255,255,0.015);
+    border-left: 2px solid var(--border-2);
+    background: var(--surface-sunken);
 }
 
 .context-sub-sub-group .context-category-actions {
-    border-left-color: rgba(0,170,156,0.10);
+    border-left-color: var(--border-2);
     margin-left: 10px;
     padding-left: 8px;
 }
@@ -307,7 +307,7 @@
 .context-no-results {
     padding: 20px;
     text-align: center;
-    color: rgba(255,255,255,0.3);
+    color: var(--faint);
     font-size: 13px;
 }
 
@@ -337,9 +337,9 @@
     gap: 2px;
     flex-wrap: wrap;
     padding: 7px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid var(--border);
     font-size: 0.95em;
-    color: rgba(255,255,255,0.45);
+    color: var(--dimmer);
 }
 
 .context-crumb {
@@ -348,18 +348,18 @@
     padding: 2px 5px;
     border-radius: 5px;
     font: inherit;
-    color: rgba(255,255,255,0.45);
+    color: var(--dimmer);
     cursor: pointer;
     transition: background 0.12s ease, color 0.12s ease;
 }
 
 .context-crumb:hover:not(:disabled) {
-    background: rgba(255,255,255,0.05);
-    color: #fff;
+    background: var(--surface-raise);
+    color: var(--text);
 }
 
 .context-crumb.here {
-    color: rgba(255,255,255,0.85);
+    color: var(--text);
     font-weight: 600;
     cursor: default;
 }
@@ -367,7 +367,7 @@
 .context-crumb-sep {
     display: inline-flex;
     align-items: center;
-    color: rgba(255,255,255,0.22);
+    color: var(--faint);
 }
 
 .context-section-title {
@@ -375,13 +375,13 @@
     font-size: 0.75em;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
+    color: var(--faint);
     font-weight: 650;
 }
 
 .context-group-blurb {
     padding: 8px 12px 4px;
-    color: rgba(255,255,255,0.4);
+    color: var(--dimmer);
     font-size: 0.95em;
 }
 
@@ -400,8 +400,8 @@
     align-items: center;
     gap: 8px;
     text-align: left;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 7px;
     padding: 8px 9px;
     color: inherit;
@@ -411,8 +411,8 @@
 }
 
 .context-group-tile:hover {
-    background: rgba(255,255,255,0.05);
-    border-color: rgba(139,0,222,0.35);
+    background: var(--surface-raise);
+    border-color: var(--border-2);
 }
 
 /* Cloud is 59% of the catalogue and wanted by a minority of flows. It keeps
@@ -433,8 +433,8 @@
     height: 26px;
     flex: none;
     border-radius: 6px;
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.75);
+    background: var(--surface-raise);
+    color: var(--muted);
 }
 
 .context-group-tile-text {
@@ -453,7 +453,7 @@
 
 .context-group-tile-count {
     font-size: 0.8em;
-    color: rgba(255,255,255,0.35);
+    color: var(--faint);
     font-variant-numeric: tabular-nums;
     margin-top: 1px;
 }
@@ -468,9 +468,9 @@
     margin-left: 6px;
     padding: 1px 6px;
     border-radius: 20px;
-    background: rgba(0,170,156,0.12);
-    border: 1px solid rgba(0,170,156,0.22);
-    color: rgba(0,170,156,0.95);
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    color: var(--teal);
     font-size: 0.72em;
     font-weight: 600;
     white-space: nowrap;

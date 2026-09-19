@@ -80,7 +80,7 @@
 }
 
 .profile-section-desc code {
-    background: rgba(47, 107, 100, 0.15);
+    background: var(--surface-2);
     color: var(--teal);
     padding: 1px 5px;
     border-radius: 4px;
@@ -496,7 +496,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: linear-gradient(135deg, rgba(70, 0, 112, 0.5), rgba(47, 107, 100, 0.35));
+    background: linear-gradient(135deg, var(--surface), var(--surface-2));
 }
 
 .compliance-cert__icon svg {

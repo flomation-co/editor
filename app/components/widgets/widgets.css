@@ -96,7 +96,7 @@
 }
 
 .usage-progress.near-limit {
-    background: linear-gradient(90deg, #ea9b09, var(--error-action-colour));
+    background: linear-gradient(90deg, var(--warning-fill), var(--error-action-colour));
 }
 
 .usage-percentage {
@@ -109,12 +109,12 @@
 
 .warning-badge {
     background: var(--primary-background-muted);
-    color: #ea9b09;
+    color: var(--warning);
     padding: 4px 8px;
     border-radius: 8px;
     font-size: 0.7em;
     font-weight: 500;
-    border: 1px solid #ea9b09;
+    border: 1px solid var(--warning-border);
 }
 
 .billing-section {
@@ -241,12 +241,12 @@
     top: 12px;
     right: 12px;
     background: var(--primary-background-muted);
-    color: #ea9b09;
+    color: var(--warning);
     padding: 4px 10px;
     border-radius: 10px;
     font-size: 0.65em;
     font-weight: 600;
-    border: 1px solid #ea9b09;
+    border: 1px solid var(--warning-border);
 }
 
 .plan-header {

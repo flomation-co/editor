@@ -16,7 +16,7 @@
 
 .di-toolbar-count {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .di-toolbar-copy {
@@ -25,9 +25,9 @@
     gap: 4px;
     padding: 3px 10px;
     border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-    color: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--border);
+    background: var(--surface-sunken);
+    color: var(--dimmer);
     font-size: 10px;
     font-family: inherit;
     cursor: pointer;
@@ -35,15 +35,15 @@
 }
 
 .di-toolbar-copy:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--surface-2);
+    color: var(--muted);
 }
 
 .di-entries {
     flex: 1;
     overflow-y: auto;
-    background: rgba(15, 15, 20, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px 0;
     min-height: 0;
@@ -52,7 +52,7 @@
 .di-empty {
     padding: 20px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
     font-size: 12px;
     font-style: italic;
 }
@@ -60,7 +60,7 @@
 /* ── Property Row ── */
 .di-row {
     padding: 4px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid var(--border);
 }
 
 .di-row:last-child {
@@ -77,12 +77,12 @@
 .di-key {
     font-size: 12px;
     font-weight: 600;
-    color: #00aa9c;
+    color: var(--teal);
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
 }
 
 .di-key--index {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-weight: 400;
 }
 
@@ -112,7 +112,7 @@
 }
 
 .di-val--string {
-    color: #a5d6a7;
+    color: var(--success);
 }
 
 .di-val--multiline {
@@ -123,25 +123,25 @@
 }
 
 .di-val--number {
-    color: #90caf9;
+    color: var(--info);
 }
 
 .di-val--bool {
-    color: #ce93d8;
+    color: var(--lilac);
 }
 
 .di-val--null {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-style: italic;
 }
 
 .di-val--empty {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .di-type-hint {
     font-size: 9px;
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--faint);
     font-style: italic;
     margin-left: 4px;
 }
@@ -167,14 +167,14 @@
 
 .di-chevron {
     font-size: 8px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     width: 10px;
     flex-shrink: 0;
     transition: color 0.15s ease;
 }
 
 .di-tree-header:hover .di-chevron {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
 }
 
 .di-type-badge {
@@ -186,23 +186,23 @@
 }
 
 .di-type-badge--object {
-    background: rgba(0, 170, 156, 0.1);
-    color: rgba(0, 170, 156, 0.7);
+    background: var(--surface-2);
+    color: var(--teal);
 }
 
 .di-type-badge--array {
-    background: rgba(239, 212, 103, 0.1);
-    color: rgba(239, 212, 103, 0.7);
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .di-count {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .di-tree-children {
     padding-left: 16px;
-    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    border-left: 1px solid var(--border);
     margin-left: 4px;
     margin-top: 2px;
 }

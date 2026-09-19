@@ -29,25 +29,25 @@
   --error-action-colour: var(--danger);
   --highlight-colour: var(--info);
 
-  --primary-input-colour: #fff;
+  --primary-input-colour: var(--soft);
 
   /* The canvas. Still the dark values: the flow surface is converted in its
      own pass, because node colours, edge contrast and the execution glows all
      have to be reworked together against paper or the graph stops being
      readable. Chrome first, canvas after. */
   --xy-node-border-radius: 10px;
-  --xy-node-border: 1px solid rgba(255, 255, 255, 0.06);
-  --xy-minimap-background-color: #525252;
-  --xy-edge-stroke: #9d9d9d;
-  --xy-edge-stroke-selected: #fff;
+  --xy-node-border: 1px solid var(--border);
+  --xy-minimap-background-color: var(--surface-2);
+  --xy-edge-stroke: var(--soft);
+  --xy-edge-stroke-selected: var(--soft);
   --xy-selected-colour: 139, 0, 222;
   --xy-selected-shadow: 0px 0px 14px 4px var(--node-glow, rgba(var(--xy-selected-colour), 0.35));
-  --xy-node-background-color: #131313;
-  --xy-background-dot-colour: #333;
+  --xy-node-background-color: var(--surface);
+  --xy-background-dot-colour: var(--surface);
 
-  --xy-success-colour: rgba(17, 255, 0, 0.75);
-  --xy-error-colour: rgba(255, 0, 0, 0.75);
-  --xy-pending-colour: rgba(155, 155, 155, 0.75);
+  --xy-success-colour: var(--success);
+  --xy-error-colour: var(--danger);
+  --xy-pending-colour: var(--soft);
   --xy-node-success: 0px 0px 20px 10px var(--xy-success-colour);
   --xy-node-error: 0px 0px 20px 10px var(--xy-error-colour);
   --xy-node-pending: 0px 0px 20px 10px var(--xy-pending-colour);
@@ -150,7 +150,7 @@ body {
      to inherit white and on paper it inherited near-black: 1.03:1. A button
      carrying its own ground has to carry its own ink. */
   background: var(--grad-cta);
-  color: #fff;
+  color: var(--text);
   box-shadow: var(--glow-cta);
   text-align: center;
   border-radius: 10px;
@@ -247,15 +247,15 @@ body {
 }
 
 .execution-state-running {
-  background: rgba(47, 107, 100, 0.15);
-  border: 1px solid rgba(47, 107, 100, 0.35);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
   color: var(--teal);
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(47, 107, 100, 0.28); }
-  50% { box-shadow: 0 0 8px 2px rgba(47, 107, 100, 0.14); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(70, 45, 84, 0.16); }
+  50% { box-shadow: 0 0 8px 2px rgba(70, 45, 84, 0.16); }
 }
 
 .execution-state-cancelled {
@@ -298,7 +298,7 @@ body {
 .search-textbox {
   width: 100%;
   padding: 10px 12px;
-  background-color: #fff;
+  background-color: var(--surface);
   color: var(--text);
   border: 1px solid var(--border-2);
   border-radius: 10px;
@@ -317,7 +317,7 @@ body {
   /* A solid 10px glow of a saturated colour was legible on black and reads as
      a smear on paper. A tight ring in the brand purple does the same job. */
   border-color: var(--lilac);
-  box-shadow: 0 0 0 3px rgba(107, 63, 128, 0.16);
+  box-shadow: 0 0 0 3px rgba(70, 45, 84, 0.16);
 }
 
 .action:focus {
@@ -695,7 +695,7 @@ a.active {
 }
 
 .property-menu-input-inline-row:hover input ~ .property-menu-checkbox {
-  /*background-color: #ccc;*/
+  /*background-color: var(--surface-2);*/
 }
 
 .property-menu-input-inline-row input:checked ~ .property-menu-checkbox {
@@ -778,8 +778,8 @@ a.active {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: rgba(47, 107, 100, 0.12);
-  border: 1px solid rgba(47, 107, 100, 0.3);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
   color: var(--teal);
 }
 

@@ -5,19 +5,19 @@
     justify-content: center;
     min-height: 60vh;
     text-align: center;
-    color: var(--text-secondary, #999);
+    color: var(--text-secondary, var(--soft));
     gap: 8px;
 }
 
 .access-denied-icon {
     font-size: 48px;
-    color: var(--text-tertiary, #555);
+    color: var(--text-tertiary, var(--text));
     margin-bottom: 8px;
 }
 
 .access-denied h2 {
     font-size: 24px;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary, var(--text));
     margin: 0;
 }
 
@@ -27,15 +27,15 @@
 }
 
 .access-denied-permission code {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--surface-hover);
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 13px;
-    color: var(--text-primary, #ccc);
+    color: var(--text-primary, var(--soft));
 }
 
 .access-denied-contact {
-    color: var(--text-tertiary, #666);
+    color: var(--text-tertiary, var(--text));
     font-size: 13px !important;
 }
 
@@ -46,13 +46,13 @@
     gap: 8px;
     padding: 10px 20px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-primary, #fff);
+    background: var(--surface-2);
+    color: var(--text-primary, var(--text));
     text-decoration: none;
     font-size: 14px;
     transition: background 0.2s;
 }
 
 .access-denied-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
 }

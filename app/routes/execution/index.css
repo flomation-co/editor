@@ -78,7 +78,7 @@
 
 .cancel-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, #8d1c28, var(--danger));
+    background: linear-gradient(135deg, var(--danger-fill), var(--danger));
     border: none;
     border-radius: 8px;
     color: var(--text);
@@ -103,7 +103,7 @@
 
 .resume-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, #7a4900, var(--warning));
+    background: linear-gradient(135deg, var(--surface), var(--warning));
     border: none;
     border-radius: 8px;
     color: var(--text);
@@ -183,7 +183,7 @@
 /* ── Live timer chip ── */
 .exec-meta-chip--live {
     color: var(--teal);
-    border-color: rgba(47, 107, 100, 0.25);
+    border-color: var(--border-2);
     animation: pulse-glow 2s ease-in-out infinite;
 }
 

@@ -23,8 +23,8 @@
     align-items: flex-start;
     gap: 10px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.12s ease;
@@ -41,7 +41,7 @@
 }
 
 .agent-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .agent-card-indicator {
@@ -59,23 +59,23 @@
 }
 
 .agent-card-indicator--running {
-    background: #4ade80;
-    box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+    background: var(--success-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
     animation: agent-pulse 2s ease-in-out infinite;
 }
 
 .agent-card-indicator--stopped {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--surface-active);
 }
 
 .agent-card-indicator--paused {
-    background: #ffc107;
-    box-shadow: 0 0 6px rgba(255, 193, 7, 0.3);
+    background: var(--warning-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 .agent-card-indicator--error {
-    background: #f44336;
-    box-shadow: 0 0 6px rgba(244, 67, 54, 0.3);
+    background: var(--danger-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 @keyframes agent-pulse {
@@ -94,20 +94,20 @@
 .agent-card-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .agent-card-icon {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 13px;
 }
 
 .agent-card-description {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -118,7 +118,7 @@
     flex-wrap: wrap;
     gap: 12px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .agent-card-details span {
@@ -153,23 +153,23 @@
 }
 
 .agent-card-badge--running {
-    background: rgba(34, 197, 94, 0.12);
-    color: #4ade80;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .agent-card-badge--stopped {
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.35);
+    background: var(--surface-raise);
+    color: var(--faint);
 }
 
 .agent-card-badge--paused {
-    background: rgba(255, 193, 7, 0.12);
-    color: #ffc107;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .agent-card-badge--error {
-    background: rgba(244, 67, 54, 0.12);
-    color: #f44336;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .agent-channels {
@@ -185,9 +185,9 @@
     align-items: center;
     justify-content: center;
     font-size: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-2);
+    color: var(--dimmer);
+    border: 1px solid var(--border);
 }
 
 .agents-empty {
@@ -201,20 +201,20 @@
 
 .agents-empty-icon {
     font-size: 48px;
-    color: rgba(255, 255, 255, 0.1);
+    color: var(--faint);
     margin-bottom: 16px;
 }
 
 .agents-empty-title {
     font-size: 18px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     margin-bottom: 8px;
 }
 
 .agents-empty-subtitle {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     max-width: 400px;
 }
 
@@ -223,9 +223,9 @@
     height: 34px;
     padding: 0 16px;
     border-radius: 6px;
-    border: 1px solid rgba(0, 170, 156, 0.3);
-    background: #00aa9c;
-    color: #fff;
+    border: 1px solid var(--border-2);
+    background: var(--teal);
+    color: var(--text);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -237,6 +237,6 @@
 }
 
 .create-agent-btn:hover {
-    background: #00ccbb;
-    border-color: rgba(0, 204, 187, 0.5);
+    background: var(--teal);
+    border-color: var(--border-2);
 }

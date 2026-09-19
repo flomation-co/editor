@@ -16,7 +16,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -26,7 +26,7 @@
 }
 
 .queue-create input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .queue-create input:focus {
@@ -36,10 +36,10 @@
 .queue-create-btn {
     height: 38px;
     padding: 0 16px;
-    background: #00aa9c;
+    background: var(--teal);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--text);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -69,8 +69,8 @@
 }
 
 .queue-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -85,12 +85,12 @@
 }
 
 .queue-card-header:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-sunken);
 }
 
 .queue-card-chevron {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     width: 12px;
     flex-shrink: 0;
 }
@@ -106,12 +106,12 @@
 .queue-card-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .queue-card-code {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-family: monospace;
     display: flex;
     align-items: center;
@@ -121,7 +121,7 @@
 .queue-code-copy {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     cursor: pointer;
     font-size: 10px;
     padding: 1px 3px;
@@ -129,7 +129,7 @@
 }
 
 .queue-code-copy:hover {
-    color: #fff;
+    color: var(--text);
 }
 
 .queue-card-meta {
@@ -142,7 +142,7 @@
 .queue-delete-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     cursor: pointer;
     font-size: 13px;
     padding: 4px 6px;
@@ -151,14 +151,14 @@
 }
 
 .queue-delete-btn:hover {
-    color: #f87171;
-    background: rgba(248, 113, 113, 0.08);
+    color: var(--danger);
+    background: var(--danger-fill);
 }
 
 /* Queue body (expanded) */
 .queue-card-body {
     padding: 0 18px 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--border);
 }
 
 .queue-runners-label {
@@ -166,13 +166,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     margin: 12px 0 8px;
 }
 
 .queue-runners-empty {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     padding: 8px 0;
 }
 
@@ -182,51 +182,51 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
     border-radius: 8px;
     margin-bottom: 4px;
     transition: background 0.1s ease;
 }
 
 .queue-runner-row:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .queue-runner-indicator {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--surface-active);
     flex-shrink: 0;
 }
 
 .queue-runner-indicator--active {
-    background: #4ade80;
-    box-shadow: 0 0 4px rgba(74, 222, 128, 0.4);
+    background: var(--success-fill);
+    box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .queue-runner-icon {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-size: 12px;
     flex-shrink: 0;
 }
 
 .queue-runner-name {
     font-size: 13px;
-    color: #d1d5db;
+    color: var(--dim);
     flex: 1;
 }
 
 .queue-runner-id {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .queue-runner-remove {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     cursor: pointer;
     font-size: 12px;
     padding: 2px 6px;
@@ -235,8 +235,8 @@
 }
 
 .queue-runner-remove:hover {
-    color: #f87171;
-    background: rgba(248, 113, 113, 0.08);
+    color: var(--danger);
+    background: var(--danger-fill);
 }
 
 /* Add runner select */
@@ -249,9 +249,9 @@
     height: 34px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     font-family: inherit;
     outline: none;
@@ -266,6 +266,6 @@
 .queue-empty {
     padding: 40px 20px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 14px;
 }

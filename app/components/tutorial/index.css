@@ -5,7 +5,7 @@
 .tutorial-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.62);
+    background: var(--surface);
     z-index: 998;
     pointer-events: none;
     animation: tutorialFadeIn 0.3s ease-out;
@@ -25,8 +25,8 @@
     border-radius: 10px;
     border: 2px solid var(--teal);
     box-shadow:
-        0 0 0 4px rgba(47, 107, 100, 0.22),
-        0 0 24px 6px rgba(47, 107, 100, 0.22),
+        0 0 0 4px rgba(70, 45, 84, 0.16),
+        0 0 24px 6px rgba(70, 45, 84, 0.16),
         inset 0 0 0 1px rgba(70, 45, 84, 0.16);
     animation: tutorialHighlightPulse 1.8s ease-in-out infinite,
                tutorialFadeIn 0.3s ease-out;
@@ -35,14 +35,14 @@
 @keyframes tutorialHighlightPulse {
     0%, 100% {
         box-shadow:
-            0 0 0 4px rgba(47, 107, 100, 0.22),
-            0 0 24px 6px rgba(47, 107, 100, 0.22),
+            0 0 0 4px rgba(70, 45, 84, 0.16),
+            0 0 24px 6px rgba(70, 45, 84, 0.16),
             inset 0 0 0 1px rgba(70, 45, 84, 0.16);
     }
     50% {
         box-shadow:
-            0 0 0 6px rgba(47, 107, 100, 0.22),
-            0 0 36px 10px rgba(47, 107, 100, 0.22),
+            0 0 0 6px rgba(70, 45, 84, 0.16),
+            0 0 36px 10px rgba(70, 45, 84, 0.16),
             inset 0 0 0 1px rgba(70, 45, 84, 0.16);
     }
 }
@@ -65,7 +65,7 @@
     padding: 20px 22px;
     max-width: 340px;
     min-width: 280px;
-    box-shadow: 0 16px 48px rgba(70, 45, 84, 0.16), 0 0 0 1px rgba(70, 0, 112, 0.15);
+    box-shadow: 0 16px 48px rgba(70, 45, 84, 0.16), 0 0 0 1px rgba(70, 45, 84, 0.16);
     pointer-events: auto;
     animation: tutorialSlideIn 0.25s ease-out;
 }
@@ -115,12 +115,12 @@
 }
 
 .tutorial-dot.active {
-    background: rgba(47, 107, 100, 0.3);
+    background: var(--surface-2);
 }
 
 .tutorial-dot.current {
     background: var(--teal);
-    box-shadow: 0 0 8px rgba(47, 107, 100, 0.22);
+    box-shadow: 0 0 8px rgba(70, 45, 84, 0.16);
 }
 
 /* ── Skip button ── */
