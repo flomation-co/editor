@@ -73,10 +73,6 @@
     color: #fff;
 }
 
-.boards-action-btn--primary > span {
-    color: var(--soft);
-}
-
 .boards-action-btn--primary:hover {
     background: var(--teal);
     border-color: var(--border-2);
@@ -388,6 +384,7 @@
 
 .board-form-toggle--active {
     background: var(--teal);
+    color: #fff;
 }
 
 .board-form-toggle-knob {

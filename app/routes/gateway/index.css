@@ -155,7 +155,7 @@
 .gwt-method--get { background: var(--info-fill); }
 .gwt-method--post { background: var(--success-fill); }
 .gwt-method--put { background: var(--warning-fill); }
-.gwt-method--patch { background: var(--violet); }
+.gwt-method--patch { background: rgba(70, 0, 112, 0.1); }
 .gwt-method--delete { background: var(--danger-fill); }
 
 .gwt-send {
