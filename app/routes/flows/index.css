@@ -65,7 +65,6 @@
     .flows-action-btn > span {
         display: inline-block;
         font-size: 12px;
-        color: var(--secondary-font-colour);
         white-space: nowrap;
     }
 }

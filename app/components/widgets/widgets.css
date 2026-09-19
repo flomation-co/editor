@@ -229,7 +229,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: var(--highlight-colour);
-    color: var(--primary-font-colour);
+    color: #fff;
     padding: 6px 16px;
     border-radius: 16px;
     font-size: 0.7em;
@@ -322,7 +322,7 @@
 
 .upgrade-button.primary {
     background: var(--primary-foreground);
-    color: var(--primary-font-colour);
+    color: #fff;
 }
 
 .upgrade-button.primary:hover {
