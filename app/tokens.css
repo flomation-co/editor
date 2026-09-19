@@ -1,0 +1,161 @@
+/* Sora, self-hosted from the same two files the marketing site and Sentinel
+   serve, so the three render identically with no third-party request. */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Paper craft palette, in Flomation's own colours.
+ *
+ * The base values are lifted verbatim from the marketing site's tokens.css and
+ * from Sentinel, so the three cannot drift apart by being hand-matched. Every
+ * hue is #460070 (278deg) or #00aa9c (175deg), lifted into the pastel band the
+ * paper-craft style works in.
+ *
+ * The brand purple is already dark enough to be ink -- #460070 reads 12.9:1 on
+ * the page -- so the primary action is the literal brand colour rather than an
+ * interpretation of it.
+ *
+ *
+ * WHY THERE ARE SO MANY TOKENS
+ *
+ * The editor had 3,330 colour literals against 198 token references, and about
+ * half of those literals were rgba(255,255,255,X): ink on a dark ground, at
+ * eight different alphas, standing in for surfaces, borders and muted text
+ * depending on which property they appeared in.
+ *
+ * The same literal therefore meant three different things, which is why the
+ * conversion is by role rather than by value. A token here names what a colour
+ * is FOR. If you find yourself reaching for a literal, the role is probably
+ * missing -- add it here rather than inlining it.
+ */
+:root {
+  /* ---- Ground and surfaces ------------------------------------------- */
+
+  /* The page itself. */
+  --bg: #f6f4f8;
+
+  /* A panel, card or menu sitting on the page. */
+  --surface: #fdfcfe;
+
+  /* A second level: a row inside a card, a well, a nested panel. */
+  --surface-2: #eae3ef;
+
+  /* Barely-there tints, for zebra rows and the faintest separation. These
+     replace rgba(255,255,255,0.02) and 0.04, which on a dark ground were a
+     lift and on a light one have to be a recess. */
+  --surface-sunken: rgba(70, 45, 84, 0.03);
+  --surface-raise: rgba(70, 45, 84, 0.05);
+
+  /* Hover and active states for anything interactive that is not a button. */
+  --surface-hover: rgba(222, 209, 229, 0.42);
+  --surface-active: rgba(222, 209, 229, 0.62);
+
+  /* ---- Rules ---------------------------------------------------------- */
+
+  /* Warm-neutral rules read cold against a lilac paper, so the alpha is tinted
+     towards the purple rather than towards black. */
+  --border: rgba(70, 45, 84, 0.12);
+  --border-2: rgba(70, 45, 84, 0.18);
+  --border-3: rgba(70, 45, 84, 0.22);
+
+  /* ---- Ink ------------------------------------------------------------ */
+
+  --text: #342a38;
+  --muted: #473d4b;
+  --soft: #524856;
+  --dim: #5c5260;
+  --dimmer: #665c6a;
+
+  /* Placeholder and disabled copy. Still has to be readable: 5.8:1. */
+  --faint: #6b6270;
+
+  /* ---- Brand ---------------------------------------------------------- */
+
+  --violet: #460070;
+  --lilac: #6b3f80;
+  --lilac-pale: #5d3670;
+
+  /* Text-safe brand teal. */
+  --teal: #2f6b64;
+
+  /* Split from --teal: a colour cannot be both body text on paper and a chip
+     behind dark ink. This is the chip. */
+  --teal-fill: #add7d3;
+
+  /* The raw material colours, for the places that want the paper itself. */
+  --paper-lilac: #ded1e5;
+  --purple-pastel: #c7add7;
+  --purple-mid: #a77bc1;
+  --teal-pastel: #add7d3;
+  --teal-mid: #7dbfba;
+  --periwinkle: #beafde;
+
+  /* ---- Status --------------------------------------------------------- */
+
+  /* The dark scheme used Tailwind's 400 band (#4ade80, #f87171, #fbbf24),
+     which is pitched for white text on a dark ground and falls to around 2:1
+     against paper. These are the same hues brought down to where they read as
+     ink, each at or above 4.5:1 on --surface.
+     The fills are for chips and wells; the plain value is for text and icons. */
+  --success: #1b6d45;
+  --success-fill: rgba(31, 122, 77, 0.1);
+  --success-border: rgba(31, 122, 77, 0.22);
+
+  --danger: #a8212f;
+  --danger-fill: rgba(168, 33, 47, 0.08);
+  --danger-border: rgba(168, 33, 47, 0.2);
+
+  --warning: #8a5300;
+  --warning-fill: rgba(138, 83, 0, 0.1);
+  --warning-border: rgba(138, 83, 0, 0.22);
+
+  --info: #1d5fa8;
+  --info-fill: rgba(29, 95, 168, 0.1);
+  --info-border: rgba(29, 95, 168, 0.22);
+
+  /* Neutral/idle, for a state that is neither good nor bad: queued, skipped,
+     cancelled. */
+  --neutral: #5c5260;
+  --neutral-fill: rgba(92, 82, 96, 0.09);
+  --neutral-border: rgba(92, 82, 96, 0.2);
+
+  /* ---- Action --------------------------------------------------------- */
+
+  --grad-cta: linear-gradient(180deg, #5d3670, #460070);
+  --glow-cta: 0 6px 18px rgba(70, 0, 112, 0.22);
+  --glow-cta-strong: 0 10px 26px rgba(70, 0, 112, 0.34);
+
+  /* ---- Elevation ------------------------------------------------------ */
+
+  /* Shadows on paper are the purple of the page at low alpha, not black.
+     Black shadows on a lilac ground read as dirt. */
+  --lift: 0 1px 2px rgba(70, 45, 84, 0.06), 0 8px 24px -12px rgba(70, 45, 84, 0.18);
+  --lift-panel: 0 1px 2px rgba(70, 45, 84, 0.05), 0 18px 48px -22px rgba(70, 45, 84, 0.34);
+  --lift-modal: 0 2px 6px rgba(70, 45, 84, 0.08), 0 32px 72px -28px rgba(70, 45, 84, 0.42);
+
+  /* ---- Type ----------------------------------------------------------- */
+
+  --font-heading: 'Sora', sans-serif;
+  /* Deliberately the same declaration the marketing site and Sentinel carry.
+     The Google family is actually named "Grotesk", so this falls through to
+     system-ui on all three -- which is what makes them match. Do not correct it
+     here alone; see the website note in CLAUDE.md. */
+  --font-body: 'Hanken Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 12px;
+  --radius-lg: 16px;
+}
