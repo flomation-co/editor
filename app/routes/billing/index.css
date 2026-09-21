@@ -353,12 +353,12 @@
 }
 
 .billing-btn--primary {
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
 }
 
 .billing-btn--primary:hover:not(:disabled) {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .billing-btn--secondary {

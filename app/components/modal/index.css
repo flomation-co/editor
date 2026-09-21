@@ -100,13 +100,13 @@
 }
 
 .modal-btn-primary {
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     border-color: transparent;
 }
 
 .modal-btn-primary:hover {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .modal-btn-danger {

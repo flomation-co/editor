@@ -67,13 +67,13 @@
 }
 
 .boards-action-btn--primary {
-    background: var(--teal);
-    border-color: var(--border-2);
+    background: var(--action);
+    border-color: var(--action);
     color: #fff;
 }
 
 .boards-action-btn--primary:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     border-color: var(--border-2);
 }
 
@@ -283,8 +283,8 @@
     padding: 0 20px;
     border: none;
     border-radius: 8px;
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -295,7 +295,7 @@
 }
 
 .boards-empty-btn:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     box-shadow: 0 4px 20px rgba(70, 45, 84, 0.16);
 }
 

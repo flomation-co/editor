@@ -152,8 +152,8 @@
   padding: 10px 28px;
   border-radius: 8px;
   border: none;
-  background: var(--teal);
-  color: #fff;
+  background: var(--action);
+  color: var(--action-ink);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -162,7 +162,7 @@
 }
 
 .eula-btn-accept:hover:not(:disabled) {
-  background: var(--teal);
+  background: var(--action-hover);
   transform: translateY(-1px);
 }
 

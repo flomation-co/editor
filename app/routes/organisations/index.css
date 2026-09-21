@@ -52,10 +52,10 @@
 .org-create-form button,
 .org-invite-form button {
     padding: 8px 16px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -427,10 +427,10 @@
     align-items: center;
     gap: 6px;
     padding: 9px 18px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -439,7 +439,7 @@
 }
 
 .org-legal-save:hover:not(:disabled) {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .org-legal-save:disabled {

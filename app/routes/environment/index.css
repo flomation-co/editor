@@ -210,10 +210,10 @@
     align-items: center;
     gap: 5px;
     padding: 6px 14px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;

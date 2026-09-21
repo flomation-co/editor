@@ -74,15 +74,15 @@
 }
 
 .board-editor-btn--save {
-    background: linear-gradient(135deg, var(--teal), var(--teal));
-    border-color: var(--border-2);
+    background: var(--action);
+    border-color: var(--action);
     color: white;
     font-weight: 600;
     padding: 0 18px;
 }
 
 .board-editor-btn--save:hover {
-    background: linear-gradient(135deg, var(--surface-2), var(--teal));
+    background: var(--action-hover);
     border-color: var(--border-2);
 }
 
@@ -852,8 +852,8 @@
     padding: 0 20px;
     border: none;
     border-radius: 8px;
-    background: linear-gradient(135deg, var(--teal), var(--teal));
-    color: white;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;

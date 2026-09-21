@@ -36,10 +36,10 @@
 .queue-create-btn {
     height: 38px;
     padding: 0 16px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;

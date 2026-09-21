@@ -851,8 +851,8 @@
 }
 
 .trigger-input-btn--execute {
-    background: linear-gradient(135deg, var(--teal), var(--teal));
-    color: white;
+    background: var(--action);
+    color: var(--action-ink);
     display: flex;
     align-items: center;
     gap: 6px;

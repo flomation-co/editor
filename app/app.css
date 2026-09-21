@@ -155,8 +155,8 @@ body {
   /* The fill was set here but the ink never was, so on a dark page it happened
      to inherit white and on paper it inherited near-black: 1.03:1. A button
      carrying its own ground has to carry its own ink. */
-  background: var(--grad-cta);
-  color: #fff;
+  background: var(--action);
+  color: var(--action-ink);
   box-shadow: var(--glow-cta);
   text-align: center;
   border-radius: 10px;

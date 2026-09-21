@@ -5,10 +5,10 @@
     transform: translateY(-50%);
     writing-mode: vertical-rl;
     padding: 12px 6px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 8px 0 0 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -142,10 +142,10 @@
 
 .feedback-submit {
     padding: 8px 20px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;

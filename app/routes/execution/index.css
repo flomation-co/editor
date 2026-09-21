@@ -53,10 +53,10 @@
 
 .rerun-button {
     padding: 6px 14px;
-    background: var(--teal);
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;

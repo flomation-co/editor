@@ -15,10 +15,10 @@
     gap: 6px;
     height: 34px;
     padding: 0 14px;
-    background: var(--teal);
+    background: var(--action);
     border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -28,7 +28,7 @@
 }
 
 .env-create-btn:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     border-color: var(--border-2);
 }
 
@@ -66,10 +66,10 @@
 .env-create-form-save {
     height: 38px;
     padding: 0 16px;
-    background: var(--teal);
+    background: var(--action);
     border: 1px solid var(--border-2);
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -82,7 +82,7 @@
 }
 
 .env-create-form-save:hover:not(:disabled) {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .env-create-form-save:disabled {

@@ -224,8 +224,8 @@
     padding: 0 16px;
     border-radius: 6px;
     border: 1px solid var(--border-2);
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -237,6 +237,6 @@
 }
 
 .create-agent-btn:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     border-color: var(--border-2);
 }

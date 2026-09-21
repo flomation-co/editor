@@ -135,6 +135,18 @@
 
   /* ---- Action --------------------------------------------------------- */
 
+  /* The primary action, and the reason it is a token rather than a colour:
+     the editor inherited teal for every commit-this button from the dark
+     theme, which read as a status colour sitting on a button. Purple is the
+     brand's action colour, and naming the role means the next button does not
+     have to guess. White on it is 14:1.
+
+     Teal stays where it carries meaning -- a running badge, a checked box, a
+     progress bar -- because those are states, not things you press. */
+  --action: #460070;
+  --action-hover: #5d3670;
+  --action-ink: #fff;
+
   --grad-cta: linear-gradient(180deg, #5d3670, #460070);
   --glow-cta: 0 6px 18px rgba(70, 0, 112, 0.22);
   --glow-cta-strong: 0 10px 26px rgba(70, 0, 112, 0.34);

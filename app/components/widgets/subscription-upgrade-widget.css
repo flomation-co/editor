@@ -157,12 +157,12 @@
 }
 
 .subscription-upgrade-widget .upgrade-button.primary {
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
 }
 
 .subscription-upgrade-widget .upgrade-button.primary:hover {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .subscription-upgrade-widget .upgrade-button.secondary {

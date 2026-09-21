@@ -65,8 +65,8 @@
   padding: 8px 24px;
   border-radius: 8px;
   border: none;
-  background: var(--teal);
-  color: #fff;
+  background: var(--action);
+  color: var(--action-ink);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -75,13 +75,13 @@
 }
 
 .cookie-banner-accept:hover {
-  background: var(--teal);
+  background: var(--action-hover);
   transform: translateY(-1px);
 }
 
 .cookie-banner-accept:active {
   transform: translateY(0);
-  background: var(--teal);
+  background: var(--action-hover);
 }
 
 @keyframes cookieBannerIn {

@@ -122,8 +122,8 @@
     height: 36px;
     border-radius: 8px;
     border: 1px solid var(--border-2);
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -132,7 +132,7 @@
 }
 
 .share-modal-email-send:hover:not(:disabled) {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .share-modal-email-send:disabled {
@@ -234,8 +234,8 @@
     height: 38px;
     border-radius: 8px;
     border: 1px solid var(--border-2);
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;
@@ -245,7 +245,7 @@
 }
 
 .share-modal-copy-btn:hover {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .share-modal-copy-btn svg {

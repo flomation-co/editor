@@ -175,12 +175,12 @@
 }
 
 .profile-btn--primary {
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
 }
 
 .profile-btn--primary:hover:not(:disabled) {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .profile-btn--secondary {
@@ -543,8 +543,8 @@
     gap: 6px;
     padding: 7px 14px;
     border-radius: 8px;
-    background: var(--teal);
-    color: #fff;
+    background: var(--action);
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -553,7 +553,7 @@
 }
 
 .compliance-cert__download:hover {
-    background: var(--teal);
+    background: var(--action-hover);
 }
 
 .compliance-cert__download svg {

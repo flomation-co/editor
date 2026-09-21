@@ -84,13 +84,13 @@
 }
 
 .board-view-btn--primary {
-    background: var(--teal);
-    border-color: var(--border-2);
+    background: var(--action);
+    border-color: var(--action);
     color: #fff;
 }
 
 .board-view-btn--primary:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     border-color: var(--border-2);
 }
 

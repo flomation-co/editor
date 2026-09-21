@@ -75,13 +75,13 @@
 }
 
 .flows-action-btn--primary {
-    background: var(--teal);
-    border-color: var(--border-2);
+    background: var(--action);
+    border-color: var(--action);
     color: #fff;
 }
 
 .flows-action-btn--primary:hover {
-    background: var(--teal);
+    background: var(--action-hover);
     border-color: var(--border-2);
 }
 
@@ -730,8 +730,8 @@
 }
 
 .trigger-input-btn--execute {
-    background: linear-gradient(135deg, var(--teal-mid), var(--teal));
-    color: white;
+    background: var(--action);
+    color: var(--action-ink);
     display: flex;
     align-items: center;
     gap: 6px;
