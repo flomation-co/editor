@@ -317,7 +317,7 @@
     max-height: 350px;
     overflow-y: auto;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     padding: 4px;
@@ -429,7 +429,7 @@
     align-items: center;
     gap: 4px;
     padding: 6px 8px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     background: var(--surface-sunken);
 }
 
@@ -439,7 +439,7 @@
     gap: 4px;
     padding: 4px 8px;
     background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 4px;
     color: var(--lilac);
     font-size: 11px;
@@ -451,7 +451,7 @@
 
 .variable-autocomplete .vp-footer-btn:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 
@@ -460,12 +460,12 @@
     padding: 4px 6px;
     color: var(--dim);
     background: var(--surface-raise);
-    border-color: var(--border);
+    border-color: var(--rule);
 }
 
 .variable-autocomplete .vp-footer-btn--refresh:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--soft);
 }
 
@@ -547,7 +547,7 @@
 
 .variable-mode-toggle:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 
@@ -562,7 +562,7 @@
 
 .variable-mode-toggle--active {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 

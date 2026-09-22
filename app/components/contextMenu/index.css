@@ -35,8 +35,8 @@
     position: absolute;
     z-index: 1000;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: 2px solid var(--border-2);
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--rule-2);
     border-radius: 10px;
     box-shadow: 0 4px 24px rgba(70, 45, 84, 0.16);
     width: 340px;
@@ -59,7 +59,7 @@
     flex: 1;
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     border-radius: 0;
     padding: 12px 14px;
     font-size: 13px;
@@ -70,7 +70,7 @@
 
 .context-menu-header input:focus {
     box-shadow: none;
-    border-bottom-color: var(--border-2);
+    border-bottom-color: var(--rule-2);
 }
 
 .context-menu-header input::placeholder {
@@ -118,7 +118,7 @@
 }
 
 .context-node-type:hover {
-    border-left: 2px solid var(--border-2);
+    border-left: 2px solid var(--rule-2);
     background: var(--surface-raise);
 }
 
@@ -175,7 +175,7 @@
 }
 
 .context-category-header.expanded {
-    border-left: 2px solid var(--border-2);
+    border-left: 2px solid var(--rule-2);
     background: var(--surface-sunken);
 }
 
@@ -211,7 +211,7 @@
 /* Nested action items within a group */
 .context-category-actions {
     padding-left: 12px;
-    border-left: 2px solid var(--border-2);
+    border-left: 2px solid var(--rule-2);
     margin-left: 16px;
     animation: expandIn 0.15s ease-out;
     overflow: hidden;
@@ -259,12 +259,12 @@
 }
 
 .context-sub-header.expanded {
-    border-left: 2px solid var(--border-2);
+    border-left: 2px solid var(--rule-2);
     background: var(--surface-sunken);
 }
 
 .context-sub-group .context-category-actions {
-    border-left-color: var(--border-2);
+    border-left-color: var(--rule-2);
     margin-left: 12px;
     padding-left: 10px;
 }
@@ -293,12 +293,12 @@
 }
 
 .context-sub-sub-header.expanded {
-    border-left: 2px solid var(--border-2);
+    border-left: 2px solid var(--rule-2);
     background: var(--surface-sunken);
 }
 
 .context-sub-sub-group .context-category-actions {
-    border-left-color: var(--border-2);
+    border-left-color: var(--rule-2);
     margin-left: 10px;
     padding-left: 8px;
 }
@@ -337,7 +337,7 @@
     gap: 2px;
     flex-wrap: wrap;
     padding: 7px 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     font-size: 0.95em;
     color: var(--dimmer);
 }
@@ -401,7 +401,7 @@
     gap: 8px;
     text-align: left;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 7px;
     padding: 8px 9px;
     color: inherit;
@@ -412,7 +412,7 @@
 
 .context-group-tile:hover {
     background: var(--surface-raise);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* Cloud is 59% of the catalogue and wanted by a minority of flows. It keeps
@@ -434,7 +434,7 @@
     flex: none;
     border-radius: 6px;
     background: var(--surface-raise);
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .context-group-tile-text {

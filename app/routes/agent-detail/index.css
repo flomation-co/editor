@@ -60,9 +60,9 @@
 .agent-action-btn {
     padding: 8px 18px;
     border-radius: 8px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     background: var(--surface-raise);
-    color: var(--muted);
+    color: var(--ink-muted);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -74,11 +74,11 @@
 
 .agent-action-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 .agent-action-btn.start {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
 }
 
@@ -118,7 +118,7 @@
 .agent-tabs {
     display: flex;
     gap: 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     margin-bottom: 24px;
 }
 
@@ -137,12 +137,12 @@
 }
 
 .agent-tab:hover {
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .agent-tab.active {
     color: var(--lilac);
-    border-bottom-color: var(--border-2);
+    border-bottom-color: var(--rule-2);
 }
 
 .agent-form-group {
@@ -161,7 +161,7 @@
     width: 100%;
     padding: 10px 14px;
     border-radius: 8px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     background: var(--surface-raise);
     color: var(--text);
     font-size: 14px;
@@ -172,13 +172,13 @@
 }
 
 .agent-form-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .agent-mode-btn {
     padding: 7px 16px;
     border-radius: 6px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     background: var(--surface-sunken);
     color: var(--dimmer);
     font-size: 12px;
@@ -195,7 +195,7 @@
 
 .agent-mode-btn.active {
     background: rgba(47, 107, 100, 0.12);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
 }
 
@@ -213,7 +213,7 @@
 .agent-save-btn {
     padding: 10px 28px;
     border-radius: 8px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     background: var(--surface);
     color: var(--lilac);
     font-size: 14px;
@@ -239,7 +239,7 @@
     align-items: center;
     padding: 12px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
 }
 
@@ -267,7 +267,7 @@
     align-items: center;
     padding: 14px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -275,7 +275,7 @@
 
 .agent-session-item:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .agent-session-info {
@@ -286,7 +286,7 @@
 
 .agent-session-time {
     font-size: 14px;
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .agent-session-stats {
@@ -372,7 +372,7 @@
     max-height: 240px;
     overflow-y: auto;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     padding: 4px;
     z-index: 50;
@@ -425,13 +425,13 @@
 .agent-channel-card {
     padding: 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     transition: border-color 0.2s ease;
 }
 
 .agent-channel-card:hover {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .agent-channel-card-header {
@@ -469,10 +469,10 @@
 
 .memory-filter-select {
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     padding: 7px 12px;
-    color: var(--muted);
+    color: var(--ink-muted);
     font-size: 13px;
     cursor: pointer;
 }
@@ -502,8 +502,8 @@
 
 .memory-btn-secondary {
     background: var(--surface-2);
-    color: var(--muted);
-    border: 1px solid var(--border-2);
+    color: var(--ink-muted);
+    border: 1px solid var(--rule-2);
 }
 .memory-btn-secondary:hover { background: var(--surface-hover); }
 
@@ -542,7 +542,7 @@
 .agent-memory-item {
     padding: 14px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     transition: background 0.15s;
 }
@@ -628,7 +628,7 @@
     font-size: 11px;
     padding: 2px 10px;
     border-radius: 4px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     background: var(--surface-raise);
     color: var(--dim);
     cursor: pointer;
@@ -636,7 +636,7 @@
 }
 .memory-action-btn:hover {
     background: var(--surface-hover);
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 .memory-action-danger { color: var(--danger); border-color: var(--danger-border); }
 .memory-action-danger:hover { color: var(--danger); background: var(--danger-fill); }
@@ -669,7 +669,7 @@
     align-items: center;
     padding: 12px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.15s;
@@ -677,7 +677,7 @@
 .agent-user-item:hover { background: var(--surface-raise); }
 .agent-user-item.active {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .user-display-name {
@@ -690,7 +690,7 @@
     padding: 12px 16px 16px;
     margin-bottom: 8px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-top: none;
     border-radius: 0 0 8px 8px;
 }
@@ -751,7 +751,7 @@
 }
 
 .user-memory-title {
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .user-memory-type {
@@ -773,7 +773,7 @@
 .audit-log-item {
     padding: 10px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.15s;

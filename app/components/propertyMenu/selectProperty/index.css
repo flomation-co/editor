@@ -24,12 +24,12 @@
 
 .property-menu-select-trigger:hover {
     background: var(--surface);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .property-menu-select-trigger.open,
 .property-menu-select-trigger:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .property-menu-select-placeholder {
@@ -56,7 +56,7 @@
     max-height: 220px;
     overflow-y: auto;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     z-index: 10001;

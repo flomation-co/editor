@@ -41,7 +41,7 @@
 
 .subscription-upgrade-widget .plan-card {
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     padding: 16px;
     display: flex;
@@ -52,12 +52,12 @@
 }
 
 .subscription-upgrade-widget .plan-card:hover {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     background: var(--surface-sunken);
 }
 
 .subscription-upgrade-widget .plan-card.highlighted {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     background: var(--surface-2);
 }
 
@@ -167,7 +167,7 @@
 
 .subscription-upgrade-widget .upgrade-button.secondary {
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     color: var(--soft);
 }
 

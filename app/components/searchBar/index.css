@@ -12,7 +12,7 @@
     flex: 1;
     min-width: 0;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     padding: 0 12px;
     height: 38px;
@@ -76,7 +76,7 @@
     height: 34px;
     min-width: 34px;
     padding: 0 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     justify-content: center;
@@ -108,5 +108,5 @@
 
 .search-bar-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }

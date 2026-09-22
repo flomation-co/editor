@@ -18,7 +18,7 @@
 
 .money-input-field:focus-within {
     box-shadow: 0 0 10px 1px var(--highlight-colour);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .money-input-symbol {
@@ -30,7 +30,7 @@
     padding: 0 10px;
     background: var(--surface-raise);
     border-right: 1px solid var(--neutral-border);
-    color: var(--muted);
+    color: var(--ink-muted);
     font-weight: 600;
     font-size: 14px;
     user-select: none;

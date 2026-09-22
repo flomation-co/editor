@@ -11,7 +11,7 @@
 .profile-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     padding-bottom: 0;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .profile-tab:hover {
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .profile-tab.active {
@@ -49,7 +49,7 @@
 /* ── Cards ── */
 .profile-card {
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 12px;
     padding: 24px;
 }
@@ -67,7 +67,7 @@
    (e.g. "Address" sub-section under "Personal Details"). */
 .profile-section-label--inline {
     margin-top: 8px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     padding-top: 18px;
 }
 
@@ -118,7 +118,7 @@
     height: 40px;
     padding: 0 14px;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -151,7 +151,7 @@
     justify-content: flex-end;
     gap: 10px;
     padding-top: 8px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .profile-btn {
@@ -185,8 +185,8 @@
 
 .profile-btn--secondary {
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
-    color: var(--muted);
+    border: 1px solid var(--rule-2);
+    color: var(--ink-muted);
 }
 
 .profile-btn--secondary:hover:not(:disabled) {
@@ -229,7 +229,7 @@
     align-items: flex-start;
     gap: 14px;
     padding: 14px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .login-entry:last-child {
@@ -315,7 +315,7 @@
     width: 100%;
     padding: 10px 12px;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -325,7 +325,7 @@
 }
 
 .rich-dropdown__trigger:hover {
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 .rich-dropdown__trigger:focus-visible {
@@ -343,7 +343,7 @@
     left: 0;
     right: 0;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     overflow: hidden;
@@ -414,7 +414,7 @@
     flex-direction: column;
     gap: 1px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -451,7 +451,7 @@
     border: 1px solid var(--warning-border);
     font-size: 13px;
     line-height: 1.5;
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .compliance-notice svg {
@@ -485,7 +485,7 @@
     padding: 16px;
     border-radius: 12px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .compliance-cert__icon {

@@ -42,8 +42,8 @@
 
 .credential-property-empty:hover .credential-property-placeholder,
 .credential-property-empty:focus-visible .credential-property-placeholder {
-    border-color: var(--border-2);
-    color: var(--muted);
+    border-color: var(--rule-2);
+    color: var(--ink-muted);
     background: var(--surface-2);
 }
 

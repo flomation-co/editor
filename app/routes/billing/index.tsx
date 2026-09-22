@@ -455,7 +455,7 @@ export default function Billing() {
                     <span className="billing-order-value">{formatCurrency(price.amount_pence)}</span>
                 </div>
                 {hasProration && remainingDaysDisplay < 28 && (
-                    <div className="billing-order-line billing-order-line--muted">
+                    <div className="billing-order-line billing-order-line--ink-muted">
                         <span className="billing-order-label">Prorated for {remainingDaysDisplay} day{remainingDaysDisplay !== 1 ? "s" : ""} remaining</span>
                         <span className="billing-order-value">{formatCurrency(chargeGross)}</span>
                     </div>
@@ -473,11 +473,11 @@ export default function Billing() {
                     </div>
                 ))}
                 <div className="billing-order-divider" />
-                <div className="billing-order-line billing-order-line--muted">
+                <div className="billing-order-line billing-order-line--ink-muted">
                     <span className="billing-order-label">Subtotal (ex. VAT)</span>
                     <span className="billing-order-value">{formatCurrency(subtotalNet)}</span>
                 </div>
-                <div className="billing-order-line billing-order-line--muted">
+                <div className="billing-order-line billing-order-line--ink-muted">
                     <span className="billing-order-label">VAT (20%)</span>
                     <span className="billing-order-value">{formatCurrency(vatPence)}</span>
                 </div>
@@ -487,7 +487,7 @@ export default function Billing() {
                     <span className="billing-order-total-value">{formatCurrency(totalDue)}</span>
                 </div>
                 {!hasProration && (
-                    <div className="billing-order-line billing-order-line--muted">
+                    <div className="billing-order-line billing-order-line--ink-muted">
                         <span className="billing-order-label">Billed {price.billing_interval}ly *</span>
                         <span className="billing-order-value">{formatCurrency(price.amount_pence)} / {price.billing_interval}</span>
                     </div>
@@ -497,7 +497,7 @@ export default function Billing() {
                         * Recurring charge may be lower while active vouchers are applied
                     </div>
                 )}
-                <div className="billing-order-line billing-order-line--muted">
+                <div className="billing-order-line billing-order-line--ink-muted">
                     <span className="billing-order-label">{isUpgrade ? "Effective immediately" : "Effective from"}</span>
                     <span className="billing-order-value">
                         {isUpgrade ? formatDate(effectiveDate) : formatDate(subscription?.current_period_end || endDate.toISOString())}
@@ -616,11 +616,11 @@ export default function Billing() {
                     </div>
                 ))}
                 <div className="billing-order-divider" />
-                <div className="billing-order-line billing-order-line--muted">
+                <div className="billing-order-line billing-order-line--ink-muted">
                     <span className="billing-order-label">Subtotal (ex. VAT)</span>
                     <span className="billing-order-value">{formatCurrency(grossNet - discountNet)}</span>
                 </div>
-                <div className="billing-order-line billing-order-line--muted">
+                <div className="billing-order-line billing-order-line--ink-muted">
                     <span className="billing-order-label">VAT (20%)</span>
                     <span className="billing-order-value">{formatCurrency(vat)}</span>
                 </div>
@@ -1317,7 +1317,7 @@ export default function Billing() {
                                 />
                                 <span className="billing-credit-toggle-slider" />
                             </label>
-                            <span style={{fontSize: 14, color: "var(--muted)"}}>
+                            <span style={{fontSize: 14, color: "var(--ink-muted)"}}>
                                 {autoTopupEnabled ? "Enabled" : "Disabled"}
                             </span>
                         </div>

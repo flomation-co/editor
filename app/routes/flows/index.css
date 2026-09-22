@@ -40,7 +40,7 @@
     height: 34px;
     min-width: 34px;
     padding: 0 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     justify-content: center;
@@ -71,7 +71,7 @@
 
 .flows-action-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .flows-action-btn--primary {
@@ -82,7 +82,7 @@
 
 .flows-action-btn--primary:hover {
     background: var(--action-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .flows-action-btn--disabled {
@@ -172,7 +172,7 @@
     gap: 8px;
     padding: 12px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     transition: background 0.12s ease;
 }
@@ -273,7 +273,7 @@
 }
 
 .flo-checkbox:hover .flo-checkbox-box {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .flo-checkbox input:checked ~ .flo-checkbox-box {
@@ -330,7 +330,7 @@
     gap: 8px;
     padding: 10px 14px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     text-decoration: none;
     color: var(--soft);
@@ -340,7 +340,7 @@
 
 .favourite-card:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .favourite-star {
@@ -414,7 +414,7 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     color: var(--secondary-font-colour);
@@ -425,7 +425,7 @@
 
 .flo-more-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* Dropdown */
@@ -435,7 +435,7 @@
     right: 0;
     min-width: 140px;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     z-index: 100;
@@ -532,7 +532,7 @@
     gap: 14px;
     padding: 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -541,7 +541,7 @@
 
 .flows-template-card:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     transform: translateY(-1px);
 }
 
@@ -603,7 +603,7 @@
     max-width: 90vw;
     max-height: 80vh;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(70, 45, 84, 0.16);
     display: flex;
@@ -613,7 +613,7 @@
 
 .trigger-input-header {
     padding: 20px 24px 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .trigger-input-title {
@@ -660,7 +660,7 @@
     padding: 8px 10px;
     font-size: 13px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     outline: none;
@@ -671,7 +671,7 @@
 .trigger-input-text:focus,
 .trigger-input-textarea:focus,
 .trigger-input-select:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .trigger-input-text::placeholder,
@@ -694,7 +694,7 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: var(--muted);
+    color: var(--ink-muted);
     cursor: pointer;
 }
 
@@ -704,7 +704,7 @@
 
 .trigger-input-footer {
     padding: 12px 24px 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     display: flex;
     justify-content: flex-end;
     gap: 8px;
@@ -749,7 +749,7 @@
 /* ── Projects (grouped view) ─────────────────────────────────────────── */
 .flows-action-btn--active {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 .flows-action-btn--active > span { color: var(--lilac); }
@@ -768,7 +768,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     background: var(--surface-sunken);
     transition: background 0.12s ease;
@@ -860,7 +860,7 @@
 .project-acl-body { max-height: 55vh; overflow-y: auto; }
 .project-acl-inherited {
     background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 8px;
@@ -892,7 +892,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 /* Team name takes the slack and truncates; the role select stays a fixed
    size on the right so it can never be pushed past the modal edge. */

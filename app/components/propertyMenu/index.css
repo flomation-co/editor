@@ -5,7 +5,7 @@
 
 .trigger-inputs-builder {
     padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .trigger-inputs-header {
@@ -50,7 +50,7 @@
 
 .trigger-input-def {
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     padding: 8px;
     margin-bottom: 8px;
@@ -72,7 +72,7 @@
     padding: 0 8px;
     font-size: 12px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     color: var(--soft);
     outline: none;
@@ -85,7 +85,7 @@
 }
 
 .trigger-input-def-field:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .trigger-input-def-select {
@@ -93,7 +93,7 @@
     padding: 0 6px;
     font-size: 11px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     color: var(--soft);
     outline: none;
@@ -143,7 +143,7 @@
     gap: 6px;
     margin-top: 8px;
     padding: 8px;
-    border: 1px dashed var(--border-2);
+    border: 1px dashed var(--rule-2);
     border-radius: 6px;
     background: var(--surface-sunken);
 }
@@ -175,7 +175,7 @@
 
 .trigger-input-option-move {
     background: var(--surface-raise);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--dim);
 }
 
@@ -193,7 +193,7 @@
 
 .property-menu-help {
     padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     font-size: 12px;
 }
 
@@ -280,7 +280,7 @@
     max-width: 92vw;
     max-height: 80vh;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -296,7 +296,7 @@
     font-size: 14px;
     font-weight: 500;
     color: var(--soft);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .text-popup-close {
@@ -328,13 +328,13 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .text-popup-cancel {
     padding: 6px 14px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--soft);
     font-size: 12px;
@@ -357,13 +357,13 @@
 .property-menu-note {
     margin: 10px 12px 4px;
     padding: 10px 12px;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-left: 3px solid var(--teal);
     border-radius: 8px;
     background: var(--surface-2);
     font-size: 12px;
     line-height: 1.5;
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 .property-menu-note-title {
     font-size: 10px;

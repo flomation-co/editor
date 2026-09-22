@@ -32,7 +32,7 @@
     height: 34px;
     min-width: 34px;
     padding: 0 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     justify-content: center;
@@ -63,7 +63,7 @@
 
 .boards-action-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .boards-action-btn--primary {
@@ -74,7 +74,7 @@
 
 .boards-action-btn--primary:hover {
     background: var(--action-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* ═══════════════════════════════════════════════
@@ -96,7 +96,7 @@
     background: var(--surface-sunken);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 14px;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
@@ -121,7 +121,7 @@
 
 .board-card:hover {
     background: var(--surface-raise);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(70, 45, 84, 0.16);
 }
@@ -175,7 +175,7 @@
 .board-card-badge--private {
     background: var(--surface-raise);
     color: var(--faint);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .board-card-description {
@@ -197,7 +197,7 @@
     justify-content: space-between;
     gap: 12px;
     padding-top: 12px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .board-card-stat {
@@ -224,7 +224,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     color: var(--dimmer);
@@ -235,8 +235,8 @@
 
 .board-card-action-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
-    color: var(--muted);
+    border-color: var(--rule-2);
+    color: var(--ink-muted);
 }
 
 .board-card-action-btn--danger:hover {
@@ -323,7 +323,7 @@
     height: 38px;
     padding: 0 12px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     font-size: 14px;
@@ -333,7 +333,7 @@
 }
 
 .board-form-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     background: var(--surface-2);
 }
 
@@ -342,7 +342,7 @@
     min-height: 80px;
     padding: 10px 12px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     font-size: 14px;
@@ -354,7 +354,7 @@
 }
 
 .board-form-textarea:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     background: var(--surface-2);
 }
 
@@ -367,7 +367,7 @@
 
 .board-form-toggle-label {
     font-size: 13px;
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .board-form-toggle {

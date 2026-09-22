@@ -11,7 +11,7 @@
 
 .modal-panel {
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 16px;
     width: 440px;
     max-width: 90vw;
@@ -86,7 +86,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
 }
 
 .modal-btn-secondary {

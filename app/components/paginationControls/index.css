@@ -15,7 +15,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     color: var(--dim);
@@ -32,7 +32,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: transparent;
     color: var(--faint);
@@ -42,13 +42,13 @@
 
 .pagination-button:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--soft);
 }
 
 .pagination-button-active {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 

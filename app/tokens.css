@@ -68,14 +68,14 @@
 
   /* Warm-neutral rules read cold against a lilac paper, so the alpha is tinted
      towards the purple rather than towards black. */
-  --border: rgba(70, 45, 84, 0.12);
-  --border-2: rgba(70, 45, 84, 0.18);
-  --border-3: rgba(70, 45, 84, 0.22);
+  --rule: rgba(70, 45, 84, 0.12);
+  --rule-2: rgba(70, 45, 84, 0.18);
+  --rule-3: rgba(70, 45, 84, 0.22);
 
   /* ---- Ink ------------------------------------------------------------ */
 
   --text: #342a38;
-  --muted: #473d4b;
+  --ink-muted: #473d4b;
   --soft: #524856;
   --dim: #5c5260;
   --dimmer: #665c6a;
@@ -168,6 +168,6 @@
      here alone; see the website note in CLAUDE.md. */
   --font-body: 'Hanken Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --radius: 12px;
+  --radius-md: 12px;
   --radius-lg: 16px;
 }

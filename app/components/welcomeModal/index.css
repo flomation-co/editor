@@ -12,7 +12,7 @@
 
 .welcome-panel {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: 16px;
   width: 560px;
   max-width: 92vw;
@@ -45,7 +45,7 @@
 
 .welcome-body {
   padding: 8px 28px 4px;
-  color: var(--muted);
+  color: var(--ink-muted);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -66,7 +66,7 @@
 .welcome-field-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
 .welcome-field-hint {
@@ -76,7 +76,7 @@
 
 .welcome-input {
   background: var(--surface-raise);
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 8px;
   padding: 10px 14px;
   color: var(--soft);
@@ -86,7 +86,7 @@
 }
 
 .welcome-input:focus {
-  border-color: var(--border-2);
+  border-color: var(--rule-2);
 }
 
 .welcome-checkbox-row {
@@ -95,7 +95,7 @@
   gap: 12px;
   padding: 14px 16px;
   background: var(--surface-2);
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -131,13 +131,13 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--rule);
 }
 
 .welcome-btn-primary {
   background: linear-gradient(135deg, var(--violet), var(--surface-2));
   color: #fff;
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 8px;
   padding: 10px 22px;
   font-size: 14px;

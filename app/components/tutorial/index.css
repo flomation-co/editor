@@ -60,7 +60,7 @@
     position: fixed;
     z-index: 999;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 14px;
     padding: 20px 22px;
     max-width: 340px;

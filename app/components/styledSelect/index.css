@@ -12,7 +12,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -23,7 +23,7 @@
 }
 
 .styled-select__trigger:hover {
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 .styled-select__trigger:focus-visible {
@@ -58,7 +58,7 @@
     overflow-y: auto;
     padding: 6px;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     box-shadow: 0 16px 40px rgba(70, 45, 84, 0.16);
 }

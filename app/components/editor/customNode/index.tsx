@@ -9,14 +9,29 @@ import { detectSecret } from "~/lib/secretDetection";
 import { useValidationProblem } from "~/components/editor/validationContext";
 import { useIsNodeStale } from "~/components/editor/staleContext";
 
+/* The node palette, on paper.
+ *
+ * Every hue is kept, because the type of a node is read by its colour before
+ * its icon, but every value moved: the dark set was pitched to glow on black
+ * and none of it survived the change of ground. Conditional was the worst at
+ * 1.44:1 against a white node, which is to say invisible; all seven now sit
+ * between 6 and 14.
+ *
+ * bgAlpha is the badge behind the icon and glow is the halo around it. The
+ * halo is deliberately faint: a coloured bloom needs darkness to glow into,
+ * and on paper the same shadow just reads as a smudge.
+ *
+ * bg and text are unused by the component today and kept only so the shape of
+ * the record does not change under anything that starts reading them.
+ */
 const NODE_COLOURS: Record<number, { bg: string; bgAlpha: string; glow: string; text: string; iconColour: string }> = {
-    1: { bg: '#00aa9c', bgAlpha: 'rgba(0,170,156,0.15)',   glow: 'rgba(0,170,156,0.35)',   text: '#00aa9c', iconColour: '#00aa9c' },   // Trigger
-    2: { bg: '#8b00de', bgAlpha: 'rgba(70,0,112,0.3)',     glow: 'rgba(139,0,222,0.35)',   text: '#8b00de', iconColour: '#b49eed' },   // Action
-    3: { bg: '#f59e0b', bgAlpha: 'rgba(245,158,11,0.15)',   glow: 'rgba(245,158,11,0.35)',  text: '#f59e0b', iconColour: '#fbbf24' },   // Output
-    4: { bg: '#efd467', bgAlpha: 'rgba(239,212,103,0.12)', glow: 'rgba(239,212,103,0.35)', text: '#efd467', iconColour: '#efd467' },  // Conditional
-    5: { bg: '#b967ef', bgAlpha: 'rgba(185,103,239,0.15)', glow: 'rgba(185,103,239,0.35)', text: '#b967ef', iconColour: '#b967ef' },  // Loop
-    6: { bg: '#06b6d4', bgAlpha: 'rgba(6,182,212,0.15)',  glow: 'rgba(6,182,212,0.35)',  text: '#06b6d4', iconColour: '#22d3ee' },  // Switch
-    7: { bg: '#f43f5e', bgAlpha: 'rgba(244,63,94,0.15)',  glow: 'rgba(244,63,94,0.35)',  text: '#f43f5e', iconColour: '#fb7185' },  // Human in the Loop
+    1: { bg: '#2f6b64', bgAlpha: 'rgba(47,107,100,0.12)',  glow: 'rgba(47,107,100,0.18)',  text: '#2f6b64', iconColour: '#2f6b64' },  // Trigger
+    2: { bg: '#460070', bgAlpha: 'rgba(70,0,112,0.10)',    glow: 'rgba(70,0,112,0.18)',    text: '#460070', iconColour: '#460070' },  // Action
+    3: { bg: '#8a5300', bgAlpha: 'rgba(138,83,0,0.12)',    glow: 'rgba(138,83,0,0.18)',    text: '#8a5300', iconColour: '#8a5300' },  // Output
+    4: { bg: '#6d5a00', bgAlpha: 'rgba(109,90,0,0.12)',    glow: 'rgba(109,90,0,0.18)',    text: '#6d5a00', iconColour: '#6d5a00' },  // Conditional
+    5: { bg: '#6b3f80', bgAlpha: 'rgba(107,63,128,0.12)',  glow: 'rgba(107,63,128,0.18)',  text: '#6b3f80', iconColour: '#6b3f80' },  // Loop
+    6: { bg: '#14657a', bgAlpha: 'rgba(20,101,122,0.12)',  glow: 'rgba(20,101,122,0.18)',  text: '#14657a', iconColour: '#14657a' },  // Switch
+    7: { bg: '#a8213f', bgAlpha: 'rgba(168,33,63,0.10)',   glow: 'rgba(168,33,63,0.18)',   text: '#a8213f', iconColour: '#a8213f' },  // Human in the Loop
 };
 
 const NODE_CLASS_MAP: Record<number, string> = {

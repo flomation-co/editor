@@ -97,7 +97,7 @@
 }
 
 .voice-search input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .voice-list {
@@ -175,7 +175,7 @@
 
 .voice-preview-btn {
     background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 50%;
     width: 28px;
     height: 28px;
@@ -191,7 +191,7 @@
 
 .voice-preview-btn:hover {
     background: rgba(47, 107, 100, 0.12);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
 }
 
@@ -208,7 +208,7 @@
     gap: 0;
     padding: 6px;
     background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .voice-tab {
@@ -295,8 +295,8 @@
     width: calc(100% - 16px);
     margin: 8px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
-    color: var(--muted);
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
     padding: 8px;
     border-radius: 4px;
     cursor: pointer;

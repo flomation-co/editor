@@ -3,7 +3,7 @@
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     background: var(--surface);
     position: relative;
     overflow: hidden;
@@ -24,7 +24,7 @@
     height: 48px;
     border-radius: 10px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     min-width: unset;
     position: relative;
     font-size: 12px;
@@ -38,11 +38,11 @@
 /* ── Status modifiers ── */
 .exec-node--pending {
     opacity: 0.35;
-    border-color: var(--border);
+    border-color: var(--rule);
 }
 
 .exec-node--running {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     box-shadow: 0 0 20px 4px rgba(70, 45, 84, 0.16);
     animation: exec-pulse 1.5s ease-in-out infinite;
 }
@@ -209,7 +209,7 @@
     min-width: 220px;
     max-width: 300px;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     padding: 10px 12px;
     box-shadow: 0 8px 32px rgba(70, 45, 84, 0.16), 0 0 0 1px rgba(70, 45, 84, 0.16);
@@ -246,7 +246,7 @@
     justify-content: space-between;
     margin-bottom: 6px;
     padding-bottom: 5px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .exec-node-tooltip-status {
@@ -328,7 +328,7 @@
     text-align: center;
     margin-top: 6px;
     padding-top: 5px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 /* ── Node Inspector Panel ── */
@@ -359,7 +359,7 @@
     overflow-y: auto;
     background: var(--surface);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 12px;
     box-shadow: 0 16px 48px rgba(70, 45, 84, 0.16);
     padding: 20px;
@@ -372,7 +372,7 @@
     justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .node-inspector-title {
@@ -391,7 +391,7 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     background: var(--surface-raise);
     color: var(--dim);
     cursor: pointer;
@@ -444,13 +444,13 @@
 .node-inspector-badge--pending {
     background: var(--surface-raise);
     color: var(--dimmer);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .node-inspector-badge--duration {
     background: var(--surface-raise);
     color: var(--soft);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .node-inspector-section {
@@ -477,7 +477,7 @@
     display: flex;
     gap: 8px;
     padding: 5px 8px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     align-items: flex-start;
 }
 
@@ -522,7 +522,7 @@
     align-items: stretch;
     margin-top: 4px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     overflow: hidden;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -532,7 +532,7 @@
 
 .ni-code-gutter {
     background: var(--surface-sunken);
-    border-right: 1px solid var(--border);
+    border-right: 1px solid var(--rule);
     padding: 8px 10px 8px 12px;
     color: var(--faint);
     text-align: right;
@@ -578,11 +578,11 @@
 }
 .ni-media audio { border-radius: 6px; }
 .ni-media img {
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     background: var(--surface);
 }
 .ni-media video {
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     background: var(--surface);
 }
 .ni-media embed {
@@ -609,7 +609,7 @@
 }
 .ni-download-btn:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 .ni-text-preview {
     margin: 0;
@@ -617,7 +617,7 @@
     max-height: 240px;
     overflow: auto;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11px;
@@ -670,7 +670,7 @@
 .ni-tree-children {
     margin-left: 12px;
     padding-left: 10px;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--rule);
 }
 
 .ni-tree-row {
@@ -724,16 +724,16 @@
     gap: 8px;
     padding: 8px 0;
     margin-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     font-size: 13px;
     color: var(--dim);
 }
 
 .node-inspector-iteration button {
     background: var(--surface-2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 4px;
-    color: var(--muted);
+    color: var(--ink-muted);
     padding: 4px 8px;
     cursor: pointer;
     font-size: 12px;

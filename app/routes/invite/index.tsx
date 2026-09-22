@@ -183,7 +183,7 @@ export default function AcceptInvite() {
                                     borderRadius: "8px",
                                     border: "1px solid rgba(174, 159, 185, 0.3)",
                                     background: "transparent",
-                                    color: "var(--muted)",
+                                    color: "var(--ink-muted)",
                                     cursor: "pointer",
                                     fontSize: "14px",
                                 }}
@@ -363,7 +363,7 @@ export default function AcceptInvite() {
                                     borderRadius: "8px",
                                     border: "1px solid rgba(174, 159, 185, 0.3)",
                                     background: "transparent",
-                                    color: "var(--muted)",
+                                    color: "var(--ink-muted)",
                                     cursor: "pointer",
                                     fontSize: "14px",
                                 }}

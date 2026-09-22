@@ -41,22 +41,36 @@
      own pass, because node colours, edge contrast and the execution glows all
      have to be reworked together against paper or the graph stops being
      readable. Chrome first, canvas after. */
-  --xy-node-border-radius: 10px;
-  --xy-node-border: 1px solid var(--border);
-  --xy-minimap-background-color: var(--surface-2);
-  --xy-edge-stroke: var(--soft);
-  --xy-edge-stroke-selected: var(--soft);
-  --xy-selected-colour: 139, 0, 222;
-  --xy-selected-shadow: 0px 0px 14px 4px var(--node-glow, rgba(var(--xy-selected-colour), 0.35));
+  /* The canvas.
+   *
+   * A dark graph is lit from within: a neon bloom around a node reads as glow
+   * because there is darkness to glow into. On paper there is none, so the same
+   * shadow reads as a smudge. Every state here is a ring rather than a bloom.
+   */
+  --xy-node-border-radius: 12px;
+  --xy-node-border: 1px solid var(--rule);
   --xy-node-background-color: var(--surface);
-  --xy-background-dot-colour: var(--surface);
+  --xy-minimap-background-color: var(--surface-2);
 
-  --xy-success-colour: var(--success);
-  --xy-error-colour: var(--danger);
-  --xy-pending-colour: var(--soft);
-  --xy-node-success: 0px 0px 20px 10px var(--xy-success-colour);
-  --xy-node-error: 0px 0px 20px 10px var(--xy-error-colour);
-  --xy-node-pending: 0px 0px 20px 10px var(--xy-pending-colour);
+  /* The dot grid has to be visible against paper without becoming texture you
+     read. The sweep had set this to the panel colour, which made it disappear. */
+  --xy-background-dot-colour: rgba(70, 45, 84, 0.22);
+
+  /* An edge is a line you follow, so it needs more weight than a rule. Selected
+     is the brand purple, because the sweep had left it identical to unselected
+     and there was no way to tell which edge you had clicked. */
+  --xy-edge-stroke: rgba(70, 45, 84, 0.42);
+  --xy-edge-stroke-selected: var(--violet);
+
+  --xy-selected-colour: 70, 0, 112;
+  --xy-selected-shadow: 0 0 0 3px var(--node-glow, rgba(var(--xy-selected-colour), 0.22));
+
+  --xy-success-colour: rgba(27, 109, 69, 0.28);
+  --xy-error-colour: rgba(168, 33, 47, 0.28);
+  --xy-pending-colour: rgba(70, 45, 84, 0.2);
+  --xy-node-success: 0 0 0 3px var(--xy-success-colour);
+  --xy-node-error: 0 0 0 3px var(--xy-error-colour);
+  --xy-node-pending: 0 0 0 3px var(--xy-pending-colour);
 }
 
 @keyframes border-blink {
@@ -181,7 +195,7 @@ body {
 
 .flo-table > tbody > tr > td {
   padding: 12px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
   font-size: 13px;
 }
 
@@ -206,7 +220,7 @@ body {
   color: var(--dimmer);
   padding: 10px 10px;
   text-align: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
 }
 
 .flo-table-head > tr > th:first-child {
@@ -266,7 +280,7 @@ body {
 
 .execution-state-cancelled {
   background: var(--surface-raise);
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   color: var(--dimmer);
 }
 
@@ -306,7 +320,7 @@ body {
   padding: 10px 12px;
   background-color: var(--surface);
   color: var(--text);
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 10px;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -394,7 +408,7 @@ input {
   background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 6px;
   box-sizing: border-box;
 }
@@ -413,7 +427,7 @@ textarea {
   background-color: var(--primary-input-colour);
   color: var(--primary-font-colour);
   outline: none;
-  border: 1px solid var(--border-2);
+  border: 1px solid var(--rule-2);
   border-radius: 6px;
   box-sizing: border-box;
   resize: vertical;
@@ -488,7 +502,7 @@ textarea:focus {
   width: 570px;
   max-height: calc(100% - 32px);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: 10px;
   box-shadow: 0 4px 24px rgba(70, 45, 84, 0.16);
   font-size: 12px;
@@ -503,7 +517,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
   gap: 8px;
 }
 
@@ -604,7 +618,7 @@ input {
 }
 
 .property-divider {
-  border-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, var(--border-2) 50%, rgba(0, 0, 0, 0) 100%) 1;
+  border-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, var(--rule-2) 50%, rgba(0, 0, 0, 0) 100%) 1;
   border-width: 1px;
   border-style: solid;
 }
@@ -824,7 +838,7 @@ a.active {
   height: 30px;
   padding: 0 10px;
   background: var(--surface-raise);
-  border: 1px solid var(--border);
+  border: 1px solid var(--rule);
   border-radius: 6px;
   margin-left: 2px;
   margin-right: 2px;
@@ -850,7 +864,7 @@ a.active {
 
 .table-button:hover {
   background: var(--surface-hover);
-  border-color: var(--border-2);
+  border-color: var(--rule-2);
   color: var(--soft);
 }
 

@@ -104,7 +104,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 10px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-period-label {
@@ -139,7 +139,7 @@
 
 .usage-widget-upgrade:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .usage-widget-upgrade svg {
@@ -152,7 +152,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 12px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-cost-label {
@@ -172,7 +172,7 @@
     align-items: center;
     padding-top: 10px;
     margin-top: 2px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-credit-label {

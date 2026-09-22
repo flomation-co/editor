@@ -33,7 +33,7 @@
     height: 34px;
     padding: 0 10px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--soft);
     font-size: 12px;
@@ -49,11 +49,11 @@
 }
 
 .board-view-select:hover {
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 .board-view-select:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-view-select option {
@@ -65,7 +65,7 @@
     height: 34px;
     min-width: 34px;
     padding: 0 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     color: var(--dim);
@@ -80,7 +80,7 @@
 
 .board-view-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-view-btn--primary {
@@ -91,7 +91,7 @@
 
 .board-view-btn--primary:hover {
     background: var(--action-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-view-refresh-indicator {
@@ -143,7 +143,7 @@
     background: var(--surface-sunken);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 14px;
     overflow: hidden;
     height: 100%;
@@ -325,7 +325,7 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     position: sticky;
     top: 0;
     background: var(--surface);
@@ -334,8 +334,8 @@
 
 .widget-table td {
     padding: 7px 10px;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--rule);
 }
 
 .widget-table tr:hover td {
@@ -350,7 +350,7 @@
     flex: 1;
     overflow: auto;
     min-height: 0;
-    color: var(--muted);
+    color: var(--ink-muted);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -433,7 +433,7 @@
     padding: 8px 10px;
     background: var(--surface-sunken);
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .widget-status-dot {

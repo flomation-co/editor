@@ -10,7 +10,7 @@
     var(--surface-2) 100%
   );
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
   box-shadow: 0 4px 24px rgba(70, 45, 84, 0.16);
   animation: cookieBannerIn 0.35s ease-out;
 }

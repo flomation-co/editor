@@ -332,7 +332,7 @@ export default function AgentSessionView() {
                     <button
                         className="agent-action-btn"
                         onClick={() => navigate(`/agent/${id}`)}
-                        style={{ padding: "6px 12px", border: "1px solid var(--border-2)", background: "var(--surface-raise)", borderRadius: 8, color: "var(--soft)", cursor: "pointer" }}
+                        style={{ padding: "6px 12px", border: "1px solid var(--rule-2)", background: "var(--surface-raise)", borderRadius: 8, color: "var(--soft)", cursor: "pointer" }}
                     >
                         <Icon name="arrow-left" />
                     </button>

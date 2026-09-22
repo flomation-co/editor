@@ -87,7 +87,7 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
                         style={{
                             padding: "12px 16px",
                             background: "var(--surface-raise)",
-                            border: "1px solid var(--border)",
+                            border: "1px solid var(--rule)",
                             borderRadius: 8,
                         }}
                     >

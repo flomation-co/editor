@@ -83,7 +83,7 @@ function buildChartOptions() {
         responsive: true, maintainAspectRatio: false,
         plugins: {
             legend: {display: true, labels: {color: "var(--dim)", font: {size: 11}}},
-            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--border-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
+            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--rule-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
         },
         scales: {
             x: {grid: {color: "var(--faint)"}, ticks: {color: "var(--faint)", font: {size: 10}}},
@@ -97,7 +97,7 @@ function buildPieOptions() {
         responsive: true, maintainAspectRatio: false,
         plugins: {
             legend: {position: "bottom" as const, labels: {color: "var(--dim)", font: {size: 11}, padding: 12}},
-            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--border-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
+            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--rule-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
         },
     };
 }
@@ -218,8 +218,8 @@ function GaugeWidget({widget, data}: {widget: DashboardWidget; data?: DashboardW
             <svg viewBox="0 0 200 120" width="180" height="110">
                 <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--faint)" strokeWidth="14" strokeLinecap="round"/>
                 <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke={colour} strokeWidth="14" strokeLinecap="round" strokeDasharray={`${(pct * 251.327).toFixed(1)} 251.327`} style={{filter: `drop-shadow(0 0 6px ${colour})`}}/>
-                <line x1="100" y1="100" x2={100 + 65 * Math.cos(Math.PI - (angle * Math.PI) / 180)} y2={100 - 65 * Math.sin(Math.PI - (angle * Math.PI) / 180)} stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="100" cy="100" r="4" fill="var(--muted)"/>
+                <line x1="100" y1="100" x2={100 + 65 * Math.cos(Math.PI - (angle * Math.PI) / 180)} y2={100 - 65 * Math.sin(Math.PI - (angle * Math.PI) / 180)} stroke="var(--ink-muted)" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="100" cy="100" r="4" fill="var(--ink-muted)"/>
                 <text x="100" y="90" textAnchor="middle" fill="#e5e7eb" fontSize="22" fontWeight="700">{Number(value).toLocaleString()}</text>
                 <text x="24" y="116" textAnchor="start" fill="var(--faint)" fontSize="10">{min}</text>
                 <text x="176" y="116" textAnchor="end" fill="var(--faint)" fontSize="10">{max}</text>

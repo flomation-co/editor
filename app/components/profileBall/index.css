@@ -9,7 +9,7 @@
     width: 34px;
     height: 34px;
     background: var(--surface-2);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     display: flex;
@@ -21,7 +21,7 @@
 
 .profile-pic:hover {
     background: var(--surface-hover);
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
     color: var(--text);
 }
 

@@ -16,7 +16,7 @@
     height: 34px;
     padding: 0 14px;
     background: var(--action);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--action-ink);
     font-size: 13px;
@@ -29,7 +29,7 @@
 
 .env-create-btn:hover {
     background: var(--action-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* Create form */
@@ -46,7 +46,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -67,7 +67,7 @@
     height: 38px;
     padding: 0 16px;
     background: var(--action);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--action-ink);
     font-size: 13px;
@@ -94,7 +94,7 @@
     height: 38px;
     padding: 0 14px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--soft);
     font-size: 13px;
@@ -129,7 +129,7 @@
     gap: 10px;
     padding: 12px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.12s ease;
@@ -194,7 +194,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     background: var(--surface-raise);
     color: var(--faint);

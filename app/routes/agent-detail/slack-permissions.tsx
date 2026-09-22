@@ -79,7 +79,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
             {result && result.ok && (
                 <div style={{
                     background: "var(--surface-sunken)",
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--rule)",
                     borderRadius: 8,
                     padding: "10px 14px",
                     fontSize: 12,
@@ -87,7 +87,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                     <div style={{
                         display: "flex", justifyContent: "space-between", alignItems: "center",
                         marginBottom: 10, paddingBottom: 8,
-                        borderBottom: "1px solid var(--border)",
+                        borderBottom: "1px solid var(--rule)",
                     }}>
                         <div style={{ color: "var(--soft)" }}>
                             <strong>{result.team}</strong>
@@ -161,7 +161,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                     <span style={{
                                         fontFamily: "'Courier New', monospace",
                                         fontSize: 11,
-                                        color: scope.granted ? "var(--muted)" : "var(--danger)",
+                                        color: scope.granted ? "var(--ink-muted)" : "var(--danger)",
                                     }}>
                                         {scope.scope}
                                     </span>

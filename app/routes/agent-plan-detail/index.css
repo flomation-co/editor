@@ -14,9 +14,9 @@
     gap: 6px;
     padding: 6px 12px;
     background: transparent;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: var(--muted);
+    color: var(--ink-muted);
     cursor: pointer;
     font-size: 13px;
     margin-bottom: 16px;
@@ -24,12 +24,12 @@
 }
 .plan-back-btn:hover {
     background: var(--surface-raise);
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 .plan-detail-header {
     padding: 18px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     margin-bottom: 24px;
 }
 .plan-detail-title-row {
@@ -63,7 +63,7 @@
     flex-shrink: 0;
 }
 .plan-detail-goal {
-    color: var(--muted);
+    color: var(--ink-muted);
     font-size: 14px;
     margin: 4px 0;
     /* AI-authored goals are prose; same overflow posture as the
@@ -115,7 +115,7 @@
 .plan-task-row {
     padding: 14px 16px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     transition: background 0.15s, border-color 0.15s;
 }
@@ -124,7 +124,7 @@
 }
 .plan-task-row--clickable:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .plan-task-row-main {
@@ -199,7 +199,7 @@
 
 .plan-events-panel {
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     padding: 14px 16px;
     /* Sticky on tall pages so the timeline stays visible as the
@@ -264,7 +264,7 @@
 }
 .plan-task-details-btn {
     background: transparent;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     width: 26px;
     height: 26px;
@@ -279,7 +279,7 @@
 .plan-task-details-btn:hover {
     background: var(--surface-hover);
     color: var(--text);
-    border-color: var(--border-3);
+    border-color: var(--rule-3);
 }
 
 /* M3 — task drill-down modal body */
@@ -368,7 +368,7 @@
 .task-detail-json {
     padding: 10px 12px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     color: var(--text);
     font-size: 12px;
@@ -395,7 +395,7 @@
 
 .plan-start-btn {
     background: transparent;
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     padding: 6px 14px;
     color: var(--teal);
@@ -406,7 +406,7 @@
 }
 .plan-start-btn:hover:not(:disabled) {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--text);
 }
 .plan-start-btn:disabled {
@@ -465,7 +465,7 @@
 }
 .plan-cancel-reason-input {
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--text);
     font-family: inherit;
@@ -488,7 +488,7 @@
     max-height: 240px;
 }
 .plan-cancel-reason-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     outline: none;
 }
 .plan-cancel-reason-input:disabled {

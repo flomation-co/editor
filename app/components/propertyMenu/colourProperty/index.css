@@ -13,7 +13,7 @@
     height: 34px;
     flex-shrink: 0;
     border-radius: 8px;
-    border: 1px solid var(--border-3);
+    border: 1px solid var(--rule-3);
     cursor: pointer;
     padding: 0;
     /* Checkerboard so a partly/undefined colour reads as "not set". */
@@ -34,7 +34,7 @@
 }
 
 .colour-swatch-unknown {
-    color: var(--muted);
+    color: var(--ink-muted);
     font-weight: 700;
     font-size: 14px;
 }
@@ -51,7 +51,7 @@
     width: 216px;
     padding: 12px;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     box-shadow: 0 12px 32px rgba(70, 45, 84, 0.16);
 }
@@ -99,7 +99,7 @@
     text-align: center;
     box-sizing: border-box;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--text);
     text-transform: none;
@@ -116,12 +116,12 @@
     width: 22px;
     height: 22px;
     border-radius: 6px;
-    border: 1px solid var(--border-3);
+    border: 1px solid var(--rule-3);
     cursor: pointer;
     padding: 0;
 }
 
 .colour-preset:hover {
     transform: scale(1.12);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }

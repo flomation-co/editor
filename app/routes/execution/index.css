@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
 }
 
@@ -132,7 +132,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
     flex-wrap: wrap;
 }
@@ -146,21 +146,21 @@
     font-size: 11px;
     color: var(--dim);
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     white-space: nowrap;
     text-decoration: none;
 }
 
 .exec-meta-chip--link {
     color: var(--lilac);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .exec-meta-chip--link:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--lilac);
 }
 
@@ -171,7 +171,7 @@
 
 .exec-meta-chip--clickable:hover {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .exec-meta-suspend-count {
@@ -183,14 +183,14 @@
 /* ── Live timer chip ── */
 .exec-meta-chip--live {
     color: var(--teal);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
 /* ── Timing segments pane ── */
 .exec-timing-pane {
     padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     background: var(--surface-sunken);
     flex-shrink: 0;
 }
@@ -229,7 +229,7 @@
     border-radius: 6px;
     font-size: 11px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .exec-timing-segment-index {
@@ -303,7 +303,7 @@
     z-index: 50;
     background: var(--surface);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     padding: 4px;
     box-shadow: 0 4px 20px rgba(70, 45, 84, 0.16);
@@ -324,7 +324,7 @@
 
 .exec-detail-tab-btn:hover {
     background: var(--surface-2);
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 /* ── Floating detail panel ── */
@@ -339,7 +339,7 @@
     flex-direction: column;
     background: var(--surface);
     backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
     box-shadow: 0 -8px 32px rgba(70, 45, 84, 0.16);
     animation: slideUpPanel 0.2s ease-out;
 }
@@ -360,7 +360,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
 }
 
@@ -386,7 +386,7 @@
 }
 
 .exec-detail-panel-tab:hover {
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .exec-detail-panel-tab.active {
@@ -398,7 +398,7 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     background: var(--surface-raise);
     color: var(--dim);
     cursor: pointer;
@@ -432,7 +432,7 @@
     word-break: break-all;
     overflow-wrap: break-word;
     margin: 0;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
 }
 
 .exec-detail-loading {
@@ -480,7 +480,7 @@ pre {
     padding: 8px 20px;
     font-size: 11px;
     color: var(--soft);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
     background: var(--surface-raise);
 }
 

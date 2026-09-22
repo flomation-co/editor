@@ -861,7 +861,7 @@ export default function Profile() {
                                                     <div key={`${i.channel_type}-${i.external_id}`} style={{
                                                         display: "flex", alignItems: "center", justifyContent: "space-between",
                                                         padding: "8px 12px", background: "var(--surface-raise)",
-                                                        border: "1px solid var(--border)", borderRadius: 6,
+                                                        border: "1px solid var(--rule)", borderRadius: 6,
                                                     }}>
                                                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                                                             <Icon name={channel?.icon || "address-card"} />

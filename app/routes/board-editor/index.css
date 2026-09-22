@@ -8,7 +8,7 @@
     gap: 12px;
     padding: 0 20px;
     min-height: 50px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .board-editor-title-wrap {
@@ -36,12 +36,12 @@
 
 .board-editor-title-input:hover {
     background: var(--surface-sunken);
-    border-color: var(--border);
+    border-color: var(--rule);
 }
 
 .board-editor-title-input:focus {
     background: var(--surface-raise);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-editor-controls {
@@ -55,7 +55,7 @@
     height: 34px;
     min-width: 34px;
     padding: 0 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     background: var(--surface-raise);
     color: var(--dim);
@@ -70,7 +70,7 @@
 
 .board-editor-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-editor-btn--save {
@@ -83,7 +83,7 @@
 
 .board-editor-btn--save:hover {
     background: var(--action-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .board-editor-btn--save:disabled {
@@ -103,7 +103,7 @@
 /* Description bar */
 .board-editor-description {
     padding: 8px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .board-editor-description-input {
@@ -121,7 +121,7 @@
 }
 
 .board-editor-description-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--soft);
 }
 
@@ -140,7 +140,7 @@
     margin-top: 4px;
     width: 200px;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     padding: 6px;
     z-index: 100;
@@ -178,7 +178,7 @@
 
 .actions-menu-item:hover {
     background: var(--surface-2);
-    color: var(--muted);
+    color: var(--ink-muted);
 }
 
 .actions-menu-item--active {
@@ -230,7 +230,7 @@
 .widget-card {
     height: 100%;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 14px;
     padding: 16px;
     display: flex;
@@ -241,11 +241,11 @@
 }
 
 .widget-card:hover {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .widget-card--selected {
-    border-color: var(--border-2) !important;
+    border-color: var(--rule-2) !important;
     box-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16), 0 4px 20px rgba(70, 45, 84, 0.16);
 }
 
@@ -255,7 +255,7 @@
 }
 
 .widget-card--editable:hover {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .widget-card--dragging {
@@ -264,7 +264,7 @@
 }
 
 .widget-card--drag-over {
-    border-color: var(--border-2) !important;
+    border-color: var(--rule-2) !important;
     box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16), inset 0 0 20px rgba(70, 45, 84, 0.16);
 }
 
@@ -339,7 +339,7 @@
 .ghost-add-panel {
     min-height: 100px;
     grid-column: span 4;
-    border: 2px dashed var(--border);
+    border: 2px dashed var(--rule);
     border-radius: 14px;
     display: flex;
     flex-direction: column;
@@ -353,7 +353,7 @@
 }
 
 .ghost-add-panel:hover {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
     background: rgba(47, 107, 100, 0.12);
 }
@@ -370,7 +370,7 @@
     width: 420px;
     z-index: 20;
     background: var(--surface);
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--rule);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -383,7 +383,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 16px 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rule);
 }
 
 .panel-config-header-title {
@@ -445,7 +445,7 @@
     height: 34px;
     padding: 0 10px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     font-size: 13px;
@@ -455,7 +455,7 @@
 }
 
 .panel-config-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .panel-config-textarea {
@@ -463,7 +463,7 @@
     min-height: 80px;
     padding: 8px 10px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     font-size: 13px;
@@ -475,7 +475,7 @@
 }
 
 .panel-config-textarea:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* ═══════════════════════════════════════════════
@@ -495,7 +495,7 @@
     max-height: 240px;
     overflow-y: auto;
     background: var(--surface);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 10px;
     padding: 4px;
     z-index: 50;
@@ -585,7 +585,7 @@
     height: 34px;
     padding: 0 28px 0 10px;
     background: var(--surface-raise);
-    border: 1px solid var(--border-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     color: var(--soft);
     font-size: 13px;
@@ -601,7 +601,7 @@
 }
 
 .panel-config-select:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .panel-config-select option {
@@ -615,7 +615,7 @@
     flex-direction: column;
     gap: 2px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     padding: 6px;
     max-height: 160px;
@@ -662,7 +662,7 @@
     gap: 4px;
     padding: 8px 10px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
 }
 
@@ -805,7 +805,7 @@
     justify-content: center;
     gap: 4px;
     padding: 10px 2px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     background: var(--surface-sunken);
     color: var(--faint);
@@ -818,19 +818,19 @@
 
 .panel-type-option:hover {
     background: var(--surface-raise);
-    border-color: var(--border-2);
-    color: var(--muted);
+    border-color: var(--rule-2);
+    color: var(--ink-muted);
 }
 
 .panel-type-option--selected {
     background: rgba(47, 107, 100, 0.12);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
 }
 
 .panel-type-option--selected:hover {
     background: rgba(47, 107, 100, 0.12);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     color: var(--teal);
 }
 
@@ -871,13 +871,13 @@
 
 .panel-config-footer {
     padding: 12px 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--rule);
 }
 
 .panel-config-footer-btn {
     width: 100%;
     height: 34px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     background: transparent;
     color: var(--faint);
@@ -936,7 +936,7 @@
     font-size: 11px;
     padding: 3px 8px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 4px;
     color: var(--dim);
     cursor: pointer;
@@ -945,7 +945,7 @@
 
 .table-column-action-btn:hover {
     background: var(--surface-hover);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 /* Each column row: grip | checkbox | info (name + label) */
@@ -956,13 +956,13 @@
     padding: 6px 8px;
     border-radius: 8px;
     background: var(--surface-sunken);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
 .table-column-row--selected {
     background: var(--surface-2);
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     cursor: grab;
 }
 
@@ -975,7 +975,7 @@
 }
 
 .table-column-row.drag-over {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
     background: var(--surface-2);
 }
 
@@ -1005,7 +1005,7 @@
 .table-column-name {
     font-size: 11px;
     font-weight: 500;
-    color: var(--muted);
+    color: var(--ink-muted);
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1020,7 +1020,7 @@
     padding: 0 6px;
     font-size: 11px;
     background: var(--surface-raise);
-    border: 1px solid var(--border);
+    border: 1px solid var(--rule);
     border-radius: 4px;
     color: var(--soft);
     outline: none;
@@ -1032,5 +1032,5 @@
 }
 
 .table-column-label-input:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }

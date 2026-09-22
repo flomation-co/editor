@@ -10,7 +10,7 @@
     font-family: monospace;
     font-size: 11px;
     padding: 6px 8px;
-    border: 1px solid var(--border-color, var(--border-2));
+    border: 1px solid var(--border-color, var(--rule-2));
     border-radius: 6px;
     background: var(--input-bg, var(--surface));
     color: var(--text-color, var(--soft));
@@ -30,7 +30,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border: 1px solid var(--border-color, var(--border-2));
+    border: 1px solid var(--border-color, var(--rule-2));
     border-radius: 6px;
     background: var(--input-bg, var(--surface));
     color: var(--text-muted, var(--soft));
@@ -40,7 +40,7 @@
 
 .webhook-secret-btn:hover {
     color: var(--text-color, var(--soft));
-    border-color: var(--text-muted, var(--border-2));
+    border-color: var(--text-muted, var(--rule-2));
 }
 
 .webhook-secret-btn svg {

@@ -76,7 +76,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
             {result && result.checks && result.checks.length > 0 && (
                 <div style={{
                     background: "var(--surface-sunken)",
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--rule)",
                     borderRadius: 8,
                     padding: "10px 14px",
                     fontSize: 12,
@@ -85,7 +85,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                         <div style={{
                             display: "flex", justifyContent: "space-between", alignItems: "center",
                             marginBottom: 10, paddingBottom: 8,
-                            borderBottom: "1px solid var(--border)",
+                            borderBottom: "1px solid var(--rule)",
                         }}>
                             <div style={{ color: "var(--soft)" }}>
                                 <strong>{result.account_name}</strong>
@@ -136,7 +136,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                                     <span style={{
                                         fontSize: 11,
                                         fontWeight: 500,
-                                        color: check.passed ? "var(--muted)" : "var(--danger)",
+                                        color: check.passed ? "var(--ink-muted)" : "var(--danger)",
                                     }}>
                                         {check.name}
                                     </span>

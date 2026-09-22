@@ -19,7 +19,7 @@
 }
 
 .property-menu-select-search:focus {
-    border-color: var(--border-2);
+    border-color: var(--rule-2);
 }
 
 .property-menu-select-option-id {

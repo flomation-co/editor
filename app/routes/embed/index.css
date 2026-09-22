@@ -12,7 +12,7 @@
 .embed-create-btn {
     display: inline-flex; align-items: center; gap: 6px;
     height: 34px; padding: 0 14px; margin-bottom: 20px;
-    background: var(--action); border: 1px solid var(--border-2); border-radius: 6px;
+    background: var(--action); border: 1px solid var(--rule-2); border-radius: 6px;
     color: var(--action-ink); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
     transition: background 0.1s ease;
 }
@@ -27,7 +27,7 @@
 .embed-add-row select {
     padding: 10px 12px;
     background-color: var(--primary-background);
-    border: 1px solid var(--border-2); border-radius: 6px;
+    border: 1px solid var(--rule-2); border-radius: 6px;
     color: var(--primary-font-colour); font-size: 14px; font-family: inherit; outline: none;
 }
 .embed-create-form textarea { min-height: 72px; resize: vertical; }
@@ -44,8 +44,8 @@
 .embed-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 .embed-btn-cancel {
     height: 36px; padding: 0 14px; background: transparent;
-    border: 1px solid var(--border-2); border-radius: 6px;
-    color: var(--muted); font-size: 13px; cursor: pointer;
+    border: 1px solid var(--rule-2); border-radius: 6px;
+    color: var(--ink-muted); font-size: 13px; cursor: pointer;
 }
 
 .embed-empty { color: var(--dimmer); padding: 16px 0; }
@@ -54,7 +54,7 @@
 
 .embed-card {
     background: var(--primary-background);
-    border: 1px solid var(--border); border-radius: 8px;
+    border: 1px solid var(--rule); border-radius: 8px;
     /* No overflow:hidden — the resource autocomplete is absolutely positioned and
        must be able to escape the card. The card's own background is clipped to
        the radius already; no child paints into the corners. */
@@ -73,8 +73,8 @@
 
 .embed-key-pill {
     display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
-    background: var(--surface-raise); border: 1px solid var(--border-2);
-    border-radius: 6px; color: var(--muted); font-family: monospace; font-size: 12px;
+    background: var(--surface-raise); border: 1px solid var(--rule-2);
+    border-radius: 6px; color: var(--ink-muted); font-family: monospace; font-size: 12px;
     cursor: pointer;
 }
 .embed-key-pill:hover { border-color: var(--teal); color: var(--text); }
@@ -86,17 +86,17 @@
 .embed-card-delete:hover { color: var(--danger); }
 
 .embed-card-body {
-    border-top: 1px solid var(--border); padding: 16px; display: flex;
+    border-top: 1px solid var(--rule); padding: 16px; display: flex;
     flex-direction: column; gap: 22px;
 }
-.embed-card-body h4 { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.embed-card-body h4 { margin: 0 0 10px; font-size: 13px; color: var(--ink-muted); }
 
 .embed-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 /* When the chips sit BELOW their input, space goes on top, not bottom. */
 .embed-chip-row--below { margin-top: 12px; margin-bottom: 0; }
 .embed-chip {
     display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px;
-    background: var(--surface-2); border: 1px solid var(--border-2);
+    background: var(--surface-2); border: 1px solid var(--rule-2);
     border-radius: 20px; font-size: 12.5px; color: var(--text);
 }
 .embed-chip button {
@@ -114,12 +114,12 @@
 .embed-add-row select { height: 40px; box-sizing: border-box; }
 .embed-add-row button {
     display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; height: 40px;
-    background: var(--surface-2); border: 1px solid var(--border-2);
+    background: var(--surface-2); border: 1px solid var(--rule-2);
     border-radius: 6px; color: var(--text); font-size: 13px; cursor: pointer;
     white-space: nowrap;
 }
 .embed-add-row button:hover { border-color: var(--teal); color: var(--text); }
-.embed-add-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--border-2); color: var(--dim); }
+.embed-add-row button:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--rule-2); color: var(--dim); }
 
 .embed-field-label { font-size: 12.5px; color: var(--soft); margin: 2px 0 -2px; }
 
@@ -133,13 +133,13 @@
 .embed-resource-search { position: relative; max-width: 480px; }
 .embed-resource-search input {
     width: 100%; height: 40px; box-sizing: border-box; padding: 0 12px;
-    background-color: var(--primary-background); border: 1px solid var(--border-2);
+    background-color: var(--primary-background); border: 1px solid var(--rule-2);
     border-radius: 6px; color: var(--primary-font-colour); font-size: 14px; font-family: inherit; outline: none;
 }
 .embed-resource-search input::placeholder { color: var(--faint); }
 .embed-autocomplete {
     position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
-    background: var(--surface); border: 1px solid var(--border-2); border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--rule-2); border-radius: 8px;
     box-shadow: 0 12px 30px rgba(70, 45, 84, 0.16); overflow: hidden; max-height: 260px; overflow-y: auto;
 }
 .embed-autocomplete-item {
