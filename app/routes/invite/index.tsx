@@ -139,7 +139,7 @@ export default function AcceptInvite() {
                 <div style={{ padding: "32px" }}>
                     {state === "loading" && (
                         <div style={{ textAlign: "center" }}>
-                            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px" }}>
+                            <p style={{ color: "var(--dim)", fontSize: "15px" }}>
                                 Loading invite details...
                             </p>
                         </div>
@@ -161,7 +161,7 @@ export default function AcceptInvite() {
                                 &#10006;
                             </div>
                             <p style={{
-                                color: "#f87171",
+                                color: "var(--danger)",
                                 fontSize: "16px",
                                 fontWeight: 600,
                                 marginBottom: "8px",
@@ -169,7 +169,7 @@ export default function AcceptInvite() {
                                 Invalid Invite
                             </p>
                             <p style={{
-                                color: "rgba(255,255,255,0.5)",
+                                color: "var(--dim)",
                                 fontSize: "14px",
                                 lineHeight: "1.5",
                                 marginBottom: "24px",
@@ -183,7 +183,7 @@ export default function AcceptInvite() {
                                     borderRadius: "8px",
                                     border: "1px solid rgba(174, 159, 185, 0.3)",
                                     background: "transparent",
-                                    color: "rgba(255,255,255,0.7)",
+                                    color: "var(--muted)",
                                     cursor: "pointer",
                                     fontSize: "14px",
                                 }}
@@ -211,7 +211,7 @@ export default function AcceptInvite() {
                                 {preview.organisation_name.charAt(0).toUpperCase()}
                             </div>
                             <p style={{
-                                color: "rgba(255,255,255,0.5)",
+                                color: "var(--dim)",
                                 fontSize: "13px",
                                 textTransform: "uppercase",
                                 letterSpacing: "1px",
@@ -228,12 +228,12 @@ export default function AcceptInvite() {
                                 {preview.organisation_name}
                             </p>
                             <p style={{
-                                color: "rgba(255,255,255,0.4)",
+                                color: "var(--dimmer)",
                                 fontSize: "13px",
                                 marginBottom: "32px",
                             }}>
                                 as <span style={{
-                                    color: "#00aa9c",
+                                    color: "var(--teal)",
                                     fontWeight: 600,
                                     textTransform: "capitalize",
                                 }}>{preview.role}</span>
@@ -268,7 +268,7 @@ export default function AcceptInvite() {
                                         borderRadius: "10px",
                                         border: "1px solid rgba(174, 159, 185, 0.2)",
                                         background: "transparent",
-                                        color: "rgba(255,255,255,0.6)",
+                                        color: "var(--soft)",
                                         cursor: "pointer",
                                         fontSize: "14px",
                                         transition: "all 0.2s ease",
@@ -282,7 +282,7 @@ export default function AcceptInvite() {
 
                     {state === "accepting" && (
                         <div style={{ textAlign: "center" }}>
-                            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "15px" }}>
+                            <p style={{ color: "var(--soft)", fontSize: "15px" }}>
                                 Accepting invite...
                             </p>
                         </div>
@@ -300,12 +300,12 @@ export default function AcceptInvite() {
                                 justifyContent: "center",
                                 margin: "0 auto 20px",
                                 fontSize: "24px",
-                                color: "#4ade80",
+                                color: "var(--success)",
                             }}>
                                 &#10003;
                             </div>
                             <p style={{
-                                color: "#4ade80",
+                                color: "var(--success)",
                                 fontSize: "18px",
                                 fontWeight: 600,
                                 marginBottom: "8px",
@@ -345,12 +345,12 @@ export default function AcceptInvite() {
                                 justifyContent: "center",
                                 margin: "0 auto 20px",
                                 fontSize: "24px",
-                                color: "#f87171",
+                                color: "var(--danger)",
                             }}>
                                 &#10006;
                             </div>
                             <p style={{
-                                color: "#f87171",
+                                color: "var(--danger)",
                                 fontSize: "16px",
                                 marginBottom: "24px",
                             }}>
@@ -363,7 +363,7 @@ export default function AcceptInvite() {
                                     borderRadius: "8px",
                                     border: "1px solid rgba(174, 159, 185, 0.3)",
                                     background: "transparent",
-                                    color: "rgba(255,255,255,0.7)",
+                                    color: "var(--muted)",
                                     cursor: "pointer",
                                     fontSize: "14px",
                                 }}
@@ -383,7 +383,7 @@ export default function AcceptInvite() {
                     <a
                         href="https://www.flomation.co"
                         style={{
-                            color: "rgba(255,255,255,0.3)",
+                            color: "var(--faint)",
                             fontSize: "12px",
                             textDecoration: "none",
                         }}

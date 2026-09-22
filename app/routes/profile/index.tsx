@@ -860,14 +860,14 @@ export default function Profile() {
                                                 return (
                                                     <div key={`${i.channel_type}-${i.external_id}`} style={{
                                                         display: "flex", alignItems: "center", justifyContent: "space-between",
-                                                        padding: "8px 12px", background: "rgba(255,255,255,0.03)",
-                                                        border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6,
+                                                        padding: "8px 12px", background: "var(--surface-raise)",
+                                                        border: "1px solid var(--border)", borderRadius: 6,
                                                     }}>
                                                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                                                             <Icon name={channel?.icon || "address-card"} />
                                                             <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
                                                                 <span style={{ fontWeight: 500 }}>{channel?.label || i.channel_type}</span>
-                                                                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                                <span style={{ fontSize: 12, color: "var(--dim)", overflow: "hidden", textOverflow: "ellipsis" }}>
                                                                     {i.external_id}
                                                                     {i.display_name && <> &middot; {i.display_name}</>}
                                                                 </span>
@@ -908,12 +908,12 @@ export default function Profile() {
                             }}
                         >
                             <div>
-                                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
+                                <div style={{ fontSize: 14, color: "var(--text)" }}>
                                     {user?.marketing_opt_in
                                         ? "You're subscribed to marketing updates"
                                         : "You're not subscribed"}
                                 </div>
-                                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4 }}>
+                                <div style={{ fontSize: 12, color: "var(--dimmer)", marginTop: 4 }}>
                                     {user?.email_address || "—"}
                                 </div>
                             </div>
@@ -922,9 +922,9 @@ export default function Profile() {
                                     type="checkbox"
                                     checked={user?.marketing_opt_in ?? false}
                                     onChange={(e) => setMarketingOptIn(e.target.checked)}
-                                    style={{ width: 18, height: 18, accentColor: "#c084fc", cursor: "pointer" }}
+                                    style={{ width: 18, height: 18, accentColor: "var(--action)", cursor: "pointer" }}
                                 />
-                                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.8)" }}>
+                                <span style={{ fontSize: 13, color: "var(--text)" }}>
                                     {user?.marketing_opt_in ? "Subscribed" : "Subscribe"}
                                 </span>
                             </label>

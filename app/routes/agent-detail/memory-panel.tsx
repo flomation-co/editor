@@ -26,10 +26,10 @@ const MEMORY_TYPE_LABELS: Record<string, string> = {
 const MEMORY_TYPE_COLOURS: Record<string, string> = {
     preference: "#c084fc",
     feedback: "#f59e0b",
-    fact: "#00aa9c",
+    fact: "var(--teal)",
     relationship: "#ec4899",
     task: "#3b82f6",
-    session_summary: "rgba(255,255,255,0.3)",
+    session_summary: "var(--surface-2)",
 };
 
 export default function AgentMemoryPanel({agentId, apiUrl, token}: Props) {
@@ -215,7 +215,7 @@ export default function AgentMemoryPanel({agentId, apiUrl, token}: Props) {
                                     <div className="memory-item-left">
                                         <span
                                             className="memory-type-badge"
-                                            style={{background: MEMORY_TYPE_COLOURS[mem.memory_type] || 'rgba(255,255,255,0.2)'}}
+                                            style={{background: MEMORY_TYPE_COLOURS[mem.memory_type] || "var(--surface-2)"}}
                                         >
                                             {MEMORY_TYPE_LABELS[mem.memory_type] || mem.memory_type}
                                         </span>

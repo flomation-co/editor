@@ -15,18 +15,18 @@ type Props = {
 };
 
 const EVENT_TYPE_CONFIG: Record<string, {label: string; colour: string}> = {
-    memory_created: {label: "Memory Created", colour: "#00aa9c"},
-    memory_updated: {label: "Memory Updated", colour: "#3b82f6"},
-    memory_deleted: {label: "Memory Deleted", colour: "#f44336"},
-    memory_pinned: {label: "Memory Pinned", colour: "#c084fc"},
-    memory_unpinned: {label: "Memory Unpinned", colour: "rgba(255,255,255,0.4)"},
-    identity_linked: {label: "Identity Linked", colour: "#00aa9c"},
-    identity_unlinked: {label: "Identity Unlinked", colour: "#f59e0b"},
-    identity_merged: {label: "Identity Merged", colour: "#c084fc"},
-    bulk_forget: {label: "Bulk Forget", colour: "#f44336"},
-    data_export: {label: "Data Export", colour: "#3b82f6"},
-    retention_sweep: {label: "Retention Sweep", colour: "#f59e0b"},
-    retention_updated: {label: "Retention Updated", colour: "#3b82f6"},
+    memory_created: {label: "Memory Created", colour: "var(--teal)"},
+    memory_updated: {label: "Memory Updated", colour: "var(--info)"},
+    memory_deleted: {label: "Memory Deleted", colour: "var(--danger)"},
+    memory_pinned: {label: "Memory Pinned", colour: "var(--lilac)"},
+    memory_unpinned: {label: "Memory Unpinned", colour: "var(--surface-2)"},
+    identity_linked: {label: "Identity Linked", colour: "var(--teal)"},
+    identity_unlinked: {label: "Identity Unlinked", colour: "var(--warning)"},
+    identity_merged: {label: "Identity Merged", colour: "var(--lilac)"},
+    bulk_forget: {label: "Bulk Forget", colour: "var(--danger)"},
+    data_export: {label: "Data Export", colour: "var(--info)"},
+    retention_sweep: {label: "Retention Sweep", colour: "var(--warning)"},
+    retention_updated: {label: "Retention Updated", colour: "var(--info)"},
 };
 
 const ACTOR_TYPE_LABELS: Record<string, string> = {
@@ -105,7 +105,7 @@ export default function AgentAuditPanel({agentId, apiUrl, token}: Props) {
 
             <div className="audit-log-list">
                 {filtered.map(entry => {
-                    const config = EVENT_TYPE_CONFIG[entry.event_type] || {label: entry.event_type, colour: "rgba(255,255,255,0.4)"};
+                    const config = EVENT_TYPE_CONFIG[entry.event_type] || {label: entry.event_type, colour: "var(--surface-2)"};
                     return (
                         <div
                             key={entry.id}

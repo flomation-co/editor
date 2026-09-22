@@ -500,7 +500,7 @@ export function Editor(props : EditorProps) {
                 return {
                     ...e,
                     animated: !isDisabled ? false : undefined,
-                    style: !isDisabled ? { stroke: 'rgba(255,255,255,0.15)', strokeDasharray: '5 5' } : undefined,
+                    style: !isDisabled ? { stroke: 'var(--faint)', strokeDasharray: '5 5' } : undefined,
                     data: { ...e.data, disabled: !isDisabled },
                 };
             }
@@ -1866,7 +1866,7 @@ export function Editor(props : EditorProps) {
                                                     <span className="flo-notify-toggle-label">Notify on failure</span>
                                                 </label>
                                                 <div style={{ marginTop: 8 }}>
-                                                    <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 4 }}>
+                                                    <label style={{ fontSize: 11, color: 'var(--dimmer)', display: 'block', marginBottom: 4 }}>
                                                         Recipient emails (comma-separated)
                                                     </label>
                                                     <input
@@ -1891,7 +1891,7 @@ export function Editor(props : EditorProps) {
                                                 </label>
                                                 {maxConcurrent !== null && (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                                                        <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                                                        <label style={{ fontSize: 11, color: 'var(--dimmer)' }}>
                                                             Max executions
                                                         </label>
                                                         <input

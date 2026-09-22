@@ -82,12 +82,12 @@ function buildChartOptions() {
     return {
         responsive: true, maintainAspectRatio: false,
         plugins: {
-            legend: {display: true, labels: {color: "rgba(255,255,255,0.5)", font: {size: 11}}},
-            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "rgba(255,255,255,0.1)", borderWidth: 1, cornerRadius: 8, padding: 10},
+            legend: {display: true, labels: {color: "var(--dim)", font: {size: 11}}},
+            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--border-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
         },
         scales: {
-            x: {grid: {color: "rgba(255,255,255,0.05)"}, ticks: {color: "rgba(255,255,255,0.35)", font: {size: 10}}},
-            y: {grid: {color: "rgba(255,255,255,0.05)"}, ticks: {color: "rgba(255,255,255,0.35)", font: {size: 10}}},
+            x: {grid: {color: "var(--faint)"}, ticks: {color: "var(--faint)", font: {size: 10}}},
+            y: {grid: {color: "var(--faint)"}, ticks: {color: "var(--faint)", font: {size: 10}}},
         },
     };
 }
@@ -96,8 +96,8 @@ function buildPieOptions() {
     return {
         responsive: true, maintainAspectRatio: false,
         plugins: {
-            legend: {position: "bottom" as const, labels: {color: "rgba(255,255,255,0.5)", font: {size: 11}, padding: 12}},
-            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "rgba(255,255,255,0.1)", borderWidth: 1, cornerRadius: 8, padding: 10},
+            legend: {position: "bottom" as const, labels: {color: "var(--dim)", font: {size: 11}, padding: 12}},
+            tooltip: {backgroundColor: "rgba(26,26,46,0.95)", titleColor: "#e5e7eb", bodyColor: "rgba(255,255,255,0.7)", borderColor: "var(--border-2)", borderWidth: 1, cornerRadius: 8, padding: 10},
         },
     };
 }
@@ -193,7 +193,7 @@ function TableWidget({widget, data}: {widget: DashboardWidget; data?: DashboardW
                 <thead><tr>{columns.map((col, i) => <th key={i}>{labels[col] || formatColumnHeader(col)}</th>)}</tr></thead>
                 <tbody>
                     {rows.map((row: any, i: number) => <tr key={i}>{columns.map((col, j) => <td key={j}>{formatCellValue(row[col])}</td>)}</tr>)}
-                    {rows.length === 0 && <tr><td colSpan={columns.length || 1} style={{textAlign: "center", color: "rgba(255,255,255,0.2)"}}>No data</td></tr>}
+                    {rows.length === 0 && <tr><td colSpan={columns.length || 1} style={{textAlign: "center", color: "var(--faint)"}}>No data</td></tr>}
                 </tbody>
             </table>
         </div>
@@ -216,13 +216,13 @@ function GaugeWidget({widget, data}: {widget: DashboardWidget; data?: DashboardW
     return (
         <div className="widget-gauge">
             <svg viewBox="0 0 200 120" width="180" height="110">
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" strokeLinecap="round"/>
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--faint)" strokeWidth="14" strokeLinecap="round"/>
                 <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke={colour} strokeWidth="14" strokeLinecap="round" strokeDasharray={`${(pct * 251.327).toFixed(1)} 251.327`} style={{filter: `drop-shadow(0 0 6px ${colour})`}}/>
-                <line x1="100" y1="100" x2={100 + 65 * Math.cos(Math.PI - (angle * Math.PI) / 180)} y2={100 - 65 * Math.sin(Math.PI - (angle * Math.PI) / 180)} stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="100" cy="100" r="4" fill="rgba(255,255,255,0.7)"/>
+                <line x1="100" y1="100" x2={100 + 65 * Math.cos(Math.PI - (angle * Math.PI) / 180)} y2={100 - 65 * Math.sin(Math.PI - (angle * Math.PI) / 180)} stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="100" cy="100" r="4" fill="var(--muted)"/>
                 <text x="100" y="90" textAnchor="middle" fill="#e5e7eb" fontSize="22" fontWeight="700">{Number(value).toLocaleString()}</text>
-                <text x="24" y="116" textAnchor="start" fill="rgba(255,255,255,0.25)" fontSize="10">{min}</text>
-                <text x="176" y="116" textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize="10">{max}</text>
+                <text x="24" y="116" textAnchor="start" fill="var(--faint)" fontSize="10">{min}</text>
+                <text x="176" y="116" textAnchor="end" fill="var(--faint)" fontSize="10">{max}</text>
             </svg>
             {cfg.label && <div className="widget-gauge-label">{cfg.label}</div>}
         </div>
@@ -244,7 +244,7 @@ function StatusWidget({widget, data}: {widget: DashboardWidget; data?: Dashboard
         const v = String(value).toLowerCase();
         if (greenValues.includes(v)) return goodColour;
         if (amberValues.includes(v)) return cfg.warn_colour || "#f59e0b";
-        if (v === "" || v === "unknown" || v === "null" || v === "undefined") return "rgba(255,255,255,0.15)";
+        if (v === "" || v === "unknown" || v === "null" || v === "undefined") return "var(--neutral)";
         return badColour;
     };
 
@@ -265,7 +265,7 @@ function StatusWidget({widget, data}: {widget: DashboardWidget; data?: Dashboard
         ? (items.every(i => greenValues.includes(i.value.toLowerCase())) ? goodColour
             : items.some(i => !greenValues.includes(i.value.toLowerCase()) && !amberValues.includes(i.value.toLowerCase())) ? badColour
             : (cfg.warn_colour || "#f59e0b"))
-        : "rgba(255,255,255,0.05)";
+        : "var(--neutral)";
 
     // Single-item mode: show large centred display
     if (items.length <= 2) {

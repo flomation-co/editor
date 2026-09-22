@@ -51,7 +51,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                         background: "rgba(0,170,156,0.08)",
                         border: "1px solid rgba(0,170,156,0.2)",
                         borderRadius: 6,
-                        color: "#00aa9c",
+                        color: "var(--teal)",
                         fontSize: 11,
                         cursor: loading ? "wait" : "pointer",
                     }}
@@ -68,7 +68,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                     border: "1px solid rgba(239,68,68,0.2)",
                     borderRadius: 6,
                     fontSize: 12,
-                    color: "rgba(239,68,68,0.9)",
+                    color: "var(--danger)",
                     marginBottom: 8,
                 }}>
                     <Icon name="exclamation-triangle" style={{ marginRight: 6 }} />
@@ -78,8 +78,8 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
 
             {result && result.ok && (
                 <div style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--surface-sunken)",
+                    border: "1px solid var(--border)",
                     borderRadius: 8,
                     padding: "10px 14px",
                     fontSize: 12,
@@ -87,11 +87,11 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                     <div style={{
                         display: "flex", justifyContent: "space-between", alignItems: "center",
                         marginBottom: 10, paddingBottom: 8,
-                        borderBottom: "1px solid rgba(255,255,255,0.06)",
+                        borderBottom: "1px solid var(--border)",
                     }}>
-                        <div style={{ color: "rgba(255,255,255,0.6)" }}>
+                        <div style={{ color: "var(--soft)" }}>
                             <strong>{result.team}</strong>
-                            <span style={{ marginLeft: 8, color: "rgba(255,255,255,0.3)" }}>
+                            <span style={{ marginLeft: 8, color: "var(--faint)" }}>
                                 Bot: {result.bot_user}
                             </span>
                         </div>
@@ -107,7 +107,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                         fontSize: 11,
                                         background: "rgba(0,170,156,0.08)",
                                         border: "1px solid rgba(0,170,156,0.2)",
-                                        color: "#00aa9c",
+                                        color: "var(--teal)",
                                         textDecoration: "none",
                                         display: "flex", alignItems: "center", gap: 4,
                                     }}
@@ -121,7 +121,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     style={{
-                                        color: "rgba(255,255,255,0.2)",
+                                        color: "var(--faint)",
                                         fontSize: 10,
                                         textDecoration: "none",
                                         display: "flex", alignItems: "center", gap: 4,
@@ -136,7 +136,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                 fontSize: 11,
                                 fontWeight: 500,
                                 background: result.all_granted ? "rgba(0,170,156,0.1)" : "rgba(245,158,11,0.1)",
-                                color: result.all_granted ? "#00aa9c" : "rgba(245,158,11,0.9)",
+                                color: result.all_granted ? "var(--teal)" : "var(--warning)",
                             }}>
                                 {result.all_granted ? "All permissions granted" : "Missing permissions"}
                             </span>
@@ -152,7 +152,7 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                 <Icon
                                     name={scope.granted ? "check-circle" : "times-circle"}
                                     style={{
-                                        color: scope.granted ? "#00aa9c" : "rgba(239,68,68,0.7)",
+                                        color: scope.granted ? "var(--teal)" : "rgba(239,68,68,0.7)",
                                         fontSize: 13,
                                         flexShrink: 0,
                                     }}
@@ -161,20 +161,20 @@ export default function SlackPermissionChecker({ baseUrl, headers }: Props) {
                                     <span style={{
                                         fontFamily: "'Courier New', monospace",
                                         fontSize: 11,
-                                        color: scope.granted ? "rgba(255,255,255,0.7)" : "rgba(239,68,68,0.9)",
+                                        color: scope.granted ? "var(--muted)" : "var(--danger)",
                                     }}>
                                         {scope.scope}
                                     </span>
                                     <span style={{
                                         marginLeft: 8,
-                                        color: "rgba(255,255,255,0.3)",
+                                        color: "var(--faint)",
                                         fontSize: 11,
                                     }}>
                                         {scope.description}
                                     </span>
                                 </div>
                                 <span style={{
-                                    color: "rgba(255,255,255,0.2)",
+                                    color: "var(--faint)",
                                     fontSize: 10,
                                     whiteSpace: "nowrap",
                                 }}>

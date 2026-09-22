@@ -40,7 +40,7 @@ function cardBrandIcon(brand?: string): React.ReactNode {
         case "amex":
             return <svg viewBox="0 0 48 32" width="32" height="20"><rect width="48" height="32" rx="4" fill="#2E77BC"/><text x="24" y="19" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="sans-serif">AMEX</text></svg>;
         default:
-            return <svg viewBox="0 0 48 32" width="32" height="20"><rect width="48" height="32" rx="4" fill="rgba(255,255,255,0.1)"/><text x="24" y="19" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="sans-serif">{brand?.toUpperCase() || "CARD"}</text></svg>;
+            return <svg viewBox="0 0 48 32" width="32" height="20"><rect width="48" height="32" rx="4" fill="var(--faint)"/><text x="24" y="19" textAnchor="middle" fill="var(--dim)" fontSize="8" fontFamily="sans-serif">{brand?.toUpperCase() || "CARD"}</text></svg>;
     }
 }
 
@@ -632,7 +632,7 @@ export default function Billing() {
                 <div className="billing-order-divider" />
 
                 <div style={{marginTop: 8, marginBottom: 8}}>
-                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 6}}>
+                    <label style={{fontSize: 12, color: "var(--dimmer)", display: "block", marginBottom: 6}}>
                         Voucher code (optional)
                     </label>
                     <div style={{display: "flex", gap: 8}}>
@@ -667,7 +667,7 @@ export default function Billing() {
                         )}
                     </div>
                     {creditVoucherError && (
-                        <div style={{fontSize: 12, color: "#ef4444", marginTop: 6}}>
+                        <div style={{fontSize: 12, color: "var(--danger)", marginTop: 6}}>
                             {creditVoucherError}
                         </div>
                     )}
@@ -1145,7 +1145,7 @@ export default function Billing() {
                         {subscription && subscription.status === "active" && subscription.status !== "none" && !subscription.cancel_at_period_end && currentPrice && currentPrice.amount_pence > 0 && (
                             <div className="billing-card">
                                 <div className="billing-section-label">Cancel Subscription</div>
-                                <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 14}}>
+                                <p style={{fontSize: 13, color: "var(--dimmer)", marginBottom: 14}}>
                                     You'll retain access to all features until the end of your current billing period.
                                 </p>
                                 <button className="billing-btn billing-btn--danger" onClick={handleCancel} disabled={actionLoading}>
@@ -1250,7 +1250,7 @@ export default function Billing() {
                                  (creditAccount?.balance_pence ?? 0) > 0 ? "Low" : "Empty"}
                             </span>
                         </div>
-                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 8}}>
+                        <p style={{fontSize: 13, color: "var(--faint)", marginTop: 8}}>
                             Credits are used when your subscription execution allowance is exceeded.
                         </p>
                     </div>
@@ -1258,7 +1258,7 @@ export default function Billing() {
                     {/* Purchase credits */}
                     <div className="billing-card">
                         <div className="billing-card-title" style={{marginBottom: 18}}>Purchase Credits</div>
-                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
+                        <p style={{fontSize: 13, color: "var(--dimmer)", marginBottom: 16}}>
                             Add credit to your account. Minimum purchase is £5.00. All prices include VAT.
                         </p>
 
@@ -1276,7 +1276,7 @@ export default function Billing() {
 
                         <div style={{display: "flex", gap: 12, alignItems: "center", marginTop: 16}}>
                             <div style={{position: "relative", flex: 1}}>
-                                <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--dimmer)", fontSize: 14}}>£</span>
                                 <input
                                     type="number"
                                     className="billing-voucher-input"
@@ -1304,7 +1304,7 @@ export default function Billing() {
                     {/* Auto top-up settings */}
                     <div className="billing-card">
                         <div className="billing-card-title" style={{marginBottom: 18}}>Auto Top-up</div>
-                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
+                        <p style={{fontSize: 13, color: "var(--dimmer)", marginBottom: 16}}>
                             Automatically top up your credit balance when it falls below a threshold. Minimum values are £5.00.
                         </p>
 
@@ -1317,7 +1317,7 @@ export default function Billing() {
                                 />
                                 <span className="billing-credit-toggle-slider" />
                             </label>
-                            <span style={{fontSize: 14, color: "rgba(255,255,255,0.7)"}}>
+                            <span style={{fontSize: 14, color: "var(--muted)"}}>
                                 {autoTopupEnabled ? "Enabled" : "Disabled"}
                             </span>
                         </div>
@@ -1325,11 +1325,11 @@ export default function Billing() {
                         {autoTopupEnabled && (
                             <div style={{display: "flex", gap: 16, marginBottom: 16}}>
                                 <div style={{flex: 1}}>
-                                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4, display: "block"}}>
+                                    <label style={{fontSize: 12, color: "var(--dimmer)", marginBottom: 4, display: "block"}}>
                                         When balance falls below
                                     </label>
                                     <div style={{position: "relative"}}>
-                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--dimmer)", fontSize: 14}}>£</span>
                                         <input
                                             type="number"
                                             className="billing-voucher-input"
@@ -1342,11 +1342,11 @@ export default function Billing() {
                                     </div>
                                 </div>
                                 <div style={{flex: 1}}>
-                                    <label style={{fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 4, display: "block"}}>
+                                    <label style={{fontSize: 12, color: "var(--dimmer)", marginBottom: 4, display: "block"}}>
                                         Top up by
                                     </label>
                                     <div style={{position: "relative"}}>
-                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", fontSize: 14}}>£</span>
+                                        <span style={{position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--dimmer)", fontSize: 14}}>£</span>
                                         <input
                                             type="number"
                                             className="billing-voucher-input"
@@ -1397,7 +1397,7 @@ export default function Billing() {
                                 {creditTransactions.map(tx => (
                                     <div key={tx.id} className="billing-invoice-row">
                                         <span className="billing-invoice-date" style={{minWidth: 90}}>{formatDate(tx.created_at)}</span>
-                                        <span style={{flex: 1, fontSize: 13, color: "rgba(255,255,255,0.6)"}}>
+                                        <span style={{flex: 1, fontSize: 13, color: "var(--soft)"}}>
                                             {tx.description || tx.transaction_type}
                                         </span>
                                         <span style={{
@@ -1409,7 +1409,7 @@ export default function Billing() {
                                         }}>
                                             {tx.amount_pence >= 0 ? "+" : ""}{formatCurrency(Math.abs(tx.amount_pence))}
                                         </span>
-                                        <span style={{fontSize: 12, color: "rgba(255,255,255,0.3)", minWidth: 80, textAlign: "right"}}>
+                                        <span style={{fontSize: 12, color: "var(--faint)", minWidth: 80, textAlign: "right"}}>
                                             Bal: {formatCurrency(tx.balance_after)}
                                         </span>
                                     </div>
@@ -1424,7 +1424,7 @@ export default function Billing() {
                     <>
                     <div className="billing-card">
                         <div className="billing-card-title" style={{marginBottom: 18}}>Redeem a Voucher</div>
-                        <p style={{fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 16}}>
+                        <p style={{fontSize: 13, color: "var(--dimmer)", marginBottom: 16}}>
                             Enter a voucher or promotional code to apply a discount to your subscription.
                         </p>
 

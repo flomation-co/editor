@@ -150,7 +150,7 @@ export default function WelcomeModal() {
           )}
 
           {error && (
-            <div style={{ color: "#f87171", fontSize: 13 }}>{error}</div>
+            <div style={{ color: "var(--danger)", fontSize: 13 }}>{error}</div>
           )}
         </div>
 

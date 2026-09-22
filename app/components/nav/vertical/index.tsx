@@ -160,7 +160,7 @@ export function VerticalNav(props: VerticalNavProps) {
                                             <Icon name="check-circle" style={{color: "#0a0"}} />
                                         )}
                                         {!isStatusGood && (
-                                            <Icon name="circle-exclamation" style={{color: "#f00"}} />
+                                            <Icon name="circle-exclamation" style={{color: "var(--danger)"}} />
                                         )}
                                     </>
                                 )}

@@ -51,10 +51,10 @@ const STATUS_COLOURS: Record<string, string> = {
     completed: "#00aa9c",
     blocked: "#ef4444",
     failed: "#ef4444",
-    cancelled: "rgba(255,255,255,0.3)",
-    draft: "rgba(255,255,255,0.3)",
+    cancelled: "var(--dim)",
+    draft: "var(--dim)",
     // Task statuses
-    pending: "rgba(255,255,255,0.3)",
+    pending: "var(--dim)",
     in_progress: "#460070",
 };
 
@@ -301,7 +301,7 @@ export default function AgentPlanDetail() {
         );
     }
 
-    const statusColour = STATUS_COLOURS[plan.status] ?? "rgba(255,255,255,0.3)";
+    const statusColour = STATUS_COLOURS[plan.status] ?? "var(--dim)";
     const statusLabel = STATUS_LABELS[plan.status] ?? plan.status;
     const taskNameByID: Record<string, string> = {};
     tasks.forEach(t => { taskNameByID[t.id] = t.name; });
@@ -366,7 +366,7 @@ export default function AgentPlanDetail() {
                             <h2>Tasks ({tasks.length})</h2>
                             <div className="plan-task-list">
                                 {tasks.map(task => {
-                                    const taskStatusColour = STATUS_COLOURS[task.status] ?? "rgba(255,255,255,0.3)";
+                                    const taskStatusColour = STATUS_COLOURS[task.status] ?? "var(--dim)";
                                     const taskStatusLabel = STATUS_LABELS[task.status] ?? task.status;
                                     const dependsLabels = (task.depends_on ?? [])
                                         .map(depId => taskNameByID[depId])

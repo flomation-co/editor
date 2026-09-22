@@ -292,7 +292,7 @@ export default function BoardsList() {
                         }
                     ]}
                 >
-                    <p style={{color: "rgba(255,255,255,0.7)", fontSize: 14}}>
+                    <p style={{color: "var(--muted)", fontSize: 14}}>
                         Are you sure you want to archive this dashboard? It will no longer appear in your dashboard list.
                     </p>
                 </Modal>

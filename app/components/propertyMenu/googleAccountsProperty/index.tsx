@@ -117,7 +117,7 @@ const GoogleAccountsProperty = (props: Props) => {
                         className="google-account-remove"
                         onClick={fetchAccounts}
                         title="Refresh"
-                        style={{ color: "rgba(255,255,255,0.4)" }}
+                        style={{ color: "var(--dimmer)" }}
                     >
                         <Icon name="refresh" />
                     </button>

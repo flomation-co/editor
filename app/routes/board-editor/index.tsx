@@ -460,7 +460,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
             case "status": {
                 const statusKeys: string[] = config.status_keys || [];
                 const statusLabels: Record<string, string> = config.labels || {};
-                const COLOUR_PRESETS = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899", "#00aa9c", "rgba(255,255,255,0.15)"];
+                const COLOUR_PRESETS = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899", "#00aa9c", "var(--dim)"];
 
                 return (
                     <>
@@ -629,7 +629,7 @@ function PanelConfigPanel({widget, flows, flowOutputKeys, executionOutputKeys, t
                                             onFlowSelected("");
                                         }}
                                     >
-                                        <span style={{color: "rgba(255,255,255,0.3)", fontStyle: "italic"}}>None (static data)</span>
+                                        <span style={{color: "var(--faint)", fontStyle: "italic"}}>None (static data)</span>
                                     </div>
                                     {filteredFlows.map(f => (
                                         <div
@@ -748,7 +748,7 @@ function EditorGrid({widgets, selectedWidgetId, onSelect, onAddWidget, onReorder
                             alignItems: "center",
                             justifyContent: "center",
                             height: "100%",
-                            color: "rgba(255,255,255,0.15)",
+                            color: "var(--faint)",
                             fontSize: 12,
                             gap: 6,
                         }}>
@@ -1076,7 +1076,7 @@ export default function BoardEditor() {
     if (isLoading) {
         return (
             <Container>
-                <div style={{display: "flex", alignItems: "center", justifyContent: "center", padding: 80, color: "rgba(255,255,255,0.3)", fontSize: 13}}>
+                <div style={{display: "flex", alignItems: "center", justifyContent: "center", padding: 80, color: "var(--faint)", fontSize: 13}}>
                     <Icon name="spinner" spin style={{marginRight: 8}} />
                     Loading dashboard...
                 </div>

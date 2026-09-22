@@ -43,7 +43,7 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
 
     if (loading) {
         return (
-            <div style={{ textAlign: "center", padding: 32, color: "rgba(255,255,255,0.3)" }}>
+            <div style={{ textAlign: "center", padding: 32, color: "var(--faint)" }}>
                 <Icon name="spinner" spin />
             </div>
         );
@@ -54,7 +54,7 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
             <div className="agent-empty-state">
                 <Icon name="clock" style={{ fontSize: 24, marginBottom: 8, opacity: 0.3 }} />
                 <div>No schedules configured.</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
+                <div style={{ fontSize: 12, color: "var(--faint)", marginTop: 4 }}>
                     Ask the agent to set up a recurring task — e.g. "Check my tasks every morning at 8am"
                 </div>
             </div>
@@ -64,14 +64,14 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.5)" }}>
+                <span style={{ fontSize: 14, color: "var(--dim)" }}>
                     Recurring schedules managed by the agent
                 </span>
                 <button
                     type="button"
                     onClick={loadSchedules}
                     style={{
-                        background: "none", border: "none", color: "rgba(255,255,255,0.3)",
+                        background: "none", border: "none", color: "var(--faint)",
                         cursor: "pointer", padding: 4,
                     }}
                     title="Refresh"
@@ -86,8 +86,8 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
                         key={sched.id}
                         style={{
                             padding: "12px 16px",
-                            background: "rgba(255,255,255,0.03)",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            background: "var(--surface-raise)",
+                            border: "1px solid var(--border)",
                             borderRadius: 8,
                         }}
                     >
@@ -95,11 +95,11 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <Icon
                                     name="clock"
-                                    style={{ color: sched.enabled ? "#00aa9c" : "rgba(255,255,255,0.2)", fontSize: 14 }}
+                                    style={{ color: sched.enabled ? "var(--teal)" : "var(--faint)", fontSize: 14 }}
                                 />
                                 <span style={{
                                     fontWeight: 500,
-                                    color: sched.enabled ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.4)",
+                                    color: sched.enabled ? "var(--text)" : "var(--dim)",
                                 }}>
                                     {sched.name}
                                 </span>
@@ -108,20 +108,20 @@ export default function AgentSchedulePanel({ baseUrl, headers }: Props) {
                                 fontSize: 11,
                                 padding: "2px 8px",
                                 borderRadius: 4,
-                                background: sched.enabled ? "rgba(0,170,156,0.1)" : "rgba(255,255,255,0.05)",
-                                color: sched.enabled ? "#00aa9c" : "rgba(255,255,255,0.3)",
+                                background: sched.enabled ? "rgba(0,170,156,0.1)" : "var(--dim)",
+                                color: sched.enabled ? "var(--teal)" : "var(--faint)",
                             }}>
                                 {sched.enabled ? "Active" : "Disabled"}
                             </span>
                         </div>
 
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>
+                        <div style={{ fontSize: 12, color: "var(--dim)", marginTop: 6 }}>
                             {sched.description}
                         </div>
 
                         <div style={{
                             display: "flex", gap: 16, marginTop: 8, fontSize: 11,
-                            color: "rgba(255,255,255,0.3)",
+                            color: "var(--faint)",
                         }}>
                             <span>
                                 <Icon name="repeat" style={{ marginRight: 4 }} />

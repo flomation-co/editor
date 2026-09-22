@@ -741,7 +741,7 @@ export default function Flows() {
             name: 'Webhook → Notify',
             description: 'Receive a webhook, process the data, and send a notification via Slack or email',
             icon: 'globe',
-            colour: '#f59e0b',
+            colour: 'var(--warning)',
             flowName: 'Webhook Notification',
             nodes: [
                 { id: 'n1', type: 'trigger/webhook', label: 'trigger/webhook', x: 100, y: 200, config: { type: 1 } },
@@ -754,7 +754,7 @@ export default function Flows() {
             name: 'Scheduled Report',
             description: 'Run on a schedule, query a database or API, and email the results',
             icon: 'clock',
-            colour: '#3b82f6',
+            colour: 'var(--info)',
             flowName: 'Scheduled Report',
             nodes: [
                 { id: 'n1', type: 'trigger/schedule', label: 'trigger/schedule', x: 100, y: 200, config: { type: 1 } },
@@ -782,7 +782,7 @@ export default function Flows() {
             name: 'Form → Approve → Action',
             description: 'Collect data via a form, apply conditional logic, then take action based on the result',
             icon: 'clipboard-list',
-            colour: '#8b5cf6',
+            colour: 'var(--lilac)',
             flowName: 'Form Approval',
             nodes: [
                 { id: 'n1', type: 'trigger/form', label: 'trigger/form', x: 100, y: 200, config: { type: 1 } },
@@ -1165,7 +1165,7 @@ export default function Flows() {
                                     fontSize: 14,
                                     background: 'rgba(0,170,156,0.1)',
                                     border: '1px solid rgba(0,170,156,0.3)',
-                                    color: '#00aa9c',
+                                    color: 'var(--teal)',
                                     borderRadius: 8,
                                     cursor: 'pointer',
                                     display: 'flex',

@@ -18,7 +18,7 @@ const CHANNEL_ICONS: Record<string, {label: string; colour: string}> = {
     telegram: {label: "Telegram", colour: "#229ED9"},
     slack: {label: "Slack", colour: "#E01E5A"},
     email: {label: "Email", colour: "#EA4335"},
-    webhook: {label: "Webhook", colour: "rgba(255,255,255,0.4)"},
+    webhook: {label: "Webhook", colour: "var(--dim)"},
     teams: {label: "Teams", colour: "#6264A7"},
 };
 
@@ -100,7 +100,7 @@ export default function AgentUsersPanel({agentId, apiUrl, token}: Props) {
                                                 <div className="user-detail-empty">No identities linked</div>
                                             )}
                                             {identities.map(id => {
-                                                const ch = CHANNEL_ICONS[id.channel_type] || {label: id.channel_type, colour: "rgba(255,255,255,0.4)"};
+                                                const ch = CHANNEL_ICONS[id.channel_type] || {label: id.channel_type, colour: "var(--dim)"};
                                                 return (
                                                     <div key={id.id} className="identity-item">
                                                         <span className="identity-channel" style={{color: ch.colour}}>{ch.label}</span>
