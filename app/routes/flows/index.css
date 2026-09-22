@@ -22,7 +22,7 @@
 .flows-action-bar-divider {
     width: 1px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
     margin: 0 4px;
     flex-shrink: 0;
 }
@@ -40,9 +40,9 @@
     height: 34px;
     min-width: 34px;
     padding: 0 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
     justify-content: center;
     align-items: center;
     display: flex;
@@ -65,29 +65,24 @@
     .flows-action-btn > span {
         display: inline-block;
         font-size: 12px;
-        color: var(--secondary-font-colour);
         white-space: nowrap;
     }
 }
 
 .flows-action-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--surface-hover);
+    border-color: var(--rule-2);
 }
 
 .flows-action-btn--primary {
-    background: #00aa9c;
-    border-color: rgba(0, 170, 156, 0.3);
-    color: #fff;
-}
-
-.flows-action-btn--primary > span {
+    background: var(--action);
+    border-color: var(--action);
     color: #fff;
 }
 
 .flows-action-btn--primary:hover {
-    background: #00ccbb;
-    border-color: rgba(0, 204, 187, 0.5);
+    background: var(--action-hover);
+    border-color: var(--rule-2);
 }
 
 .flows-action-btn--disabled {
@@ -120,22 +115,22 @@
 }
 
 .flo-dot--success {
-    background: #4ade80;
-    box-shadow: 0 0 4px rgba(74, 222, 128, 0.4);
+    background: var(--success-fill);
+    box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--fail {
-    background: #f87171;
-    box-shadow: 0 0 4px rgba(248, 113, 113, 0.4);
+    background: var(--danger-fill);
+    box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--cancel {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--surface-active);
 }
 
 .flo-dot--running {
-    background: #2dd4bf;
-    box-shadow: 0 0 4px rgba(45, 212, 191, 0.4);
+    background: var(--surface-2);
+    box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
     animation: dot-pulse 1.5s ease-in-out infinite;
 }
 
@@ -146,12 +141,12 @@
 
 .flo-dot--created,
 .flo-dot--allocated {
-    background: #60a5fa;
-    box-shadow: 0 0 4px rgba(96, 165, 250, 0.3);
+    background: var(--info-fill);
+    box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--unknown {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--surface-active);
 }
 
 
@@ -176,8 +171,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     transition: background 0.12s ease;
 }
@@ -190,7 +185,7 @@
 }
 
 .flow-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .flow-card-checkbox {
@@ -216,11 +211,11 @@
 .flow-card-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .flow-card-warning {
-    color: #e6a817;
+    color: var(--warning);
     font-size: 13px;
 }
 
@@ -233,7 +228,7 @@
 
 .flow-card-detail {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .flow-card-actions {
@@ -271,19 +266,19 @@
     display: inline-block;
     width: 18px;
     height: 18px;
-    background-color: #17202e;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    background-color: var(--surface);
+    border: 1px solid var(--neutral-border);
     border-radius: 4px;
     transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
 .flo-checkbox:hover .flo-checkbox-box {
-    border-color: rgba(139, 92, 246, 0.5);
+    border-color: var(--rule-2);
 }
 
 .flo-checkbox input:checked ~ .flo-checkbox-box {
-    background-color: #7c3aed;
-    border-color: #7c3aed;
+    background-color: var(--violet);
+    border-color: var(--violet);
 }
 
 .flo-checkbox-box::after {
@@ -316,7 +311,7 @@
 .favourites-header {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -334,22 +329,22 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     text-decoration: none;
-    color: #e5e7eb;
+    color: var(--soft);
     font-size: 13px;
     transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .favourite-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(139, 92, 246, 0.3);
+    background: var(--surface-2);
+    border-color: var(--rule-2);
 }
 
 .favourite-star {
-    color: #fbbf24;
+    color: var(--warning);
     font-size: 12px;
 }
 
@@ -365,16 +360,16 @@
 }
 
 .fav-active {
-    color: #fbbf24;
+    color: var(--warning);
 }
 
 .fav-inactive {
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--faint);
     transition: color 0.12s ease;
 }
 
 .fav-toggle:hover .fav-inactive {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 
@@ -389,18 +384,18 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.25);
+    background: var(--success-fill);
+    border: 1px solid var(--success-border);
     border-radius: 6px;
-    color: #4ade80;
+    color: var(--success);
     cursor: pointer;
     font-size: 12px;
     transition: background 0.1s ease, border-color 0.1s ease;
 }
 
 .flo-run-btn:hover {
-    background: rgba(34, 197, 94, 0.25);
-    border-color: rgba(34, 197, 94, 0.4);
+    background: var(--success-fill);
+    border-color: var(--success-border);
 }
 
 .flo-run-btn:disabled {
@@ -419,9 +414,9 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
     color: var(--secondary-font-colour);
     font-size: 13px;
     cursor: pointer;
@@ -429,8 +424,8 @@
 }
 
 .flo-more-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: var(--surface-hover);
+    border-color: var(--rule-2);
 }
 
 /* Dropdown */
@@ -439,10 +434,10 @@
     top: calc(100% + 4px);
     right: 0;
     min-width: 140px;
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     z-index: 100;
     padding: 4px 0;
     animation: menuFadeIn 0.1s ease;
@@ -461,7 +456,7 @@
     padding: 8px 14px;
     background: none;
     border: none;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     cursor: pointer;
     text-decoration: none;
@@ -477,16 +472,16 @@
 }
 
 .flo-more-item:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
 }
 
 .flo-more-item--danger {
-    color: rgba(248, 113, 113, 0.8);
+    color: var(--danger);
 }
 
 .flo-more-item--danger:hover {
-    background: rgba(248, 113, 113, 0.08);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 /* ═══════════════════════════════════════════════
@@ -503,7 +498,7 @@
 
 .flows-empty-icon {
     font-size: 48px;
-    color: #460070;
+    color: var(--violet);
     margin-bottom: 16px;
     opacity: 0.7;
 }
@@ -511,13 +506,13 @@
 .flows-empty-title {
     font-size: 22px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin: 0 0 8px;
 }
 
 .flows-empty-desc {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     max-width: 460px;
     margin: 0 0 32px;
     line-height: 1.5;
@@ -536,8 +531,8 @@
     align-items: flex-start;
     gap: 14px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -545,8 +540,8 @@
 }
 
 .flows-template-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: var(--surface-2);
+    border-color: var(--rule-2);
     transform: translateY(-1px);
 }
 
@@ -569,13 +564,13 @@
 .flows-template-name {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin-bottom: 4px;
 }
 
 .flows-template-desc {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     line-height: 1.4;
 }
 
@@ -585,7 +580,7 @@
 
 .flows-template-modal-desc {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     margin: 0 0 16px;
 }
 
@@ -596,7 +591,7 @@
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--surface);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -607,10 +602,10 @@
     width: 440px;
     max-width: 90vw;
     max-height: 80vh;
-    background: rgba(16, 16, 28, 0.98);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--rule);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(70, 45, 84, 0.16);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -618,18 +613,18 @@
 
 .trigger-input-header {
     padding: 20px 24px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--rule);
 }
 
 .trigger-input-title {
     font-size: 16px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .trigger-input-subtitle {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-top: 4px;
 }
 
@@ -650,11 +645,11 @@
 .trigger-input-label {
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
 }
 
 .trigger-input-required {
-    color: #ef4444;
+    color: var(--danger);
     margin-left: 3px;
 }
 
@@ -664,10 +659,10 @@
     width: 100%;
     padding: 8px 10px;
     font-size: 13px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    color: #e5e7eb;
+    color: var(--soft);
     outline: none;
     transition: border-color 0.15s;
     font-family: inherit;
@@ -676,12 +671,12 @@
 .trigger-input-text:focus,
 .trigger-input-textarea:focus,
 .trigger-input-select:focus {
-    border-color: rgba(0, 170, 156, 0.5);
+    border-color: var(--rule-2);
 }
 
 .trigger-input-text::placeholder,
 .trigger-input-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .trigger-input-textarea {
@@ -699,17 +694,17 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--ink-muted);
     cursor: pointer;
 }
 
 .trigger-input-checkbox-row input[type="checkbox"] {
-    accent-color: #00aa9c;
+    accent-color: var(--teal);
 }
 
 .trigger-input-footer {
     padding: 12px 24px 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--rule);
     display: flex;
     justify-content: flex-end;
     gap: 8px;
@@ -726,17 +721,17 @@
 }
 
 .trigger-input-btn--cancel {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--surface-2);
+    color: var(--dim);
 }
 
 .trigger-input-btn--cancel:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
 }
 
 .trigger-input-btn--execute {
-    background: linear-gradient(135deg, #00aa9c, #009688);
-    color: white;
+    background: var(--action);
+    color: var(--action-ink);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -753,11 +748,11 @@
 
 /* ── Projects (grouped view) ─────────────────────────────────────────── */
 .flows-action-btn--active {
-    background: rgba(139, 92, 246, 0.15);
-    border-color: rgba(139, 92, 246, 0.4);
-    color: #a78bfa;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
-.flows-action-btn--active > span { color: #a78bfa; }
+.flows-action-btn--active > span { color: var(--lilac); }
 
 .flo-project-tree {
     display: flex;
@@ -773,12 +768,12 @@
     align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--rule);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
     transition: background 0.12s ease;
 }
-.flo-project-header:hover { background: rgba(255, 255, 255, 0.04); }
+.flo-project-header:hover { background: var(--surface-raise); }
 
 /* Expander triangle — mirrors the Executions tree control so the two
    hierarchy views read the same. */
@@ -790,24 +785,24 @@
     height: 18px;
     border-radius: 4px;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     cursor: pointer;
     user-select: none;
     flex-shrink: 0;
 }
-.exec-tree-expander:hover { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.exec-tree-expander:hover { background: var(--surface-2); color: var(--lilac); }
 
-.flo-project-icon { color: #a78bfa; flex-shrink: 0; }
+.flo-project-icon { color: var(--lilac); flex-shrink: 0; }
 .flo-project-name {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     cursor: pointer;
 }
-.flo-project-lock { color: rgba(255, 255, 255, 0.45); font-size: 12px; }
+.flo-project-lock { color: var(--dimmer); font-size: 12px; }
 .flo-project-count {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     margin-left: auto;
 }
 .flo-project-menu { margin-left: 8px; }
@@ -823,7 +818,7 @@
 .flo-project-empty {
     padding: 10px 12px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -834,7 +829,7 @@
 .project-modal-label {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     margin-top: 8px;
 }
 .project-modal-input,
@@ -843,10 +838,10 @@
     width: 100%;
     box-sizing: border-box;
     padding: 10px;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    border: 1px solid var(--neutral-border);
     border-radius: 6px;
-    background: #17202e;
-    color: #fff;
+    background: var(--surface);
+    color: var(--text);
     font-size: 14px;
 }
 .project-modal-textarea { resize: vertical; }
@@ -864,8 +859,8 @@
    ~392px, so a wider body would overflow it. Long team lists scroll. */
 .project-acl-body { max-height: 55vh; overflow-y: auto; }
 .project-acl-inherited {
-    background: rgba(139, 92, 246, 0.06);
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 8px;
@@ -875,21 +870,21 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #e5e7eb;
+    color: var(--soft);
     padding: 3px 0;
 }
 .project-acl-role-chip {
     margin-left: auto;
     font-size: 11px;
     text-transform: capitalize;
-    color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--soft);
+    background: var(--surface-2);
     padding: 1px 8px;
     border-radius: 10px;
 }
 .project-acl-hint {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     margin-top: 6px;
 }
 .project-acl-row {
@@ -897,13 +892,13 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--rule);
 }
 /* Team name takes the slack and truncates; the role select stays a fixed
    size on the right so it can never be pushed past the modal edge. */
 .project-acl-team {
     font-size: 14px;
-    color: #e5e7eb;
+    color: var(--soft);
     flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
@@ -920,9 +915,9 @@
     margin: 4px 0 20px;
     padding: 14px 18px;
     border-radius: 10px;
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: rgba(255, 255, 255, 0.85);
+    background: var(--warning-fill);
+    border: 1px solid var(--warning-border);
+    color: var(--text);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -932,15 +927,15 @@
     width: 18px;
     height: 18px;
     margin-top: 1px;
-    fill: #f59e0b;
+    fill: var(--warning);
 }
 
 .flows-legal-gate__text strong {
-    color: #fff;
+    color: var(--text);
 }
 
 .flows-legal-gate a {
-    color: #00ccbb;
+    color: var(--teal);
     font-weight: 500;
     text-decoration: none;
 }

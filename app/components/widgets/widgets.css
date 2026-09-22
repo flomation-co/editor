@@ -6,7 +6,7 @@
     background: var(--primary-background);
     border-radius: 8px;
     padding: 24px;
-    border: 1px solid var(--primary-foreground);
+    border: 1px solid var(--rule);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -96,7 +96,7 @@
 }
 
 .usage-progress.near-limit {
-    background: linear-gradient(90deg, #ea9b09, var(--error-action-colour));
+    background: linear-gradient(90deg, var(--warning-fill), var(--error-action-colour));
 }
 
 .usage-percentage {
@@ -109,12 +109,12 @@
 
 .warning-badge {
     background: var(--primary-background-muted);
-    color: #ea9b09;
+    color: var(--warning);
     padding: 4px 8px;
     border-radius: 8px;
     font-size: 0.7em;
     font-weight: 500;
-    border: 1px solid #ea9b09;
+    border: 1px solid var(--warning-border);
 }
 
 .billing-section {
@@ -229,7 +229,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: var(--highlight-colour);
-    color: var(--primary-font-colour);
+    color: #fff;
     padding: 6px 16px;
     border-radius: 16px;
     font-size: 0.7em;
@@ -241,12 +241,12 @@
     top: 12px;
     right: 12px;
     background: var(--primary-background-muted);
-    color: #ea9b09;
+    color: var(--warning);
     padding: 4px 10px;
     border-radius: 10px;
     font-size: 0.65em;
     font-weight: 600;
-    border: 1px solid #ea9b09;
+    border: 1px solid var(--warning-border);
 }
 
 .plan-header {
@@ -317,12 +317,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid var(--primary-foreground);
+    border: 1px solid var(--rule);
 }
 
 .upgrade-button.primary {
     background: var(--primary-foreground);
-    color: var(--primary-font-colour);
+    color: #fff;
 }
 
 .upgrade-button.primary:hover {

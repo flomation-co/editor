@@ -65,7 +65,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                     border: "1px solid rgba(239,68,68,0.2)",
                     borderRadius: 6,
                     fontSize: 12,
-                    color: "rgba(239,68,68,0.9)",
+                    color: "var(--danger)",
                     marginBottom: 8,
                 }}>
                     <Icon name="exclamation-triangle" style={{ marginRight: 6 }} />
@@ -75,8 +75,8 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
 
             {result && result.checks && result.checks.length > 0 && (
                 <div style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--surface-sunken)",
+                    border: "1px solid var(--rule)",
                     borderRadius: 8,
                     padding: "10px 14px",
                     fontSize: 12,
@@ -85,9 +85,9 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                         <div style={{
                             display: "flex", justifyContent: "space-between", alignItems: "center",
                             marginBottom: 10, paddingBottom: 8,
-                            borderBottom: "1px solid rgba(255,255,255,0.06)",
+                            borderBottom: "1px solid var(--rule)",
                         }}>
-                            <div style={{ color: "rgba(255,255,255,0.6)" }}>
+                            <div style={{ color: "var(--soft)" }}>
                                 <strong>{result.account_name}</strong>
                                 <span style={{
                                     marginLeft: 8,
@@ -97,7 +97,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                                     background: result.account_status === "active"
                                         ? "rgba(0,170,156,0.1)" : "rgba(245,158,11,0.1)",
                                     color: result.account_status === "active"
-                                        ? "#00aa9c" : "rgba(245,158,11,0.9)",
+                                        ? "var(--teal)" : "var(--warning)",
                                 }}>
                                     {result.account_status}
                                 </span>
@@ -107,7 +107,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
-                                    color: "rgba(255,255,255,0.2)",
+                                    color: "var(--faint)",
                                     fontSize: 10,
                                     textDecoration: "none",
                                     display: "flex", alignItems: "center", gap: 4,
@@ -127,7 +127,7 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                                 <Icon
                                     name={check.passed ? "check-circle" : "times-circle"}
                                     style={{
-                                        color: check.passed ? "#00aa9c" : "rgba(239,68,68,0.7)",
+                                        color: check.passed ? "var(--teal)" : "rgba(239,68,68,0.7)",
                                         fontSize: 13,
                                         flexShrink: 0,
                                     }}
@@ -136,13 +136,13 @@ export default function TwilioStatusChecker({ baseUrl, headers }: Props) {
                                     <span style={{
                                         fontSize: 11,
                                         fontWeight: 500,
-                                        color: check.passed ? "rgba(255,255,255,0.7)" : "rgba(239,68,68,0.9)",
+                                        color: check.passed ? "var(--ink-muted)" : "var(--danger)",
                                     }}>
                                         {check.name}
                                     </span>
                                     <span style={{
                                         marginLeft: 8,
-                                        color: "rgba(255,255,255,0.3)",
+                                        color: "var(--faint)",
                                         fontSize: 11,
                                     }}>
                                         {check.detail}

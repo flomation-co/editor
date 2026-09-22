@@ -15,13 +15,13 @@ function getTypeName(value: any): string {
 
 function getTypeColour(type: string): string {
     switch (type) {
-        case 'string': return '#a5d6a7';
-        case 'number': return '#90caf9';
-        case 'boolean': return '#ce93d8';
-        case 'null': return 'rgba(255,255,255,0.25)';
-        case 'object': return '#00aa9c';
-        case 'array': return '#efd467';
-        default: return 'rgba(255,255,255,0.5)';
+        case 'string': return 'var(--success)';
+        case 'number': return 'var(--info)';
+        case 'boolean': return 'var(--lilac)';
+        case 'null': return 'var(--faint)';
+        case 'object': return 'var(--teal)';
+        case 'array': return 'var(--warning)';
+        default: return 'var(--dim)';
     }
 }
 

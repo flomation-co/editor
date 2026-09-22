@@ -4,7 +4,7 @@
 }
 
 .groups-description {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-size: 14px;
     line-height: 1.6;
     max-width: 500px;
@@ -14,10 +14,10 @@
 .groups-section-header {
     font-size: 16px;
     font-weight: 600;
-    color: #d1d5db;
+    color: var(--dim);
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--rule);
 }
 
 .groups-create-form {
@@ -33,7 +33,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -43,7 +43,7 @@
 }
 
 .groups-create-form input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .groups-create-form input:focus {
@@ -52,10 +52,10 @@
 
 .groups-create-form button {
     padding: 8px 16px;
-    background: #00aa9c;
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -75,15 +75,15 @@
 }
 
 .group-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     overflow: hidden;
     transition: border-color 0.15s ease;
 }
 
 .group-card.expanded {
-    border-color: rgba(139, 92, 246, 0.3);
+    border-color: var(--rule-2);
 }
 
 .group-card-header {
@@ -96,7 +96,7 @@
 }
 
 .group-card-header:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
 }
 
 .group-card-info {
@@ -107,7 +107,7 @@
 .group-card-name {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -115,7 +115,7 @@
 
 .group-card-desc {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     margin-top: 2px;
 }
 
@@ -129,20 +129,20 @@
 }
 
 .group-badge.default {
-    background: rgba(0, 170, 156, 0.15);
-    color: #00aa9c;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 .group-member-count {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     padding: 3px 8px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-raise);
     border-radius: 10px;
 }
 
 .group-card-chevron {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-size: 12px;
     width: 20px;
     text-align: center;
@@ -150,7 +150,7 @@
 
 .group-card-body {
     padding: 0 16px 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--rule);
 }
 
 /* Permission toggles */
@@ -161,7 +161,7 @@
 .perm-category-name {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -178,23 +178,23 @@
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.12s ease, border-color 0.12s ease;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
 }
 
 .perm-toggle:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
 }
 
 .perm-toggle.active {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #c4b5fd;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 .perm-toggle input {
@@ -205,7 +205,7 @@
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border: 1.5px solid var(--rule-3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,8 +215,8 @@
 }
 
 .perm-toggle.active .perm-check {
-    background: #8b5cf6;
-    border-color: #8b5cf6;
+    background: var(--violet);
+    border-color: var(--rule-2);
     color: #fff;
 }
 
@@ -227,7 +227,7 @@
     gap: 16px;
     padding: 12px 0;
     margin-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--rule);
 }
 
 .group-settings-row label {
@@ -235,22 +235,22 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     cursor: pointer;
 }
 
 .group-settings-row input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #8b5cf6;
+    accent-color: var(--lilac);
 }
 
 .group-action-button {
     padding: 6px 14px;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-size: 12px;
     font-family: inherit;
     cursor: pointer;
@@ -258,18 +258,18 @@
 }
 
 .group-action-button:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    background: var(--surface-2);
+    color: var(--text);
 }
 
 .group-action-button.danger {
-    color: rgba(239, 68, 68, 0.7);
-    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    border-color: var(--danger-border);
 }
 
 .group-action-button.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 /* Members section */
@@ -280,7 +280,7 @@
 .group-members-header {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -298,14 +298,14 @@
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-sunken);
     border-radius: 6px;
 }
 
 .group-member-row .member-name {
     flex: 1;
     font-size: 13px;
-    color: #d1d5db;
+    color: var(--dim);
 }
 
 .group-member-row .remove-btn {
@@ -316,15 +316,15 @@
     justify-content: center;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     cursor: pointer;
     border-radius: 4px;
     font-size: 11px;
 }
 
 .group-member-row .remove-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .group-add-member {
@@ -337,9 +337,9 @@
     flex: 1;
     height: 34px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: #e5e7eb;
+    color: var(--soft);
     padding: 0 10px;
     font-size: 13px;
     font-family: inherit;
@@ -353,10 +353,10 @@
 
 .group-add-member button {
     padding: 6px 12px;
-    background: #00aa9c;
+    background: var(--action);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-family: inherit;
     cursor: pointer;
@@ -371,7 +371,7 @@
 .groups-empty {
     padding: 30px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 14px;
 }
 
@@ -395,39 +395,39 @@
 }
 
 .agent-status-badge.running {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .agent-status-badge.running .agent-status-dot {
-    background: #22c55e;
+    background: var(--success-fill);
 }
 
 .agent-status-badge.stopped {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.4);
+    background: var(--surface-2);
+    color: var(--dimmer);
 }
 
 .agent-status-badge.stopped .agent-status-dot {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--surface-active);
 }
 
 .agent-status-badge.paused {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .agent-status-badge.paused .agent-status-dot {
-    background: #f59e0b;
+    background: var(--warning-fill);
 }
 
 .agent-status-badge.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .agent-status-badge.error .agent-status-dot {
-    background: #ef4444;
+    background: var(--danger-fill);
 }
 
 .group-members-header svg {

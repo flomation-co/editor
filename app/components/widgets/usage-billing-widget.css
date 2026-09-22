@@ -12,7 +12,7 @@
 .usage-widget-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin: 0;
     flex: 1;
 }
@@ -21,11 +21,11 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: rgba(139, 0, 222, 0.12);
+    background: var(--surface-2);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #b49eed;
+    color: var(--lilac);
 }
 
 .usage-widget-badge svg {
@@ -35,8 +35,8 @@
 
 .usage-widget-period {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--faint);
+    background: var(--surface-raise);
     padding: 2px 8px;
     border-radius: 10px;
 }
@@ -51,18 +51,18 @@
 .usage-widget-value {
     font-size: 18px;
     font-weight: 700;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .usage-widget-limit {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .usage-widget-bar {
     height: 6px;
     border-radius: 3px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
     overflow: hidden;
     margin-bottom: 8px;
 }
@@ -70,12 +70,12 @@
 .usage-widget-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(90deg, #00aa9c, #00ccbb);
+    background: linear-gradient(90deg, var(--teal), var(--teal));
     transition: width 0.4s ease;
 }
 
 .usage-widget-bar-fill.near-limit {
-    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    background: linear-gradient(90deg, var(--warning-fill), var(--danger-fill));
 }
 
 .usage-widget-footer {
@@ -87,14 +87,14 @@
 
 .usage-widget-pct {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
 }
 
 .usage-widget-warn {
     font-size: 10px;
     font-weight: 600;
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    background: var(--warning-fill);
     padding: 2px 8px;
     border-radius: 8px;
 }
@@ -104,12 +104,12 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-period-label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
@@ -117,7 +117,7 @@
 .usage-widget-period-range {
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
 }
 
 .usage-widget-upgrade {
@@ -128,9 +128,9 @@
     margin-top: 12px;
     padding: 8px 0;
     border-radius: 6px;
-    background: rgba(0, 170, 156, 0.08);
-    border: 1px solid rgba(0, 170, 156, 0.15);
-    color: #00ccbb;
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
+    color: var(--teal);
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
@@ -138,8 +138,8 @@
 }
 
 .usage-widget-upgrade:hover {
-    background: rgba(0, 170, 156, 0.15);
-    border-color: rgba(0, 170, 156, 0.25);
+    background: var(--surface-2);
+    border-color: var(--rule-2);
 }
 
 .usage-widget-upgrade svg {
@@ -152,18 +152,18 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-cost-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .usage-widget-cost-value {
     font-size: 16px;
     font-weight: 600;
-    color: #00aa9c;
+    color: var(--teal);
 }
 
 .usage-widget-credit {
@@ -172,26 +172,26 @@
     align-items: center;
     padding-top: 10px;
     margin-top: 2px;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--rule);
 }
 
 .usage-widget-credit-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .usage-widget-credit-value {
     font-size: 14px;
     font-weight: 600;
-    color: #34d399;
+    color: var(--success);
 }
 
 .usage-widget-credit-value.low {
-    color: #fbbf24;
+    color: var(--warning);
 }
 
 .usage-widget-credit-value.empty {
-    color: #f87171;
+    color: var(--danger);
 }
 
 .usage-widget-actions {
@@ -206,12 +206,12 @@
 }
 
 .usage-widget-add-credit {
-    background: rgba(251, 191, 36, 0.08) !important;
-    border-color: rgba(251, 191, 36, 0.15) !important;
-    color: #fbbf24 !important;
+    background: var(--warning-fill) !important;
+    border-color: var(--warning-border) !important;
+    color: var(--warning) !important;
 }
 
 .usage-widget-add-credit:hover {
-    background: rgba(251, 191, 36, 0.15) !important;
-    border-color: rgba(251, 191, 36, 0.25) !important;
+    background: var(--warning-fill) !important;
+    border-color: var(--warning-border) !important;
 }

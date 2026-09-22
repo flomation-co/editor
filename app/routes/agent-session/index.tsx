@@ -317,7 +317,7 @@ export default function AgentSessionView() {
             <Container>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
-                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
                 </div>
                 </ProtectedRoute>
             </Container>
@@ -332,18 +332,18 @@ export default function AgentSessionView() {
                     <button
                         className="agent-action-btn"
                         onClick={() => navigate(`/agent/${id}`)}
-                        style={{ padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", borderRadius: 8, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}
+                        style={{ padding: "6px 12px", border: "1px solid var(--rule-2)", background: "var(--surface-raise)", borderRadius: 8, color: "var(--soft)", cursor: "pointer" }}
                     >
                         <Icon name="arrow-left" />
                     </button>
-                    <Icon name="robot" style={{ color: '#c084fc' }} />
+                    <Icon name="robot" style={{ color: 'var(--lilac)' }} />
                     <h1>Session</h1>
                     {session && (
-                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                        <span style={{ fontSize: 13, color: "var(--faint)" }}>
                             {dayjs.utc(session.started_at).local().format("D MMM YYYY HH:mm")}
-                            {session.status === 'active' && <span style={{ color: '#00aa9c', marginLeft: 8 }}>● Active</span>}
-                            {session.status === 'crashed' && <span style={{ color: '#f44336', marginLeft: 8 }}>● Crashed</span>}
-                            {session.status === 'ended' && <span style={{ color: 'rgba(255,255,255,0.3)', marginLeft: 8 }}>● Ended</span>}
+                            {session.status === 'active' && <span style={{ color: 'var(--teal)', marginLeft: 8 }}>● Active</span>}
+                            {session.status === 'crashed' && <span style={{ color: 'var(--danger)', marginLeft: 8 }}>● Crashed</span>}
+                            {session.status === 'ended' && <span style={{ color: 'var(--faint)', marginLeft: 8 }}>● Ended</span>}
                         </span>
                     )}
                 </div>

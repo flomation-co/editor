@@ -12,7 +12,7 @@
 .tip-widget-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin: 0;
     flex: 1;
 }
@@ -21,11 +21,11 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: rgba(245, 158, 11, 0.12);
+    background: var(--warning-fill);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #f59e0b;
+    color: var(--warning);
 }
 
 .tip-widget-badge svg {
@@ -38,8 +38,8 @@
     height: 28px;
     border-radius: 6px;
     border: none;
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.3);
+    background: var(--surface-raise);
+    color: var(--faint);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -48,8 +48,8 @@
 }
 
 .tip-widget-refresh:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.6);
+    background: var(--surface-hover);
+    color: var(--soft);
 }
 
 .tip-widget-refresh svg {
@@ -68,11 +68,11 @@
     height: 36px;
     min-width: 36px;
     border-radius: 8px;
-    background: rgba(0, 170, 156, 0.1);
+    background: rgba(47, 107, 100, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #00aa9c;
+    color: var(--teal);
     margin-top: 1px;
 }
 
@@ -89,14 +89,14 @@
 .tip-widget-title {
     font-size: 13px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     margin-bottom: 4px;
 }
 
 .tip-widget-body {
     font-size: 12px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
 }
 
 .tip-widget-link {
@@ -104,11 +104,11 @@
     margin-top: 8px;
     font-size: 12px;
     font-weight: 500;
-    color: #00aa9c;
+    color: var(--teal);
     text-decoration: none;
     transition: color 0.15s ease;
 }
 
 .tip-widget-link:hover {
-    color: #00ccbb;
+    color: var(--teal);
 }

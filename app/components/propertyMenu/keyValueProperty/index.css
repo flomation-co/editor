@@ -5,10 +5,10 @@
 }
 
 .kv-add-btn {
-    background: rgba(139, 92, 246, 0.12);
-    border: 1px solid rgba(139, 92, 246, 0.25);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 4px;
-    color: #a78bfa;
+    color: var(--lilac);
     font-size: 10px;
     padding: 3px 8px;
     cursor: pointer;
@@ -16,7 +16,7 @@
 }
 
 .kv-add-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
+    background: var(--surface-2);
 }
 
 .kv-list {
@@ -27,15 +27,15 @@
 }
 
 .kv-item {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 6px 8px;
 }
 
 .kv-item--new {
-    border-color: rgba(139, 92, 246, 0.2);
-    background: rgba(139, 92, 246, 0.03);
+    border-color: var(--rule-2);
+    background: var(--surface-2);
 }
 
 .kv-display-row {
@@ -47,7 +47,7 @@
 .kv-key {
     font-size: 12px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
     font-family: monospace;
     min-width: 60px;
 }
@@ -55,7 +55,7 @@
 .kv-value {
     flex: 1;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-family: monospace;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -64,7 +64,7 @@
 
 .kv-empty {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .kv-edit-row {
@@ -76,23 +76,23 @@
 .kv-input {
     flex: 1;
     padding: 4px 8px;
-    background: var(--primary-background, #17202e);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--primary-background, var(--surface));
+    border: 1px solid var(--rule-2);
     border-radius: 4px;
-    color: #e5e7eb;
+    color: var(--soft);
     font-size: 12px;
     font-family: monospace;
     outline: none;
 }
 
 .kv-input:focus {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: var(--rule-2);
 }
 
 .kv-icon-btn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 10px;
     padding: 3px 5px;
     cursor: pointer;
@@ -102,18 +102,18 @@
 }
 
 .kv-icon-btn:hover {
-    color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--soft);
+    background: var(--surface-2);
 }
 
 .kv-icon-btn--save:hover {
-    color: #4ade80;
-    background: rgba(74, 222, 128, 0.08);
+    color: var(--success);
+    background: var(--success-fill);
 }
 
 .kv-icon-btn--danger:hover {
-    color: #f87171;
-    background: rgba(248, 113, 113, 0.08);
+    color: var(--danger);
+    background: var(--danger-fill);
 }
 
 .kv-variable-wrap {
@@ -123,6 +123,6 @@
 
 .kv-empty-state {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
     padding: 4px 0;
 }

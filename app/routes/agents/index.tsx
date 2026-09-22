@@ -110,7 +110,7 @@ export default function Agents() {
 
             {loading && (
                 <div className="loading-container">
-                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
                 </div>
             )}
 

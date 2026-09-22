@@ -29,11 +29,11 @@ type Props = {
 // purple = active/running, red = failure, neutral grey = terminal.
 const STATUS_COLOURS: Record<string, string> = {
     active: "#460070",
-    completed: "#00aa9c",
+    completed: "var(--teal)",
     blocked: "#ef4444",
     failed: "#ef4444",
-    cancelled: "rgba(255,255,255,0.3)",
-    draft: "rgba(255,255,255,0.3)",
+    cancelled: "var(--dim)",
+    draft: "var(--dim)",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -124,7 +124,7 @@ export default function AgentPlansPanel({agentId, apiUrl, token}: Props) {
 
             <div className="agent-memory-list">
                 {plans.map(plan => {
-                    const statusColour = STATUS_COLOURS[plan.status] ?? "rgba(255,255,255,0.3)";
+                    const statusColour = STATUS_COLOURS[plan.status] ?? "var(--dim)";
                     const statusLabel = STATUS_LABELS[plan.status] ?? plan.status;
                     return (
                         <div

@@ -250,7 +250,7 @@ const TriggerURLProperty = (props: Props) => {
                         href="https://developers.facebook.com/apps/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: "#00aa9c", textDecoration: "underline" }}
+                        style={{ color: "var(--teal)", textDecoration: "underline" }}
                     >
                         Facebook App Dashboard
                     </a>
@@ -264,7 +264,7 @@ const TriggerURLProperty = (props: Props) => {
                         href="https://app.intercom.com/a/apps/_/developer-hub"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: "#00aa9c", textDecoration: "underline" }}
+                        style={{ color: "var(--teal)", textDecoration: "underline" }}
                     >
                         Intercom Developer Hub
                     </a>

@@ -446,7 +446,7 @@ export default function Executions() {
                                                             <span className="exec-tree-rail" aria-hidden="true">└</span>
                                                         )}
                                                         {e.agent_id && (
-                                                            <Icon name="robot" style={{ color: '#c084fc', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + e.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
+                                                            <Icon name="robot" style={{ color: 'var(--lilac)', fontSize: 12, marginRight: 6 }} data-tooltip-id={"tooltip-agent-" + e.id} data-tooltip-content="Agent execution" data-tooltip-place="bottom" />
                                                         )}
                                                         <span className="exec-name-block">
                                                             <span className="exec-name-title-row">
@@ -490,7 +490,7 @@ export default function Executions() {
                                                 </td>
                                                 <td className={"table-column-hide-sm flo-table-subdued"}>
                                                     {e.credit_cost_pence ? (
-                                                        <span style={{color: "#fbbf24", fontWeight: 500}}>
+                                                        <span style={{color: "var(--warning)", fontWeight: 500}}>
                                                             £{(e.credit_cost_pence / 100).toFixed(2)}
                                                         </span>
                                                     ) : null}

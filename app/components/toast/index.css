@@ -14,8 +14,8 @@
     border-radius: 10px;
     font-size: 13px;
     font-weight: 500;
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color: var(--text);
+    box-shadow: 0 4px 20px rgba(70, 45, 84, 0.16);
     pointer-events: auto;
     cursor: pointer;
     animation: toastIn 0.25s ease-out, toastOut 0.3s ease-in 3.7s forwards;
@@ -24,23 +24,23 @@
 }
 
 .toast-success {
-    background: rgba(34, 197, 94, 0.9);
-    border: 1px solid rgba(34, 197, 94, 0.4);
+    background: var(--success-fill);
+    border: 1px solid var(--success-border);
 }
 
 .toast-error {
-    background: rgba(239, 68, 68, 0.9);
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: var(--danger-fill);
+    border: 1px solid var(--danger-border);
 }
 
 .toast-info {
-    background: rgba(59, 130, 246, 0.9);
-    border: 1px solid rgba(59, 130, 246, 0.4);
+    background: var(--info-fill);
+    border: 1px solid var(--info-border);
 }
 
 .toast-warning {
-    background: rgba(234, 179, 8, 0.92);
-    border: 1px solid rgba(234, 179, 8, 0.4);
+    background: var(--warning-fill);
+    border: 1px solid var(--warning-border);
 }
 
 @keyframes toastIn {

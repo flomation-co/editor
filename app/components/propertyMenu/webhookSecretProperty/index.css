@@ -10,10 +10,10 @@
     font-family: monospace;
     font-size: 11px;
     padding: 6px 8px;
-    border: 1px solid var(--border-color, #333);
+    border: 1px solid var(--border-color, var(--rule-2));
     border-radius: 6px;
-    background: var(--input-bg, #1a1a2e);
-    color: var(--text-color, #e0e0e0);
+    background: var(--input-bg, var(--surface));
+    color: var(--text-color, var(--soft));
     min-width: 0;
     text-overflow: ellipsis;
 }
@@ -30,17 +30,17 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border: 1px solid var(--border-color, #333);
+    border: 1px solid var(--border-color, var(--rule-2));
     border-radius: 6px;
-    background: var(--input-bg, #1a1a2e);
-    color: var(--text-muted, #888);
+    background: var(--input-bg, var(--surface));
+    color: var(--text-muted, var(--soft));
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
 }
 
 .webhook-secret-btn:hover {
-    color: var(--text-color, #e0e0e0);
-    border-color: var(--text-muted, #888);
+    color: var(--text-color, var(--soft));
+    border-color: var(--text-muted, var(--rule-2));
 }
 
 .webhook-secret-btn svg {

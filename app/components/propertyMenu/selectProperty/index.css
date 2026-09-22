@@ -9,10 +9,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: #17202e;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    background: var(--surface);
+    border: 1px solid var(--neutral-border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text);
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
@@ -23,29 +23,29 @@
 }
 
 .property-menu-select-trigger:hover {
-    background: #1c2536;
-    border-color: rgba(139, 0, 222, 0.4);
+    background: var(--surface);
+    border-color: var(--rule-2);
 }
 
 .property-menu-select-trigger.open,
 .property-menu-select-trigger:focus {
-    border-color: rgba(0, 170, 156, 0.5);
+    border-color: var(--rule-2);
 }
 
 .property-menu-select-placeholder {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
 }
 
 .property-menu-select-chevron {
     flex-shrink: 0;
     margin-left: 8px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     transition: transform 0.15s ease;
 }
 
 .property-menu-select-trigger.open .property-menu-select-chevron {
     transform: rotate(180deg);
-    color: #2dd4bf;
+    color: var(--teal);
 }
 
 .property-menu-select-list {
@@ -55,32 +55,32 @@
     right: 0;
     max-height: 220px;
     overflow-y: auto;
-    background: #1a1a2e;
-    border: 1px solid rgba(139, 0, 222, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     z-index: 10001;
     padding: 4px;
 }
 
 .property-menu-select-list::-webkit-scrollbar { width: 4px; }
 .property-menu-select-list::-webkit-scrollbar-track { background: transparent; }
-.property-menu-select-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+.property-menu-select-list::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 2px; }
 
 .property-menu-select-option {
     padding: 8px 12px;
     border-radius: 4px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     cursor: pointer;
     transition: background 0.1s ease;
 }
 
 .property-menu-select-option:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--surface-hover);
 }
 
 .property-menu-select-option.active {
-    background: rgba(0, 170, 156, 0.15);
-    color: #2dd4bf;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }

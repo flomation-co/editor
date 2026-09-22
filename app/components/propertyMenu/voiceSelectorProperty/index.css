@@ -7,20 +7,20 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background-color: #17202e;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    background-color: var(--surface);
+    border: 1px solid var(--neutral-border);
     border-radius: 6px;
     cursor: pointer;
     transition: border-color 0.15s ease;
     font-size: inherit;
     font-family: inherit;
-    color: #fff;
+    color: var(--text);
     width: 100%;
     box-sizing: border-box;
 }
 
 .voice-selector:hover {
-    border-color: rgba(107, 114, 128, 0.8);
+    border-color: var(--neutral-border);
 }
 
 .voice-selected {
@@ -32,24 +32,24 @@
 }
 
 .voice-placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .voice-id {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-size: 11px;
     font-family: monospace;
 }
 
 .voice-loading {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .voice-chevron {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 10px;
     flex-shrink: 0;
     margin-left: 8px;
@@ -57,7 +57,7 @@
 
 .voice-error {
     font-size: 11px;
-    color: #f87171;
+    color: var(--danger);
     margin-top: 4px;
     padding: 0 2px;
 }
@@ -68,36 +68,36 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    background: #17202e;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    background: var(--surface);
+    border: 1px solid var(--neutral-border);
     border-radius: 6px;
     max-height: 320px;
     overflow: hidden;
     z-index: 100;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     display: flex;
     flex-direction: column;
 }
 
 .voice-search {
     padding: 8px;
-    border-bottom: 1px solid rgba(107, 114, 128, 0.2);
+    border-bottom: 1px solid var(--neutral-border);
 }
 
 .voice-search input {
     width: 100%;
     padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(107, 114, 128, 0.3);
+    background: var(--surface-raise);
+    border: 1px solid var(--neutral-border);
     border-radius: 4px;
-    color: #fff;
+    color: var(--text);
     font-size: 12px;
     outline: none;
     box-sizing: border-box;
 }
 
 .voice-search input:focus {
-    border-color: rgba(0, 170, 156, 0.5);
+    border-color: var(--rule-2);
 }
 
 .voice-list {
@@ -111,7 +111,7 @@
     padding: 8px 12px;
     cursor: pointer;
     transition: background 0.1s ease;
-    border-bottom: 1px solid rgba(107, 114, 128, 0.1);
+    border-bottom: 1px solid var(--neutral-border);
     gap: 8px;
 }
 
@@ -120,11 +120,11 @@
 }
 
 .voice-option:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
 }
 
 .voice-option--selected {
-    background: rgba(0, 170, 156, 0.1);
+    background: var(--surface-2);
 }
 
 .voice-option-main {
@@ -135,7 +135,7 @@
 .voice-option-name {
     font-size: 13px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .voice-option-meta {
@@ -149,33 +149,33 @@
     font-size: 10px;
     padding: 1px 5px;
     border-radius: 3px;
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.4);
+    background: var(--surface-2);
+    color: var(--dimmer);
 }
 
 .voice-category--cloned {
-    background: rgba(139, 92, 246, 0.15);
-    color: rgba(139, 92, 246, 0.9);
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .voice-category--generated {
-    background: rgba(59, 130, 246, 0.15);
-    color: rgba(59, 130, 246, 0.9);
+    background: var(--info-fill);
+    color: var(--info);
 }
 
 .voice-category--professional {
-    background: rgba(245, 158, 11, 0.15);
-    color: rgba(245, 158, 11, 0.9);
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .voice-label {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .voice-preview-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 50%;
     width: 28px;
     height: 28px;
@@ -183,22 +183,22 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-size: 10px;
     flex-shrink: 0;
     transition: all 0.15s;
 }
 
 .voice-preview-btn:hover {
-    background: rgba(0, 170, 156, 0.15);
-    border-color: rgba(0, 170, 156, 0.3);
-    color: #00aa9c;
+    background: rgba(47, 107, 100, 0.12);
+    border-color: var(--rule-2);
+    color: var(--teal);
 }
 
 .voice-no-results {
     padding: 16px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 12px;
 }
 /* ─── Source tabs ──────────────────────────────────────────────── */
@@ -207,8 +207,8 @@
     display: flex;
     gap: 0;
     padding: 6px;
-    background: rgba(0, 0, 0, 0.25);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
 }
 
 .voice-tab {
@@ -217,7 +217,7 @@
     border: 0;
     padding: 7px 10px;
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
@@ -229,18 +229,18 @@
 }
 
 .voice-tab:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    background: var(--surface-raise);
 }
 
 .voice-tab--active {
-    background: rgba(0, 170, 156, 0.15);
-    color: #00aa9c;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 .voice-tab--active:hover {
-    background: rgba(0, 170, 156, 0.2);
-    color: #00aa9c;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 /* ─── Marketplace-specific rows ───────────────────────────────── */
@@ -248,7 +248,7 @@
 .voice-option-desc {
     margin-top: 4px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     line-height: 1.4;
     /* Cap at two lines so a verbose description doesn't dominate the
        dropdown — full description appears in the title attribute via
@@ -266,9 +266,9 @@
 }
 
 .voice-add-btn {
-    background: rgba(0, 170, 156, 0.1);
-    border: 1px solid rgba(0, 170, 156, 0.3);
-    color: #00aa9c;
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
+    color: var(--teal);
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
@@ -282,8 +282,8 @@
 }
 
 .voice-add-btn:hover {
-    background: rgba(0, 170, 156, 0.2);
-    color: #00d4c2;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 .voice-add-btn:disabled {
@@ -294,9 +294,9 @@
 .voice-load-more {
     width: calc(100% - 16px);
     margin: 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
     padding: 8px;
     border-radius: 4px;
     cursor: pointer;
@@ -304,14 +304,14 @@
 }
 
 .voice-load-more:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.95);
+    background: var(--surface-hover);
+    color: var(--text);
 }
 
 .voice-loading-row {
     padding: 16px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -320,6 +320,6 @@
 }
 
 .voice-category--shared {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }

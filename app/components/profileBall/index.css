@@ -8,10 +8,10 @@
 .profile-pic {
     width: 34px;
     height: 34px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,9 +20,9 @@
 }
 
 .profile-pic:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    background: var(--surface-hover);
+    border-color: var(--rule-3);
+    color: var(--text);
 }
 
 .profile-pic-name {

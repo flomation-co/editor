@@ -15,18 +15,18 @@
 }
 
 .status-banner--healthy {
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    background: var(--success-fill);
+    border: 1px solid var(--success-border);
 }
 
 .status-banner--degraded {
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: var(--warning-fill);
+    border: 1px solid var(--warning-border);
 }
 
 .status-banner--down {
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: var(--danger-fill);
+    border: 1px solid var(--danger-border);
 }
 
 .status-banner-icon {
@@ -41,31 +41,31 @@
 }
 
 .status-banner--healthy .status-banner-icon {
-    background: rgba(34, 197, 94, 0.15);
-    color: #4ade80;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .status-banner--degraded .status-banner-icon {
-    background: rgba(245, 158, 11, 0.15);
-    color: #fbbf24;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .status-banner--down .status-banner-icon {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .status-banner-text h3 {
     margin: 0 0 2px;
     font-size: 16px;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .status-banner-text p {
     margin: 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
 }
 
 /* Service cards */
@@ -74,7 +74,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-bottom: 12px;
 }
 
@@ -90,14 +90,14 @@
     align-items: center;
     gap: 14px;
     padding: 16px 18px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     transition: background 0.12s ease;
 }
 
 .status-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .status-card-indicator {
@@ -108,18 +108,18 @@
 }
 
 .status-card-indicator--healthy {
-    background: #4ade80;
-    box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+    background: var(--success-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 .status-card-indicator--unhealthy {
-    background: #f87171;
-    box-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
+    background: var(--danger-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 .status-card-indicator--checking {
-    background: #60a5fa;
-    box-shadow: 0 0 6px rgba(96, 165, 250, 0.3);
+    background: var(--info-fill);
+    box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
     animation: indicator-pulse 1.5s ease-in-out infinite;
 }
 
@@ -136,12 +136,12 @@
 .status-card-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .status-card-url {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     margin-top: 1px;
 }
 
@@ -163,34 +163,34 @@
 }
 
 .status-card-badge--healthy {
-    background: rgba(34, 197, 94, 0.12);
-    color: #4ade80;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .status-card-badge--unhealthy {
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .status-card-badge--checking {
-    background: rgba(96, 165, 250, 0.12);
-    color: #60a5fa;
+    background: var(--info-fill);
+    color: var(--info);
 }
 
 .status-card-version {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .status-card-latency {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 /* Last checked */
 .status-last-checked {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     text-align: center;
     margin-bottom: 32px;
 }
@@ -198,7 +198,7 @@
 .status-refresh-btn {
     background: none;
     border: none;
-    color: rgba(139, 92, 246, 0.7);
+    color: var(--lilac);
     cursor: pointer;
     font-size: 12px;
     margin-left: 6px;
@@ -206,5 +206,5 @@
 }
 
 .status-refresh-btn:hover {
-    color: #a78bfa;
+    color: var(--lilac);
 }

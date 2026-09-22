@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
 }
 
@@ -27,7 +27,7 @@
 .exec-header-title {
     font-size: 16px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -35,7 +35,7 @@
 
 .exec-header-sequence {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-weight: 500;
 }
 
@@ -53,10 +53,10 @@
 
 .rerun-button {
     padding: 6px 14px;
-    background: #00aa9c;
+    background: var(--action);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;
@@ -78,7 +78,7 @@
 
 .cancel-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, #991b1b, #dc2626);
+    background: linear-gradient(135deg, var(--danger-fill), var(--danger));
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -103,7 +103,7 @@
 
 .resume-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, #b45309, #f59e0b);
+    background: linear-gradient(135deg, var(--surface), var(--warning));
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -132,7 +132,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
     flex-wrap: wrap;
 }
@@ -144,24 +144,24 @@
     padding: 3px 10px;
     border-radius: 6px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--dim);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     white-space: nowrap;
     text-decoration: none;
 }
 
 .exec-meta-chip--link {
-    color: rgba(139, 0, 222, 0.8);
-    border-color: rgba(139, 0, 222, 0.15);
+    color: var(--lilac);
+    border-color: var(--rule-2);
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .exec-meta-chip--link:hover {
-    background: rgba(139, 0, 222, 0.08);
-    border-color: rgba(139, 0, 222, 0.3);
-    color: #b49eed;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 .exec-meta-chip--clickable {
@@ -170,28 +170,28 @@
 }
 
 .exec-meta-chip--clickable:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: var(--surface-2);
+    border-color: var(--rule-2);
 }
 
 .exec-meta-suspend-count {
-    color: #fbbf24;
+    color: var(--warning);
     font-weight: 500;
     margin-left: 2px;
 }
 
 /* ── Live timer chip ── */
 .exec-meta-chip--live {
-    color: #2dd4bf;
-    border-color: rgba(0, 170, 156, 0.2);
+    color: var(--teal);
+    border-color: var(--rule-2);
     animation: pulse-glow 2s ease-in-out infinite;
 }
 
 /* ── Timing segments pane ── */
 .exec-timing-pane {
     padding: 12px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface-sunken);
     flex-shrink: 0;
 }
 
@@ -207,12 +207,12 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
 }
 
 .exec-timing-total {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .exec-timing-segments {
@@ -228,12 +228,12 @@
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 11px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
 }
 
 .exec-timing-segment-index {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-weight: 600;
     min-width: 20px;
 }
@@ -244,35 +244,35 @@
 }
 
 .exec-timing-segment--suspended .exec-timing-segment-status {
-    color: #fbbf24;
+    color: var(--warning);
 }
 
 .exec-timing-segment--success .exec-timing-segment-status {
-    color: #4ade80;
+    color: var(--success);
 }
 
 .exec-timing-segment--fail .exec-timing-segment-status {
-    color: #f87171;
+    color: var(--danger);
 }
 
 .exec-timing-segment-duration {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-weight: 500;
     min-width: 60px;
 }
 
 .exec-timing-segment-times {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     flex: 1;
 }
 
 .exec-timing-segment-runner {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-size: 10px;
 }
 
 .exec-timing-empty {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 11px;
     padding: 4px 0;
 }
@@ -301,12 +301,12 @@
     display: flex;
     gap: 4px;
     z-index: 50;
-    background: rgba(19, 19, 19, 0.85);
+    background: var(--surface);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     padding: 4px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 20px rgba(70, 45, 84, 0.16);
 }
 
 .exec-detail-tab-btn {
@@ -314,7 +314,7 @@
     border: none;
     border-radius: 7px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;
@@ -323,8 +323,8 @@
 }
 
 .exec-detail-tab-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--surface-2);
+    color: var(--ink-muted);
 }
 
 /* ── Floating detail panel ── */
@@ -337,10 +337,10 @@
     z-index: 60;
     display: flex;
     flex-direction: column;
-    background: rgba(19, 19, 19, 0.92);
+    background: var(--surface);
     backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid var(--rule);
+    box-shadow: 0 -8px 32px rgba(70, 45, 84, 0.16);
     animation: slideUpPanel 0.2s ease-out;
 }
 
@@ -360,14 +360,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
 }
 
 .exec-detail-panel-tabs {
     display: flex;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-sunken);
     border-radius: 8px;
     padding: 3px;
 }
@@ -377,7 +377,7 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;
@@ -386,11 +386,11 @@
 }
 
 .exec-detail-panel-tab:hover {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--ink-muted);
 }
 
 .exec-detail-panel-tab.active {
-    background: #460070;
+    background: var(--violet);
     color: #fff;
 }
 
@@ -398,9 +398,9 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--rule);
+    background: var(--surface-raise);
+    color: var(--dim);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -410,7 +410,7 @@
 }
 
 .exec-detail-panel-close:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
 }
 
 .exec-detail-panel-body {
@@ -424,20 +424,20 @@
     display: block;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 12px;
-    background: rgba(31, 41, 55, 0.5);
+    background: var(--surface-2);
     border-radius: 8px;
     padding: 12px;
-    color: #d1d5db;
+    color: var(--dim);
     white-space: pre-wrap;
     word-break: break-all;
     overflow-wrap: break-word;
     margin: 0;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--rule);
 }
 
 .exec-detail-loading {
     padding: 16px 0;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -479,9 +479,9 @@ pre {
     gap: 4px;
     padding: 8px 20px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(0, 0, 0, 0.2);
+    color: var(--soft);
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface-raise);
 }
 
 .exec-breadcrumb-segment {
@@ -491,7 +491,7 @@ pre {
 }
 
 .exec-breadcrumb-link {
-    color: #a78bfa;
+    color: var(--lilac);
     text-decoration: none;
     padding: 2px 6px;
     border-radius: 3px;
@@ -499,8 +499,8 @@ pre {
 }
 
 .exec-breadcrumb-link:hover {
-    background: rgba(139, 92, 246, 0.15);
-    color: #c4b5fd;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .exec-breadcrumb-link--root {
@@ -509,19 +509,19 @@ pre {
 
 .exec-breadcrumb-root-marker {
     margin-right: 4px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     text-transform: uppercase;
     font-size: 9px;
     letter-spacing: 0.05em;
 }
 
 .exec-breadcrumb-sep {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-size: 10px;
 }
 
 .exec-breadcrumb-current {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text);
     font-weight: 500;
     padding: 2px 6px;
 }
@@ -533,7 +533,7 @@ pre {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #a78bfa;
-    background: rgba(139, 92, 246, 0.12);
+    color: var(--lilac);
+    background: var(--surface-2);
     border-radius: 3px;
 }

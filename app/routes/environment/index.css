@@ -9,13 +9,13 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     text-decoration: none;
     transition: color 0.1s ease;
 }
 
 .env-detail-back-link:hover {
-    color: #a78bfa;
+    color: var(--lilac);
 }
 
 .env-detail-page {
@@ -26,8 +26,8 @@
 }
 
 .env-detail-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 12px;
     padding: 20px;
 }
@@ -42,7 +42,7 @@
 .env-detail-section-label {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -50,7 +50,7 @@
 
 .env-detail-section-icon {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .env-detail-add-btn {
@@ -58,10 +58,10 @@
     align-items: center;
     gap: 5px;
     padding: 5px 12px;
-    background: rgba(139, 92, 246, 0.12);
-    border: 1px solid rgba(139, 92, 246, 0.25);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: #a78bfa;
+    color: var(--lilac);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -69,12 +69,12 @@
 }
 
 .env-detail-add-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
+    background: var(--surface-2);
 }
 
 .env-detail-empty {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     padding: 8px 0;
 }
 
@@ -90,14 +90,14 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     transition: background 0.1s ease;
 }
 
 .env-detail-item:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .env-detail-item-info {
@@ -108,19 +108,19 @@
 .env-detail-item-name {
     font-size: 13px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .env-detail-item-value {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-top: 2px;
     word-break: break-all;
 }
 
 .env-detail-item-value--hidden {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--faint);
 }
 
 .env-detail-item-actions {
@@ -135,24 +135,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    color: rgba(255, 255, 255, 0.3);
+    background: var(--surface-sunken);
+    color: var(--faint);
     font-size: 11px;
     cursor: pointer;
     transition: all 0.1s ease;
 }
 
 .env-detail-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    color: var(--soft);
 }
 
 .env-detail-icon-btn--danger:hover {
-    background: rgba(248, 113, 113, 0.08);
-    color: #f87171;
-    border-color: rgba(248, 113, 113, 0.2);
+    background: var(--danger-fill);
+    color: var(--danger);
+    border-color: var(--danger-border);
 }
 
 /* Add / Edit forms */
@@ -162,8 +162,8 @@
     flex-direction: column;
     gap: 8px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     margin-bottom: 10px;
     width: 100%;
@@ -176,7 +176,7 @@
     width: 100%;
     padding: 8px 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 13px;
@@ -196,7 +196,7 @@
 .env-detail-add-form input::placeholder,
 .env-detail-add-form textarea::placeholder,
 .env-detail-edit-form textarea::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .env-detail-add-actions {
@@ -210,10 +210,10 @@
     align-items: center;
     gap: 5px;
     padding: 6px 14px;
-    background: #00aa9c;
+    background: var(--action);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -226,18 +226,18 @@
 
 .env-detail-btn-cancel {
     padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.1s ease;
 }
 
 .env-detail-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    color: var(--soft);
 }
 
 /* ── Credential status badges ── */
@@ -255,38 +255,38 @@
 }
 
 .env-cred-status--active {
-    background: rgba(34, 197, 94, 0.12);
-    color: #4ade80;
+    background: var(--success-fill);
+    color: var(--success);
 }
 
 .env-cred-status--pending {
-    background: rgba(245, 158, 11, 0.12);
-    color: #fbbf24;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .env-cred-status--expired {
-    background: rgba(245, 158, 11, 0.12);
-    color: #fbbf24;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .env-cred-status--error {
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .env-cred-status--revoked {
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    background: var(--danger-fill);
+    color: var(--danger);
 }
 
 .env-cred-scopes {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .env-cred-error {
     font-size: 10px;
-    color: #f87171;
+    color: var(--danger);
     margin-top: 4px;
     line-height: 1.3;
 }
@@ -306,9 +306,9 @@
     gap: 6px;
     padding: 8px 16px;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     font-size: 12px;
     font-weight: 500;
     font-family: inherit;
@@ -317,24 +317,24 @@
 }
 
 .env-detail-tab:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.6);
+    background: var(--surface-raise);
+    color: var(--soft);
 }
 
 .env-detail-tab--active {
-    background: rgba(139, 92, 246, 0.1);
-    border-color: rgba(139, 92, 246, 0.25);
-    color: #c4b5fd;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 .env-detail-tab--active:hover {
-    background: rgba(139, 92, 246, 0.15);
+    background: var(--surface-2);
 }
 
 .env-detail-tab-count {
     font-size: 10px;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
     border-radius: 8px;
     padding: 1px 6px;
     min-width: 16px;
@@ -342,7 +342,7 @@
 }
 
 .env-detail-tab--active .env-detail-tab-count {
-    background: rgba(139, 92, 246, 0.2);
+    background: var(--surface-2);
 }
 
 /* ── Credential add dropdown ── */
@@ -356,10 +356,10 @@
     top: calc(100% + 4px);
     right: 0;
     min-width: 180px;
-    background: #1a1a2e;
-    border: 1px solid rgba(139, 0, 222, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     padding: 4px;
     z-index: 100;
 }
@@ -367,7 +367,7 @@
 .env-cred-provider-empty {
     padding: 10px 12px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     text-align: center;
 }
 
@@ -380,7 +380,7 @@
     background: transparent;
     border: none;
     border-radius: 5px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 12px;
     font-family: inherit;
     cursor: pointer;
@@ -389,7 +389,7 @@
 }
 
 .env-cred-provider-option:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--surface-hover);
 }
 
 .env-cred-provider-option--disabled {
@@ -400,7 +400,7 @@
 .env-cred-provider-unconfigured {
     margin-left: auto;
     font-size: 9px;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-style: italic;
 }
 
@@ -410,9 +410,9 @@
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: #c4b5fd;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: var(--lilac);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     padding: 6px 12px;
     margin-bottom: 4px;
@@ -421,8 +421,8 @@
 /* ── Credential scopes picker ── */
 
 .env-cred-scopes-section {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 10px 12px;
 }
@@ -432,7 +432,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     margin-bottom: 8px;
 }
 
@@ -446,12 +446,12 @@
 
 .env-cred-scopes-groups::-webkit-scrollbar { width: 4px; }
 .env-cred-scopes-groups::-webkit-scrollbar-track { background: transparent; }
-.env-cred-scopes-groups::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+.env-cred-scopes-groups::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 2px; }
 
 .env-cred-scope-group-name {
     font-size: 10px;
     font-weight: 600;
-    color: rgba(139, 92, 246, 0.6);
+    color: var(--lilac);
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -465,7 +465,7 @@
 
 .env-cred-scopes-grid::-webkit-scrollbar { width: 4px; }
 .env-cred-scopes-grid::-webkit-scrollbar-track { background: transparent; }
-.env-cred-scopes-grid::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
+.env-cred-scopes-grid::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 2px; }
 
 .env-cred-scope-item {
     display: flex;
@@ -474,12 +474,12 @@
     padding: 4px 0;
     cursor: pointer;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     transition: color 0.1s ease;
 }
 
 .env-cred-scope-item:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--ink-muted);
 }
 
 .env-cred-scope-item input[type="checkbox"] {
@@ -491,8 +491,8 @@
     min-width: 14px;
     margin: 0;
     padding: 0;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 3px;
     cursor: pointer;
     position: relative;
@@ -500,8 +500,8 @@
 }
 
 .env-cred-scope-item input[type="checkbox"]:checked {
-    background: rgba(139, 92, 246, 0.4);
-    border-color: rgba(139, 92, 246, 0.5);
+    background: var(--surface-2);
+    border-color: var(--rule-2);
 }
 
 .env-cred-scope-item input[type="checkbox"]:checked::after {
@@ -511,7 +511,7 @@
     left: 4px;
     width: 4px;
     height: 7px;
-    border: solid #c4b5fd;
+    border: solid var(--rule-2);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
@@ -525,8 +525,8 @@
 .scope-picker {
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -534,7 +534,7 @@
 .scope-row {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--rule);
 }
 
 .scope-row:last-child {
@@ -566,41 +566,41 @@
 }
 
 .scope-row-header:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-sunken);
 }
 
 .scope-row-header:focus-visible {
-    outline: 2px solid rgba(139, 92, 246, 0.4);
+    outline: 2px solid var(--rule-2);
     outline-offset: -2px;
 }
 
 .scope-row-chevron {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-size: 10px;
     transition: color 0.12s ease;
 }
 
 .scope-row--expanded .scope-row-chevron,
 .scope-row-header:hover .scope-row-chevron {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--ink-muted);
 }
 
 .scope-row-icon {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     font-size: 14px;
 }
 
 .scope-row-name {
     font-size: 14px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--text);
 }
 
 .scope-row-summary {
     margin-left: auto;
     font-size: 12px;
-    color: rgba(196, 181, 253, 0.85);
-    background: rgba(139, 92, 246, 0.12);
+    color: var(--lilac);
+    background: var(--surface-2);
     /* The pill MUST NOT make the row taller than the bare-text
        state, otherwise the flex line grows when the pill appears
        and the page jumps. Two things together achieve that:
@@ -611,7 +611,7 @@
             14px-name's natural line-box height (~21px). The name
             still dominates the flex line, so adding/removing the
             pill is now an in-place visual change. */
-    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.25);
+    box-shadow: inset 0 0 0 1px var(--lilac);
     padding: 0 8px;
     line-height: 20px;
     border-radius: 4px;
@@ -641,15 +641,15 @@
 }
 
 .scope-badge--sensitive {
-    background: rgba(217, 119, 6, 0.15);
-    color: #f59e0b;
-    border: 1px solid rgba(217, 119, 6, 0.3);
+    background: var(--warning-fill);
+    color: var(--warning);
+    border: 1px solid var(--warning-border);
 }
 
 .scope-badge--required {
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    color: var(--dim);
+    border: 1px solid var(--rule);
 }
 
 .scope-badge--inline {
@@ -658,14 +658,14 @@
 
 .scope-row-description {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--dimmer);
     line-height: 1.5;
 }
 
 .scope-segment-group {
     display: inline-flex;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 2px;
     align-self: flex-start;
@@ -674,7 +674,7 @@
 .scope-segment {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     font-size: 12px;
     padding: 5px 14px;
     cursor: pointer;
@@ -684,13 +684,13 @@
 }
 
 .scope-segment:hover {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text);
 }
 
 .scope-segment--active {
-    background: rgba(139, 92, 246, 0.25);
-    color: #e5deff;
-    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.4);
+    background: var(--surface-2);
+    color: var(--lilac);
+    box-shadow: inset 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .scope-toggle-group {
@@ -710,14 +710,14 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--ink-muted);
     cursor: pointer;
     user-select: none;
     line-height: 1;
 }
 
 .scope-toggle:hover {
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--text);
 }
 
 .scope-toggle input[type="checkbox"] {
@@ -734,8 +734,8 @@
     width: 16px;
     height: 16px;
     min-width: 16px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule-3);
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
@@ -746,17 +746,17 @@
 }
 
 .scope-toggle:hover .scope-toggle-box {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--rule-3);
 }
 
 .scope-toggle input[type="checkbox"]:checked + .scope-toggle-box {
-    background: rgba(139, 92, 246, 0.55);
-    border-color: rgba(139, 92, 246, 0.7);
-    color: #fff;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--text);
 }
 
 .scope-toggle input[type="checkbox"]:focus-visible + .scope-toggle-box {
-    outline: 2px solid rgba(139, 92, 246, 0.5);
+    outline: 2px solid var(--rule-2);
     outline-offset: 2px;
 }
 
@@ -769,13 +769,13 @@
    entirely when there aren't any. */
 
 .scope-row--other {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--surface-sunken);
 }
 
 .scope-other-toggle {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-size: 12px;
     cursor: pointer;
     display: flex;
@@ -787,11 +787,11 @@
 }
 
 .scope-other-toggle:hover {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text);
 }
 
 .scope-other-hint {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--faint);
     font-size: 11px;
     margin-left: auto;
 }
@@ -807,8 +807,8 @@
 .scope-other-item {
     font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--dim);
+    background: var(--surface-raise);
     padding: 2px 6px;
     border-radius: 3px;
     align-self: flex-start;
@@ -822,16 +822,16 @@
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: rgba(139, 92, 246, 0.06);
-    border-top: 1px solid rgba(139, 92, 246, 0.15);
-    color: rgba(229, 222, 255, 0.8);
+    background: var(--surface-2);
+    border-top: 1px solid var(--rule-2);
+    color: var(--lilac);
     font-size: 12px;
     line-height: 1.5;
 }
 
 .scope-picker-footer svg {
     flex-shrink: 0;
-    color: rgba(196, 181, 253, 0.7);
+    color: var(--lilac);
 }
 
 /* Inline hint below an input, explaining validation constraints
@@ -839,26 +839,26 @@
 
 .env-detail-input-hint {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     margin: -2px 0 8px 2px;
     line-height: 1.5;
 }
 
 .env-detail-input-hint code {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--surface-2);
     padding: 1px 4px;
     border-radius: 3px;
     font-size: 10.5px;
-    color: rgba(196, 181, 253, 0.85);
+    color: var(--lilac);
 }
 
 .env-detail-select {
     width: 100%;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     font-family: inherit;
     outline: none;
@@ -866,20 +866,20 @@
 }
 
 .env-detail-select:focus {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: var(--rule-2);
 }
 
 .env-detail-select option {
-    background: #1a1a2e;
-    color: #d1d5db;
+    background: var(--surface);
+    color: var(--dim);
 }
 
 /* AWS Role credential: trust policy + External ID shown after creation. */
 .env-cred-aws-result {
     margin-top: 10px;
     padding: 12px;
-    background: rgba(0, 170, 156, 0.06);
-    border: 1px solid rgba(0, 170, 156, 0.25);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
 }
 
@@ -888,10 +888,10 @@
     padding: 10px 12px;
     max-height: 220px;
     overflow: auto;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    color: #9ff0e6;
+    color: var(--teal);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11.5px;
     line-height: 1.5;
@@ -905,7 +905,7 @@
     gap: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: #6ee7d8;
+    color: var(--teal);
     margin-bottom: 8px;
     text-transform: none;
 }
@@ -913,7 +913,7 @@
 .env-cred-aws-steps {
     margin: 0;
     padding-left: 18px;
-    color: #c9c9d6;
+    color: var(--info);
     font-size: 12.5px;
     line-height: 1.6;
     text-transform: none;
@@ -924,21 +924,21 @@
 }
 
 .env-cred-aws-steps code {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--surface-hover);
     border-radius: 4px;
     padding: 1px 5px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    color: #9ff0e6;
+    color: var(--teal);
 }
 
 .env-cred-aws-warn {
     margin-top: 4px;
     padding: 6px 9px;
-    background: rgba(245, 158, 11, 0.10);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: var(--warning-fill);
+    border: 1px solid var(--warning-border);
     border-radius: 6px;
-    color: #fcd9a0;
+    color: var(--warning);
     font-size: 11.5px;
 }
 
@@ -959,7 +959,7 @@
 .env-cred-aws-chip-label {
     min-width: 120px;
     font-size: 11px;
-    color: #9a9aac;
+    color: var(--soft);
 }
 
 .env-cred-aws-chip code {
@@ -974,17 +974,17 @@
     gap: 5px;
     margin-top: 6px;
     padding: 5px 11px;
-    background: rgba(0, 170, 156, 0.14);
-    border: 1px solid rgba(0, 170, 156, 0.35);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 6px;
-    color: #9ff0e6;
+    color: var(--teal);
     font-size: 11.5px;
     cursor: pointer;
     transition: background 0.1s ease;
 }
 
 .env-cred-copy-btn:hover {
-    background: rgba(0, 170, 156, 0.24);
+    background: var(--surface-2);
 }
 
 .env-cred-copy-btn--sm {
@@ -998,14 +998,14 @@
     font-weight: 600;
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    color: #6ee7d8;
+    color: var(--teal);
     margin: 4px 0 8px;
 }
 
 /* Self-contained searchable region dropdown (credential UI). */
 .env-detail-input-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     margin-bottom: 4px;
     text-transform: none;
 }
@@ -1018,10 +1018,10 @@
 .cred-search-select-input {
     width: 100%;
     padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    color: #d1d5db;
+    color: var(--dim);
     font-size: 13px;
     font-family: inherit;
     text-transform: none;
@@ -1029,7 +1029,7 @@
 }
 
 .cred-search-select-input:focus {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: var(--rule-2);
     box-shadow: none;
 }
 
@@ -1041,10 +1041,10 @@
     z-index: 50;
     max-height: 240px;
     overflow-y: auto;
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     padding: 4px;
 }
 
@@ -1053,15 +1053,15 @@
     border-radius: 5px;
     cursor: pointer;
     font-size: 13px;
-    color: #d1d5db;
+    color: var(--dim);
     text-transform: none;
     white-space: nowrap;
 }
 
 .cred-search-select-option:hover,
 .cred-search-select-option.active {
-    background: rgba(139, 92, 246, 0.18);
-    color: #fff;
+    background: var(--surface-2);
+    color: var(--text);
 }
 
 .env-cred-test-ok {
@@ -1070,10 +1070,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 170, 156, 0.12);
-    border: 1px solid rgba(0, 170, 156, 0.35);
+    background: rgba(47, 107, 100, 0.12);
+    border: 1px solid rgba(47, 107, 100, 0.28);
     border-radius: 6px;
-    color: #6ee7d8;
+    color: var(--teal);
     font-size: 12px;
     text-transform: none;
 }
@@ -1103,7 +1103,7 @@
 }
 .aws-perms-edit__policy-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     margin-bottom: 6px;
 }
 /* The policy pre fills the column and scrolls independently. */

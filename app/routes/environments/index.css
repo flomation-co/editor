@@ -15,10 +15,10 @@
     gap: 6px;
     height: 34px;
     padding: 0 14px;
-    background: #00aa9c;
-    border: 1px solid rgba(0, 170, 156, 0.3);
+    background: var(--action);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -28,8 +28,8 @@
 }
 
 .env-create-btn:hover {
-    background: #00ccbb;
-    border-color: rgba(0, 204, 187, 0.5);
+    background: var(--action-hover);
+    border-color: var(--rule-2);
 }
 
 /* Create form */
@@ -46,7 +46,7 @@
     height: 38px;
     padding: 0 12px;
     background-color: var(--primary-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
     color: var(--primary-font-colour);
     font-size: 14px;
@@ -56,7 +56,7 @@
 }
 
 .env-create-form input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .env-create-form input:focus {
@@ -66,10 +66,10 @@
 .env-create-form-save {
     height: 38px;
     padding: 0 16px;
-    background: #00aa9c;
-    border: 1px solid rgba(0, 170, 156, 0.3);
+    background: var(--action);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: #fff;
+    color: var(--action-ink);
     font-size: 13px;
     font-weight: 500;
     font-family: inherit;
@@ -82,7 +82,7 @@
 }
 
 .env-create-form-save:hover:not(:disabled) {
-    background: #00ccbb;
+    background: var(--action-hover);
 }
 
 .env-create-form-save:disabled {
@@ -93,10 +93,10 @@
 .env-create-form-cancel {
     height: 38px;
     padding: 0 14px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-raise);
+    border: 1px solid var(--rule-2);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
@@ -104,15 +104,15 @@
 }
 
 .env-create-form-cancel:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    color: var(--soft);
 }
 
 /* Empty state */
 .env-empty {
     padding: 40px 0;
     text-align: center;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 14px;
 }
 
@@ -128,8 +128,8 @@
     align-items: center;
     gap: 10px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.12s ease;
@@ -143,7 +143,7 @@
 }
 
 .env-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
 }
 
 .env-card-icon {
@@ -154,8 +154,8 @@
     align-items: center;
     justify-content: center;
     font-size: 15px;
-    background: rgba(0, 170, 156, 0.12);
-    color: #2dd4bf;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
     flex-shrink: 0;
 }
 
@@ -170,14 +170,14 @@
 .env-card-name {
     font-size: 14px;
     font-weight: 500;
-    color: #e5e7eb;
+    color: var(--soft);
 }
 
 .env-card-details {
     display: flex;
     gap: 12px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
 }
 
 .env-card-actions {
@@ -194,10 +194,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--rule);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.35);
+    background: var(--surface-raise);
+    color: var(--faint);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.1s ease;
@@ -205,12 +205,12 @@
 }
 
 .env-card-view:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    color: var(--soft);
 }
 
 .env-card-delete:hover {
-    background: rgba(248, 113, 113, 0.08);
-    color: #f87171;
-    border-color: rgba(248, 113, 113, 0.2);
+    background: var(--danger-fill);
+    color: var(--danger);
+    border-color: var(--danger-border);
 }

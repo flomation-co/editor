@@ -26,7 +26,7 @@
     display: inline-block;
     width: 32px;
     height: 18px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
     border-radius: 18px;
     transition: background 0.2s ease;
     flex-shrink: 0;
@@ -39,13 +39,13 @@
     height: 14px;
     left: 2px;
     bottom: 2px;
-    background: #fff;
+    background: var(--surface);
     border-radius: 50%;
     transition: transform 0.2s ease;
 }
 
 .exec-agent-filter input:checked + .exec-agent-filter-slider {
-    background: #8b5cf6;
+    background: var(--violet);
 }
 
 .exec-agent-filter input:checked + .exec-agent-filter-slider::before {
@@ -54,7 +54,7 @@
 
 .exec-agent-filter-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .exec-refresh-bar {
@@ -70,7 +70,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     white-space: nowrap;
 }
 
@@ -78,8 +78,8 @@
     position: relative;
     display: flex;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule);
     border-radius: 6px;
     padding: 2px;
     overflow: hidden;
@@ -93,7 +93,7 @@
     left: 0;
     height: 2px;
     width: 100%;
-    background: rgba(139, 92, 246, 0.5);
+    background: var(--surface-2);
     transform-origin: left;
     animation: refresh-countdown var(--refresh-duration, 5000ms) linear forwards;
 }
@@ -114,7 +114,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
@@ -123,18 +123,18 @@
 }
 
 .exec-refresh-option:hover {
-    color: rgba(255, 255, 255, 0.7);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--ink-muted);
+    background: var(--surface-2);
 }
 
 .exec-refresh-option--active {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .exec-refresh-option--active:hover {
-    background: rgba(139, 92, 246, 0.2);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 /* Hierarchical executions list */
@@ -204,7 +204,7 @@
     width: 18px;
     height: 18px;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--dim);
     cursor: pointer;
     user-select: none;
     border-radius: 3px;
@@ -212,13 +212,13 @@
 }
 
 .exec-tree-expander:hover {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .exec-tree-rail {
     display: inline-block;
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
     font-family: monospace;
     margin-right: 4px;
     pointer-events: none;
@@ -231,13 +231,13 @@
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #a78bfa;
-    background: rgba(139, 92, 246, 0.12);
+    color: var(--lilac);
+    background: var(--surface-2);
     border-radius: 4px;
 }
 
 .flo-table-row--child td {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--surface-sunken);
 }
 
 /* View-mode toggle (Hierarchical | Flat) — mirrors the auto-refresh
@@ -253,13 +253,13 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
 }
 
 .exec-view-mode-options {
     display: inline-flex;
     gap: 0;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-raise);
     border-radius: 6px;
     padding: 2px;
 }
@@ -271,7 +271,7 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--dim);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -280,16 +280,16 @@
 }
 
 .exec-view-mode-option:hover {
-    color: rgba(255, 255, 255, 0.85);
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    background: var(--surface-raise);
 }
 
 .exec-view-mode-option--active {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .exec-view-mode-option--active:hover {
-    background: rgba(139, 92, 246, 0.2);
-    color: #a78bfa;
+    background: var(--surface-2);
+    color: var(--lilac);
 }

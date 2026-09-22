@@ -10,7 +10,7 @@
     font-size: inherit;
     line-height: 1.5;
     padding: 10px;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    border: 1px solid var(--neutral-border);
     border-radius: 5px;
     width: 100%;
     box-sizing: border-box;
@@ -81,11 +81,11 @@
     /* border-top (1px) + padding-top (10px) = 11px, matching the field's
        own border + padding so row 1 lines up with the first code line. */
     padding: 10px 8px 10px 0;
-    border: 1px solid rgba(107, 114, 128, 0.5);
-    border-right-color: rgba(107, 114, 128, 0.3);
+    border: 1px solid var(--neutral-border);
+    border-right-color: var(--neutral-border);
     border-radius: 5px 0 0 5px;
-    background: #131b27;
-    color: rgba(255, 255, 255, 0.3);
+    background: var(--surface);
+    color: var(--faint);
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     font-size: 13px;
     /* Must match the code layers' integer line box exactly (see --nowrap). */
@@ -104,8 +104,8 @@
     top: 0;
     left: 0;
     pointer-events: none;
-    background: #17202e;
-    color: #fff;
+    background: var(--surface);
+    color: var(--text);
     z-index: 0;
     overflow: hidden;
 }
@@ -121,13 +121,13 @@
     z-index: 1;
     background: transparent;
     color: transparent;
-    caret-color: #fff;
+    caret-color: var(--text);
     outline: none;
     overflow: auto;
 }
 
 .variable-input-field::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--faint);
 }
 
 .variable-input-field:focus {
@@ -180,7 +180,7 @@
 .code-token--builtin,
 .code-token--class-name,
 .code-token--important {
-    color: #d4a3f9;
+    color: var(--lilac);
     font-weight: 600;
 }
 
@@ -188,43 +188,43 @@
 .code-token--char,
 .code-token--regex,
 .code-token--attr-value {
-    color: #6ee7d8;
+    color: var(--teal);
 }
 
 .code-token--number,
 .code-token--boolean,
 .code-token--symbol {
-    color: #fbbf24;
+    color: var(--warning);
 }
 
 .code-token--function {
-    color: #7fc8f0;
+    color: var(--info);
 }
 
 .code-token--comment,
 .code-token--doc-comment {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--dimmer);
     font-style: italic;
 }
 
 .code-token--operator,
 .code-token--punctuation {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--soft);
 }
 
 .code-token--decorator,
 .code-token--annotation {
-    color: #f9a8d4;
+    color: var(--lilac);
 }
 
 .code-token--variable,
 .code-token--property,
 .code-token--attr-name {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text);
 }
 
 .code-token--tag {
-    color: #fdba74;
+    color: var(--warning);
 }
 
 /* Variable pills in the highlight layer — no padding/border to keep
@@ -246,66 +246,66 @@
    The human-readable label is shown via a ::after pseudo-element
    positioned on top. */
 .variable-pill--secrets {
-    background: rgba(139, 0, 222, 0.35);
-    box-shadow: 0 0 0 2px rgba(139, 0, 222, 0.6);
-    color: #d4a3f9;
-    --pill-color: #d4a3f9;
-    --pill-bg: rgba(139, 0, 222, 0.35);
-    --pill-shadow: 0 0 0 1px rgba(139, 0, 222, 0.6);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--lilac);
+    --pill-color: var(--lilac);
+    --pill-bg: var(--lilac);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--env {
-    background: rgba(0, 170, 156, 0.3);
-    box-shadow: 0 0 0 2px rgba(0, 170, 156, 0.5);
-    color: #6ee7d8;
-    --pill-color: #6ee7d8;
-    --pill-bg: rgba(0, 170, 156, 0.3);
-    --pill-shadow: 0 0 0 1px rgba(0, 170, 156, 0.5);
+    background: rgba(47, 107, 100, 0.12);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--teal);
+    --pill-color: var(--teal);
+    --pill-bg: var(--teal);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--input {
-    background: rgba(72, 171, 224, 0.3);
-    box-shadow: 0 0 0 2px rgba(72, 171, 224, 0.5);
-    color: #7fc8f0;
-    --pill-color: #7fc8f0;
-    --pill-bg: rgba(72, 171, 224, 0.3);
-    --pill-shadow: 0 0 0 1px rgba(72, 171, 224, 0.5);
+    background: var(--info-fill);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--info);
+    --pill-color: var(--info);
+    --pill-bg: var(--info);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--flow {
-    background: rgba(234, 155, 9, 0.15);
-    box-shadow: 0 0 0 2px rgba(234, 155, 9, 0.3);
-    color: #f59e0b;
-    --pill-color: #f59e0b;
-    --pill-bg: rgba(234, 155, 9, 0.15);
-    --pill-shadow: 0 0 0 1px rgba(234, 155, 9, 0.3);
+    background: var(--warning-fill);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--warning);
+    --pill-color: var(--warning);
+    --pill-bg: var(--warning);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--user {
-    background: rgba(244, 114, 182, 0.15);
-    box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.3);
-    color: #f9a8d4;
-    --pill-color: #f9a8d4;
-    --pill-bg: rgba(244, 114, 182, 0.15);
-    --pill-shadow: 0 0 0 1px rgba(244, 114, 182, 0.3);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--lilac);
+    --pill-color: var(--lilac);
+    --pill-bg: var(--lilac);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--credentials {
-    background: rgba(245, 158, 11, 0.25);
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4);
-    color: #fbbf24;
-    --pill-color: #fbbf24;
-    --pill-bg: rgba(245, 158, 11, 0.25);
-    --pill-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
+    background: var(--warning-fill);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--warning);
+    --pill-color: var(--warning);
+    --pill-bg: var(--warning);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-pill--invalid {
-    background: rgba(190, 0, 0, 0.3);
-    box-shadow: 0 0 0 2px rgba(190, 0, 0, 0.6);
-    color: #ff6b6b;
-    --pill-color: #ff6b6b;
-    --pill-bg: rgba(190, 0, 0, 0.3);
-    --pill-shadow: 0 0 0 1px rgba(190, 0, 0, 0.6);
+    background: var(--danger-fill);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--danger);
+    --pill-color: var(--danger);
+    --pill-bg: var(--danger);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 /* Autocomplete dropdown */
@@ -316,10 +316,10 @@
     max-width: 300px;
     max-height: 350px;
     overflow-y: auto;
-    background: #1a1a2e;
-    border: 1px solid rgba(139, 0, 222, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
     border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(70, 45, 84, 0.16);
     padding: 4px;
     animation: floatIn 0.1s ease-out;
 }
@@ -336,7 +336,7 @@
 
 .variable-autocomplete-item:hover,
 .variable-autocomplete-item--selected {
-    background: rgba(139, 0, 222, 0.2);
+    background: var(--surface-2);
 }
 
 .variable-autocomplete-badge {
@@ -350,46 +350,46 @@
 }
 
 .variable-autocomplete-badge--secrets {
-    background: rgba(139, 0, 222, 0.3);
-    color: #d4a3f9;
+    background: var(--surface-2);
+    color: var(--lilac);
 }
 
 .variable-autocomplete-badge--env {
-    background: rgba(0, 170, 156, 0.25);
-    color: #6ee7d8;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 .variable-autocomplete-badge--input {
-    background: rgba(72, 171, 224, 0.25);
-    color: #7fc8f0;
+    background: var(--info-fill);
+    color: var(--info);
 }
 
 .variable-autocomplete-badge--flow {
-    background: rgba(234, 155, 9, 0.2);
-    color: #f59e0b;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .variable-autocomplete-badge--credentials {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
+    background: var(--warning-fill);
+    color: var(--warning);
 }
 
 .variable-pill--var {
-    background: rgba(45, 212, 191, 0.15);
-    box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.3);
-    color: #2dd4bf;
-    --pill-color: #2dd4bf;
-    --pill-bg: rgba(45, 212, 191, 0.15);
-    --pill-shadow: 0 0 0 1px rgba(45, 212, 191, 0.3);
+    background: rgba(47, 107, 100, 0.12);
+    box-shadow: 0 0 0 2px rgba(70, 45, 84, 0.16);
+    color: var(--teal);
+    --pill-color: var(--teal);
+    --pill-bg: var(--teal);
+    --pill-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16);
 }
 
 .variable-autocomplete-badge--var {
-    background: rgba(45, 212, 191, 0.2);
-    color: #2dd4bf;
+    background: rgba(47, 107, 100, 0.12);
+    color: var(--teal);
 }
 
 .variable-autocomplete-source {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 10px;
     margin-left: auto;
     flex-shrink: 0;
@@ -400,7 +400,7 @@
 }
 
 .variable-autocomplete-name {
-    color: #e0e0e0;
+    color: var(--soft);
     font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -412,7 +412,7 @@
    reachable). */
 .variable-autocomplete-empty {
     padding: 8px 10px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--faint);
     font-size: 11px;
     text-align: center;
 }
@@ -429,8 +429,8 @@
     align-items: center;
     gap: 4px;
     padding: 6px 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid var(--rule);
+    background: var(--surface-sunken);
 }
 
 .variable-autocomplete .vp-footer-btn {
@@ -438,10 +438,10 @@
     align-items: center;
     gap: 4px;
     padding: 4px 8px;
-    background: rgba(139, 92, 246, 0.08);
-    border: 1px solid rgba(139, 92, 246, 0.18);
+    background: var(--surface-2);
+    border: 1px solid var(--rule-2);
     border-radius: 4px;
-    color: rgba(196, 181, 253, 0.95);
+    color: var(--lilac);
     font-size: 11px;
     font-family: inherit;
     text-decoration: none;
@@ -450,33 +450,33 @@
 }
 
 .variable-autocomplete .vp-footer-btn:hover {
-    background: rgba(139, 92, 246, 0.18);
-    border-color: rgba(139, 92, 246, 0.3);
-    color: #e5deff;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 .variable-autocomplete .vp-footer-btn--refresh {
     margin-left: auto;
     padding: 4px 6px;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--dim);
+    background: var(--surface-raise);
+    border-color: var(--rule);
 }
 
 .variable-autocomplete .vp-footer-btn--refresh:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.16);
-    color: #e5e7eb;
+    background: var(--surface-hover);
+    border-color: var(--rule-2);
+    color: var(--soft);
 }
 
 .variable-autocomplete .vp-footer-name {
     font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: 10.5px;
-    background: rgba(0, 0, 0, 0.18);
+    background: var(--surface-sunken);
     padding: 1px 4px;
     border-radius: 3px;
     margin-left: 4px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text);
 }
 
 /* Variable mode toggle for non-text inputs.
@@ -531,11 +531,11 @@
     align-items: center;
     justify-content: center;
     border-radius: 0 6px 6px 0;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    border: 1px solid var(--neutral-border);
     border-left: none;
     margin-left: -1px;
-    background: #17202e;
-    color: rgba(255, 255, 255, 0.45);
+    background: var(--surface);
+    color: var(--dimmer);
     cursor: pointer;
     font-size: 18px;
     font-weight: 700;
@@ -546,24 +546,24 @@
 }
 
 .variable-mode-toggle:hover {
-    background: rgba(139, 0, 222, 0.15);
-    border-color: rgba(139, 0, 222, 0.4);
-    color: #d4a3f9;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 /* Standalone variant: free-standing pill next to a checkbox group / similar */
 .variable-mode-toggle--standalone {
     border-radius: 6px;
-    border: 1px solid rgba(107, 114, 128, 0.5);
+    border: 1px solid var(--neutral-border);
     margin-left: 8px;
     align-self: flex-start;
     height: 36px;
 }
 
 .variable-mode-toggle--active {
-    background: rgba(139, 0, 222, 0.25);
-    border-color: rgba(139, 0, 222, 0.6);
-    color: #d4a3f9;
+    background: var(--surface-2);
+    border-color: var(--rule-2);
+    color: var(--lilac);
 }
 
 /* Replaces the previous inline yellow-box warning. When the shared
@@ -576,8 +576,8 @@
 }
 
 .variable-input-field--has-secret {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35) inset;
+    border-color: var(--danger-border) !important;
+    box-shadow: 0 0 0 1px rgba(70, 45, 84, 0.16) inset;
     padding-right: 32px;
 }
 
@@ -589,7 +589,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #ef4444;
+    color: var(--danger);
     pointer-events: auto;
     cursor: help;
 }
@@ -605,12 +605,12 @@
    get the explanation. role="alert" makes screen readers announce it
    when it appears. */
 .variable-input-secret-message {
-    color: #ef4444;
+    color: var(--danger);
     font-size: 11px;
     line-height: 1.4;
     margin-top: 4px;
     padding: 6px 10px;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: var(--danger-fill);
+    border: 1px solid var(--danger-border);
     border-radius: 4px;
 }

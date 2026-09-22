@@ -191,7 +191,7 @@ export default function AgentDetail() {
             <Container>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
-                    <Icon name="spinner" spin size="2em" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
                 </div>
                 </ProtectedRoute>
             </Container>
@@ -217,7 +217,7 @@ export default function AgentDetail() {
                         <button className="agent-action-btn" onClick={() => navigate('/agent')} title="Back to agents">
                             <Icon name="arrow-left" />
                         </button>
-                        <Icon name="robot" style={{ color: '#c084fc', fontSize: 20 }} />
+                        <Icon name="robot" style={{ color: 'var(--lilac)', fontSize: 20 }} />
                         <div>
                             <h1>{agent.name}</h1>
                             <div className="agent-id-row">
@@ -280,7 +280,7 @@ export default function AgentDetail() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         fontSize: 13,
-                        color: 'rgba(245,158,11,0.9)',
+                        color: 'var(--warning)',
                     }}>
                         <span>
                             <Icon name="exclamation-triangle" style={{ marginRight: 8 }} />
@@ -293,7 +293,7 @@ export default function AgentDetail() {
                                 borderRadius: 6,
                                 padding: '4px 12px',
                                 cursor: 'pointer',
-                                color: 'rgba(245,158,11,0.9)',
+                                color: 'var(--warning)',
                                 fontSize: 12,
                             }}
                             onClick={() => { handleStop(); setTimeout(handleStart, 2000); }}
@@ -342,7 +342,7 @@ export default function AgentDetail() {
                                             className={`flow-autocomplete-option ${!orchestratorFlowId ? 'flow-autocomplete-option--selected' : ''}`}
                                             onClick={() => { setOrchestratorFlowId(''); setShowFlowDropdown(false); }}
                                         >
-                                            <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>None — no flow triggered on messages</span>
+                                            <span style={{ color: 'var(--faint)', fontStyle: 'italic' }}>None — no flow triggered on messages</span>
                                         </div>
                                         {filteredFlows.map(f => (
                                             <div
@@ -360,7 +360,7 @@ export default function AgentDetail() {
                                     </div>
                                 )}
                             </div>
-                            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 4, display: 'block' }}>
+                            <span style={{ fontSize: 12, color: 'var(--faint)', marginTop: 4, display: 'block' }}>
                                 This flow will be triggered each time the agent receives a message.
                             </span>
                         </div>
@@ -379,7 +379,7 @@ export default function AgentDetail() {
                                 onChange={e => setAiApiKey(e.target.value)}
                                 placeholder="sk-ant-..."
                             />
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4, display: 'block' }}>
+                            <span style={{ fontSize: 11, color: 'var(--faint)', marginTop: 4, display: 'block' }}>
                                 Anthropic API key used by the agent's memory extraction pipeline. Required for automatic memory, commitment, and preference detection.
                             </span>
                         </div>
@@ -449,8 +449,8 @@ export default function AgentDetail() {
                                         <div className="agent-session-stats">
                                             <span>{session.message_count || 0} messages</span>
                                             <span>{session.execution_count || 0} executions</span>
-                                            {session.status === 'active' && <span style={{ color: '#00aa9c' }}>Active</span>}
-                                            {session.status === 'crashed' && <span style={{ color: '#f44336' }}>Crashed</span>}
+                                            {session.status === 'active' && <span style={{ color: 'var(--teal)' }}>Active</span>}
+                                            {session.status === 'crashed' && <span style={{ color: 'var(--danger)' }}>Crashed</span>}
                                         </div>
                                     </div>
                                 </div>

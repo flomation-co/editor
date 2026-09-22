@@ -17,7 +17,7 @@ const QRProperty = (props: PropertyProps) => {
                     value={url + "/qr/" + props.id}
                     style={{height: "auto", maxWidth: "100%", width: "100%", padding: "10px"}}
                     id={props.id + "-img"} />
-                <pre style={{fontSize: "10px", wordBreak: "break-all", whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.5)"}}>
+                <pre style={{fontSize: "10px", wordBreak: "break-all", whiteSpace: "pre-wrap", color: "var(--dim)"}}>
                     {url + "/qr/" + props.id}
                 </pre>
             </div>

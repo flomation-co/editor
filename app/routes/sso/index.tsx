@@ -415,10 +415,10 @@ function GroupPicker({ connId, apiBase, token, value, onChange }: {
             />
             {open && (
                 <div className="sso-group-dropdown">
-                    {loading && <div className="sso-group-item sso-group-item--muted">Searching…</div>}
-                    {!loading && !supported && <div className="sso-group-item sso-group-item--muted">Group search isn't available for this provider — type the group name/id.</div>}
-                    {!loading && supported && err && <div className="sso-group-item sso-group-item--muted">{err}</div>}
-                    {!loading && supported && !err && results.length === 0 && <div className="sso-group-item sso-group-item--muted">No matching groups — type a name/id to enter it manually.</div>}
+                    {loading && <div className="sso-group-item sso-group-item--ink-muted">Searching…</div>}
+                    {!loading && !supported && <div className="sso-group-item sso-group-item--ink-muted">Group search isn't available for this provider — type the group name/id.</div>}
+                    {!loading && supported && err && <div className="sso-group-item sso-group-item--ink-muted">{err}</div>}
+                    {!loading && supported && !err && results.length === 0 && <div className="sso-group-item sso-group-item--ink-muted">No matching groups — type a name/id to enter it manually.</div>}
                     {!loading && results.map(g => (
                         <button key={g.id} className="sso-group-item" onMouseDown={e => { e.preventDefault(); onChange({ idp_group: g.id, idp_group_label: g.name }); setQ(""); setOpen(false); }}>
                             <span className="sso-group-name">{g.name}</span>
