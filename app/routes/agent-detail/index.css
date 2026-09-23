@@ -856,3 +856,52 @@
 .agent-restart-btn:hover {
     border-color: var(--warning);
 }
+
+.agent-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.agent-avatar-preview {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-sunken);
+    border: 1px solid var(--rule-2);
+    color: var(--faint);
+    font-size: 24px;
+}
+
+.agent-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.agent-avatar-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.agent-avatar-hint {
+    flex-basis: 100%;
+    font-size: 11px;
+    color: var(--faint);
+}
+
+.flow-autocomplete-option--create {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--action);
+    font-weight: 500;
+    border-bottom: 1px solid var(--rule);
+}

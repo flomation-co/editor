@@ -4,6 +4,7 @@ import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
 import CodeArea from "~/components/codeArea";
+import {fileToAvatarDataURL} from "~/lib/avatar";
 import type {Agent, AgentChannel, Flo} from "~/types";
 import useCookieToken from "~/components/cookie";
 import {useParams, useNavigate} from "react-router";
@@ -66,7 +67,11 @@ export default function AgentSettings() {
     const [flowSearch, setFlowSearch] = useState('');
     const [showFlowDropdown, setShowFlowDropdown] = useState(false);
     const [needsRestart, setNeedsRestart] = useState(false);
+    const [avatar, setAvatar] = useState<string>('');
+    const [avatarError, setAvatarError] = useState<string>('');
+    const [creatingFlow, setCreatingFlow] = useState(false);
     const flowDropdownRef = useRef<HTMLDivElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
     const flowsUrl = config("AUTOMATE_API_URL") + '/api/v1/flo';
@@ -81,6 +86,7 @@ export default function AgentSettings() {
                     setName(a.name);
                     setDescription(a.description || '');
                     setSystemPrompt(a.system_prompt || '');
+                    setAvatar(a.avatar || '');
                     setAiApiKey(a.ai_api_key || '');
                     setExtractionProvider(a.extraction_provider || 'anthropic');
                     setIdleTimeout(a.idle_timeout_seconds);
@@ -126,6 +132,7 @@ export default function AgentSettings() {
             name,
             description: description || null,
             system_prompt: systemPrompt || null,
+            avatar: avatar || null,
             ai_api_key: aiApiKey || null,
             extraction_provider: extractionProvider,
             idle_timeout_seconds: idleTimeout,
@@ -141,6 +148,35 @@ export default function AgentSettings() {
             })
             .catch(error => console.error(error))
             .finally(() => setSaving(false));
+    };
+
+    const handleAvatarChange = async (file: File | undefined) => {
+        if (!file) return;
+        setAvatarError('');
+        try {
+            setAvatar(await fileToAvatarDataURL(file));
+        } catch (error: any) {
+            setAvatarError(error?.message || 'That image could not be used.');
+        }
+    };
+
+    // An agent needs a flow to act on, and making one first then coming
+    // back to wire it up is a detour nobody wants. A blank flow created
+    // here is immediately selected, so the agent is complete and the
+    // flow can be built later.
+    const handleCreateBlankFlow = () => {
+        setCreatingFlow(true);
+        api.post(flowsUrl, { name: `${name || 'Agent'} Orchestrator` }, { headers })
+            .then(response => {
+                const created = response?.data;
+                if (created?.id) {
+                    setOrchestratorFlowId(created.id);
+                    setShowFlowDropdown(false);
+                    loadFlows();
+                }
+            })
+            .catch(error => console.error(error))
+            .finally(() => setCreatingFlow(false));
     };
 
     const handleRestart = () => {
@@ -229,6 +265,48 @@ export default function AgentSettings() {
                 {activeTab === 'config' && (
                     <div>
                         <div className="agent-form-group">
+                            <label className="agent-form-label">Avatar</label>
+                            <div className="agent-avatar-row">
+                                <div className="agent-avatar-preview">
+                                    {avatar
+                                        ? <img src={avatar} alt="" />
+                                        : <Icon name="robot" />}
+                                </div>
+                                <div className="agent-avatar-actions">
+                                    <input
+                                        ref={avatarInputRef}
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/gif,image/webp"
+                                        style={{ display: 'none' }}
+                                        onChange={e => {
+                                            handleAvatarChange(e.target.files?.[0]);
+                                            e.target.value = '';
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="agent-action-btn"
+                                        onClick={() => avatarInputRef.current?.click()}
+                                    >
+                                        <Icon name="cloud-arrow-up" /> {avatar ? 'Replace' : 'Upload'}
+                                    </button>
+                                    {avatar && (
+                                        <button
+                                            type="button"
+                                            className="agent-action-btn"
+                                            onClick={() => { setAvatar(''); setAvatarError(''); }}
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                    <span className="agent-avatar-hint">
+                                        {avatarError || 'PNG, JPEG, GIF or WebP. Cropped square and scaled down for you.'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="agent-form-group">
                             <label className="agent-form-label">Name</label>
                             <input className="agent-form-input" value={name} onChange={e => setName(e.target.value)} placeholder="Agent name" />
                         </div>
@@ -250,6 +328,13 @@ export default function AgentSettings() {
                                 />
                                 {showFlowDropdown && (
                                     <div className="flow-autocomplete-dropdown">
+                                        <div
+                                            className="flow-autocomplete-option flow-autocomplete-option--create"
+                                            onClick={handleCreateBlankFlow}
+                                        >
+                                            <Icon name={creatingFlow ? 'spinner' : 'plus'} spin={creatingFlow} />
+                                            Create a new blank flow
+                                        </div>
                                         <div
                                             className={`flow-autocomplete-option ${!orchestratorFlowId ? 'flow-autocomplete-option--selected' : ''}`}
                                             onClick={() => { setOrchestratorFlowId(''); setShowFlowDropdown(false); }}

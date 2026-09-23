@@ -23,9 +23,17 @@
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     font-size: 13px;
     line-height: var(--code-area-line);
+    box-sizing: border-box;
+}
+
+/* Only the two layers holding the TEXT wrap. The gutter deliberately
+   does not: it holds nothing but numbers, and pre-wrap there would
+   render the whitespace between its rows as extra line boxes, pushing
+   every number out of step with the line it labels. */
+.code-area-field,
+.code-area-mirror {
     white-space: pre-wrap;
     word-break: break-word;
-    box-sizing: border-box;
 }
 
 .code-area-field {

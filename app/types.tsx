@@ -437,6 +437,7 @@ export type Agent = {
     id: string,
     name: string,
     description?: string,
+    avatar?: string,
     owner_id: string,
     organisation_id?: string,
     environment_id?: string,

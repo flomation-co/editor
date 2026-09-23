@@ -70,16 +70,39 @@ export default function Agents() {
 
     useEffect(() => { queryAgents(); }, []);
 
-    const handleCreateAgent = () => {
-        api.post(url, { name: "New Agent" }, {
-            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }
-        })
-            .then(response => {
-                if (response?.data?.id) {
-                    navigate(`/agent/${response.data.id}`);
-                }
-            })
-            .catch(error => console.error(error));
+    // A new agent gets a blank orchestrator flow of its own. An agent
+    // without one does nothing when it receives a message, and making
+    // the flow first then coming back to wire it up is a detour that
+    // taught nobody anything.
+    const handleCreateAgent = async () => {
+        const headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
+        const name = "New Agent";
+        try {
+            let orchestratorFlowId: string | null = null;
+            try {
+                const flow = await api.post(
+                    config("AUTOMATE_API_URL") + '/api/v1/flo',
+                    { name: `${name} Orchestrator` },
+                    { headers },
+                );
+                orchestratorFlowId = flow?.data?.id || null;
+            } catch (error) {
+                // A flow we could not create is not worth losing the
+                // agent over — it can be chosen or created in settings.
+                console.error(error);
+            }
+
+            const response = await api.post(url, {
+                name,
+                ...(orchestratorFlowId ? { orchestrator_flow_id: orchestratorFlowId } : {}),
+            }, { headers });
+
+            if (response?.data?.id) {
+                navigate(`/agent/${response.data.id}`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
@@ -122,11 +145,13 @@ export default function Agents() {
                             onClick={() => navigate(`/agent/${agent.id}`)}
                         >
                             <div className={`agent-card-indicator agent-card-indicator--${agent.status}`} />
+                            <div className="agent-card-avatar">
+                                {agent.avatar
+                                    ? <img src={agent.avatar} alt="" />
+                                    : <Icon name="robot" />}
+                            </div>
                             <div className="agent-card-info">
-                                <div className="agent-card-name">
-                                    <Icon name="robot" className="agent-card-icon" />
-                                    {agent.name}
-                                </div>
+                                <div className="agent-card-name">{agent.name}</div>
                                 {agent.description && (
                                     <div className="agent-card-description">{agent.description}</div>
                                 )}
