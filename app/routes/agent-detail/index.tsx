@@ -166,6 +166,15 @@ export default function AgentDetail() {
                                 </button>
                             </>
                         )}
+                        {agent.orchestrator_flow_id && (
+                            <button
+                                className="agent-action-btn"
+                                onClick={() => navigate(`/flo/${agent.orchestrator_flow_id}`)}
+                                title={agent.orchestrator_flow_name || 'Open the orchestrator flow'}
+                            >
+                                <Icon name="diagram-project" /> Flow
+                            </button>
+                        )}
                         <button className="agent-action-btn" onClick={() => navigate(`/agent/${id}/settings`)} title="Agent settings">
                             <Icon name="gear" /> Settings
                         </button>

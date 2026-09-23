@@ -905,3 +905,25 @@
     font-weight: 500;
     border-bottom: 1px solid var(--rule);
 }
+
+.agent-form-label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.agent-form-label-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--action);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.agent-form-label-link:hover {
+    text-decoration: underline;
+}

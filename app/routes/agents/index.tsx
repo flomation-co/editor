@@ -159,7 +159,19 @@ export default function Agents() {
                                 )}
                                 {agent.orchestrator_flow_name && (
                                     <div className="agent-card-details">
-                                        <span><Icon name="diagram-project" /> {agent.orchestrator_flow_name}</span>
+                                        {/* Stop propagation so opening the flow does not
+                                            also open the agent behind it. */}
+                                        <a
+                                            className="agent-card-flow"
+                                            href={`/flo/${agent.orchestrator_flow_id}`}
+                                            onClick={e => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                navigate(`/flo/${agent.orchestrator_flow_id}`);
+                                            }}
+                                        >
+                                            <Icon name="diagram-project" /> {agent.orchestrator_flow_name}
+                                        </a>
                                     </div>
                                 )}
                             </div>
