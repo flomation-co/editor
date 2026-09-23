@@ -437,19 +437,19 @@ export type Agent = {
     id: string,
     name: string,
     description?: string,
+    avatar?: string,
     owner_id: string,
     organisation_id?: string,
     environment_id?: string,
     queue_id?: string,
     system_prompt?: string,
     orchestrator_flow_id?: string,
-    max_concurrent_executions: number,
+    ai_api_key?: string,
+    extraction_provider?: string,
     idle_timeout_seconds: number,
     prior_conversation_count?: number,
     channels: AgentChannel[],
     allowed_flow_ids?: string[],
-    requires_approval: boolean,
-    max_executions_per_hour: number,
     status: 'stopped' | 'running' | 'paused' | 'error',
     started_at?: string,
     stopped_at?: string,
@@ -512,13 +512,6 @@ export type AgentMessage = {
     metadata?: Record<string, any>,
     execution_id?: string,
     created_at: string,
-}
-
-export type AgentState = {
-    agent_id: string,
-    state_key: string,
-    state_value: any,
-    updated_at: string,
 }
 
 export type AgentMemory = {
