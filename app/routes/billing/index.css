@@ -571,7 +571,7 @@
 .billing-modal-overlay {
     position: fixed;
     inset: 0;
-    background: var(--surface);
+    background: var(--scrim);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
