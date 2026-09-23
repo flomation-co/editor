@@ -157,6 +157,18 @@
      Black shadows on a lilac ground read as dirt. */
   --lift: 0 1px 2px rgba(70, 45, 84, 0.06), 0 8px 24px -12px rgba(70, 45, 84, 0.18);
   --lift-panel: 0 1px 2px rgba(70, 45, 84, 0.05), 0 18px 48px -22px rgba(70, 45, 84, 0.34);
+  /* The veil behind a modal.
+   *
+   * These were black at 0.3 to 0.85, which is what a dark app needs to push
+   * its own background down. On paper the job is the opposite: the page should
+   * still read as the page, just quieter and out of focus, so this is the page
+   * ink at low alpha and the blur does the rest of the work.
+   *
+   * The mop-up had turned every one of them into an opaque surface, because a
+   * near-black fill looks like a dark panel if you ignore its alpha. Eleven
+   * modals were painting a solid sheet over the app. */
+  --scrim: rgba(52, 42, 56, 0.26);
+
   --lift-modal: 0 2px 6px rgba(70, 45, 84, 0.08), 0 32px 72px -28px rgba(70, 45, 84, 0.42);
 
   /* ---- Type ----------------------------------------------------------- */

@@ -5,7 +5,7 @@
 .tutorial-overlay {
     position: fixed;
     inset: 0;
-    background: var(--surface);
+    background: var(--scrim);
     z-index: 998;
     pointer-events: none;
     animation: tutorialFadeIn 0.3s ease-out;
