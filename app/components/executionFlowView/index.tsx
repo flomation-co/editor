@@ -132,7 +132,7 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
 
     // Style edges: mute untaken branches + all downstream, animate active edges
     const styledEdges = useMemo(() => {
-        const mutedStyle = { stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1 };
+        const mutedStyle = { stroke: 'rgba(70, 45, 84, 0.22)', strokeWidth: 1 };
 
         // Step 1: find directly untaken edges (from conditional/switch outputs)
         const untakenTargets = new Set<string>();
@@ -193,12 +193,12 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
 
             // Active: target is running → marching ants (only if source actually ran)
             if (targetStatus?.status === 'running') {
-                return { ...edge, animated: true, style: { stroke: '#00aa9c', strokeWidth: 2 } };
+                return { ...edge, animated: true, style: { stroke: '#2f6b64', strokeWidth: 2 } };
             }
 
             // Suspended: amber, no animation (static dotted)
             if (targetStatus?.status === 'suspended') {
-                return { ...edge, animated: false, style: { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '5 3' } };
+                return { ...edge, animated: false, style: { stroke: '#8a5300', strokeWidth: 2, strokeDasharray: '5 3' } };
             }
 
             // Completed successfully: bright green trace
@@ -214,7 +214,7 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
 
             // Partially executed (source done, target still running or waiting)
             if (sourceCompleted && targetStatus && targetStatus.status !== 'pending') {
-                return { ...edge, style: { stroke: 'rgba(255,255,255,0.35)', strokeWidth: 1.5 } };
+                return { ...edge, style: { stroke: 'var(--xy-edge-stroke)', strokeWidth: 1.5 } };
             }
 
             return edge;
@@ -235,10 +235,11 @@ const ExecutionFlowViewInner = forwardRef<ExecutionFlowViewHandle, ExecutionFlow
                 elementsSelectable={false}
                 panOnDrag={true}
                 zoomOnScroll={true}
-                defaultEdgeOptions={{ type: 'simplebezier', style: { stroke: 'rgba(255,255,255,0.4)', strokeWidth: 1 } }}
+                defaultEdgeOptions={{ type: 'simplebezier', style: { stroke: 'var(--xy-edge-stroke)', strokeWidth: 1 } }}
                 proOptions={{ hideAttribution: true }}
             >
-                <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="rgba(255,255,255,0.05)" />
+                <Background variant={BackgroundVariant.Dots} gap={20} size={1}
+                            color="var(--xy-background-dot-colour)" bgColor="var(--bg)" />
             </ReactFlow>
         </div>
     );
