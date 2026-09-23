@@ -238,3 +238,16 @@
     background: var(--action-hover);
     border-color: var(--rule-2);
 }
+
+.agent-card-flow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--faint);
+    text-decoration: none;
+}
+
+.agent-card-flow:hover {
+    color: var(--action);
+    text-decoration: underline;
+}

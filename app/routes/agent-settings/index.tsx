@@ -317,7 +317,18 @@ export default function AgentSettings() {
                         </div>
 
                         <div className="agent-form-group" ref={flowDropdownRef}>
-                            <label className="agent-form-label">Orchestrator Flow</label>
+                            <div className="agent-form-label-row">
+                                <label className="agent-form-label">Orchestrator Flow</label>
+                                {orchestratorFlowId && (
+                                    <a
+                                        className="agent-form-label-link"
+                                        href={`/flo/${orchestratorFlowId}`}
+                                        onClick={e => { e.preventDefault(); navigate(`/flo/${orchestratorFlowId}`); }}
+                                    >
+                                        <Icon name="diagram-project" /> Open flow
+                                    </a>
+                                )}
+                            </div>
                             <div className="flow-autocomplete">
                                 <input
                                     className="agent-form-input"
