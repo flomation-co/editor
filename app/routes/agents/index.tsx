@@ -4,7 +4,7 @@ import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState} from "react";
-import type {Agent, AgentChannel} from "~/types";
+import type {Agent} from "~/types";
 import useCookieToken from "~/components/cookie";
 import {useNavigate} from "react-router";
 import dayjs from "dayjs";
@@ -23,22 +23,6 @@ export function meta({}: Route.MetaArgs) {
         { title: "Flomation - Agents" },
         { name: "description", content: "Manage autonomous agents" },
     ];
-}
-
-const CHANNEL_ICONS: Record<string, any> = {
-    telegram: "telegram",
-    slack: "slack",
-    email: "envelope",
-    webhook: "globe",
-    facebook_messenger: "facebook",
-};
-
-function ChannelIcon({ type }: { type: string }) {
-    return (
-        <div className="agent-channel-icon" title={type}>
-            <Icon name={CHANNEL_ICONS[type] || "comment"} />
-        </div>
-    );
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -146,21 +130,11 @@ export default function Agents() {
                                 {agent.description && (
                                     <div className="agent-card-description">{agent.description}</div>
                                 )}
-                                <div className="agent-card-details">
-                                    <div className="agent-channels">
-                                        {(agent.channels || []).map((ch: AgentChannel, i: number) => (
-                                            <ChannelIcon key={i} type={ch.type} />
-                                        ))}
-                                        {(!agent.channels || agent.channels.length === 0) && (
-                                            <span>No channels</span>
-                                        )}
-                                    </div>
-                                    <span><Icon name="comment" /> {agent.message_count || 0} messages</span>
-                                    <span><Icon name="bolt" /> {agent.execution_count || 0} executions</span>
-                                    {agent.orchestrator_flow_name && (
+                                {agent.orchestrator_flow_name && (
+                                    <div className="agent-card-details">
                                         <span><Icon name="diagram-project" /> {agent.orchestrator_flow_name}</span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="agent-card-meta">
                                 <span className={`agent-card-badge agent-card-badge--${agent.status}`}>

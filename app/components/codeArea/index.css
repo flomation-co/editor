@@ -1,0 +1,81 @@
+/* The gutter, the field and the hidden mirror must share one line box
+   and one font, or the measured heights won't match what the textarea
+   actually renders. Everything below derives from these two. */
+.code-area {
+    --code-area-line: 20px;
+    --code-area-gutter: 48px;
+    --code-area-pad: 10px;
+
+    position: relative;
+    border: 1px solid var(--rule-2);
+    border-radius: 8px;
+    background: var(--surface-sunken);
+    overflow: hidden;
+}
+
+.code-area:focus-within {
+    border-color: var(--action);
+}
+
+.code-area-field,
+.code-area-mirror,
+.code-area-gutter {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    line-height: var(--code-area-line);
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-sizing: border-box;
+}
+
+.code-area-field {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: var(--code-area-pad) 14px var(--code-area-pad) calc(var(--code-area-gutter) + 12px);
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: transparent;
+    color: var(--text);
+    overflow-y: auto;
+}
+
+.code-area-field::placeholder {
+    color: var(--faint);
+}
+
+.code-area-gutter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--code-area-gutter);
+    height: 100%;
+    padding: var(--code-area-pad) 8px var(--code-area-pad) 0;
+    border-right: 1px solid var(--rule);
+    background: var(--surface);
+    color: var(--faint);
+    text-align: right;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+}
+
+/* Height comes from the mirror. Until the first measurement lands, one
+   row is the right guess for the overwhelming majority of lines. */
+.code-area-gutter-line {
+    min-height: var(--code-area-line);
+    overflow: hidden;
+}
+
+/* Laid out in the same box as the field so it wraps identically, but
+   never painted. It only exists to be measured. */
+.code-area-mirror {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: var(--code-area-pad) 14px var(--code-area-pad) calc(var(--code-area-gutter) + 12px);
+    visibility: hidden;
+    pointer-events: none;
+}
