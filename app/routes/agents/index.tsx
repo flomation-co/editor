@@ -98,7 +98,9 @@ export default function Agents() {
             }, { headers });
 
             if (response?.data?.id) {
-                navigate(`/agent/${response.data.id}`);
+                // A new agent has nothing to look at yet — no sessions,
+                // no memory, no plans. Settings is where the work is.
+                navigate(`/agent/${response.data.id}/settings`);
             }
         } catch (error) {
             console.error(error);
