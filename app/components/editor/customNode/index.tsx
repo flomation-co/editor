@@ -94,9 +94,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     const isSubFlowNode = isSubFlowBegin || isSubFlowEnd || data?.label === 'subflow/invoke' || data?.config?.plugin === 'subflow/invoke';
 
     const colours = isErrorNode
-        ? { bg: '#ef4444', bgAlpha: 'rgba(239,68,68,0.15)', glow: 'rgba(239,68,68,0.35)', text: '#ef4444', iconColour: '#f87171' }
+        ? { bg: '#a8212f', bgAlpha: 'rgba(168,33,47,0.15)', glow: 'rgba(168,33,47,0.35)', text: '#a8212f', iconColour: '#f87171' }
         : isSubFlowNode
-        ? { bg: '#10b981', bgAlpha: 'rgba(16,185,129,0.15)', glow: 'rgba(16,185,129,0.35)', text: '#10b981', iconColour: '#34d399' }
+        ? { bg: '#1b6d45', bgAlpha: 'rgba(27,109,69,0.15)', glow: 'rgba(27,109,69,0.35)', text: '#1b6d45', iconColour: '#34d399' }
         : (NODE_COLOURS[type] ?? NODE_COLOURS[2]);
     const nodeClass = isErrorNode ? 'flo-node flo-node--error'
         : isSubFlowNode ? 'flo-node flo-node--subflow'
@@ -194,11 +194,11 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
     // covers the rare case where the context map hasn't populated
     // yet (e.g. first render before the editor's memo settles).
     const effectiveColours = validationProblem?.kind === "secret"
-        ? { ...colours, bg: '#ef4444', glow: 'rgba(239,68,68,0.45)' }
+        ? { ...colours, bg: '#a8212f', glow: 'rgba(168,33,47,0.45)' }
         : validationProblem?.kind === "unresolved"
-            ? { ...colours, bg: '#ef4444', glow: 'rgba(239,68,68,0.35)' }
+            ? { ...colours, bg: '#a8212f', glow: 'rgba(168,33,47,0.35)' }
             : (validationProblem?.kind === "required" || hasIncompleteRequired)
-                ? { ...colours, bg: '#e6a817', glow: 'rgba(230,168,23,0.35)' }
+                ? { ...colours, bg: '#8a5300', glow: 'rgba(138,83,0,0.35)' }
                 : colours;
     let effectiveClass = validationProblem?.kind === "secret"
         ? `${nodeClass} flo-node--secret-error`
@@ -308,9 +308,9 @@ const CustomNode = memo(({ data }: { data: NodeDefinition }) => {
                     const handleSpacing = 28;
                     const startOffset = 14;
                     const handles = [
-                        { id: 'output', label: 'Response', icon: 'comment', color: 'rgba(255,255,255,0.55)' },
-                        { id: 'tools', label: 'Tools', icon: 'wrench', color: 'rgba(245,158,11,0.8)' },
-                        { id: 'no_response', label: 'Finished', icon: 'circle-check', color: 'rgba(255,255,255,0.45)', italic: true },
+                        { id: 'output', label: 'Response', icon: 'comment', color: 'var(--soft)' },
+                        { id: 'tools', label: 'Tools', icon: 'wrench', color: 'rgba(138,83,0,0.8)' },
+                        { id: 'no_response', label: 'Finished', icon: 'circle-check', color: 'var(--soft)', italic: true },
                     ];
                     return (
                         <>
