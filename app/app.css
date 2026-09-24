@@ -97,15 +97,38 @@ body {
 .flo-container {
   width: 100%;
   min-width: 0;
-  padding: 12px;
+  padding: 16px 16px calc(72px + env(safe-area-inset-bottom, 0px));
   overflow-y: scroll;
   overflow-x: hidden;
 }
 
+/* The bottom padding above clears the feedback button, which is a round
+   corner button on a phone. Without it the last row of any list sits
+   underneath it. */
 @media (min-width: 768px) {
   .flo-container {
     padding: 25px;
   }
+}
+
+/* A horizontally scrollable strip of tabs or controls. On a narrow screen
+   a row that does not fit has to go somewhere: wrapping reflows the page
+   every time a label changes length, so these scroll instead. The strip
+   bleeds to the screen edge so a half-visible tab shows there is more,
+   and the scrollbar itself is hidden because it lands on top of the tabs. */
+.flo-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.flo-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+.flo-scroll-x > * {
+  flex: 0 0 auto;
 }
 
 .page-row-container {
@@ -187,6 +210,27 @@ body {
   padding: 0 20px;
   border-collapse: separate;
   border-spacing: 0;
+}
+
+/* 40px of side padding is a lot of a phone, and a table that does not fit
+   is CLIPPED rather than scrolled, because the page container hides its
+   horizontal overflow. Anything in the last column — which is usually the
+   actions — becomes unreachable. */
+@media (max-width: 767px) {
+  .flo-table {
+    padding: 0;
+  }
+
+  .flo-table > tbody > tr > td,
+  .flo-table-head > tr > th {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .flo-table > tbody > tr > td:first-child,
+  .flo-table-head > tr > th:first-child {
+    padding-left: 10px;
+  }
 }
 
 .flo-table > tbody > tr {

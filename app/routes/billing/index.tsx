@@ -903,7 +903,7 @@ export default function Billing() {
             />
 
             <div className="billing-page">
-                <div className="billing-tabs">
+                <div className="billing-tabs flo-scroll-x">
                     <button className={`billing-tab ${activeTab === "subscription" ? "active" : ""}`} onClick={() => setActiveTab("subscription")}>
                         <Icon name="star" /> Subscription
                     </button>

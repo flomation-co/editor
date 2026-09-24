@@ -84,11 +84,21 @@
 
 .org-member-name {
     flex: 1;
+    /* Without this a flex item refuses to shrink below its content, so a
+       long owner line pushed the status badge off the right edge where it
+       was clipped by the page container. */
+    min-width: 0;
     font-size: 14px;
     color: var(--soft);
     display: flex;
     flex-direction: column;
     gap: 1px;
+}
+
+.org-member-name > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .org-member-email {

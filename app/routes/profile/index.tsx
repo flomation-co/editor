@@ -496,7 +496,7 @@ export default function Profile() {
             <div className={"header"}>Settings</div>
 
             <div className="profile-page">
-                <div className="profile-tabs">
+                <div className="profile-tabs flo-scroll-x">
                     <button
                         className={`profile-tab ${activeTab === "account" ? "active" : ""}`}
                         onClick={() => setActiveTab("account")}

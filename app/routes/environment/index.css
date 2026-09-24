@@ -1085,6 +1085,7 @@
 }
 .aws-perms-edit {
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     align-items: stretch;
 }

@@ -4,9 +4,27 @@
 
 .agent-detail-header {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+}
+
+/* The title and the actions each take the full width on a phone rather
+   than fighting over one row: an agent name of any length pushed the
+   Start/Stop buttons off the right edge, where they could not be
+   reached at all. */
+@media (max-width: 767px) {
+    .agent-detail-title,
+    .agent-detail-actions {
+        flex: 1 0 100%;
+        min-width: 0;
+    }
+
+    .agent-detail-actions {
+        flex-wrap: wrap;
+    }
 }
 
 .agent-detail-title {
@@ -15,8 +33,13 @@
     gap: 12px;
 }
 
+.agent-detail-title > div {
+    min-width: 0;
+}
+
 .agent-detail-title h1 {
     font-size: 22px;
+    overflow-wrap: anywhere;
     font-weight: 600;
     color: var(--text);
     margin: 0;
@@ -34,6 +57,14 @@
     color: var(--faint);
     font-family: monospace;
     letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.agent-id-row {
+    min-width: 0;
 }
 
 .agent-id-copy {
@@ -120,6 +151,22 @@
     gap: 0;
     border-bottom: 1px solid var(--rule);
     margin-bottom: 24px;
+}
+
+/* Five tabs do not fit across a phone. They scroll, bleeding to the
+   screen edge so a clipped tab shows there is more to reach. */
+@media (max-width: 767px) {
+    .agent-tabs {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .agent-tab {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
 }
 
 .agent-tab {

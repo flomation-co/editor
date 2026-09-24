@@ -1,6 +1,7 @@
 .exec-controls-bar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 16px;
     padding: 0 20px;
     margin-bottom: 8px;
@@ -63,6 +64,41 @@
     gap: 10px;
     padding: 0 20px;
     margin-bottom: 16px;
+}
+
+/* A label plus five interval buttons is wider than a phone. The label
+   takes its own line and the buttons scroll, so the longest interval is
+   still reachable instead of sitting past the edge. */
+@media (max-width: 767px) {
+    .exec-controls-bar,
+    .exec-refresh-bar {
+        padding-left: 0;
+        padding-right: 0;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .exec-refresh-bar-label,
+    .exec-view-mode-label {
+        flex: 1 0 100%;
+    }
+
+    .exec-refresh-options,
+    .exec-view-mode-options {
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .exec-refresh-options::-webkit-scrollbar,
+    .exec-view-mode-options::-webkit-scrollbar {
+        display: none;
+    }
+
+    .exec-view-mode-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
 }
 
 .exec-refresh-bar-label {
@@ -150,6 +186,17 @@
 .exec-name-cell {
     max-width: 260px;
     width: 260px;
+}
+
+/* A fixed 260px name column plus the actions column is wider than a phone,
+   so the actions were clipped off the edge. max-width:0 is the table
+   idiom for "take what is left and ellipsise" — the cell shrinks and the
+   title inside it truncates. */
+@media (max-width: 767px) {
+    .exec-name-cell {
+        width: auto;
+        max-width: 0;
+    }
 }
 
 /* Name cell: title on one line (never wraps), execution id beneath it. */

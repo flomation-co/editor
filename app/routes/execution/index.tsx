@@ -580,7 +580,7 @@ export default function ExecutionDetail() {
                         {detailPanelOpen && (
                             <div className="exec-detail-panel">
                                 <div className="exec-detail-panel-header">
-                                    <div className="exec-detail-panel-tabs">
+                                    <div className="exec-detail-panel-tabs flo-scroll-x">
                                         <button
                                             className={`exec-detail-panel-tab ${detailTab === 'inputs' ? 'active' : ''}`}
                                             onClick={() => setDetailTab('inputs')}
