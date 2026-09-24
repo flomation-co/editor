@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useMemo, useRef} from "react";
@@ -132,6 +133,17 @@ function getChannelName(actionType: string): string {
     if (actionType.includes('email')) return 'Email';
     return 'Message';
 }
+
+const AGENT_SESSION_HELP: HelpContent = {
+    title: "About this Session",
+    intro: "A session is one stretch of an agent being awake. This is the conversation it had and the work it set off during that time.",
+    points: [
+        "Read the messages in the order they arrived",
+        "See which runs the agent started, and how they ended",
+        "Follow how it got from a question to an action",
+    ],
+    tip: "A session ends when the agent is stopped or goes quiet for long enough. The next message starts a fresh one.",
+};
 
 export default function AgentSessionView() {
     const { id, sessionId } = useParams();
@@ -314,7 +326,7 @@ export default function AgentSessionView() {
 
     if (loading) {
         return (
-            <Container>
+            <Container help={AGENT_SESSION_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
                     <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
@@ -325,7 +337,7 @@ export default function AgentSessionView() {
     }
 
     return (
-        <Container>
+        <Container help={AGENT_SESSION_HELP}>
             <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="agent-session-view">
                 <div className="agent-session-header">

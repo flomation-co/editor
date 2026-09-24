@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
@@ -22,6 +23,19 @@ export function meta({}: Route.MetaArgs) {
 }
 
 type Tab = 'config' | 'audit';
+
+const AGENT_SETTINGS_HELP: HelpContent = {
+    title: "About Agent Settings",
+    intro: "This is how the agent is set up: what it is called, how it behaves, and which flow it runs. Changes here affect everyone who talks to it.",
+    points: [
+        "Give it a name, a picture and a short description",
+        "Write the instructions that shape how it replies",
+        "Choose the flow it runs when a message arrives",
+        "Pick who provides the AI behind its memory",
+        "See who changed what, and when, in the Audit Log",
+    ],
+    tip: "A running agent keeps its old settings until it is restarted. If a restart is needed you will be told, with a button to do it.",
+};
 
 // Providers the extraction flow can be built against. Each maps to an
 // executor ai/<value> action, so a new entry needs that action to exist.
@@ -200,7 +214,7 @@ export default function AgentSettings() {
 
     if (loading) {
         return (
-            <Container>
+            <Container help={AGENT_SETTINGS_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_EDIT}>
                 <div className="loading-container">
                     <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
@@ -212,7 +226,7 @@ export default function AgentSettings() {
 
     if (!agent) {
         return (
-            <Container>
+            <Container help={AGENT_SETTINGS_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_EDIT}>
                 <div className="agent-empty-state">Agent not found.</div>
                 </ProtectedRoute>
@@ -221,7 +235,7 @@ export default function AgentSettings() {
     }
 
     return (
-        <Container>
+        <Container help={AGENT_SETTINGS_HELP}>
             <ProtectedRoute permission={PERMISSIONS.AGENT_EDIT}>
             <div className="agent-detail">
                 <div className="agent-detail-header">
