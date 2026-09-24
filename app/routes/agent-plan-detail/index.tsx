@@ -20,6 +20,7 @@
 
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback, useRef} from "react";
@@ -67,6 +68,17 @@ const STATUS_LABELS: Record<string, string> = {
     draft: "Draft",
     pending: "Pending",
     in_progress: "In Progress",
+};
+
+const AGENT_PLAN_HELP: HelpContent = {
+    title: "About this Plan",
+    intro: "A plan is a piece of work the agent has broken into steps so it can be worked through and checked off.",
+    points: [
+        "See the steps, and which are done",
+        "Open a step to read what happened",
+        "Follow progress as the agent works",
+    ],
+    tip: "Plans come from the agent's own reasoning, so they change as it learns more about what is being asked.",
 };
 
 export default function AgentPlanDetail() {
@@ -278,7 +290,7 @@ export default function AgentPlanDetail() {
 
     if (loading) {
         return (
-            <Container>
+            <Container help={AGENT_PLAN_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                     <div className="plan-detail">Loading…</div>
                 </ProtectedRoute>
@@ -288,7 +300,7 @@ export default function AgentPlanDetail() {
 
     if (error || !plan) {
         return (
-            <Container>
+            <Container help={AGENT_PLAN_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                     <div className="plan-detail">
                         <button className="plan-back-btn" onClick={() => navigate(`/agent/${agentId}`)}>
@@ -307,7 +319,7 @@ export default function AgentPlanDetail() {
     tasks.forEach(t => { taskNameByID[t.id] = t.name; });
 
     return (
-        <Container>
+        <Container help={AGENT_PLAN_HELP}>
             <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="plan-detail">
                     <button className="plan-back-btn" onClick={() => navigate(`/agent/${agentId}`)}>

@@ -38,10 +38,10 @@ const AGENTS_HELP: HelpContent = {
     points: [
         "Create an agent and give it a personality and instructions",
         "Connect the channels it should listen and reply on",
-        "Point it at a flow that decides what it can do",
+        "Point it at the flow that decides what it can do",
         "Follow its conversations and memory as it works",
     ],
-    tip: "An agent needs a flow to act on. Build that flow first, then link it when you set the agent up.",
+    tip: "New agents come with a blank flow of their own, so you can create one now and decide what it does later.",
 };
 
 export default function Agents() {

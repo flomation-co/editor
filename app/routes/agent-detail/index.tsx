@@ -1,5 +1,6 @@
 import type {Route} from "../+types/home";
 import Container from "~/components/container";
+import type {HelpContent} from "~/components/helpPane";
 import useConfig from "~/components/config";
 import api from "~/lib/api";
 import {useEffect, useState, useCallback} from "react";
@@ -29,6 +30,19 @@ export function meta({}: Route.MetaArgs) {
 }
 
 type Tab = 'sessions' | 'memory' | 'plans' | 'schedules' | 'users';
+
+const AGENT_HELP: HelpContent = {
+    title: "About this Agent",
+    intro: "This is the agent at work: who it has spoken to, what it remembers, and what it has lined up to do. Everything here is your own view of it.",
+    points: [
+        "Read back conversations in Sessions",
+        "See what it has remembered about you in Memory",
+        "Check the work it is planning in Plans",
+        "Set times for it to act on its own in Schedules",
+        "See the people it talks to in Users",
+    ],
+    tip: "How the agent is set up lives behind Settings. Start, pause and stop are at the top, and take effect straight away.",
+};
 
 
 export default function AgentDetail() {
@@ -91,7 +105,7 @@ export default function AgentDetail() {
 
     if (loading) {
         return (
-            <Container>
+            <Container help={AGENT_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="loading-container">
                     <Icon name="spinner" spin size="2em" style={{ color: "var(--faint)" }} />
@@ -103,7 +117,7 @@ export default function AgentDetail() {
 
     if (!agent) {
         return (
-            <Container>
+            <Container help={AGENT_HELP}>
                 <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
                 <div className="agent-empty-state">Agent not found.</div>
                 </ProtectedRoute>
@@ -112,7 +126,7 @@ export default function AgentDetail() {
     }
 
     return (
-        <Container>
+        <Container help={AGENT_HELP}>
             <ProtectedRoute permission={PERMISSIONS.AGENT_VIEW}>
             <div className="agent-detail">
                 <div className="agent-detail-header">
