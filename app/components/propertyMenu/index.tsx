@@ -771,6 +771,7 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                         variables={props.variables}
                                                         monospace={true}
                                                         language={languageFromNodeLabel(props.node.data.label)}
+                                                        noVariables={true}
                                                         onValueChange={onValueChange}
                                                     />
                                                 )
