@@ -73,6 +73,28 @@
     margin: 0 4px;
 }
 
+/* The title shares a row with seven controls that will not shrink, so on a
+   phone it was squeezed to about eighty pixels — the flow's name is what
+   tells you which flow you are in, and it is also an editable field. It
+   takes its own row, and the controls wrap under it.
+
+   This block sits AFTER the base rules it overrides: same specificity, so
+   source order is what decides, and placed earlier it silently lost. */
+@media (max-width: 767px) {
+    .flo-editor-property {
+        flex-wrap: wrap;
+        padding: 8px;
+    }
+
+    .flo-editor-property-property-section {
+        flex: 1 0 100%;
+    }
+
+    .flo-editor-property-action-section {
+        flex-wrap: wrap;
+    }
+}
+
 .flo-editor-action-button {
     height: 34px;
     min-width: 34px;
