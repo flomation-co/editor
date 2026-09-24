@@ -21,6 +21,9 @@ type PropertyProps = {
      *  monospace=true for layout consistency — the overlay tokens
      *  need the same character width as the textarea cursor. */
     language?: string;
+    /** Script source: ${...} belongs to the script, not to us. No
+     *  pills, no validation colouring, no variable picker. */
+    noVariables?: boolean;
     onValueChange?: (property: string, value: any) => void;
 }
 
@@ -76,16 +79,19 @@ const TextProperty = (props: PropertyProps) => {
                     multiline={true}
                     monospace={props.monospace || !!props.language}
                     language={props.language}
+                    noVariables={props.noVariables}
                     variables={props.variables ?? []}
                     onValueChange={(_, v) => setValue(v)}
                 />
-                <VariablePicker
-                    value={value}
-                    variables={props.variables ?? []}
-                    onSelect={(ref) => setValue((prev) => prev + ref)}
-                    onClear={() => setValue("")}
-                    alwaysButton={true}
-                />
+                {!props.noVariables && (
+                    <VariablePicker
+                        value={value}
+                        variables={props.variables ?? []}
+                        onSelect={(ref) => setValue((prev) => prev + ref)}
+                        onClear={() => setValue("")}
+                        alwaysButton={true}
+                    />
+                )}
             </div>
 
             {popupOpen && (
@@ -118,6 +124,7 @@ const TextProperty = (props: PropertyProps) => {
                                 monospace={props.monospace || !!props.language}
                                 language={props.language}
                                 lineNumbers={props.monospace || !!props.language}
+                                noVariables={props.noVariables}
                                 variables={props.variables ?? []}
                                 onValueChange={(_, v) => setPopupValue(v)}
                             />

@@ -58,6 +58,12 @@ type VariableInputProps = {
      *  horizontal scroll so gutter numbers stay 1:1 with code lines
      *  (wrapped lines would desync the numbering). */
     lineNumbers?: boolean;
+    /** When true, ${...} is left alone: no pills, no validation
+     *  colouring, no picker. Script source is the case — ${...} is
+     *  JavaScript's template-literal syntax and Bash's parameter
+     *  syntax, so a code body is full of it and none of it is ours.
+     *  The executor does not substitute code inputs either. */
+    noVariables?: boolean;
     variables: VariableItem[];
     onValueChange?: (property: string, value: any) => void;
 };
@@ -106,6 +112,18 @@ function rootAndPath(inner: string): { root: string; path: string } {
     if (candidates.length === 0) return { root: inner, path: "" };
     const boundary = Math.min(...candidates);
     return { root: inner.slice(0, boundary), path: inner.slice(boundary) };
+}
+
+// segmentsFor is the single entry point the component uses, so the
+// "this field has no variables" decision cannot be made in one place
+// and forgotten in another — there are four call sites and they must
+// agree, or the highlight overlay drifts out of step with the cursor
+// mapping.
+function segmentsFor(text: string, variables: VariableItem[], noVariables?: boolean): ParsedSegment[] {
+    if (noVariables) {
+        return [{ type: "text", value: text, display: text }];
+    }
+    return parseSegments(text, variables);
 }
 
 function parseSegments(text: string, variables: VariableItem[]): ParsedSegment[] {
@@ -472,7 +490,7 @@ const VariableInput = (props: VariableInputProps) => {
     }, []);
 
     const segments = useMemo(
-        () => parseSegments(value, props.variables),
+        () => segmentsFor(value, props.variables, props.noVariables),
         [value, props.variables]
     );
 
@@ -586,7 +604,7 @@ const VariableInput = (props: VariableInputProps) => {
                 if (inputRef.current) {
                     inputRef.current.focus();
                     // Position cursor after the inserted variable in display space
-                    const newSegments = parseSegments(newValue, props.variables);
+                    const newSegments = segmentsFor(newValue, props.variables, props.noVariables);
                     const newMapping = buildDisplayMapping(newSegments);
                     const rawPos = before.length + insertion.length;
                     const newDisplayPos = rawPosToDisplay(rawPos, newMapping.toRaw);
@@ -656,7 +674,7 @@ const VariableInput = (props: VariableInputProps) => {
             const el = inputRef.current;
             if (!el) return;
             el.focus();
-            const mapping = buildDisplayMapping(parseSegments(newValue, props.variables));
+            const mapping = buildDisplayMapping(segmentsFor(newValue, props.variables, props.noVariables));
             el.value = mapping.displayText;
             const ds = rawPosToDisplay(rawSelStart, mapping.toRaw);
             const de = rawPosToDisplay(rawSelEnd, mapping.toRaw);

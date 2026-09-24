@@ -1383,6 +1383,13 @@ export function Editor(props : EditorProps) {
 
             for (const i of inputs) {
                 if (!isInputVisible(i, inputs)) continue;
+                // Script source is not scanned for variable references.
+                // ${...} is JavaScript's template-literal syntax and Bash's
+                // parameter syntax, so a code field is full of it and none
+                // of it is ours — the executor does not substitute code
+                // inputs either. Flagging it here blocked execution on
+                // perfectly good scripts.
+                if (i.type === 'code') continue;
                 if (typeof i.value !== 'string') continue;
                 const refs = i.value.match(/\$\{([^{}]+)\}/g);
                 if (!refs) continue;
