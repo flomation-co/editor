@@ -544,6 +544,10 @@ textarea:focus {
   top: 16px;
   right: 16px;
   width: 570px;
+  /* Uncapped this is wider than a phone, and because it is pinned to the
+     right its LEFT edge — where the labels are — was the part that went
+     off-screen. */
+  max-width: calc(100vw - 32px);
   max-height: calc(100% - 32px);
   background: var(--surface);
   border: 1px solid var(--rule);
@@ -555,6 +559,19 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   animation: floatIn 0.15s ease-out;
+}
+
+/* On a phone the inspector spans the canvas with a margin rather than
+   floating in a corner: at this width a floating panel is the page. */
+@media (max-width: 767px) {
+  .property-menu {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100% - 16px);
+  }
 }
 
 .property-menu-header {
