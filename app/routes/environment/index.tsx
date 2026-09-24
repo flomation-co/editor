@@ -654,7 +654,7 @@ export default function EnvironmentDetail() {
                 </Link>
             </div>
 
-            <div className="env-detail-tabs">
+            <div className="env-detail-tabs flo-scroll-x">
                 <button className={`env-detail-tab ${activeTab === 'properties' ? 'env-detail-tab--active' : ''}`} onClick={() => setActiveTab('properties')}>
                     <Icon name="cubes" /> Properties
                     {properties && properties.length > 0 && <span className="env-detail-tab-count">{properties.length}</span>}

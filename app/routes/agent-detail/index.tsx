@@ -195,7 +195,7 @@ export default function AgentDetail() {
                     </div>
                 </div>
 
-                <div className="agent-tabs">
+                <div className="agent-tabs flo-scroll-x">
                     <button className={`agent-tab ${activeTab === 'sessions' ? 'active' : ''}`} onClick={() => setActiveTab('sessions')}>Sessions</button>
                     <button className={`agent-tab ${activeTab === 'memory' ? 'active' : ''}`} onClick={() => setActiveTab('memory')}>Memory</button>
                     <button className={`agent-tab ${activeTab === 'plans' ? 'active' : ''}`} onClick={() => setActiveTab('plans')}>Plans</button>

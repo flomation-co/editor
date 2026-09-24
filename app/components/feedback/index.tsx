@@ -57,8 +57,9 @@ export default function FeedbackButton() {
 
     return (
         <>
-            <button className="feedback-trigger" onClick={() => setOpen(true)}>
-                <Icon name="comment-dots" style={{ marginBottom: 6 }} /> Feedback
+            <button className="feedback-trigger" onClick={() => setOpen(true)} aria-label="Send feedback">
+                <Icon name="comment-dots" className="feedback-trigger-icon" />
+                <span className="feedback-trigger-label">Feedback</span>
             </button>
 
             {open && (

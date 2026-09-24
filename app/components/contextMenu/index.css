@@ -40,6 +40,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 24px rgba(70, 45, 84, 0.16);
     width: 340px;
+    max-width: calc(100vw - 24px);
     max-height: min(70vh, 500px);
     font-size: 12px;
     color: var(--text);

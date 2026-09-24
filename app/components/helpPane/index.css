@@ -178,8 +178,12 @@
         display: none;
     }
 
+    /* The rail is gone, so the container keeps its ordinary page padding.
+       Zeroing it here left the content touching the right edge — this rule
+       is more specific than .flo-container, so it won the padding it was
+       never meant to win once the rail stopped being there. */
     .flo-container.flo-container--with-help {
-        padding-right: 0;
+        padding-right: 16px;
     }
 
     .flo-container--with-help .help-main {

@@ -271,7 +271,7 @@ export default function AgentSettings() {
                     </div>
                 )}
 
-                <div className="agent-tabs">
+                <div className="agent-tabs flo-scroll-x">
                     <button className={`agent-tab ${activeTab === 'config' ? 'active' : ''}`} onClick={() => setActiveTab('config')}>Configuration</button>
                     <button className={`agent-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>Audit Log</button>
                 </div>

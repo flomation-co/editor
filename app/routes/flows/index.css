@@ -12,6 +12,27 @@
     gap: 8px;
 }
 
+/* Search and six buttons will not fit across a phone. The search takes
+   its own row and the buttons sit under it, rather than the last two
+   being pushed off the edge where they cannot be tapped. */
+@media (max-width: 767px) {
+    .flows-action-bar {
+        flex-wrap: wrap;
+    }
+
+    .flows-action-bar-search {
+        flex: 1 0 100%;
+    }
+
+    .flows-action-bar-divider {
+        display: none;
+    }
+
+    .flows-action-bar-actions {
+        flex-wrap: wrap;
+    }
+}
+
 .flows-action-bar-search {
     flex: 1;
     min-width: 0;
@@ -825,7 +846,14 @@
 }
 
 /* Project create/edit + move modals */
-.project-modal-body { display: flex; flex-direction: column; gap: 6px; min-width: 360px; }
+/* A min-width beats the modal's own max-width, so on a phone this pushed
+   the dialog wider than the screen. The floor only needs to apply once
+   there is room for it. */
+.project-modal-body { display: flex; flex-direction: column; gap: 6px; }
+
+@media (min-width: 480px) {
+    .project-modal-body { min-width: 360px; }
+}
 .project-modal-label {
     font-size: 12px;
     font-weight: 600;

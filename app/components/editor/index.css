@@ -952,7 +952,7 @@
 /* ── Unified Settings Panel ── */
 
 .flo-settings-panel {
-    min-width: 320px;
+    min-width: min(320px, 100vw);
     padding: 0 !important;
 }
 
