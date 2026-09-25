@@ -108,17 +108,17 @@
 }
 
 .status-card-indicator--healthy {
-    background: var(--success-fill);
+    background: var(--success);
     box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 .status-card-indicator--unhealthy {
-    background: var(--danger-fill);
+    background: var(--danger);
     box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
 }
 
 .status-card-indicator--checking {
-    background: var(--info-fill);
+    background: var(--info);
     box-shadow: 0 0 6px rgba(70, 45, 84, 0.16);
     animation: indicator-pulse 1.5s ease-in-out infinite;
 }

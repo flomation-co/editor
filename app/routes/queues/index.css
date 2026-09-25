@@ -202,7 +202,7 @@
 }
 
 .queue-runner-indicator--active {
-    background: var(--success-fill);
+    background: var(--success);
     box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
