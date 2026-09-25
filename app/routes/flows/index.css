@@ -136,21 +136,25 @@
 }
 
 .flo-dot--success {
-    background: var(--success-fill);
+    background: var(--success);
     box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--fail {
-    background: var(--danger-fill);
+    background: var(--danger);
     box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--cancel {
-    background: var(--surface-active);
+    background: var(--faint);
 }
 
 .flo-dot--running {
-    background: var(--surface-2);
+    /* Not --teal: on this palette teal (#2f6b64) and success green
+       (#1b6d45) are the same dot at 8px, and "still going" versus
+       "finished fine" is exactly the distinction the row exists to
+       make. The pulse alone only helps in motion. */
+    background: var(--lilac);
     box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
     animation: dot-pulse 1.5s ease-in-out infinite;
 }
@@ -162,12 +166,12 @@
 
 .flo-dot--created,
 .flo-dot--allocated {
-    background: var(--info-fill);
+    background: var(--info);
     box-shadow: 0 0 4px rgba(70, 45, 84, 0.16);
 }
 
 .flo-dot--unknown {
-    background: var(--surface-active);
+    background: var(--faint);
 }
 
 
