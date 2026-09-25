@@ -78,7 +78,7 @@
 
 .cancel-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, var(--danger-fill), var(--danger));
+    background: var(--danger);
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -103,7 +103,7 @@
 
 .resume-button {
     padding: 6px 14px;
-    background: linear-gradient(135deg, var(--surface), var(--warning));
+    background: var(--warning);
     border: none;
     border-radius: 8px;
     color: #fff;
