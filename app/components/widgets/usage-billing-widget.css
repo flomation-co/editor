@@ -70,12 +70,12 @@
 .usage-widget-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(90deg, var(--teal), var(--teal));
+    background: var(--teal);
     transition: width 0.4s ease;
 }
 
 .usage-widget-bar-fill.near-limit {
-    background: linear-gradient(90deg, var(--warning-fill), var(--danger-fill));
+    background: var(--danger);
 }
 
 .usage-widget-footer {
