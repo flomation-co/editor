@@ -7,6 +7,9 @@ export default [
     route("billing", "routes/billing/index.tsx"),
 
     route("flow", "routes/flows/index.tsx"),
+    // Published in the first onboarding email before anyone noticed it was not
+    // a route. See routes/legacy-redirect.
+    route("editor", "routes/legacy-redirect/index.tsx"),
     route("trigger", "routes/triggers/index.tsx"),
     route("integration", "routes/integrations/index.tsx"),
     route("runner", "routes/runners/index.tsx"),
