@@ -274,6 +274,10 @@
     box-sizing: border-box;
 }
 
+/* The knob has to contrast with the track in BOTH states, which is what was
+ * wrong here: on was --surface-2 on --surface-2, so the knob was invisible and
+ * the track barely changed from the off colour. Required, Read-only and Copy
+ * button all looked the same whether they were on or off. */
 .fb-toggle-label input[type="checkbox"]::after {
     content: '';
     position: absolute;
@@ -281,18 +285,19 @@
     left: 2px;
     width: 12px;
     height: 12px;
-    background: var(--surface-2);
+    background: var(--surface);
     border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(70, 45, 84, 0.25);
     transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .fb-toggle-label input[type="checkbox"]:checked {
-    background: var(--surface-2);
+    background: var(--violet);
 }
 
 .fb-toggle-label input[type="checkbox"]:checked::after {
     transform: translateX(12px);
-    background: var(--surface-2);
+    background: var(--surface);
 }
 
 .fb-field-name {

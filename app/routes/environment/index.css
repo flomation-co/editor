@@ -499,9 +499,11 @@
     transition: all 0.12s ease;
 }
 
+/* Was --surface-2 on --surface-2 with an 18%-alpha tick: a ticked box looked
+ * the same as an empty one. Same family as the switches above. */
 .env-cred-scope-item input[type="checkbox"]:checked {
-    background: var(--surface-2);
-    border-color: var(--rule-2);
+    background: var(--violet);
+    border-color: var(--violet);
 }
 
 .env-cred-scope-item input[type="checkbox"]:checked::after {
@@ -511,7 +513,7 @@
     left: 4px;
     width: 4px;
     height: 7px;
-    border: solid var(--rule-2);
+    border: solid var(--surface);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
@@ -749,10 +751,14 @@
     border-color: var(--rule-3);
 }
 
+/* The box carries its tick as a glyph revealed by `color`, so a checked box
+ * needs a background the glyph can sit on. --surface-2 against the unchecked
+ * --surface-raise is nearly the same pale tone, which left ticked and unticked
+ * looking alike. */
 .scope-toggle input[type="checkbox"]:checked + .scope-toggle-box {
-    background: var(--surface-2);
-    border-color: var(--rule-2);
-    color: var(--text);
+    background: var(--violet);
+    border-color: var(--violet);
+    color: var(--surface);
 }
 
 .scope-toggle input[type="checkbox"]:focus-visible + .scope-toggle-box {

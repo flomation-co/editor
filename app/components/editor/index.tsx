@@ -104,7 +104,22 @@ export function Editor(props : EditorProps) {
     const menuXRef = useRef<number>(0);
     const menuYRef = useRef<number>(0);
     const [ snapToGrid, setSnapToGrid ] = useState<boolean>(true);
-    const [ showMiniMap, setShowMiniMap ] = useState<boolean>(true);
+    // The minimap toggle is a preference, so it survives a reload. It used to
+    // reset to on every time the page loaded, which made turning it off feel
+    // like it had not worked.
+    //
+    // Read lazily rather than in an effect: seeding state after mount would
+    // show the minimap for a frame before hiding it again.
+    const MINIMAP_PREF_KEY = "flo.editor.showMiniMap";
+    const [ showMiniMap, setShowMiniMap ] = useState<boolean>(() => {
+        if (typeof window === "undefined") return true;   // SSR pass
+        try {
+            const saved = window.localStorage.getItem(MINIMAP_PREF_KEY);
+            return saved === null ? true : saved === "true";
+        } catch {
+            return true;   // private mode / storage disabled
+        }
+    });
     const [ needsUpdate, setNeedsUpdate ] = useState<boolean>(false);
     const [ plugins, setPlugins ] = useState(null);
     const [ dragging, setDragging ] = useState<boolean>(false);
@@ -303,7 +318,17 @@ export function Editor(props : EditorProps) {
                         y: response.data ? response.data.y : 0,
                         zoom: response.data ? response.data.scale : 1
                     });
-                    const loadedEdges = response.data.revision ? response.data.revision.data.edges : initialEdges;
+                    // Drop any node-to-itself wire saved before those were
+                    // refused at the point of drawing. Such an edge makes a node
+                    // its own parent: the run reports Success and the step never
+                    // happens. Repairing on load means an existing flow is fixed
+                    // by opening it, rather than needing the wire found by hand —
+                    // and it is invisible on the canvas, so it would not be.
+                    const rawLoadedEdges = (response.data.revision ? response.data.revision.data.edges : initialEdges) || [];
+                    const loadedEdges = rawLoadedEdges.filter((e: any) => e.source !== e.target);
+                    if (loadedEdges.length !== rawLoadedEdges.length) {
+                        toast.warning("Removed a step that was connected to itself. Save the flow to keep the fix.");
+                    }
                     const rawLoadedNodes = response.data.revision ? response.data.revision.data.nodes : initialNodes;
                     // Defensive ordering pass — see orderParentsFirst
                     // for the React Flow v12 invariant this protects.
@@ -452,8 +477,25 @@ export function Editor(props : EditorProps) {
         setName(e.target.value);
     }, [name]);
 
+    // isValidConnection refuses a wire from a node back to itself.
+    //
+    // A self-connected node makes itself its own parent. The executor resolves
+    // parents before running a node, so the node waits on a result it is the
+    // one meant to produce and is quietly skipped — the run still reports
+    // Success, and the step simply never happened. It also breaks the editor's
+    // own upstream walk: the ancestor search stops at the self-loop, so every
+    // ${...} the node takes from a real parent is reported as unresolved.
+    //
+    // Nothing downstream could detect this reliably, so the wire is refused at
+    // the point it is drawn. ReactFlow greys the handle while dragging, so the
+    // refusal is visible rather than a silent no-op.
+    const isValidConnection = useCallback((connection: any) => {
+        return connection.source !== connection.target;
+    }, []);
+
     const onConnect = useCallback(
         (params) => {
+            if (params.source === params.target) return;
             setEdges((eds) => addEdge(params, eds));
 
             // Auto-populate empty inputs on target node when parent output names match
@@ -675,6 +717,37 @@ export function Editor(props : EditorProps) {
         setMenuVisible(true);
     }, []);
 
+    // freePositionNear finds a spot that is not already occupied.
+    //
+    // Adding several nodes without moving the mouse used to drop every one of
+    // them at the same viewport-centre coordinate, so they stacked exactly on
+    // top of each other and looked like a single node — the ones underneath
+    // were only findable by dragging the top one away.
+    //
+    // Takes the node list as an argument so the caller can pass the CURRENT
+    // one from inside a setNodes updater: onNodeAdd's closure is rebuilt only
+    // when rfInstance changes, so anything it reads from `nodes` directly is
+    // whatever existed when the callback was last created.
+    //
+    // Steps diagonally so a run of additions cascades, which is also how a
+    // person would lay them out by hand.
+    const freePositionNear = (existing: any[], pos: {x: number; y: number}) => {
+        const STEP = 40;
+        const CLEAR = 30;   // treat anything closer than this as the same spot
+        const MAX_TRIES = 40;
+
+        const taken = (x: number, y: number) =>
+            existing.some(n => Math.abs((n?.position?.x ?? 0) - x) < CLEAR &&
+                               Math.abs((n?.position?.y ?? 0) - y) < CLEAR);
+
+        let {x, y} = pos;
+        for (let i = 0; i < MAX_TRIES && taken(x, y); i++) {
+            x += STEP;
+            y += STEP;
+        }
+        return {x, y};
+    };
+
     const onNodeAdd = useCallback((nodeType: string) => {
         setMenuVisible(false);
 
@@ -715,10 +788,9 @@ export function Editor(props : EditorProps) {
         const id ='' + uuidv4() + '';
         const newNode = {
             id: id,
-            position: {
-                x: nodePosition.x,
-                y: nodePosition.y,
-            },
+            // Placeholder — the real position is chosen inside setNodes below,
+            // against the node list as it actually is at that moment.
+            position: nodePosition,
             data: {
                 id: id,
                 label: nodeType,
@@ -729,7 +801,10 @@ export function Editor(props : EditorProps) {
             targetPosition: 'left'
         };
 
-        setNodes((nds) => nds.concat(newNode));
+        setNodes((nds: any) => nds.concat({
+            ...newNode,
+            position: freePositionNear(nds as any[], nodePosition),
+        }));
         if (rfInstance) {
             // TODO: Send Revision
         }
@@ -1004,8 +1079,45 @@ export function Editor(props : EditorProps) {
     ];
 
     // Derive parent node outputs for the selected property node
+    // Ambient context. These are the same on every flow, so they belong AFTER
+    // whatever this particular flow produces — see the sort at the end of
+    // allVariables.
+    const AMBIENT_VARIABLES: VariableItem[] = [...FLOW_VARIABLES, ...USER_VARIABLES, ...AGENT_TRIGGER_VARIABLES];
+
+    // What the picker shows first. The list had grown to ~55 entries built in
+    // the order the code happened to collect them: flow context, then the
+    // agent-only values, then the environment, with this flow's own form fields
+    // at the very bottom. Somebody wiring a form to a spreadsheet had to scroll
+    // past everything that is identical on every flow to reach the one thing
+    // that is not.
+    //
+    // Ordered by how specific a variable is to the flow in front of you.
+    const VARIABLE_RELEVANCE: Record<string, number> = {
+        input: 0,        // this flow's form fields
+        trigger: 1,      // this flow's manual-trigger inputs
+        var: 2,          // Set Variable nodes in this flow
+        secrets: 3,      // the environment this flow runs in
+        credentials: 3,
+        env: 3,
+        flow: 4,         // ambient: the same everywhere
+        user: 5,
+        agent: 6,
+    };
+
+    // Stable: equal ranks keep the order they were collected in, so related
+    // entries stay together instead of being shuffled alphabetically.
+    const byRelevance = (list: VariableItem[]): VariableItem[] =>
+        list
+            .map((v, i) => ({v, i}))
+            .sort((a, b) => {
+                const ra = VARIABLE_RELEVANCE[a.v.category] ?? 9;
+                const rb = VARIABLE_RELEVANCE[b.v.category] ?? 9;
+                return ra === rb ? a.i - b.i : ra - rb;
+            })
+            .map(x => x.v);
+
     const allVariables = useMemo<VariableItem[]>(() => {
-        const items: VariableItem[] = [...FLOW_VARIABLES, ...USER_VARIABLES, ...AGENT_TRIGGER_VARIABLES, ...envVariables];
+        const items: VariableItem[] = [...AMBIENT_VARIABLES, ...envVariables];
 
         // Add ${var.X} variables from Set Variable nodes in the flow
         for (const n of nodes as any[]) {
@@ -1073,7 +1185,7 @@ export function Editor(props : EditorProps) {
             }
         }
 
-        if (!propertyNode || !plugins) return items;
+        if (!propertyNode || !plugins) return byRelevance(items);
 
         // Conditional node types that pass through their parent outputs
         // to child branches (if, switch, loop). The editor mirrors the
@@ -1147,8 +1259,10 @@ export function Editor(props : EditorProps) {
 
         collectParentOutputs(propertyNode.id);
 
-        // Connected upstream-node outputs first, then the global variables.
-        return [...parentItems, ...items];
+        // A connected parent's outputs are the most specific thing of all, so
+        // they stay ahead of everything else; the rest is ordered by how much it
+        // has to do with this particular flow.
+        return [...parentItems, ...byRelevance(items)];
     }, [envVariables, propertyNode, edges, nodes, plugins]);
 
     // validationProblems is the single source of truth for "is this
@@ -1444,10 +1558,32 @@ export function Editor(props : EditorProps) {
         return best;
     }, [validationProblems]);
 
-    const executionBlocked = firstProblem !== null;
-    const executionBlockedReason = firstProblem
-        ? firstProblem.detail
-        : "Execute Flo";
+    // Only facts block execution. A missing required field and a secret that is
+    // not in the environment are both things the editor can actually check.
+    //
+    // "unresolved" is a guess: it means the editor could not find a producer for
+    // a ${...} reference by walking edges upstream. That walk is narrower than
+    // what resolves at runtime, and narrower than the variable picker, which
+    // offers every form field in the flow regardless of connectivity — so the
+    // editor would offer a variable and then refuse to run because of it. It
+    // still shows on the node and in the tooltip; it just no longer greys out
+    // Execute with no way forward but a page reload.
+    const blockingProblem = useMemo<ValidationProblem | null>(() => {
+        const rank = { required: 0, secret: 1 } as const;
+        let best: ValidationProblem | null = null;
+        for (const p of validationProblems.values()) {
+            if (p.kind === "unresolved") continue;
+            if (!best || rank[p.kind as keyof typeof rank] > rank[best.kind as keyof typeof rank]) best = p;
+        }
+        return best;
+    }, [validationProblems]);
+
+    const executionBlocked = blockingProblem !== null;
+    const executionBlockedReason = blockingProblem
+        ? blockingProblem.detail
+        : firstProblem
+            ? firstProblem.detail
+            : "Execute Flo";
 
     const defaultEdgeOptions = useMemo(() => {
         return {
@@ -1629,8 +1765,12 @@ export function Editor(props : EditorProps) {
     }, [ nodes, edges, setNodes, rfInstance ])
 
     const toggleShowMiniMap = useCallback(() => {
-        setShowMiniMap(!showMiniMap)
-    }, [ showMiniMap ])
+        setShowMiniMap(prev => {
+            const next = !prev;
+            try { window.localStorage.setItem(MINIMAP_PREF_KEY, String(next)); } catch { /* storage disabled */ }
+            return next;
+        });
+    }, [])
 
     const showAddNode = useCallback(() => {
         menuXRef.current = 0;
@@ -1676,9 +1816,91 @@ export function Editor(props : EditorProps) {
         return (config.trigger_inputs as any[]).filter((i: any) => i.name && i.name !== "");
     }
 
+    // Form field types that carry no answer. A section header or a divider is
+    // page furniture — asking somebody to fill one in when they press Execute
+    // would be nonsense, and they have no name to send.
+    const FORM_DISPLAY_ONLY = new Set([
+        "section_header", "divider", "info_text",
+    ]);
+
+    // How a form field is presented in the Execute modal. The modal renders
+    // text/boolean/date/dropdown/integer and falls back to a single-line box
+    // for anything else, which is the honest default for the structured types
+    // (address, matrix, ranking…): a test run can still supply something,
+    // rather than the field being silently dropped.
+    const formFieldInputType = (fieldType: string, hasOptions: boolean): string => {
+        switch (fieldType) {
+            case "multiline": return "text";
+            case "number": case "slider": case "rating": case "nps": case "opinion_scale":
+                return "integer";
+            case "boolean": case "consent": return "boolean";
+            case "date": return "date";
+            case "dropdown": case "radio": case "picture_choice": return "dropdown";
+            default: return hasOptions ? "dropdown" : "string";
+        }
+    };
+
+    // getFormTriggerInputs projects a Form trigger's fields into the same shape
+    // the Execute modal already renders for manual-trigger inputs.
+    //
+    // Without this, pressing Execute on a form-triggered flow ran it with no
+    // data at all: required fields were never asked for, never checked, and the
+    // flow wrote a row of blanks. A form's questions ARE the flow's inputs, so
+    // the same prompt applies.
+    function getFormTriggerInputs(): any[] {
+        // `nodes` is mistyped in this file (see the useState generic at the top);
+        // cast once here rather than sprinkling per-property assertions.
+        const formNode = (nodes as any[]).find(
+            n => n?.type === "trigger/form" || n?.data?.label === "trigger/form"
+        );
+        const raw = formNode?.data?.config?.inputs?.find((i: any) => i.name === "form_definition")?.value;
+        if (!raw) return [];
+
+        let def: any;
+        try {
+            def = typeof raw === "string" ? JSON.parse(raw) : raw;
+        } catch {
+            return [];
+        }
+
+        const inputs: any[] = [];
+        for (const page of def?.pages || []) {
+            for (const c of page?.components || []) {
+                if (!c?.name || FORM_DISPLAY_ONLY.has(c.type)) continue;
+                const options = Array.isArray(c.options) ? c.options : [];
+                inputs.push({
+                    name: c.name,
+                    label: c.label || c.name,
+                    // A field hidden behind a visible_if rule cannot be judged
+                    // here — the rule depends on answers that do not exist yet —
+                    // so it is offered but never demanded.
+                    required: !!c.required && !c.visible_if,
+                    type: formFieldInputType(c.type, options.length > 0),
+                    placeholder: c.placeholder || "",
+                    options: options.map((o: any) => ({
+                        name: o.label || o.value,
+                        value: o.value ?? o.label,
+                        label: o.label || o.value,
+                    })),
+                    value: c.default_value ?? "",
+                });
+            }
+        }
+        return inputs;
+    }
+
+    // The inputs to prompt for when Execute is pressed. A flow can hold more
+    // than one trigger; manual is checked first because pressing Execute is
+    // literally a manual run.
+    function getExecuteInputs(): any[] {
+        const manual = getManualTriggerInputs();
+        if (manual.length > 0) return manual;
+        return getFormTriggerInputs();
+    }
+
     function handleExecuteClick() {
         if (!id || isTriggering || executionBlocked) return;
-        const inputs = getManualTriggerInputs();
+        const inputs = getExecuteInputs();
         if (inputs.length > 0) {
             // Pre-fill with default values
             const defaults: Record<string, string> = {};
@@ -1973,6 +2195,7 @@ export function Editor(props : EditorProps) {
                                         onEdgesChange={onEdgesChange}
                                         onEdgeDoubleClick={onEdgeDoubleClick}
                                         onConnect={onConnect}
+                                        isValidConnection={isValidConnection}
                                         onInit={onInit}
                                         onMove={() => {debouncedMove()}}
                                         onMoveStart={() => {setDragging(true)}}
