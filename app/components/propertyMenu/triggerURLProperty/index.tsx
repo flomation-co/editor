@@ -133,6 +133,10 @@ const TriggerURLProperty = (props: Props) => {
     let snippetMultiline = false;
     let snippetHint = "";
     let noticeHint = "";
+    // urlLabel/setupHint let a trigger say what its URL is for and where it
+    // goes, without another isXTrigger boolean threaded through the render.
+    let urlLabel = "";
+    let setupHint: React.ReactNode = null;
 
     switch (typeName) {
         case "webhook":
@@ -201,6 +205,92 @@ const TriggerURLProperty = (props: Props) => {
             triggerUrl = publicUrl + triggerPath;
             break;
         }
+        // Chat platforms. Each has its own route in Launch, and each has to be
+        // pasted into somebody else's console — which is impossible if the
+        // editor never shows it. Telegram is the exception and says so.
+        case "teams":
+            triggerPath = `/webhook/teams/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            urlLabel = "Messaging Endpoint";
+            setupHint = (
+                <>
+                    Paste this into your{" "}
+                    <a href="https://portal.azure.com/#browse/Microsoft.BotService%2FbotServices"
+                       target="_blank" rel="noopener noreferrer"
+                       style={{color: "var(--teal)", textDecoration: "underline"}}>
+                        Azure Bot
+                    </a>
+                    {" "}under <strong>Settings → Configuration → Messaging endpoint</strong>,
+                    then add the <strong>Microsoft Teams</strong> channel under{" "}
+                    <strong>Channels</strong> — without it Teams routes nothing here.
+                </>
+            );
+            break;
+        case "slack":
+            triggerPath = `/webhook/slack/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            urlLabel = "Request URL";
+            setupHint = (
+                <>
+                    Paste this into your{" "}
+                    <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer"
+                       style={{color: "var(--teal)", textDecoration: "underline"}}>
+                        Slack app
+                    </a>
+                    {" "}under <strong>Event Subscriptions</strong>, then subscribe to the bot
+                    events you want (<code>message.im</code>, <code>app_mention</code>). Slack
+                    sends a one-off challenge to verify the URL when you save.
+                </>
+            );
+            break;
+        case "twilio-sms":
+            triggerPath = `/webhook/twilio/sms/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            urlLabel = "Messaging Webhook";
+            setupHint = (
+                <>
+                    Paste this into your{" "}
+                    <a href="https://console.twilio.com/us1/develop/phone-numbers/manage/incoming"
+                       target="_blank" rel="noopener noreferrer"
+                       style={{color: "var(--teal)", textDecoration: "underline"}}>
+                        Twilio phone number
+                    </a>
+                    {" "}under <strong>Messaging → A message comes in</strong>, set to{" "}
+                    <strong>HTTP POST</strong>.
+                </>
+            );
+            break;
+        case "twilio-voice":
+            triggerPath = `/webhook/twilio/voice/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            urlLabel = "Voice Webhook";
+            setupHint = (
+                <>
+                    Paste this into your{" "}
+                    <a href="https://console.twilio.com/us1/develop/phone-numbers/manage/incoming"
+                       target="_blank" rel="noopener noreferrer"
+                       style={{color: "var(--teal)", textDecoration: "underline"}}>
+                        Twilio phone number
+                    </a>
+                    {" "}under <strong>Voice → A call comes in</strong>, set to{" "}
+                    <strong>HTTP POST</strong>.
+                </>
+            );
+            break;
+        case "telegram":
+            // Shown rather than hidden: the useful answer to "where do I paste
+            // this?" is that you do not have to. Launch calls setWebhook itself
+            // when the trigger registers.
+            triggerPath = `/webhook/telegram/${trigger.id}`;
+            triggerUrl = launchUrl + triggerPath;
+            urlLabel = "Webhook URL";
+            setupHint = (
+                <>
+                    Nothing to do — Flomation registers this with Telegram for you when the
+                    flow is saved. Shown for reference only.
+                </>
+            );
+            break;
         case "linkedin-poll":
             // Polling-based — no URL needed
             return null;
@@ -227,7 +317,10 @@ const TriggerURLProperty = (props: Props) => {
 
     return (
         <div className="trigger-url-section">
-            <div className="trigger-url-label">{isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : isWebTrigger ? "Invoke URL" : "Trigger URL"}</div>
+            <div className="trigger-url-label">{urlLabel || (isFacebookTrigger ? "Facebook Webhook URL" : isIntercomTrigger ? "Intercom Webhook URL" : isWebTrigger ? "Invoke URL" : "Trigger URL")}</div>
+            {setupHint && (
+                <div className="trigger-url-hint" style={{ marginBottom: 6 }}>{setupHint}</div>
+            )}
             {isWebTrigger && !isWebPublic && (
                 <div className="trigger-url-hint" style={{ marginBottom: 6 }}>
                     Call this over HTTP with your embed app's publishable key
