@@ -9,6 +9,7 @@ import CredentialProperty from "~/components/propertyMenu/credentialProperty";
 import QRProperty from "~/components/propertyMenu/qrProperty";
 import TriggerURLProperty from "~/components/propertyMenu/triggerURLProperty";
 import FormBuilder from "~/components/propertyMenu/formBuilder";
+import BlockKitLauncher from "~/components/propertyMenu/blockKitEditor/launcher";
 import KeyValueProperty from "~/components/propertyMenu/keyValueProperty";
 import RowsProperty from "~/components/propertyMenu/rowsProperty";
 import BooleanProperty from "~/components/propertyMenu/booleanProperty";
@@ -551,6 +552,27 @@ const PropertyMenu = (props: PropertyMenuProps) => {
                                                     onValueChange={onValueChange}
                                                 />
                                             )
+                                        }
+
+                                        // Special case: Block Kit "blocks" on any Slack action.
+                                        //
+                                        // The three Slack actions that take blocks share the input
+                                        // name and the Text type, so one branch covers all of them.
+                                        // The field is otherwise a textarea whose LABEL has to carry
+                                        // the accepted shapes, the block types and a worked example,
+                                        // because there is nowhere else to put any of it.
+                                        if (i.name === "blocks" && props.node.data.label?.startsWith("slack/")) {
+                                            return (
+                                                <BlockKitLauncher
+                                                    key={props.node.data.id + "-" + i.name}
+                                                    nodeId={props.node.data.id}
+                                                    label={i.label}
+                                                    required={i.required}
+                                                    value={i.value || ""}
+                                                    variables={props.variables}
+                                                    onChange={(val) => onValueChange(i.name, val)}
+                                                />
+                                            );
                                         }
 
                                         // Special case: form_definition on form triggers
