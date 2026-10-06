@@ -55,6 +55,49 @@ const TRIGGER_ICONS: Record<string, any> = {
     'calcom-webhook': "calcom",
     'acuity-webhook': "acuity",
     'zendesk-webhook': "zendesk",
+    // Added together with the labels below. A third of the trigger types the
+    // product ships were in neither map, so each showed a generic bolt and its
+    // raw hyphenated type name — "database-row" as a tooltip is the internal
+    // identifier leaking through where a name should be.
+    //
+    // Brand marks where the icon set has one; a generic that describes the
+    // mechanism where it does not. Every name here is checked against
+    // components/icons/paths.ts — an unknown one renders a "?" placeholder and
+    // nothing in the build complains.
+    'database-row': "database",
+    web: "globe",
+    teams: "microsoft",
+    mqtt: "tower-broadcast",
+    'plan-task': "list-check",
+    'microsoft-outlook': "envelope",
+    'airtable-poll': "airtable",
+    'salesforce-poll': "salesforce",
+    'apollo-webhook': "apollo",
+    'asana-webhook': "asana",
+    'awx-webhook': "wrench",
+    'freshsales-webhook': "comment",
+    'heygen-webhook': "heygen",
+    'hubspot-webhook': "hubspot",
+    'intercom-webhook': "intercom",
+    'jira-webhook': "jira",
+    'jotform-webhook': "jotform",
+    'mailchimp-webhook': "mailchimp",
+    'monday-webhook': "monday",
+    'quickbooks-webhook': "quickbooks",
+    'sendgrid-webhook': "sendgrid",
+    'shopify-webhook': "shopify",
+    'stripe-webhook': "stripe",
+    'surveymonkey-webhook': "surveymonkey",
+    'trello-webhook': "trello",
+    'typeform-webhook': "typeform",
+    'woocommerce-webhook': "woocommerce",
+    'xero-webhook': "xero",
+    // AWS has no brand mark in the set; these describe what each one watches.
+    'cloudwatch-alarm': "gauge",
+    'cloudwatch-metric': "chart-line",
+    'cloudwatch-logs': "list-check",
+    'rds-event': "server",
+    'route53-health-check': "cloud",
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -81,6 +124,41 @@ const TRIGGER_LABELS: Record<string, string> = {
     'calcom-webhook': 'Cal.com',
     'acuity-webhook': 'Acuity',
     'zendesk-webhook': 'Zendesk',
+    // Plain names. Without these the tooltip shows the raw type string, so a
+    // reader sees "database-row" rather than "Database Row".
+    'database-row': 'Database Row',
+    web: 'HTTP Invoke',
+    teams: 'Microsoft Teams',
+    mqtt: 'MQTT',
+    'plan-task': 'Plan Task',
+    'microsoft-outlook': 'Outlook',
+    'airtable-poll': 'Airtable',
+    'salesforce-poll': 'Salesforce',
+    'apollo-webhook': 'Apollo',
+    'asana-webhook': 'Asana',
+    'awx-webhook': 'AWX',
+    'freshsales-webhook': 'Freshsales',
+    'heygen-webhook': 'HeyGen',
+    'hubspot-webhook': 'HubSpot',
+    'intercom-webhook': 'Intercom',
+    'jira-webhook': 'Jira',
+    'jotform-webhook': 'Jotform',
+    'mailchimp-webhook': 'Mailchimp',
+    'monday-webhook': 'Monday.com',
+    'quickbooks-webhook': 'QuickBooks',
+    'sendgrid-webhook': 'SendGrid',
+    'shopify-webhook': 'Shopify',
+    'stripe-webhook': 'Stripe',
+    'surveymonkey-webhook': 'SurveyMonkey',
+    'trello-webhook': 'Trello',
+    'typeform-webhook': 'Typeform',
+    'woocommerce-webhook': 'WooCommerce',
+    'xero-webhook': 'Xero',
+    'cloudwatch-alarm': 'CloudWatch Alarm',
+    'cloudwatch-metric': 'CloudWatch Metric',
+    'cloudwatch-logs': 'CloudWatch Logs',
+    'rds-event': 'RDS Event',
+    'route53-health-check': 'Route 53 Health Check',
 };
 
 function triggerIcon(type?: string): any {
