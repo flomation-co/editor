@@ -48,7 +48,89 @@
 .help-pane-header {
     display: flex;
     align-items: center;
+    gap: 10px;
     margin-bottom: 14px;
+}
+
+/* Dismiss sits at the far end of the header, so it reads as belonging to the
+   rail rather than floating over the page content. */
+.help-pane-dismiss {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--dimmer);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    flex: none;
+}
+
+.help-pane-dismiss:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+/* Collapsed: the rail stays a column and narrows to a strip holding the button
+   that brings it back. Keeping it structural means the content column reflows
+   the same way it already does, and the control stays where the rail was —
+   rather than becoming a floating button that has to dodge the Feedback tab. */
+.help-pane.help-pane--collapsed {
+    flex: 0 0 48px;
+    padding: 14px 0 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: visible;
+}
+
+.help-pane-reopen {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    background: transparent;
+    color: var(--dimmer);
+    cursor: pointer;
+    padding: 9px 5px;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.help-pane-reopen:hover {
+    background: var(--surface-2);
+    color: var(--violet);
+}
+
+/* Vertical label, so the strip can stay narrow and still say what it is. */
+.help-pane-reopen-text {
+    writing-mode: vertical-rl;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Below the breakpoint where the rail stacks under the content, a vertical
+   strip makes no sense — lay the control out horizontally instead. */
+@media (max-width: 1100px) {
+    .help-pane.help-pane--collapsed {
+        flex: none;
+        width: 100%;
+        padding: 10px 0;
+        justify-content: flex-start;
+    }
+
+    .help-pane-reopen {
+        flex-direction: row;
+    }
+
+    .help-pane-reopen-text {
+        writing-mode: horizontal-tb;
+    }
 }
 
 .help-pane-heading {
