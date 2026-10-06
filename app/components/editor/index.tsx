@@ -4,6 +4,7 @@ import "./nodes.css"
 import type {Flo, Environment, Property, Secret} from "~/types";
 import type {VariableItem} from "~/components/propertyMenu/variableInput";
 import {useState, useCallback, useEffect, useMemo, useRef} from "react";
+import {executeInputs} from "~/lib/triggerInputs";
 
 import { Icon } from "~/components/icons/Icon";
 
@@ -1803,104 +1804,9 @@ export function Editor(props : EditorProps) {
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    function getManualTriggerInputs(): any[] {
-        // Match on data.label as well as type: after a revision save/load the
-        // durable identity is data.label (node.type is not preserved), which is
-        // why every other trigger check in this file uses both. Matching type
-        // only meant this returned [] for a loaded flow, so the input modal was
-        // silently skipped and Execute ran with no inputs.
-        const manualNode = nodes.find(n => n.type === "trigger/manual" || (n.data as any)?.label === "trigger/manual");
-        if (!manualNode?.data) return [];
-        const config = (manualNode.data as any).config;
-        if (!config?.trigger_inputs) return [];
-        return (config.trigger_inputs as any[]).filter((i: any) => i.name && i.name !== "");
-    }
-
-    // Form field types that carry no answer. A section header or a divider is
-    // page furniture — asking somebody to fill one in when they press Execute
-    // would be nonsense, and they have no name to send.
-    const FORM_DISPLAY_ONLY = new Set([
-        "section_header", "divider", "info_text",
-    ]);
-
-    // How a form field is presented in the Execute modal. The modal renders
-    // text/boolean/date/dropdown/integer and falls back to a single-line box
-    // for anything else, which is the honest default for the structured types
-    // (address, matrix, ranking…): a test run can still supply something,
-    // rather than the field being silently dropped.
-    const formFieldInputType = (fieldType: string, hasOptions: boolean): string => {
-        switch (fieldType) {
-            case "multiline": return "text";
-            case "number": case "slider": case "rating": case "nps": case "opinion_scale":
-                return "integer";
-            case "boolean": case "consent": return "boolean";
-            case "date": return "date";
-            case "dropdown": case "radio": case "picture_choice": return "dropdown";
-            default: return hasOptions ? "dropdown" : "string";
-        }
-    };
-
-    // getFormTriggerInputs projects a Form trigger's fields into the same shape
-    // the Execute modal already renders for manual-trigger inputs.
-    //
-    // Without this, pressing Execute on a form-triggered flow ran it with no
-    // data at all: required fields were never asked for, never checked, and the
-    // flow wrote a row of blanks. A form's questions ARE the flow's inputs, so
-    // the same prompt applies.
-    function getFormTriggerInputs(): any[] {
-        // `nodes` is mistyped in this file (see the useState generic at the top);
-        // cast once here rather than sprinkling per-property assertions.
-        const formNode = (nodes as any[]).find(
-            n => n?.type === "trigger/form" || n?.data?.label === "trigger/form"
-        );
-        const raw = formNode?.data?.config?.inputs?.find((i: any) => i.name === "form_definition")?.value;
-        if (!raw) return [];
-
-        let def: any;
-        try {
-            def = typeof raw === "string" ? JSON.parse(raw) : raw;
-        } catch {
-            return [];
-        }
-
-        const inputs: any[] = [];
-        for (const page of def?.pages || []) {
-            for (const c of page?.components || []) {
-                if (!c?.name || FORM_DISPLAY_ONLY.has(c.type)) continue;
-                const options = Array.isArray(c.options) ? c.options : [];
-                inputs.push({
-                    name: c.name,
-                    label: c.label || c.name,
-                    // A field hidden behind a visible_if rule cannot be judged
-                    // here — the rule depends on answers that do not exist yet —
-                    // so it is offered but never demanded.
-                    required: !!c.required && !c.visible_if,
-                    type: formFieldInputType(c.type, options.length > 0),
-                    placeholder: c.placeholder || "",
-                    options: options.map((o: any) => ({
-                        name: o.label || o.value,
-                        value: o.value ?? o.label,
-                        label: o.label || o.value,
-                    })),
-                    value: c.default_value ?? "",
-                });
-            }
-        }
-        return inputs;
-    }
-
-    // The inputs to prompt for when Execute is pressed. A flow can hold more
-    // than one trigger; manual is checked first because pressing Execute is
-    // literally a manual run.
-    function getExecuteInputs(): any[] {
-        const manual = getManualTriggerInputs();
-        if (manual.length > 0) return manual;
-        return getFormTriggerInputs();
-    }
-
     function handleExecuteClick() {
         if (!id || isTriggering || executionBlocked) return;
-        const inputs = getExecuteInputs();
+        const inputs = executeInputs(nodes as any[]);
         if (inputs.length > 0) {
             // Pre-fill with default values
             const defaults: Record<string, string> = {};
