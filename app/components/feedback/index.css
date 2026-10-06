@@ -153,7 +153,7 @@
 .feedback-field input:focus,
 .feedback-field select:focus,
 .feedback-field textarea:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .feedback-field textarea {

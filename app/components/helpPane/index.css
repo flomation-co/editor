@@ -14,6 +14,12 @@
     flex-direction: row;
     align-items: stretch; /* both columns fill the content height */
     padding-right: 0; /* let the rail run to the right edge */
+    /* The left inset moves onto .help-main below. Left here it would sit
+       OUTSIDE the scrolling column, so content began flush against that
+       column's clip edge and a focused input had its ring sliced off down the
+       left-hand side. Moving it inside changes nothing visually and gives the
+       ring room to be painted. */
+    padding-left: 0;
     /* The container itself does not scroll; each column scrolls independently
        (see the min-height/overflow on the children) so a tall help rail never
        scrolls the page or the content column with it. */
@@ -26,8 +32,13 @@
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0; /* allow the column to be shorter than its content, so it scrolls */
+    /* overflow-y alone is not a one-axis declaration: with overflow-x left at
+       visible, the used value of overflow-x becomes auto, so this column clips
+       horizontally as well as scrolling vertically. That is why the padding
+       below has to live here rather than on the container. */
     overflow-y: auto;
     padding-right: 32px; /* keep content clear of the divider */
+    padding-left: 16px;  /* the container's inset, moved inside the clip box */
     box-sizing: border-box;
 }
 

@@ -46,7 +46,7 @@
 }
 
 .org-create-form input:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .org-create-form button,
@@ -180,7 +180,7 @@
 }
 
 .org-invite-form input:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .org-invites-list {
@@ -429,7 +429,7 @@
 }
 
 .org-legal-field input:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .org-legal-save {

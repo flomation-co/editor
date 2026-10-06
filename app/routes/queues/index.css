@@ -30,7 +30,7 @@
 }
 
 .queue-create input:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .queue-create-btn {
@@ -259,7 +259,7 @@
 }
 
 .queue-add-runner select:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* Empty state */
