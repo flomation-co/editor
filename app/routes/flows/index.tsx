@@ -27,6 +27,7 @@ import {useOrganisation} from "~/context/organisation/use";
 import {generateExportWrapper, downloadAsJson, downloadAsZip} from "~/lib/export";
 import { Icon } from "~/components/icons/Icon";
 import { FlowListSkeleton } from "~/components/skeleton";
+import {executeInputs} from "~/lib/triggerInputs";
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -495,13 +496,6 @@ export default function Flows() {
     // Matches on data.label as well as type: after a revision save/load the
     // durable identity is data.label (node.type is not preserved), which is
     // why the editor uses both. Only inputs with a non-empty name count.
-    function getManualTriggerInputs(nodes: any[]): any[] {
-        if (!Array.isArray(nodes)) return [];
-        const manualNode = nodes.find((n: any) => n?.type === "trigger/manual" || n?.data?.label === "trigger/manual");
-        const config = manualNode?.data?.config;
-        if (!config?.trigger_inputs) return [];
-        return (config.trigger_inputs as any[]).filter((i: any) => i && i.name && i.name !== "");
-    }
 
     // Run click: fetch the flow's latest revision (the list rows do not carry
     // it), inspect the manual trigger for declared inputs, and either open the
@@ -515,7 +509,7 @@ export default function Flows() {
                 headers: { Authorization: "Bearer " + token },
             });
             const nodes = (response?.data?.revision?.data as any)?.nodes;
-            const inputs = getManualTriggerInputs(nodes);
+            const inputs = executeInputs(nodes);
             if (inputs.length > 0) {
                 const defaults: Record<string, string> = {};
                 inputs.forEach((i: any) => { if (i.value !== undefined && i.value !== null) defaults[i.name] = String(i.value); });
