@@ -385,7 +385,7 @@ body {
 }
 
 .action:focus {
-  box-shadow: 0 0 10px 3px var(--highlight-colour);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   border: 0;
 }
 
@@ -462,7 +462,7 @@ input:disabled {
 }
 
 input:focus {
-  box-shadow: 0 0 10px 1px var(--highlight-colour);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 textarea {
@@ -482,7 +482,7 @@ textarea {
 }
 
 textarea:focus {
-  box-shadow: 0 0 10px 1px var(--highlight-colour);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .loading-container{

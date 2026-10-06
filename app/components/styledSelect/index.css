@@ -28,7 +28,7 @@
 
 .styled-select__trigger:focus-visible {
     outline: none;
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .styled-select__trigger--placeholder .styled-select__trigger-label {

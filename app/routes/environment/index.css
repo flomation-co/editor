@@ -190,7 +190,7 @@
 .env-detail-add-form textarea:focus,
 .env-detail-edit-form input:focus,
 .env-detail-edit-form textarea:focus {
-    box-shadow: 0 0 10px 3px var(--highlight-colour);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .env-detail-add-form input::placeholder,

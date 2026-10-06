@@ -87,6 +87,15 @@
 
   --violet: #460070;
   --lilac: #6b3f80;
+
+  /* The focus ring. One definition rather than twenty copies of a magic value.
+     A tight ring, not a blurred glow: a 10px blur of a saturated colour was
+     legible on the old dark ground and reads as a smear on paper — the same
+     reasoning the .search-textbox rule already records, which was the only
+     focus style the rebrand converted.
+     Tight also means it bleeds 3px rather than ~13px, so it survives the
+     scroll containers the layout puts content inside. */
+  --focus-ring: rgba(107, 63, 128, 0.35);
   --lilac-pale: #5d3670;
 
   /* Text-safe brand teal. */
